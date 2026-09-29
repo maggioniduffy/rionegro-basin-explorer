@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "title": "Río Negro Basin Explorer",
+    "description": "Satellite explorer of the Río Negro basin: the Limay, Neuquén and Río Negro rivers and their tributaries."
+  },
+  "home": {
+    "title": "Río Negro Basin Explorer",
+    "subtitle": "Rivers and sub-basins of the Limay, Neuquén and Río Negro. Coming soon."
+  },
+  "localeSwitcher": {
+    "label": "Language",
+    "locale": "{locale, select, en {English} es {Español} other {Unknown}}"
+  }
+}

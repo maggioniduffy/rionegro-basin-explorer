@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "title": "Explorador de la Cuenca del Río Negro",
+    "description": "Explorador satelital de la cuenca del Río Negro: los ríos Limay, Neuquén y Negro y sus afluentes."
+  },
+  "home": {
+    "title": "Explorador de la Cuenca del Río Negro",
+    "subtitle": "Ríos y subcuencas del Limay, el Neuquén y el Río Negro. Próximamente."
+  },
+  "localeSwitcher": {
+    "label": "Idioma",
+    "locale": "{locale, select, en {English} es {Español} other {Desconocido}}"
+  }
+}
