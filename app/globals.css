@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Dark is the default theme (see PLAN.md Goal). A light theme arrives in Phase 2. */
+:root {
+  --background: #050607;
+  --foreground: #e6e8ea;
+  --muted: #8a9096;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
