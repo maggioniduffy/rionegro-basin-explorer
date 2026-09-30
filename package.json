@@ -20,16 +20,21 @@
     "pipeline:candidates": "tsx pipeline/steps/candidates.ts",
     "pipeline:osm-names": "tsx pipeline/steps/osm-names.ts",
     "pipeline:named": "tsx pipeline/steps/named.ts",
-    "pipeline:export": "tsx pipeline/steps/export.ts"
+    "pipeline:export": "tsx pipeline/steps/export.ts",
+    "pipeline:mask": "tsx pipeline/steps/mask.ts",
+    "pipeline:tiles": "tsx pipeline/steps/tiles.ts"
   },
   "dependencies": {
+    "maplibre-gl": "^6.11.2",
     "mongodb": "^7.7.0",
     "next": "16.3.7",
     "next-intl": "^4.14.8",
+    "pmtiles": "^4.5.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@duckdb/node-api": "^1.5.6-r.1",

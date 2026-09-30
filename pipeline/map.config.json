@@ -1,0 +1,31 @@
+{
+  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin.",
+  "bounds": {
+    "xmin": -75,
+    "ymin": -44,
+    "xmax": -59.5,
+    "ymax": -33.5
+  },
+  "maxzoom": 10,
+  "reachMinzoomByStrahler": {
+    "1": 9,
+    "2": 8,
+    "3": 7,
+    "4": 6,
+    "5": 0,
+    "6": 0,
+    "7": 0
+  },
+  "mask": {
+    "strahlerFactor": {
+      "1": 1,
+      "2": 1.5,
+      "3": 2.25,
+      "4": 3.4,
+      "5": 5,
+      "6": 7.6,
+      "7": 11.4
+    },
+    "baseHalfWidthKm": [0.05, 0.1, 0.2, 0.4, 0.8]
+  }
+}

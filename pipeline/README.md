@@ -6,10 +6,11 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 - reads from `data/raw/` or an earlier step's output in `data/work/`;
 - writes a `report.json` (counts, total km, orphan segments, area checks) next to its output.
 
-Final artifacts go to `data/out/`: PMTiles for the map and NDJSON for `npm run seed`.
+Final artifacts: NDJSON for `npm run seed` in `data/out/`, and PMTiles for the map in `public/tiles/`
+(committed, because Vercel serves them from `/public` and tippecanoe does not run there).
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers`, `candidates`, `osm-names`, `named` and `export` are implemented; Phase 1 is complete; the other steps are planned.
+Status: Phase 1 is complete (`download` … `export`). Phase 2 adds `mask` and `tiles`.
 
 ## Prerequisites
 
@@ -17,14 +18,20 @@ Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers`, `cand
 | ---------- | ---------------------------------- | -------------------------- |
 | DuckDB     | Reading, joins, geometry (spatial) | installed by `npm install` |
 | `unzip`    | Extracting downloads               | `unzip -v`                 |
-| tippecanoe | GeoJSON → PMTiles (Phase 2)        | `tippecanoe --version`     |
+| tippecanoe | GeoJSON → PMTiles (`tiles`)        | `tippecanoe --version`     |
 
 Install notes:
 
 - **DuckDB**: the `@duckdb/node-api` devDependency. The spatial extension is fetched by DuckDB on
   first use (`INSTALL spatial`) and includes its own GDAL, so it reads Shapefile and FileGDB
   directly. System GDAL (`ogr2ogr`) is handy for ad-hoc checks but not required.
-- **tippecanoe**: build from https://github.com/felt/tippecanoe (`make -j && sudo make install`). Recent versions write `.pmtiles` directly.
+- **tippecanoe**: build from https://github.com/felt/tippecanoe; recent versions write `.pmtiles`
+  directly. The build needs the SQLite headers. Without sudo (dev machine, 2026-09-30,
+  tippecanoe v2.82.0): build the SQLite amalgamation from https://www.sqlite.org/download.html
+  (check its SHA3-256 against that page) into `~/.local/{include,lib}/`, then run
+  `CFLAGS=-I$HOME/.local/include CXXFLAGS=-I$HOME/.local/include LDFLAGS=-L$HOME/.local/lib make -j tippecanoe tippecanoe-decode tile-join`
+  and copy the three binaries to `~/.local/bin`. `pipeline:tiles` uses `tippecanoe` from PATH,
+  or `$TIPPECANOE`.
 
 Disk: the global FileGDBs are large: RiverATLAS is 7 GB and GIRES is 3.3 GB extracted.
 `pipeline:rivers` caches the basin's rows from each to Parquet. After that, the FileGDB folders can be
@@ -145,18 +152,36 @@ Writes the Phase 1 artifacts:
 
 Only RiverATLAS fields whose catalog units were checked are exported (`ele_mt_cmn`, `sgr_dk_rav`).
 
+### `npm run pipeline:mask`
+
+Polygons for the "Visible Land" slider, from `pipeline/map.config.json`. For each level in
+`mask.baseHalfWidthKm`, every reach is buffered on each side by that width times
+`mask.strahlerFactor[order]`, in South America Albers (ESRI:102033). Endorheic reaches are included.
+The buffers are unioned and clipped to the basin to make the visible "hole". The mask is the
+`bounds` rectangle minus the hole. A final level uses the whole basin as the hole. The app sets the
+same `bounds` as the map's `maxBounds`, so the edge of the mask is never on screen.
+
+Output: `data/work/tiles/mask.geojson`. The report lists each level's visible area, its % of the
+basin and its vertex count. It checks that every geometry is valid, that the visible area grows
+with each level, and that the last level is the whole basin.
+
+### `npm run pipeline:tiles`
+
+Runs tippecanoe with the feature and tile-size limits off:
+
+- `public/tiles/rivers.pmtiles`: layer `reaches`, with the properties the map styles on and a
+  per-feature minzoom from `reachMinzoomByStrahler`; layer `basin`, the outline.
+- `public/tiles/mask.pmtiles`: layer `mask`, one feature per level.
+
+The report decodes the tiles back. It checks that every reach is present from its minzoom up and
+never before it. The only exception is a reach shorter than one tile unit at that zoom (an eighth of
+a pixel), which tippecanoe drops because it collapses to a point. It also checks that every mask
+level is present at each checked zoom, and records file sizes and the tippecanoe version.
+
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
-`export`.
+`export` → `mask` → `tiles`.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.
-
-## Planned steps (Phase 1, not yet implemented)
-
-1. `pipeline:download`: fetch HydroRIVERS SA, HydroBASINS SA, and RiverATLAS (global) into `data/raw/`, with SHA-256 checksums.
-2. `pipeline:basin`: traverse HydroBASINS upstream from the Río Negro mouth via `NEXT_DOWN`, then dissolve.
-3. `pipeline:rivers`: clip reaches to the basin and join RiverATLAS attributes.
-4. `pipeline:named`: trace the main stems and aggregate metrics. Names come from a manual `names.json`.
-5. `pipeline:export`: write NDJSON for Mongo and GeoJSON, then PMTiles.
 
 Rule: inspect every source schema before using attribute names. Never guess them.
