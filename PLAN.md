@@ -63,7 +63,7 @@ CLAUDE.md  PLAN.md
 
 - [x] Download South America HydroRIVERS, RiverATLAS, HydroBASINS into `data/raw/` with checksums
 - [x] Delineate the basin: traverse HydroBASINS upstream from the Río Negro mouth via `NEXT_DOWN`, dissolve
-- [ ] Clip river reaches to the basin and join RiverATLAS attributes
+- [x] Clip river reaches to the basin and join RiverATLAS attributes (endorheic reaches kept and flagged `network: "endorheic"`)
 - [ ] Build "named rivers": trace main stem upstream from each confluence choosing the branch with the largest upstream area; aggregate length, source/mouth elevation, discharge at outlet
 - [ ] Manual `names.json` for the ~10 largest rivers (HydroRIVERS has no names)
 - [ ] Outputs: NDJSON for Mongo, GeoJSON for tiles, `report.json`
@@ -73,6 +73,7 @@ CLAUDE.md  PLAN.md
 
 - [ ] MapLibre + imagery + PMTiles rivers (tippecanoe `minzoom` by Strahler order so small rivers appear on zoom)
 - [ ] Basin mask + Visible Land slider
+- [ ] Filter to hide endorheic reaches (`network = "endorheic"`), with UI strings in both locales
 - [ ] Dark/light toggle, zoom controls, scale bar
 - **Done when:** basin silhouette renders, small rivers appear progressively, slider is smooth.
 

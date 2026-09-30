@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "pipeline:download": "tsx pipeline/steps/download.ts",
     "pipeline:inspect": "tsx pipeline/steps/inspect.ts",
-    "pipeline:basin": "tsx pipeline/steps/basin.ts"
+    "pipeline:basin": "tsx pipeline/steps/basin.ts",
+    "pipeline:rivers": "tsx pipeline/steps/rivers.ts"
   },
   "dependencies": {
     "mongodb": "^7.7.0",

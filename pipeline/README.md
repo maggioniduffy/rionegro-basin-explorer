@@ -9,7 +9,7 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 Final artifacts go to `data/out/`: PMTiles for the map and NDJSON for `npm run seed`.
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: **Phase 1 in progress.** `download`, `inspect` and `basin` are implemented; the other steps are planned.
+Status: **Phase 1 in progress.** `download`, `inspect`, `basin` and `rivers` are implemented; the other steps are planned.
 
 ## Prerequisites
 
@@ -63,6 +63,30 @@ a "virtual" `NEXT_DOWN` (TechDoc v1c), and `UP_AREA` excludes those regions:
 
 The report compares the outlet's `UP_AREA`, the sums of `SUB_AREA`, and the dissolved polygon's
 geodesic and Albers areas. It also checks the result against `reference.areaKm2` ± `tolerancePct`.
+
+### `npm run pipeline:rivers`
+
+Selects every HydroRIVERS reach whose `HYBAS_L12` is a basin member and tags each one with a
+`network` value:
+
+- `connected`: drains to the Río Negro outlet.
+- `endorheic`: in an inland drainage inside the basin outline.
+
+The map can use `network` to hide endorheic reaches, and network traversal skips them. Nothing is
+filtered by flow. HydroRIVERS keeps intermittent streams, but no v1.0 source labels them.
+
+It then joins every RiverATLAS column by `HYRIV_ID`. The first run scans the global FileGDB (about
+3 minutes) and caches the basin subset to `data/work/rivers/riveratlas_basin.parquet`, keyed by a
+hash of the reach IDs. After that the 7 GB FileGDB is only needed if the basin changes.
+
+The report checks:
+
+- orphans (a downstream ID outside the selection);
+- a single connected outlet;
+- completeness against the outlet's `MAIN_RIV`;
+- a midpoint-in-polygon cross-check;
+- a 1:1 join with matching shared fields (float32 tolerance for `LENGTH_KM` and `UPLAND_SKM`);
+- `LENGTH_KM` against geodesic length.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.
