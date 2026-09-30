@@ -1,5 +1,5 @@
 {
-  "$comment": "Inputs for pipeline:basin. outletSearchBbox is a search window, not a coordinate: the step picks the sea-draining reach with the largest upstream area inside it and reports it for review. The Río Colorado mouth (~39.8°S) is outside it on purpose. reference.areaKm2 stays null until an official figure is agreed (PLAN.md open decision).",
+  "$comment": "Inputs for pipeline:basin. outletSearchBbox is a search window, not a coordinate: the step picks the sea-draining reach with the largest upstream area inside it and reports it for review; the Río Colorado mouth (~39.8°S) is outside it on purpose. reference is only a sanity check: the project's basin area is the computed polygon area, and AIC's figure is a rounded number from a descriptive page.",
   "outletSearchBbox": {
     "xmin": -63.5,
     "ymin": -41.6,
@@ -7,8 +7,8 @@
     "ymax": -40.4
   },
   "reference": {
-    "areaKm2": null,
-    "source": null,
+    "areaKm2": 140000,
+    "source": "AIC, 'La Cuenca', https://www.aic.gob.ar/sitio/lacuenca (read 2026-09-30): 'Drena una superficie de 140.000 Km2' (Limay, Neuquén and Negro)",
     "tolerancePct": 10
   }
 }
