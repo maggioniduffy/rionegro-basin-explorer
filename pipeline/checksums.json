@@ -19,5 +19,12 @@
     "sha256": "b0cce3819c995a7c8cf62be4102626415b799d84bdea37d38b56da2248e9dc4d",
     "bytes": 2506480742,
     "downloadedAt": "2026-09-30"
+  },
+  "gires": {
+    "file": "GIRES_v10_gdb.zip",
+    "url": "https://ndownloader.figshare.com/files/28280484",
+    "sha256": "c7cdf0b97c1f63395813053a161eee6142b9544750723dc09a2258fb07aa2b74",
+    "bytes": 1699860028,
+    "downloadedAt": "2026-09-30"
   }
 }

@@ -56,17 +56,19 @@ async function sha256File(file: string): Promise<string> {
 async function fetchTo(
   src: Source,
   dest: string,
-): Promise<{ sha256: string; bytes: number }> {
+): Promise<{ sha256: string; md5: string; bytes: number }> {
   const res = await fetch(src.url, { redirect: "follow" });
   if (!res.ok || !res.body)
     throw new Error(`${src.id}: HTTP ${res.status} for ${src.url}`);
   const total = Number(res.headers.get("content-length")) || src.approxBytes;
   const hash = createHash("sha256");
+  const md5 = createHash("md5");
   let bytes = 0;
   let lastPct = -10;
   const meter = new Transform({
     transform(chunk: Buffer, _enc, cb) {
       hash.update(chunk);
+      md5.update(chunk);
       bytes += chunk.length;
       const pct = Math.floor((bytes / total) * 100);
       if (pct >= lastPct + 10) {
@@ -84,7 +86,7 @@ async function fetchTo(
     createWriteStream(part),
   );
   await rename(part, dest);
-  return { sha256: hash.digest("hex"), bytes };
+  return { sha256: hash.digest("hex"), md5: md5.digest("hex"), bytes };
 }
 
 async function dirSize(dir: string): Promise<{ files: number; bytes: number }> {
@@ -136,7 +138,14 @@ async function main() {
       console.log(
         `  fetching ~${(src.approxBytes / 1e6).toFixed(0)} MB from ${src.url}`,
       );
-      ({ sha256, bytes } = await fetchTo(src, archive));
+      let md5: string;
+      ({ sha256, md5, bytes } = await fetchTo(src, archive));
+      if (src.md5 && md5 !== src.md5) {
+        await rm(archive);
+        throw new Error(
+          `${src.id}: MD5 ${md5} does not match the publisher's ${src.md5}; archive deleted.`,
+        );
+      }
       if (entry && entry.sha256 !== sha256 && !acceptNew) {
         throw new Error(
           `${src.id}: downloaded checksum ${sha256} differs from manifest ${entry.sha256}. ` +

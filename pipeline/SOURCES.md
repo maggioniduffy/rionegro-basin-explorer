@@ -6,15 +6,16 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 
 ## Summary
 
-| Source                                 | Used for                                      | License                                                            | Commercial use                      | Verified   | Downloaded                   |
-| -------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- | ---------- | ---------------------------- |
-| HydroRIVERS v1.0                       | River network geometry, topology              | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution | Yes                                 | 2026-09-29 | 2026-09-30                   |
-| HydroBASINS v1c                        | Basin delineation, sub-basins                 | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution | Yes                                 | 2026-09-29 | 2026-09-30                   |
-| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.) | CC BY 4.0                                                          | Yes                                 | 2026-09-29 | 2026-09-30 (RiverATLAS only) |
-| IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)     | **Not verified** (believed CC BY 4.0)                              | Unknown                             | —          | —                            |
-| OpenStreetMap                          | Localities, reservoirs, dams (if used)        | ODbL 1.0                                                           | Yes (share-alike on the database)   | —          | —                            |
-| Imagery: EOX Sentinel-2 Cloudless      | Candidate satellite basemap                   | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license  | Only with an EOX commercial license | 2026-09-29 | n/a (tiles)                  |
-| Imagery: Esri World Imagery            | Candidate satellite basemap                   | **Not verified** (Esri terms of use)                               | Unknown                             | —          | n/a (tiles)                  |
+| Source                                 | Used for                                      | License                                                               | Commercial use                      | Verified   | Downloaded                   |
+| -------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------- | ---------- | ---------------------------- |
+| HydroRIVERS v1.0                       | River network geometry, topology              | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution    | Yes                                 | 2026-09-29 | 2026-09-30                   |
+| HydroBASINS v1c                        | Basin delineation, sub-basins                 | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution    | Yes                                 | 2026-09-29 | 2026-09-30                   |
+| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.) | CC BY 4.0                                                             | Yes                                 | 2026-09-29 | 2026-09-30 (RiverATLAS only) |
+| GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach            | CC BY 4.0 per figshare metadata (README wording ambiguous, see below) | Yes, if CC BY                       | 2026-09-30 | 2026-09-30                   |
+| IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)     | **Not verified** (believed CC BY 4.0)                                 | Unknown                             | —          | —                            |
+| OpenStreetMap                          | Localities, reservoirs, dams (if used)        | ODbL 1.0                                                              | Yes (share-alike on the database)   | —          | —                            |
+| Imagery: EOX Sentinel-2 Cloudless      | Candidate satellite basemap                   | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license     | Only with an EOX commercial license | 2026-09-29 | n/a (tiles)                  |
+| Imagery: Esri World Imagery            | Candidate satellite basemap                   | **Not verified** (Esri terms of use)                                  | Unknown                             | —          | n/a (tiles)                  |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
 
@@ -63,6 +64,25 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   (The authors and DOI are verified from the product page. The title and journal were written from memory; confirm them via the DOI.)
 - Caveat (CLAUDE.md rule 4): discharge and population are modeled long-term averages
   (1971–2000) and do not reflect current dam regulation.
+
+## GIRES v1.0: global prevalence of non-perennial rivers and streams
+
+- URL: https://doi.org/10.6084/m9.figshare.14633022 (figshare article 14633022)
+- Download: `GIRES_v10_gdb.zip` (1,699,860,028 bytes, figshare MD5 `75d41f596ee84cb7b78ed55b5b85e878`,
+  verified by `pipeline:download`), via `https://ndownloader.figshare.com/files/28280484`.
+- Content: HydroRIVERS/RiverATLAS reaches with modeled mean annual flow > 0, joined by `HYRIV_ID`.
+  We use `predprob1`/`predcat1` (probability/class that a reach stops flowing ≥ 1 day a year) and
+  `predprob30`/`predcat30` (≥ 30 days). Class 1 = non-perennial (probability ≥ 50%).
+- License: figshare metadata says **CC BY 4.0**, and the README links the CC BY 4.0 legal code, but
+  its sentence reads "Creative Commons Attribution-ShareAlike 4.0 International License (CC-BY-4.0
+  License)". We treat it as CC BY 4.0. If ShareAlike were intended, derived data that includes these
+  fields would need to be CC BY-SA. To resolve it, ask the authors (contacts in the README).
+- Citation (as requested in the README): Messager, M. L., Lehner, B., Cockburn, C., Lamouroux, N.,
+  Pella, H., Snelder, T., Tockner, K., Trautmann, T., Watt, C. & Datry, T. (2021). Global prevalence
+  of non-perennial rivers and streams. Nature. https://doi.org/10.1038/s41586-021-03565-5.
+  Also link the repository DOI above.
+- Caveat: these are random-forest **model predictions**, not observations. The UI must say so, like
+  the HydroATLAS caveat (CLAUDE.md rule 4).
 
 ## IGN Argentina: SIG layers
 

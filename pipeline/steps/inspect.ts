@@ -6,7 +6,7 @@
  * layers) and a few sample rows without geometry.
  */
 import { existsSync } from "node:fs";
-import { mkdir, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { lit, openDb, type Db, type Row } from "../lib/duckdb";
 import { rawPath, rel, workPath } from "../lib/paths";
@@ -99,7 +99,7 @@ async function main() {
   const db = await openDb();
   const outDir = workPath("inspect");
   await mkdir(outDir, { recursive: true });
-  const layers: Record<string, unknown>[] = [];
+  const written = new Set<string>();
 
   try {
     for (const src of SOURCES) {
@@ -112,20 +112,12 @@ async function main() {
             `${src.id}: ${layerMeta.name} (${layerMeta.feature_count} features)`,
           );
           const info = await inspectLayer(db, dataset, layerMeta);
+          const name = `${src.id}__${layerMeta.name}.json`;
           await writeFile(
-            path.join(outDir, `${src.id}__${layerMeta.name}.json`),
-            JSON.stringify(info, null, 2) + "\n",
+            path.join(outDir, name),
+            JSON.stringify({ source: src.id, ...info }, null, 2) + "\n",
           );
-          layers.push({
-            source: src.id,
-            layer: info.layer,
-            dataset: info.dataset,
-            featureCount: info.featureCount,
-            crs: info.crs,
-            extent: info.extent,
-            columnCount: info.columns.length,
-            columns: info.columns.map((c) => `${c.name}:${c.type}`),
-          });
+          written.add(name);
         }
       }
     }
@@ -133,6 +125,33 @@ async function main() {
     db.close();
   }
 
+  // Summarize every per-layer file, including ones from earlier runs whose source
+  // was since deleted to save disk (e.g. the global RiverATLAS FileGDB).
+  const layers = [];
+  for (const name of (await readdir(outDir)).sort()) {
+    if (!name.includes("__") || !name.endsWith(".json")) continue;
+    const info = JSON.parse(
+      await readFile(path.join(outDir, name), "utf8"),
+    ) as {
+      layer: string;
+      dataset: string;
+      featureCount: number;
+      crs: string | null;
+      extent: unknown;
+      columns: { name: string; type: string }[];
+    };
+    layers.push({
+      source: name.split("__")[0],
+      layer: info.layer,
+      dataset: info.dataset,
+      inspectedThisRun: written.has(name),
+      featureCount: info.featureCount,
+      crs: info.crs,
+      extent: info.extent,
+      columnCount: info.columns.length,
+      columns: info.columns.map((c) => `${c.name}:${c.type}`),
+    });
+  }
   await writeReport("inspect", { layerCount: layers.length, layers });
 }
 
