@@ -18,7 +18,9 @@
     "visibleLandMin": "Rivers only",
     "visibleLandMax": "Whole basin",
     "hideEndorheic": "Hide endorheic streams",
-    "hideEndorheicHint": "Inland drainage inside the basin outline that does not reach the sea."
+    "hideEndorheicHint": "Inland drainage inside the basin outline that does not reach the sea.",
+    "minimize": "Minimize panel",
+    "expand": "Show panel"
   },
   "legend": {
     "title": "Flow regime",

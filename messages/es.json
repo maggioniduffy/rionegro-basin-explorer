@@ -18,7 +18,9 @@
     "visibleLandMin": "Solo ríos",
     "visibleLandMax": "Toda la cuenca",
     "hideEndorheic": "Ocultar cursos endorreicos",
-    "hideEndorheicHint": "Drenaje interno dentro del contorno de la cuenca que no llega al mar."
+    "hideEndorheicHint": "Drenaje interno dentro del contorno de la cuenca que no llega al mar.",
+    "minimize": "Minimizar panel",
+    "expand": "Mostrar panel"
   },
   "legend": {
     "title": "Régimen de flujo",
