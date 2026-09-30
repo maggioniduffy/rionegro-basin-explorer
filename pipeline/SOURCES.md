@@ -14,7 +14,7 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 | GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                  | CC BY 4.0 per figshare metadata (README wording ambiguous, see below) | Yes, if CC BY                       | 2026-09-30 | 2026-09-30                        |
 | IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)                           | **Not verified** (believed CC BY 4.0)                                 | Unknown                             | —          | —                                 |
 | OpenStreetMap                          | River name evidence (Phase 1); localities, reservoirs, dams (later) | ODbL 1.0                                                              | Yes (share-alike on the database)   | 2026-09-30 | 2026-09-30 (Overpass, basin bbox) |
-| Imagery: EOX Sentinel-2 Cloudless      | Candidate satellite basemap                                         | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license     | Only with an EOX commercial license | 2026-09-29 | n/a (tiles)                       |
+| Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                          | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license     | Only with an EOX commercial license | 2026-09-29 | n/a (tiles)                       |
 | Imagery: Esri World Imagery            | Candidate satellite basemap                                         | **Not verified** (Esri terms of use)                                  | Unknown                             | —          | n/a (tiles)                       |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
@@ -135,7 +135,7 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   verified**. The OSMF "Substantial – Guideline" on the OSM wiki needs reading before release. We
   attribute OSM either way (Phase 8 attributions page).
 
-## Satellite imagery (provider not chosen; decided in Phase 2)
+## Satellite imagery (EOxCloudless 2024, chosen in Phase 2)
 
 The tile URL comes from `NEXT_PUBLIC_IMAGERY_TILE_URL`, so the provider can be swapped.
 
@@ -148,10 +148,16 @@ The tile URL comes from `NEXT_PUBLIC_IMAGERY_TILE_URL`, so the provider can be s
   "EOX Commercial Attribution-RestrictedUse 1.2 License".
 - Required attribution: "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH
   (Contains modified Copernicus Sentinel data <year>)"
-- Open questions:
-  - which tile endpoint to use;
-  - whether the public tile service has usage limits;
-  - whether the site will stay non-commercial.
+- Chosen 2026-09-30, on the condition that the site stays non-commercial.
+- Endpoint: `https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg`.
+  It is the `s2cloudless-2024_3857` layer in the WMTS capabilities, and responses carry
+  `access-control-allow-origin: *` and a 7-day cache (checked 2026-09-30). The layer abstract repeats
+  the attribution and the CC BY-NC-SA 4.0 license.
+- In the app, the attribution text is set in `NEXT_PUBLIC_IMAGERY_ATTRIBUTION` (see `.env.example`).
+  It is always shown in the expanded map attribution control, because the license page says "for
+  interactive maps, the credit should appear in the map interface".
+- Open question: the documentation pages state **no usage limits or fair-use terms** for the free
+  tile service. Ask EOX before a public launch with real traffic.
 
 ### Esri World Imagery
 

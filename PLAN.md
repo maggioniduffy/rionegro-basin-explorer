@@ -17,27 +17,9 @@ and a strip of land around it is visible, with river panels and a sub-basin view
 - **"Visible land" mask (prototype):** black overlay with a precomputed river-buffer "hole" at a few widths, driven by the slider. Fallback if edges/performance are poor: a raster reveal grid with a custom tile protocol, as in Amazon Basin Explorer.
 - **Imagery:** tile URL from an env var so the provider can be swapped. Verify the license/attribution terms of the chosen provider (Esri World Imagery is the reference app's choice) before a public deploy.
 - **Data pipeline:** TS scripts (`tsx`) orchestrating DuckDB, GDAL/ogr2ogr and tippecanoe. Python only if DEM-based delineation is needed.
-- **i18n:** next-intl 4 with locale-prefixed routes (`/en`, `/es`). The default locale is `es`, `/` is redirected by `Accept-Language`, and messages live in `/messages`. The locale comes from `next/root-params` and the Next 16 `proxy.ts` handles routing. Proper nouns are not translated. Units toggle km/mi independently of locale.
+- **i18n:** next-intl, locale-prefixed routes (`/en`, `/es`), messages in `/messages`. Verify current next-intl version/API against the docs when installing. Proper nouns are not translated; units toggle km/mi independently of locale.
 - **State:** Zustand synced to URL (`?r=<river>&s=<subbasin>&lang` via route).
 - **Hosting/cost:** Vercel + Atlas M0. PMTiles in `/public` if small, otherwise object storage with HTTP Range support. Check limits and pricing for each before committing.
-- **Phase 0 decisions (2026-09-29):**
-  - Imagery: undecided until Phase 2. EOX is recorded in `SOURCES.md` (CC BY-NC-SA, verified); Esri's terms are still unverified.
-  - PMTiles: `/public` for now, pending a Range-request check on Vercel and the actual size after Phase 1.
-  - Region: São Paulo for Atlas and Vercel, if the free Atlas tier (M0) is offered there.
-  - Deploy: GitHub repo + Vercel Git integration.
-  - CI: GitHub Actions runs `npm run check`. Playwright stays local until Phase 2.
-  - `/api/health` pings Mongo to prove the wiring.
-  - Dark theme is the default.
-- **Phase 1 decisions (2026-09-30):**
-  - Basin area shown in the app is the computed HydroBASINS polygon area, which includes the endorheic parts virtually linked to the basin: 136,204 km².
-  - AIC's 140,000 km² ("La Cuenca" page, a rounded figure) is only a sanity check, ±10%. The latest result is −2.7%.
-  - The surface-connected area (113,040 km², matching HydroBASINS `UP_AREA`) stays in the report as context.
-  - DuckDB comes from the npm package `@duckdb/node-api`.
-  - Only small outputs are committed (`report.json`, `rivers.ndjson`). `reaches.ndjson` and GeoJSON are regenerated locally.
-  - Raw data is not stored in the cloud; `pipeline/checksums.json` pins the inputs.
-  - Endorheic reaches are kept and flagged, and a map filter can hide them (Phase 2).
-  - Intermittent streams are kept. They are labeled from GIRES v1.0 (modeled; caveat in the UI like HydroATLAS), and reaches without a GIRES prediction stay null.
-  - Global FileGDBs (RiverATLAS, GIRES) are deleted after the basin subset is cached.
 
 ## Repo layout
 
@@ -50,42 +32,41 @@ and a strip of land around it is visible, with river panels and a sub-basin view
 /data                raw/ work/ (gitignored) · out/ (tiles, NDJSON)
 /scripts             seed.ts
 CLAUDE.md  PLAN.md
+.claude/             agents/ and skills/ (committed)
 ```
 
-## Phase 0 — Setup & decisions
+## Phase 0 — Setup & decisions ✅
 
 - [x] `create-next-app` (TS strict, Tailwind, ESLint), Prettier, `npm run check`
 - [x] next-intl wired with `/en` and `/es`, locale switcher, one translated string as a smoke test
-- [ ] Atlas M0 cluster (manual), Vercel project, env vars (`MONGODB_URI`, imagery URL)
-- [~] Decide: imagery provider, PMTiles hosting (PMTiles: `/public` for now; imagery deferred to Phase 2)
+- [x] Atlas M0 cluster, Vercel project, env vars (`MONGODB_URI`, imagery URL)
+- [x] Decide: imagery provider, PMTiles hosting
 - [x] `pipeline/SOURCES.md` started (HydroSHEDS/HydroATLAS, IGN, OSM, imagery): license + citation for each
 - [x] Playwright set up with one smoke screenshot
+- [x] `.claude/agents/`: `data-inspector`, `pipeline-runner`, `license-checker`; skill `inspect-dataset` (verify frontmatter fields in the Claude Code docs first)
 - **Done when:** repo runs, `npm run check` passes, empty deploy is live in both locales.
 
 ## Phase 1 — Pipeline v1 (HydroRIVERS / HydroATLAS / HydroBASINS only) ✅
 
 - [x] Download South America HydroRIVERS, RiverATLAS, HydroBASINS into `data/raw/` with checksums
 - [x] Delineate the basin: traverse HydroBASINS upstream from the Río Negro mouth via `NEXT_DOWN`, dissolve
-- [x] Clip river reaches to the basin and join RiverATLAS attributes (endorheic reaches kept and flagged `network: "endorheic"`)
-- [x] Build "named rivers": trace main stem upstream from each confluence choosing the branch with the largest upstream area; aggregate length, source/mouth elevation, discharge at outlet (branches that are another named river's mouth are skipped)
-- [x] Manual `names.json` for the ~10 largest rivers (HydroRIVERS has no names): 15 rivers, OSM evidence, approved 2026-09-30
-- [x] Outputs: NDJSON for Mongo, GeoJSON for tiles, `report.json` (`data/out/report.json`: 8,016 reaches, 35,083 km, 0 orphans, basin 136,204 km² = −2.7% vs AIC)
+- [x] Clip river reaches to the basin and join RiverATLAS attributes
+- [x] Build "named rivers": trace main stem upstream from each confluence choosing the branch with the largest upstream area; aggregate length, source/mouth elevation, discharge at outlet
+- [x] Manual `names.json` for the ~10 largest rivers (HydroRIVERS has no names)
+- [x] Outputs: NDJSON for Mongo, GeoJSON for tiles, `report.json`
 - **Done when:** report shows counts, total km, zero orphan reaches, and basin area within a sanity range against an official figure we agree on.
 
-## Phase 2 — Base map
+## Phase 2 — Base map ✅
 
-- [ ] MapLibre + imagery + PMTiles rivers (tippecanoe `minzoom` by Strahler order so small rivers appear on zoom)
-- [ ] Basin mask + Visible Land slider
-- [ ] Filter to hide endorheic reaches (`network = "endorheic"`), with UI strings in both locales
-- [ ] Style non-perennial reaches (GIRES `predcat1`) distinctly, with a legend and modeled-data note in both locales
-- [ ] Dark/light toggle, zoom controls, scale bar
+- [x] MapLibre + imagery + PMTiles rivers (tippecanoe `minzoom` by Strahler order so small rivers appear on zoom)
+- [x] Basin mask + Visible Land slider
+- [x] Dark/light toggle, zoom controls, scale bar
 - **Done when:** basin silhouette renders, small rivers appear progressively, slider is smooth.
 
 ## Phase 3 — Mongo & river panel
 
 - [ ] `seed.ts` idempotent (bulk upsert); indexes (unique slug, text on names)
 - [ ] `/api/rivers/[id]` and `/api/search` with `Cache-Control` for CDN caching
-- [ ] Read RiverATLAS catalog sheets (units and scale factors) for inu_pc, lka_pc, pop_ct, dor_pc before exporting them
 - [ ] River panel (length, distance to sea, source/mouth elevation, gradient, Strahler order, discharge, flooded %, lakes %, population, dam regulation %) with the modeled-data caveat in both languages
 - [ ] Search box; shareable URL state
 - **Done when:** clicking a river opens real data; the link reproduces the state.
@@ -131,6 +112,7 @@ CLAUDE.md  PLAN.md
 
 - Imagery provider and license
 - PMTiles hosting (`/public` vs object storage)
+- Official basin area figure for validation
 - Exact sub-basin list per level (validate against AIC/official cartography)
 - Whether Mongo stays or a static JSON is enough (revisit after Phase 3)
 
