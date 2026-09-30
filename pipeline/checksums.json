@@ -1,0 +1,23 @@
+{
+  "hydrorivers": {
+    "file": "HydroRIVERS_v10_sa_shp.zip",
+    "url": "https://data.hydrosheds.org/file/HydroRIVERS/HydroRIVERS_v10_sa_shp.zip",
+    "sha256": "38bfdcdfcc0698b1b37c1700434bcd65e792244d704153f055969f356d5cc7d5",
+    "bytes": 95257204,
+    "downloadedAt": "2026-09-30"
+  },
+  "hydrobasins": {
+    "file": "hybas_sa_lev01-12_v1c.zip",
+    "url": "https://data.hydrosheds.org/file/hydrobasins/standard/hybas_sa_lev01-12_v1c.zip",
+    "sha256": "fb012e48419bda0a7f4d0ebc56efcd906ad0e3bde324b9c70fac9693e2d21a72",
+    "bytes": 334160720,
+    "downloadedAt": "2026-09-30"
+  },
+  "riveratlas": {
+    "file": "RiverATLAS_Data_v10.gdb.zip",
+    "url": "https://ndownloader.figshare.com/files/20087321",
+    "sha256": "b0cce3819c995a7c8cf62be4102626415b799d84bdea37d38b56da2248e9dc4d",
+    "bytes": 2506480742,
+    "downloadedAt": "2026-09-30"
+  }
+}

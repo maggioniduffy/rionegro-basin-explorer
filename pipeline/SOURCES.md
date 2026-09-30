@@ -2,19 +2,19 @@
 
 Keep this file current (CLAUDE.md rule 9). A license counts as **verified** only when
 someone has read the provider's own license text; the date says when. "Downloaded" is
-filled in by the pipeline step that fetches the file.
+taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 
 ## Summary
 
-| Source                                 | Used for                                      | License                                                            | Commercial use                      | Verified   | Downloaded  |
-| -------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- | ---------- | ----------- |
-| HydroRIVERS v1.0                       | River network geometry, topology              | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution | Yes                                 | 2026-09-29 | —           |
-| HydroBASINS v1c                        | Basin delineation, sub-basins                 | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution | Yes                                 | 2026-09-29 | —           |
-| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.) | CC BY 4.0                                                          | Yes                                 | 2026-09-29 | —           |
-| IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)     | **Not verified** (believed CC BY 4.0)                              | Unknown                             | —          | —           |
-| OpenStreetMap                          | Localities, reservoirs, dams (if used)        | ODbL 1.0                                                           | Yes (share-alike on the database)   | —          | —           |
-| Imagery: EOX Sentinel-2 Cloudless      | Candidate satellite basemap                   | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license  | Only with an EOX commercial license | 2026-09-29 | n/a (tiles) |
-| Imagery: Esri World Imagery            | Candidate satellite basemap                   | **Not verified** (Esri terms of use)                               | Unknown                             | —          | n/a (tiles) |
+| Source                                 | Used for                                      | License                                                            | Commercial use                      | Verified   | Downloaded                   |
+| -------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- | ---------- | ---------------------------- |
+| HydroRIVERS v1.0                       | River network geometry, topology              | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution | Yes                                 | 2026-09-29 | 2026-09-30                   |
+| HydroBASINS v1c                        | Basin delineation, sub-basins                 | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution | Yes                                 | 2026-09-29 | 2026-09-30                   |
+| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.) | CC BY 4.0                                                          | Yes                                 | 2026-09-29 | 2026-09-30 (RiverATLAS only) |
+| IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)     | **Not verified** (believed CC BY 4.0)                              | Unknown                             | —          | —                            |
+| OpenStreetMap                          | Localities, reservoirs, dams (if used)        | ODbL 1.0                                                           | Yes (share-alike on the database)   | —          | —                            |
+| Imagery: EOX Sentinel-2 Cloudless      | Candidate satellite basemap                   | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license  | Only with an EOX commercial license | 2026-09-29 | n/a (tiles)                  |
+| Imagery: Esri World Imagery            | Candidate satellite basemap                   | **Not verified** (Esri terms of use)                               | Unknown                             | —          | n/a (tiles)                  |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
 
@@ -51,6 +51,10 @@ filled in by the pipeline step that fetches the file.
 
 - URL: https://www.hydrosheds.org/products/hydroatlas
 - Downloads: global only, 1.4 to 4 GB depending on dataset and format. No South America extract is published.
+  - RiverATLAS (FileGDB, 2.33 GB as listed; 2,506,480,742 bytes served), linked from the product page as
+    `https://figshare.com/ndownloader/files/20087321`. That host blocks non-browser clients, so the pipeline
+    uses `https://ndownloader.figshare.com/files/20087321`, which serves the same file
+    (`RiverATLAS_Data_v10.gdb.zip`) via a redirect to S3.
 - License: CC BY 4.0.
 - Citation: Linke, S., Lehner, B., Ouellet Dallaire, C., Ariwi, J., Grill, G., Anand, M.,
   Beames, P., Burchard-Levine, V., Maxwell, S., Moidu, H., Tan, F., Thieme, M. (2019): Global
@@ -69,6 +73,30 @@ filled in by the pipeline step that fetches the file.
   fetched on 2026-09-29 (404 at the guessed URLs). We believe it is CC BY 4.0 with credit to
   "Instituto Geográfico Nacional de la República Argentina". To check, open the link from the layers
   page in a browser and record the exact text here before Phase 5 (the IGN gate).
+- Local copy: `data/raw/ign/` (not downloaded by the pipeline; origin and download date unknown).
+  Six national layers in WGS84 (EPSG:4326) with attribute text in **ISO-8859-1** (per the `.cst`
+  files; read with `open_options=['ENCODING=ISO-8859-1']`). Layer codes and `objeto` values:
+  - BH140 `Corriente de agua` (river polygons)
+  - BH130 `Embalse` (reservoirs)
+  - `Espejo de agua perenne`
+  - `Espejo de agua intermitente`
+  - BI020 `Muro de embalse` (dam wall lines)
+  - BH051 `Dique` (dam points)
+
+  There is **no watercourse-line layer and no basin polygon** in this copy. The Phase 5 gate needs the
+  line layer downloaded.
+
+## ALOS PALSAR RTC scene (ASF), local only
+
+- Local copy: `data/raw/alos/AP_27847_PLR_F6470_RT1*` (origin unknown). ALOS PALSAR radiometric terrain
+  corrected product processed by the Alaska Satellite Facility: HH/HV/VH/VV backscatter, 12.5 m DEM,
+  incidence and layover/shadow maps. Acquired 2011-04-17, UTM 19S.
+- Footprint 35.31°S–35.97°S, 70.57°W–71.12°W, probably north of the Río Negro basin (to be confirmed
+  against the delineated basin).
+- Terms: **not verified.** The ISO metadata asks users to credit ASF processing and says "research
+  agreements specify separate conditions by the Foreign Space Agencies" (JAXA for ALOS). Check ASF's
+  data use terms before using any of it in the app.
+- Not used by the pipeline.
 
 ## OpenStreetMap
 
