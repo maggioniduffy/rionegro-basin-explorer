@@ -52,3 +52,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# large pipeline output, regenerated locally (PLAN.md Phase 1 decisions)
+/data/out/reaches.ndjson

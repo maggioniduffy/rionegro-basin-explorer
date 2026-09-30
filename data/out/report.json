@@ -1,0 +1,217 @@
+{
+  "ok": true,
+  "checks": {
+    "basinChecks": true,
+    "riversChecks": true,
+    "namedChecks": true,
+    "zeroOrphanReaches": true,
+    "everyReachExported": true
+  },
+  "basin": {
+    "areaKm2": 136204,
+    "connectedAreaKm2": 113040,
+    "reference": {
+      "areaKm2": 140000,
+      "source": "AIC, 'La Cuenca', https://www.aic.gob.ar/sitio/lacuenca (read 2026-09-30): 'Drena una superficie de 140.000 Km2' (Limay, Neuquén and Negro)",
+      "tolerancePct": 10
+    },
+    "vsReferencePct": -2.71
+  },
+  "reaches": {
+    "total": 8016,
+    "connected": 6949,
+    "endorheic": 1067,
+    "inNamedRivers": 986,
+    "orphans": 0
+  },
+  "lengthKm": {
+    "total": 35082.8,
+    "connected": 29439.3,
+    "endorheic": 5643.5,
+    "namedRivers": 3510.5
+  },
+  "namedRivers": [
+    {
+      "id": "negro",
+      "flowsInto": "sea",
+      "lengthKm": 710.7,
+      "reaches": 164,
+      "mouthElevationM": 0,
+      "sourceElevationM": 260,
+      "dischargeM3s": 869.7,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "limay",
+      "flowsInto": "negro",
+      "lengthKm": 555.3,
+      "reaches": 194,
+      "mouthElevationM": 258,
+      "sourceElevationM": 1276,
+      "dischargeM3s": 762.2,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "neuquen",
+      "flowsInto": "negro",
+      "lengthKm": 598.4,
+      "reaches": 147,
+      "mouthElevationM": 260,
+      "sourceElevationM": 2008,
+      "dischargeM3s": 347.2,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "collon-cura",
+      "flowsInto": "limay",
+      "lengthKm": 93.3,
+      "reaches": 38,
+      "mouthElevationM": 577,
+      "sourceElevationM": 676,
+      "dischargeM3s": 328.1,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "agrio",
+      "flowsInto": "neuquen",
+      "lengthKm": 245.1,
+      "reaches": 66,
+      "mouthElevationM": 547,
+      "sourceElevationM": 1875,
+      "dischargeM3s": 102.7,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "alumine",
+      "flowsInto": "collon-cura",
+      "lengthKm": 185.3,
+      "reaches": 60,
+      "mouthElevationM": 675,
+      "sourceElevationM": 1361,
+      "dischargeM3s": 116.6,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "catan-lil",
+      "flowsInto": "collon-cura",
+      "lengthKm": 127.7,
+      "reaches": 37,
+      "mouthElevationM": 677,
+      "sourceElevationM": 1766,
+      "dischargeM3s": 31.3,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "chimehuin",
+      "flowsInto": "collon-cura",
+      "lengthKm": 126.6,
+      "reaches": 40,
+      "mouthElevationM": 646,
+      "sourceElevationM": 1411,
+      "dischargeM3s": 82.6,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "caleufu",
+      "flowsInto": "collon-cura",
+      "lengthKm": 120.3,
+      "reaches": 39,
+      "mouthElevationM": 576,
+      "sourceElevationM": 1092,
+      "dischargeM3s": 62.9,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "pichileufu",
+      "flowsInto": "limay",
+      "lengthKm": 138.1,
+      "reaches": 51,
+      "mouthElevationM": 579,
+      "sourceElevationM": 1150,
+      "dischargeM3s": 45.2,
+      "nonPerennialPct": 9.1
+    },
+    {
+      "id": "comallo",
+      "flowsInto": "limay",
+      "lengthKm": 128.3,
+      "reaches": 40,
+      "mouthElevationM": 577,
+      "sourceElevationM": 1385,
+      "dischargeM3s": 41.9,
+      "nonPerennialPct": 3.4
+    },
+    {
+      "id": "picun-leufu",
+      "flowsInto": "limay",
+      "lengthKm": 175.3,
+      "reaches": 25,
+      "mouthElevationM": 370,
+      "sourceElevationM": 1847,
+      "dischargeM3s": 24,
+      "nonPerennialPct": 83.7
+    },
+    {
+      "id": "covunco",
+      "flowsInto": "neuquen",
+      "lengthKm": 133.2,
+      "reaches": 32,
+      "mouthElevationM": 522,
+      "sourceElevationM": 1688,
+      "dischargeM3s": 36.6,
+      "nonPerennialPct": 44.3
+    },
+    {
+      "id": "curi-leuvu",
+      "flowsInto": "neuquen",
+      "lengthKm": 93,
+      "reaches": 26,
+      "mouthElevationM": 839,
+      "sourceElevationM": 2922,
+      "dischargeM3s": 26.4,
+      "nonPerennialPct": 0
+    },
+    {
+      "id": "trocoman",
+      "flowsInto": "neuquen",
+      "lengthKm": 79.9,
+      "reaches": 27,
+      "mouthElevationM": 977,
+      "sourceElevationM": 1806,
+      "dischargeM3s": 41.6,
+      "nonPerennialPct": 0
+    }
+  ],
+  "intermittence": [
+    {
+      "network": "connected",
+      "class_1day": "no prediction",
+      "n": 25,
+      "km": 112
+    },
+    {
+      "network": "connected",
+      "class_1day": "non-perennial",
+      "n": 3740,
+      "km": 17507.1
+    },
+    {
+      "network": "connected",
+      "class_1day": "perennial",
+      "n": 3184,
+      "km": 11820.2
+    },
+    {
+      "network": "endorheic",
+      "class_1day": "no prediction",
+      "n": 70,
+      "km": 401.7
+    },
+    {
+      "network": "endorheic",
+      "class_1day": "non-perennial",
+      "n": 997,
+      "km": 5241.7
+    }
+  ]
+}

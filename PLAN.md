@@ -62,14 +62,14 @@ CLAUDE.md  PLAN.md
 - [x] Playwright set up with one smoke screenshot
 - **Done when:** repo runs, `npm run check` passes, empty deploy is live in both locales.
 
-## Phase 1 — Pipeline v1 (HydroRIVERS / HydroATLAS / HydroBASINS only)
+## Phase 1 — Pipeline v1 (HydroRIVERS / HydroATLAS / HydroBASINS only) ✅
 
 - [x] Download South America HydroRIVERS, RiverATLAS, HydroBASINS into `data/raw/` with checksums
 - [x] Delineate the basin: traverse HydroBASINS upstream from the Río Negro mouth via `NEXT_DOWN`, dissolve
 - [x] Clip river reaches to the basin and join RiverATLAS attributes (endorheic reaches kept and flagged `network: "endorheic"`)
 - [x] Build "named rivers": trace main stem upstream from each confluence choosing the branch with the largest upstream area; aggregate length, source/mouth elevation, discharge at outlet (branches that are another named river's mouth are skipped)
 - [x] Manual `names.json` for the ~10 largest rivers (HydroRIVERS has no names): 15 rivers, OSM evidence, approved 2026-09-30
-- [ ] Outputs: NDJSON for Mongo, GeoJSON for tiles, `report.json`
+- [x] Outputs: NDJSON for Mongo, GeoJSON for tiles, `report.json` (`data/out/report.json`: 8,016 reaches, 35,083 km, 0 orphans, basin 136,204 km² = −2.7% vs AIC)
 - **Done when:** report shows counts, total km, zero orphan reaches, and basin area within a sanity range against an official figure we agree on.
 
 ## Phase 2 — Base map
@@ -85,6 +85,7 @@ CLAUDE.md  PLAN.md
 
 - [ ] `seed.ts` idempotent (bulk upsert); indexes (unique slug, text on names)
 - [ ] `/api/rivers/[id]` and `/api/search` with `Cache-Control` for CDN caching
+- [ ] Read RiverATLAS catalog sheets (units and scale factors) for inu_pc, lka_pc, pop_ct, dor_pc before exporting them
 - [ ] River panel (length, distance to sea, source/mouth elevation, gradient, Strahler order, discharge, flooded %, lakes %, population, dam regulation %) with the modeled-data caveat in both languages
 - [ ] Search box; shareable URL state
 - **Done when:** clicking a river opens real data; the link reproduces the state.

@@ -9,7 +9,7 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 Final artifacts go to `data/out/`: PMTiles for the map and NDJSON for `npm run seed`.
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers`, `candidates`, `osm-names` and `named` are implemented; the other steps are planned.
+Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers`, `candidates`, `osm-names`, `named` and `export` are implemented; Phase 1 is complete; the other steps are planned.
 
 ## Prerequisites
 
@@ -133,6 +133,20 @@ reaches.
 
 Checks: unique IDs, no reach in two rivers, every river flows into a named river or the sea, and
 exactly one river reaches the sea.
+
+### `npm run pipeline:export`
+
+Writes the Phase 1 artifacts:
+
+- `data/out/reaches.ndjson`: one document per reach (gitignored, about 3 MB).
+- `data/work/tiles/reaches.geojson` and `basin.geojson`: tippecanoe inputs for Phase 2.
+- `data/out/report.json`: the combined, committed report. It covers counts, km, orphans, the area
+  check and the named rivers.
+
+Only RiverATLAS fields whose catalog units were checked are exported (`ele_mt_cmn`, `sgr_dk_rav`).
+
+Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
+`export`.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.
