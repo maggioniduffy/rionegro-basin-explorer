@@ -37,7 +37,8 @@
     "webglError": "The map needs WebGL, which this browser does not support or has turned off.",
     "attribution": {
       "hydrosheds": "HydroSHEDS © WWF",
-      "gires": "GIRES v1.0 (Messager et al., 2021)"
+      "gires": "GIRES v1.0 (Messager et al., 2021)",
+      "hydrolakes": "HydroLAKES (Messager et al., 2016)"
     },
     "maplibre": {
       "title": "Map of the Río Negro basin",

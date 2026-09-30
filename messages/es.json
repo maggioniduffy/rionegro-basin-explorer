@@ -37,7 +37,8 @@
     "webglError": "El mapa necesita WebGL, que este navegador no admite o tiene desactivado.",
     "attribution": {
       "hydrosheds": "HydroSHEDS © WWF",
-      "gires": "GIRES v1.0 (Messager et al., 2021)"
+      "gires": "GIRES v1.0 (Messager et al., 2021)",
+      "hydrolakes": "HydroLAKES (Messager et al., 2016)"
     },
     "maplibre": {
       "title": "Mapa de la cuenca del Río Negro",

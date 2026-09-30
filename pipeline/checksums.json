@@ -26,5 +26,12 @@
     "sha256": "c7cdf0b97c1f63395813053a161eee6142b9544750723dc09a2258fb07aa2b74",
     "bytes": 1699860028,
     "downloadedAt": "2026-09-30"
+  },
+  "hydrolakes": {
+    "file": "HydroLAKES_polys_v10_shp.zip",
+    "url": "https://data.hydrosheds.org/file/hydrolakes/HydroLAKES_polys_v10_shp.zip",
+    "sha256": "9ef63498569dd7ccd0b8d8852da026e009a75f42d293f00e483f3b9fcfe8e1f9",
+    "bytes": 820295132,
+    "downloadedAt": "2026-09-30"
   }
 }

@@ -1,0 +1,35 @@
+{
+  "$comment": "Reservoirs that keep their main river line on the map (pipeline:lakes); lines inside every other lake are removed. Keyed by HydroLAKES Hylak_id; river is the pipeline:named id the step finds as the lake's main river (it fails if they disagree). Names use OpenStreetMap spelling (© OpenStreetMap contributors, ODbL); evidence is a point inside the HydroLAKES polygon falling inside exactly one named OSM water=reservoir relation's bounds (cached Overpass response, pipeline:osm-names). The list follows the project owner's request of 2026-09-30 (El Chocón, Alicurá, Piedra del Águila, Arroyito and the remaining Limay reservoir).",
+  "keepMainStem": [
+    {
+      "hylakId": 981,
+      "name": "Embalse Ezequiel Ramos Mexía",
+      "river": "limay",
+      "evidence": "HydroLAKES Lake_name 'Chocon Reservoir', Lake_type 2, Grand_id 2343; OSM relation/254369 (water=reservoir)"
+    },
+    {
+      "hylakId": 986,
+      "name": "Embalse Piedra del Águila",
+      "river": "limay",
+      "evidence": "HydroLAKES Lake_name empty, Lake_type 2, Grand_id 2345; OSM relation/5461887 (water=reservoir)"
+    },
+    {
+      "hylakId": 10590,
+      "name": "Embalse Alicurá",
+      "river": "limay",
+      "evidence": "HydroLAKES Lake_name 'Alicura', Lake_type 2, Grand_id 2346; OSM relation/6748578 (water=reservoir)"
+    },
+    {
+      "hylakId": 10571,
+      "name": "Embalse Arroyito",
+      "river": "limay",
+      "evidence": "HydroLAKES Lake_name 'Arroyito', Lake_type 2, Grand_id 2342; OSM relation/6165775 (water=reservoir)"
+    },
+    {
+      "hylakId": 10580,
+      "name": "Embalse Pichi Picún Leufú",
+      "river": "limay",
+      "evidence": "HydroLAKES Lake_name empty, Lake_type 2, Grand_id 2344; OSM relation/14247572 (water=reservoir)"
+    }
+  ]
+}

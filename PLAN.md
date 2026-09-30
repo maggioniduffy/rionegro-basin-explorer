@@ -43,7 +43,8 @@ and a strip of land around it is visible, with river panels and a sub-basin view
   - PMTiles are committed in `public/tiles/` (rivers 695 KB, mask 4.6 MB), and the dev server answers Range requests with 206.
   - tippecanoe v2.82.0 is built locally into `~/.local` (no sudo; see `pipeline/README.md`).
   - Visible Land buffers scale with Strahler order (`pipeline/map.config.json`). The six levels show 4.6%, 9%, 17%, 33%, 57% and 100% of the basin (`data/work/mask/report.json`).
-  - The endorheic filter hides lines only; the mask always includes endorheic reaches.
+  - The endorheic filter hides lines **and** their land. This revises the earlier "lines only" choice on 2026-09-30. Instead of a second set of masks, an `endorheic` overlay layer stores the land visible only because of endorheic drainage, per level. At the "whole basin" level that is the endorheic part of the basin itself (HydroBASINS `ENDO` ≠ 0). The overlay is drawn in the mask colour when the filter is on, and endorheic lake outlines hide too.
+  - Lakes: HydroLAKES v1.0 (CC BY 4.0). River lines are removed inside all 245 basin lakes, except that 5 Limay reservoirs keep the Limay line (`pipeline/lakes.json`): Ezequiel Ramos Mexía, Piedra del Águila, Alicurá, Arroyito and Pichi Picún Leufú. Los Barreales and Mari Menuco have no named river through them, so all their lines are removed. Lakes are visible at every mask level and have a thin outline. GRanD itself is not used because its terms are unverified.
   - Locale prefixes dropped (reverses the Phase 0 `/en`, `/es` routes). A prefixed root layout remounted the whole tree on a language switch, rebuilding the map. Now the switcher sets the cookie and calls `router.refresh()`, so the map, the slider and the URL are kept. Old `/en/…` and `/es/…` links are redirected by `proxy.ts`, which sets the cookie. Pages now render per request because they read cookies and headers.
 
 ## Repo layout

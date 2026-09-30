@@ -25,7 +25,8 @@
     "pipeline:tiles": "tsx pipeline/steps/tiles.ts",
     "predev": "tsx scripts/copy-maplibre-worker.ts",
     "prebuild": "tsx scripts/copy-maplibre-worker.ts",
-    "inspect:file": "tsx pipeline/tools/inspect-file.ts"
+    "inspect:file": "tsx pipeline/tools/inspect-file.ts",
+    "pipeline:lakes": "tsx pipeline/steps/lakes.ts"
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",

@@ -12,6 +12,7 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 | HydroBASINS v1c                        | Basin delineation, sub-basins                                       | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution    | Yes                                 | 2026-09-29 | 2026-09-30                        |
 | HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.)                       | CC BY 4.0                                                             | Yes                                 | 2026-09-29 | 2026-09-30 (RiverATLAS only)      |
 | GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                  | CC BY 4.0 per figshare metadata (README wording ambiguous, see below) | Yes, if CC BY                       | 2026-09-30 | 2026-09-30                        |
+| HydroLAKES v1.0                        | Lake and reservoir polygons (line clipping, mask, outlines)         | CC BY 4.0                                                             | Yes                                 | 2026-09-30 | 2026-09-30                        |
 | IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)                           | **Not verified** (believed CC BY 4.0)                                 | Unknown                             | —          | —                                 |
 | OpenStreetMap                          | River name evidence (Phase 1); localities, reservoirs, dams (later) | ODbL 1.0                                                              | Yes (share-alike on the database)   | 2026-09-30 | 2026-09-30 (Overpass, basin bbox) |
 | Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                          | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license     | Only with an EOX commercial license | 2026-09-29 | n/a (tiles)                       |
@@ -83,6 +84,36 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   Also link the repository DOI above.
 - Caveat: these are random-forest **model predictions**, not observations. The UI must say so, like
   the HydroATLAS caveat (CLAUDE.md rule 4).
+
+## HydroLAKES v1.0
+
+- URL: https://www.hydrosheds.org/products/hydrolakes
+- Download: global only, with no regional extract.
+  - Polygons: https://data.hydrosheds.org/file/hydrolakes/HydroLAKES_polys_v10_shp.zip (820,295,132 bytes by
+    HEAD, 2026-09-30).
+  - The pipeline clips the polygons to the basin.
+- License: CC BY 4.0. [Technical Documentation v1.0](https://data.hydrosheds.org/file/technical-documentation/HydroLAKES_TechDoc_v10.pdf),
+  s4.1 (read 2026-09-30), says: "The HydroLAKES database (version 1.a) is licensed under a Creative Commons
+  Attribution 4.0 International License."
+- The authors also make a request, which is not a license term: "we ask users to refrain from redistributing
+  the data in whole in its original format on other websites without the explicit written permission from
+  the authors". We only publish derived, clipped tiles.
+- Citation (s4.4, verbatim): Messager, M.L., Lehner, B., Grill, G., Nedeva, I., Schmitt, O. (2016):
+  Estimating the volume and age of water stored in global lakes using a geo-statistical approach. Nature
+  Communications: 13603. doi: 10.1038/ncomms13603. Data is available at www.hydrosheds.org.
+- Fields we rely on (TechDoc Table 2):
+  - `Lake_type`: 1 = lake, 2 = reservoir, 3 = lake control. The default is 1, so small unidentified
+    reservoirs are typed as lakes.
+  - `Lake_name`: sparse; only filled for large lakes and GRanD reservoirs.
+  - `Grand_id`
+  - `Pour_long` / `Pour_lat`
+  - There is **no** HydroRIVERS reach id. Lakes link to reaches only by position.
+- Caveat: `Dis_avg` and `Res_time` are modeled (WaterGAP 1971–2000), so the rule 4 caveat applies if
+  they are ever shown.
+- GRanD (Global Reservoir and Dam database) has its own terms, which are **not verified**:
+  https://www.globaldamwatch.org/grand showed only a warranty disclaimer. We only use `Lake_name` and
+  `Grand_id` as delivered inside HydroLAKES, and we do not download GRanD itself until its terms are
+  recorded here.
 
 ## IGN Argentina: SIG layers
 

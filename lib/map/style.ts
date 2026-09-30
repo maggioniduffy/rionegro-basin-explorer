@@ -28,9 +28,20 @@ export const FLOW_STYLE: Record<
   unknown: { color: "#9aa3ab", widthScale: 0.6 },
 };
 
-export const THEME_COLORS: Record<Theme, { mask: string; outline: string }> = {
-  dark: { mask: "#050607", outline: "rgba(230, 232, 234, 0.55)" },
-  light: { mask: "#f3f2ee", outline: "rgba(31, 35, 40, 0.55)" },
+export const THEME_COLORS: Record<
+  Theme,
+  { mask: string; outline: string; lake: string }
+> = {
+  dark: {
+    mask: "#050607",
+    outline: "rgba(230, 232, 234, 0.55)",
+    lake: "rgba(230, 232, 234, 0.35)",
+  },
+  light: {
+    mask: "#f3f2ee",
+    outline: "rgba(31, 35, 40, 0.55)",
+    lake: "rgba(31, 35, 40, 0.35)",
+  },
 };
 
 export const maskLayerId = (level: number) => `mask-${level}`;
@@ -38,8 +49,35 @@ export const reachLayerId = (c: FlowClass) => `reaches-${c}`;
 export const MASK_LAYER_IDS = Array.from({ length: MASK_LEVEL_COUNT }, (_, k) =>
   maskLayerId(k),
 );
+export const endoMaskLayerId = (level: number) => `mask-endorheic-${level}`;
+export const ENDO_MASK_LAYER_IDS = Array.from(
+  { length: MASK_LEVEL_COUNT },
+  (_, k) => endoMaskLayerId(k),
+);
+
+/**
+ * Opacity of each endorheic overlay level: the mask level's own opacity when endorheic
+ * streams are hidden (so their land disappears with them), otherwise 0. The overlay of
+ * level k is disjoint from mask level k (pipeline:mask), so the two never double up.
+ */
+export function endoMaskOpacities(
+  visibleLand: number,
+  hideEndorheic: boolean,
+): number[] {
+  return maskOpacities(visibleLand, MASK_LEVEL_COUNT).map((o) =>
+    hideEndorheic ? o : 0,
+  );
+}
+
+/** Lake outlines: endorheic lakes hide with the endorheic streams. */
+export function lakeFilter(hideEndorheic: boolean): FilterSpecification {
+  return hideEndorheic
+    ? ["!=", ["get", "network"], "endorheic"]
+    : ["literal", true];
+}
 export const REACH_LAYER_IDS = FLOW_CLASSES.map(reachLayerId);
 export const OUTLINE_LAYER_ID = "basin-outline";
+export const LAKE_LAYER_ID = "lake-outline";
 export const IMAGERY_LAYER_ID = "imagery";
 export const BACKGROUND_LAYER_ID = "background";
 
@@ -88,7 +126,7 @@ export interface StyleOptions {
 }
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
-  const { mask, outline } = THEME_COLORS[o.theme];
+  const { mask, outline, lake } = THEME_COLORS[o.theme];
   // Everything outside the basin is always masked, so no imagery is needed there.
   const { xmin, ymin, xmax, ymax } = mapConfig.basinBbox;
   const opacities = maskOpacities(o.visibleLand, MASK_LEVEL_COUNT);
@@ -129,6 +167,35 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       },
     });
   }
+  const endoOpacities = endoMaskOpacities(o.visibleLand, o.hideEndorheic);
+  for (let k = 0; k < MASK_LEVEL_COUNT; k++) {
+    layers.push({
+      id: endoMaskLayerId(k),
+      type: "fill",
+      source: "mask",
+      "source-layer": "endorheic",
+      filter: ["==", ["get", "level"], k],
+      // Same rules as the mask levels: always visible, opacity only, no fade.
+      paint: {
+        "fill-color": mask,
+        "fill-opacity": endoOpacities[k] ?? 0,
+        "fill-opacity-transition": { duration: 0, delay: 0 },
+      },
+    });
+  }
+  // Lakes are never masked (pipeline:mask) and have no river lines inside
+  // (pipeline:lakes); a thin outline marks their shore.
+  layers.push({
+    id: LAKE_LAYER_ID,
+    type: "line",
+    source: "rivers",
+    "source-layer": "lakes",
+    filter: lakeFilter(o.hideEndorheic),
+    paint: {
+      "line-color": lake,
+      "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 12, 1.2],
+    },
+  });
   layers.push({
     id: OUTLINE_LAYER_ID,
     type: "line",

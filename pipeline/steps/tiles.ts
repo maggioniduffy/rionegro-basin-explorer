@@ -2,8 +2,11 @@
  * pipeline:tiles — PMTiles for the map, via tippecanoe.
  *
  *   public/tiles/rivers.pmtiles  layers `reaches` (per-feature minzoom by Strahler order,
- *                                map.config.json) and `basin` (outline)
- *   public/tiles/mask.pmtiles    layer `mask` (Visible Land levels, from pipeline:mask)
+ *                                map.config.json), `basin` (outline) and `lakes`
+ *                                (HydroLAKES polygons from pipeline:lakes, for outlines)
+ *   public/tiles/mask.pmtiles    layers `mask` (Visible Land levels) and `endorheic` (land
+ *                                visible only because of endorheic drainage, per level),
+ *                                both from pipeline:mask
  *
  * The files are committed: Vercel serves them from /public and tippecanoe does not run
  * there. Feature and tile-size limits are off, so no reach is dropped; the report
@@ -91,17 +94,20 @@ async function decodeDistinct(
 const TILE_EXTENT = 4096;
 
 /**
- * Largest Web Mercator span of a line, in tile units at zoom 0. A line whose span at
- * zoom z (this × 2^z) is under one unit quantizes to a point, and tippecanoe drops it.
- * It would also be an eighth of a pixel long, so its absence is invisible.
+ * Web Mercator span of a line, in tile units at zoom 0: for a multi-part line, the
+ * span of its longest-spanning part. A part whose span at zoom z (this × 2^z) is under
+ * one unit quantizes to a point and tippecanoe drops it; a feature disappears only if
+ * all its parts do. It would also be an eighth of a pixel long, so its absence is
+ * invisible.
  */
 function spanUnitsZ0(geometry: unknown): number {
   const g = geometry as { type: string; coordinates: unknown };
   const lines = (
     g.type === "LineString" ? [g.coordinates] : g.coordinates
   ) as number[][][];
-  let [xmin, ymin, xmax, ymax] = [Infinity, Infinity, -Infinity, -Infinity];
+  let best = 0;
   for (const line of lines) {
+    let [xmin, ymin, xmax, ymax] = [Infinity, Infinity, -Infinity, -Infinity];
     for (const [lon = 0, lat = 0] of line) {
       const x = ((lon + 180) / 360) * TILE_EXTENT;
       const s = Math.sin((lat * Math.PI) / 180);
@@ -112,8 +118,9 @@ function spanUnitsZ0(geometry: unknown): number {
       ymin = Math.min(ymin, y);
       ymax = Math.max(ymax, y);
     }
+    best = Math.max(best, xmax - xmin, ymax - ymin);
   }
-  return Math.max(xmax - xmin, ymax - ymin);
+  return best;
 }
 
 const sizeKb = async (file: string) =>
@@ -123,6 +130,8 @@ async function main() {
   const reachesIn = requireInput(workPath("tiles/reaches.geojson"));
   const basinIn = requireInput(workPath("tiles/basin.geojson"));
   const maskIn = requireInput(workPath("tiles/mask.geojson"));
+  const endoIn = requireInput(workPath("tiles/mask_endorheic.geojson"));
+  const lakesIn = requireInput(workPath("lakes/lakes.geojson"));
   const reachesZ = workPath("tiles/reaches.minzoom.geojson");
   const riversOut = `${TILES_DIR}/rivers.pmtiles`;
   const maskOut = `${TILES_DIR}/mask.pmtiles`;
@@ -171,12 +180,14 @@ async function main() {
     "--use-attribute-for-id=id",
     `--named-layer=reaches:${reachesZ}`,
     `--named-layer=basin:${basinIn}`,
+    `--named-layer=lakes:${lakesIn}`,
   ]);
   await rm(maskOut, { force: true });
   await run(TIPPECANOE, [
     ...common,
     `--output=${maskOut}`,
     `--named-layer=mask:${maskIn}`,
+    `--named-layer=endorheic:${endoIn}`,
   ]);
 
   // 3. Decode back: reach ids per zoom vs the expected set; mask levels per zoom.
@@ -207,9 +218,17 @@ async function main() {
   }
   const levelCount = mapConfig.mask.baseHalfWidthKm.length + 1;
   const maskLevelsByZoom = [];
-  for (const z of [0, Math.floor(maxzoom / 2), maxzoom]) {
+  // From the lowest zoom the map allows: below it tippecanoe may drop sub-pixel
+  // strips, which nobody can see.
+  const { minzoom } = mapConfig;
+  for (const z of [minzoom, Math.round((minzoom + maxzoom) / 2), maxzoom]) {
     const got = await decodeDistinct(maskOut, "mask", z, "level");
-    maskLevelsByZoom.push({ zoom: z, levels: [...got].map(Number).sort() });
+    const endo = await decodeDistinct(maskOut, "endorheic", z, "level");
+    maskLevelsByZoom.push({
+      zoom: z,
+      levels: [...got].map(Number).sort(),
+      endorheicLevels: [...endo].map(Number).sort(),
+    });
   }
 
   const checks = {
@@ -218,9 +237,16 @@ async function main() {
       (r) => r.missingVisible === 0,
     ),
     noReachBeforeItsMinzoom: reachesByZoom.every((r) => r.early === 0),
-    allReachesAtMaxzoom: reachesByZoom.at(-1)?.found === features.length,
+    // At maxzoom too, only sub-tile-unit reaches may be absent.
+    allReachesAtMaxzoom:
+      reachesByZoom.at(-1)?.expected === features.length &&
+      reachesByZoom.at(-1)?.missingVisible === 0,
     everyMaskLevelAtEveryCheckedZoom: maskLevelsByZoom.every(
       (m) => m.levels.length === levelCount,
+    ),
+    // The overlay exists for every level (each level has some endorheic-only land).
+    everyEndorheicLevelAtEveryCheckedZoom: maskLevelsByZoom.every(
+      (m) => m.endorheicLevels.length === levelCount,
     ),
   };
   await writeReport("tiles", {

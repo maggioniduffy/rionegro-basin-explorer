@@ -13,6 +13,7 @@ const bbox = z.object({
 const schema = z.object({
   basinBbox: bbox,
   bounds: bbox,
+  minzoom: z.number().int(),
   maxzoom: z.number().int(),
   reachMinzoomByStrahler: byStrahler,
   mask: z.object({

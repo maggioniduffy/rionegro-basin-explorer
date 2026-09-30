@@ -3,7 +3,8 @@
  *
  *   data/out/reaches.ndjson        one document per basin reach (gitignored; seed input)
  *   data/work/tiles/reaches.geojson  reach lines with the few properties the map styles
- *                                  on (tippecanoe input, Phase 2)
+ *                                  on (tippecanoe input), clipped out of lakes by
+ *                                  pipeline:lakes
  *   data/work/tiles/basin.geojson  basin outline (tippecanoe input, Phase 2)
  *   data/out/report.json           combined report (committed): counts, km, orphans,
  *                                  area check, named rivers
@@ -47,6 +48,7 @@ async function main() {
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const atlasFile = requireInput(workPath("rivers/riveratlas_basin.parquet"));
   const mappingFile = requireInput(workPath("named/river_reaches.parquet"));
+  const reachGeomFile = requireInput(workPath("lakes/reach_geom.parquet"));
   const tilesDir = workPath("tiles");
   await mkdir(tilesDir, { recursive: true });
   const db = await openDb();
@@ -73,12 +75,18 @@ async function main() {
     await db.conn.run(`
       COPY (SELECT * EXCLUDE (geom) FROM out ORDER BY _id)
       TO ${lit(reachesNdjson)} (FORMAT json)`);
+    // Map geometry: reaches that cross a lake use the clipped line from pipeline:lakes;
+    // those left with no line are not drawn (their data stays in reaches.ndjson).
     await db.conn.run(`
-      COPY (SELECT _id AS id, river, network, strahler, uplandKm2, nonPerennial1d, geom FROM out)
+      COPY (SELECT o._id AS id, o.river, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
+                   coalesce(g.geom, o.geom) AS geom
+            FROM out o LEFT JOIN read_parquet(${lit(reachGeomFile)}) g ON g.HYRIV_ID = o._id
+            WHERE g.geom IS NULL OR NOT ST_IsEmpty(g.geom))
       TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
     [counts] = await db.all(`
       SELECT count(*)::INT AS n, (SELECT count(*) FROM ${lit(reachesFile)})::INT AS source_n,
-             sum((river IS NOT NULL)::INT)::INT AS named_n
+             sum((river IS NOT NULL)::INT)::INT AS named_n,
+             (SELECT count(*) FROM read_parquet(${lit(reachGeomFile)}) WHERE ST_IsEmpty(geom))::INT AS not_drawn_n
       FROM out`);
   } finally {
     db.close();
@@ -117,6 +125,8 @@ async function main() {
       connected: r.counts.connected,
       endorheic: r.counts.endorheic,
       inNamedRivers: counts?.named_n,
+      // Entirely inside a lake, so not drawn on the map (pipeline:lakes); data kept.
+      notDrawnInsideLakes: counts?.not_drawn_n,
       orphans: r.topology.orphans,
     },
     lengthKm: {

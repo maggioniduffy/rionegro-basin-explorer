@@ -22,6 +22,7 @@
     "connected": 6949,
     "endorheic": 1067,
     "inNamedRivers": 986,
+    "notDrawnInsideLakes": 295,
     "orphans": 0
   },
   "lengthKm": {

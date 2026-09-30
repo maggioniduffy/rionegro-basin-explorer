@@ -12,6 +12,9 @@ export const INPUTS = {
     ),
   riverAtlas: rawPath("riveratlas/RiverATLAS_v10.gdb"),
   gires: rawPath("gires/GIRES_v10.gdb"),
+  hydroLakes: rawPath(
+    "hydrolakes/HydroLAKES_polys_v10_shp/HydroLAKES_polys_v10.shp",
+  ),
 };
 
 export function requireInput(file: string): string {

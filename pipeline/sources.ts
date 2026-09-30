@@ -44,4 +44,13 @@ export const SOURCES: Source[] = [
     approxBytes: 1_699_860_028,
     md5: "75d41f596ee84cb7b78ed55b5b85e878",
   },
+  {
+    // HydroLAKES v1.0 polygons (Messager et al. 2016), global only; linked from
+    // https://www.hydrosheds.org/products/hydrolakes. Size from a HEAD, 2026-09-30.
+    // The authors ask not to redistribute the original files; only derived tiles ship.
+    id: "hydrolakes",
+    url: "https://data.hydrosheds.org/file/hydrolakes/HydroLAKES_polys_v10_shp.zip",
+    file: "HydroLAKES_polys_v10_shp.zip",
+    approxBytes: 820_295_132,
+  },
 ];

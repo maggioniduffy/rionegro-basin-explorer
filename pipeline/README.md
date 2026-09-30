@@ -141,6 +141,34 @@ reaches.
 Checks: unique IDs, no reach in two rivers, every river flows into a named river or the sea, and
 exactly one river reaches the sea.
 
+### `npm run pipeline:lakes`
+
+HydroLAKES v1.0 polygons that intersect the basin, clipped to it. The first run scans the global
+shapefile once and caches its basin-bbox subset in `data/work/lakes/hydrolakes_bbox.parquet`.
+
+HydroRIVERS draws flow paths across lakes, and this step removes those lines from the map.
+
+- **Every lake:** the parts of reaches inside it are cut away.
+- **Exception:** the reservoirs approved in `pipeline/lakes.json` keep the line of their main river.
+  The main river is the named river (`pipeline:named`) of the lake's largest-`UPLAND_SKM` reach,
+  i.e. its outflow path.
+- **Slivers:** clipped pieces under 50 m are dropped, since they are artifacts where a line grazes a
+  shore.
+- **Reach data is unchanged.** Only the geometry drawn on the map changes, and `export` uses it.
+
+`candidates.json` lists the reservoirs (`Lake_type` 2) and controlled lakes (3) that have a named
+main river, for review. Approved entries go into `lakes.json` with evidence. The step fails if an
+approved entry's river disagrees with the data.
+
+The report checks:
+
+- every lake geometry is valid;
+- the approved lakes match the data;
+- the main river inside each approved lake is unchanged (within 0.5%).
+
+It also lists the km removed and the largest lakes. The step writes `lakes.geojson`, which is used for
+the mask hole and the `lakes` outline layer.
+
 ### `npm run pipeline:export`
 
 Writes the Phase 1 artifacts:
@@ -159,7 +187,8 @@ Polygons for the "Visible Land" slider, from `pipeline/map.config.json`. For eac
 `mask.strahlerFactor[order]`, in South America Albers (ESRI:102033). Endorheic reaches are included.
 The buffers are unioned and clipped to the basin to make the visible "hole". The mask is the
 `bounds` rectangle minus the hole. A final level uses the whole basin as the hole. The app sets the
-same `bounds` as the map's `maxBounds`, so the edge of the mask is never on screen.
+same `bounds` as the map's `maxBounds`, so the edge of the mask is never on screen. Lakes from
+`pipeline:lakes` are part of the visible hole at every level.
 
 Output: `data/work/tiles/mask.geojson`. The report lists each level's visible area, its % of the
 basin and its vertex count. It checks that every geometry is valid, that the visible area grows
@@ -179,7 +208,7 @@ a pixel), which tippecanoe drops because it collapses to a point. It also checks
 level is present at each checked zoom, and records file sizes and the tippecanoe version.
 
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
-`export` → `mask` → `tiles`.
+`lakes` → `export` → `mask` → `tiles`.
 
 ## Tools
 

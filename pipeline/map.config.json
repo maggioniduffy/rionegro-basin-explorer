@@ -1,5 +1,5 @@
 {
-  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). basinBbox is the basin outline's extent (initial view; pipeline:mask checks it against basin.geojson). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin.",
+  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). basinBbox is the basin outline's extent (initial view; pipeline:mask checks it against basin.geojson). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. minzoom is the lowest zoom the map allows (maxBounds alone would stop near z4 on a phone); tile checks start there. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin.",
   "basinBbox": {
     "xmin": -71.9625,
     "ymin": -41.5042,
@@ -12,6 +12,7 @@
     "xmax": -59.5,
     "ymax": -33.5
   },
+  "minzoom": 4,
   "maxzoom": 10,
   "reachMinzoomByStrahler": {
     "1": 9,

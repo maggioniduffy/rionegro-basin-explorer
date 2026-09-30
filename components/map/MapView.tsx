@@ -20,8 +20,12 @@ import { maskOpacities } from "@/lib/map/mask";
 import {
   BACKGROUND_LAYER_ID,
   buildStyle,
+  ENDO_MASK_LAYER_IDS,
+  endoMaskOpacities,
   FLOW_CLASSES,
   IMAGERY_LAYER_ID,
+  LAKE_LAYER_ID,
+  lakeFilter,
   MASK_LAYER_IDS,
   OUTLINE_LAYER_ID,
   reachFilter,
@@ -64,23 +68,32 @@ type State = ReturnType<typeof useMapStore.getState>;
 
 /** Push store state into an already-loaded map. */
 function applyState(map: MapLibreMap, s: State, prev?: State) {
-  if (!prev || s.visibleLand !== prev.visibleLand) {
+  const landChanged = !prev || s.visibleLand !== prev.visibleLand;
+  const endoChanged = !prev || s.hideEndorheic !== prev.hideEndorheic;
+  if (landChanged) {
     maskOpacities(s.visibleLand, MASK_LEVEL_COUNT).forEach((opacity, k) => {
       const id = MASK_LAYER_IDS[k];
-      if (!id) return;
-      map.setPaintProperty(id, "fill-opacity", opacity);
+      if (id) map.setPaintProperty(id, "fill-opacity", opacity);
     });
   }
-  if (!prev || s.hideEndorheic !== prev.hideEndorheic) {
+  if (landChanged || endoChanged) {
+    endoMaskOpacities(s.visibleLand, s.hideEndorheic).forEach((opacity, k) => {
+      const id = ENDO_MASK_LAYER_IDS[k];
+      if (id) map.setPaintProperty(id, "fill-opacity", opacity);
+    });
+  }
+  if (endoChanged) {
     for (const c of FLOW_CLASSES)
       map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic));
+    map.setFilter(LAKE_LAYER_ID, lakeFilter(s.hideEndorheic));
   }
   if (!prev || s.theme !== prev.theme) {
-    const { mask, outline } = THEME_COLORS[s.theme];
+    const { mask, outline, lake } = THEME_COLORS[s.theme];
     map.setPaintProperty(BACKGROUND_LAYER_ID, "background-color", mask);
-    for (const id of MASK_LAYER_IDS)
+    for (const id of [...MASK_LAYER_IDS, ...ENDO_MASK_LAYER_IDS])
       map.setPaintProperty(id, "fill-color", mask);
     map.setPaintProperty(OUTLINE_LAYER_ID, "line-color", outline);
+    map.setPaintProperty(LAKE_LAYER_ID, "line-color", lake);
   }
 }
 
@@ -123,6 +136,10 @@ export default function MapView() {
               "https://doi.org/10.1038/s41586-021-03565-5",
               t("attribution.gires"),
             ),
+            link(
+              "https://www.hydrosheds.org/products/hydrolakes",
+              t("attribution.hydrolakes"),
+            ),
           ].join(" | "),
           theme: initial.theme,
           hideEndorheic: initial.hideEndorheic,
@@ -131,6 +148,7 @@ export default function MapView() {
         bounds: toLngLatBounds(mapConfig.basinBbox),
         fitBoundsOptions: { padding: fitPadding() },
         maxBounds: toLngLatBounds(mapConfig.bounds),
+        minZoom: mapConfig.minzoom,
         maxZoom: MAP_MAXZOOM,
         renderWorldCopies: false,
         dragRotate: false,
