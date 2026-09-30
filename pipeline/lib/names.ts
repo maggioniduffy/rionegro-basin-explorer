@@ -30,3 +30,13 @@ export function evenlySpaced<T>(items: readonly T[], count: number): T[] {
     (_, i) => items[Math.round((i * (items.length - 1)) / (count - 1))] as T,
   );
 }
+
+/** URL/ID-safe slug: "Collón Curá" → "collon-cura". */
+export function slugify(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}

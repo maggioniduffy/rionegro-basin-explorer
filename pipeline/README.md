@@ -9,7 +9,7 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 Final artifacts go to `data/out/`: PMTiles for the map and NDJSON for `npm run seed`.
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers`, `candidates` and `osm-names` are implemented; the other steps are planned.
+Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers`, `candidates`, `osm-names` and `named` are implemented; the other steps are planned.
 
 ## Prerequisites
 
@@ -110,6 +110,29 @@ for the named waterways and water bodies in the basin bbox, cached in
 public instance returns when busy. Each candidate segment gets up to five sample points, matched
 locally to OSM lines within 750 m. `matches.json` lists the names per candidate, such as
 "Río Limay 5/5". A person reviews it to write `pipeline/names.json`.
+
+### `npm run pipeline:named`
+
+Traces every river in `pipeline/names.json`, a hand-approved list keyed by mouth reach, with OSM
+evidence for each name. A river starts at its mouth. At each confluence it takes the largest-area
+branch that is not another named river's mouth, and it stops at a headwater or where every branch is
+named (`source.kind = "confluence"`). The step writes `data/out/rivers.ndjson` (committed; seed input)
+and `data/work/named/river_reaches.parquet` (reach → river).
+
+Each document carries per-field provenance:
+
+- **Length:** sum of `LENGTH_KM`.
+- **Mouth elevation:** `ele_mt_cmn` of the mouth reach.
+- **Source elevation:** the headwater reach's `ele_mt_cmn` plus its own drop.
+- **Drop:** source elevation minus mouth elevation.
+- **Discharge at the mouth:** `DIS_AV_CMS`, modeled.
+- **Non-perennial share:** GIRES, modeled.
+
+The sum of per-reach drops is reported only as a diagnostic, because it overstates on flat braided
+reaches.
+
+Checks: unique IDs, no reach in two rivers, every river flows into a named river or the sea, and
+exactly one river reaches the sea.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.

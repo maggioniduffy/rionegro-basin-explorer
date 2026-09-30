@@ -67,8 +67,8 @@ CLAUDE.md  PLAN.md
 - [x] Download South America HydroRIVERS, RiverATLAS, HydroBASINS into `data/raw/` with checksums
 - [x] Delineate the basin: traverse HydroBASINS upstream from the Río Negro mouth via `NEXT_DOWN`, dissolve
 - [x] Clip river reaches to the basin and join RiverATLAS attributes (endorheic reaches kept and flagged `network: "endorheic"`)
-- [ ] Build "named rivers": trace main stem upstream from each confluence choosing the branch with the largest upstream area; aggregate length, source/mouth elevation, discharge at outlet
-- [ ] Manual `names.json` for the ~10 largest rivers (HydroRIVERS has no names)
+- [x] Build "named rivers": trace main stem upstream from each confluence choosing the branch with the largest upstream area; aggregate length, source/mouth elevation, discharge at outlet (branches that are another named river's mouth are skipped)
+- [x] Manual `names.json` for the ~10 largest rivers (HydroRIVERS has no names): 15 rivers, OSM evidence, approved 2026-09-30
 - [ ] Outputs: NDJSON for Mongo, GeoJSON for tiles, `report.json`
 - **Done when:** report shows counts, total km, zero orphan reaches, and basin area within a sanity range against an official figure we agree on.
 

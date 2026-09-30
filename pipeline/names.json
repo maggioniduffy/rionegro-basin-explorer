@@ -1,0 +1,125 @@
+{
+  "$comment": "Hand-approved river names (HydroRIVERS has none). Keyed by mouth reach (HYRIV_ID). Names use OpenStreetMap spelling (© OpenStreetMap contributors, ODbL); shortName/type are the name split at its first word. Approved by the project owner on 2026-09-30.",
+  "rivers": [
+    {
+      "name": "Río Negro",
+      "shortName": "Negro",
+      "type": "Río",
+      "mouthReach": 61560077,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #1, 2026-09-30)"
+    },
+    {
+      "name": "Río Limay",
+      "shortName": "Limay",
+      "type": "Río",
+      "mouthReach": 61546258,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #3, 2026-09-30)"
+    },
+    {
+      "name": "Río Neuquén",
+      "shortName": "Neuquén",
+      "type": "Río",
+      "mouthReach": 61546228,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #7, 2026-09-30)"
+    },
+    {
+      "name": "Río Collón Curá",
+      "shortName": "Collón Curá",
+      "type": "Río",
+      "mouthReach": 61556572,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #12, 2026-09-30)"
+    },
+    {
+      "name": "Río Agrio",
+      "shortName": "Agrio",
+      "type": "Río",
+      "mouthReach": 61541396,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #15, 2026-09-30)"
+    },
+    {
+      "name": "Río Aluminé",
+      "shortName": "Aluminé",
+      "type": "Río",
+      "mouthReach": 61552346,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #19, 2026-09-30)"
+    },
+    {
+      "name": "Río Catán Lil",
+      "shortName": "Catán Lil",
+      "type": "Río",
+      "mouthReach": 61552347,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #29, 2026-09-30)"
+    },
+    {
+      "name": "Río Chimehuin",
+      "shortName": "Chimehuin",
+      "type": "Río",
+      "mouthReach": 61553597,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #26, 2026-09-30)"
+    },
+    {
+      "name": "Río Caleufú",
+      "shortName": "Caleufú",
+      "type": "Río",
+      "mouthReach": 61555946,
+      "confidence": "weak",
+      "evidence": "OpenStreetMap waterway name at 2/5 sample points along the mouth segment (pipeline:osm-names, candidate #30, 2026-09-30)"
+    },
+    {
+      "name": "Arroyo Pichileufú",
+      "shortName": "Pichileufú",
+      "type": "Arroyo",
+      "mouthReach": 61557589,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #27, 2026-09-30)"
+    },
+    {
+      "name": "Arroyo Comallo",
+      "shortName": "Comallo",
+      "type": "Arroyo",
+      "mouthReach": 61556491,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #21, 2026-09-30)"
+    },
+    {
+      "name": "Arroyo Picún Leufú",
+      "shortName": "Picún Leufú",
+      "type": "Arroyo",
+      "mouthReach": 61550099,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #22, 2026-09-30)"
+    },
+    {
+      "name": "Arroyo Covunco",
+      "shortName": "Covunco",
+      "type": "Arroyo",
+      "mouthReach": 61542572,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #23, 2026-09-30)"
+    },
+    {
+      "name": "Río Curi Leuvú",
+      "shortName": "Curi Leuvú",
+      "type": "Río",
+      "mouthReach": 61533036,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #31, 2026-09-30)"
+    },
+    {
+      "name": "Río Trocomán",
+      "shortName": "Trocomán",
+      "type": "Río",
+      "mouthReach": 61532634,
+      "confidence": "strong",
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #33, 2026-09-30)"
+    }
+  ]
+}

@@ -80,3 +80,25 @@ export function traceLargestUpstream<Id>(
     node = next;
   }
 }
+
+/**
+ * Trace a named river from its mouth: at each confluence take the largest-area
+ * branch that is not another named river's mouth (`claimed`). Stops at a headwater
+ * or when every upstream branch is claimed. This keeps "Limay" out of the larger
+ * Collón Curá, for example.
+ */
+export function traceNamedRiver<Id>(
+  index: Map<Id, Id[]>,
+  area: (id: Id) => number,
+  mouth: Id,
+  claimed: ReadonlySet<Id>,
+): Id[] {
+  const path = [mouth];
+  let node = mouth;
+  for (;;) {
+    const ups = (index.get(node) ?? []).filter((id) => !claimed.has(id));
+    if (ups.length === 0) return path;
+    node = ups.reduce((best, id) => (area(id) > area(best) ? id : best));
+    path.push(node);
+  }
+}

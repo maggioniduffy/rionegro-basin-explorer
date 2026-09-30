@@ -3,6 +3,7 @@ import {
   difference,
   majorBranchMouths,
   traceLargestUpstream,
+  traceNamedRiver,
   upstreamIndex,
   upstreamSet,
 } from "../../pipeline/lib/graph";
@@ -99,5 +100,35 @@ describe("major branches", () => {
     expect(traceLargestUpstream(index, area, 1, new Set([4, 5]))).toEqual([
       1, 2, 3,
     ]);
+  });
+});
+
+describe("traceNamedRiver", () => {
+  //  1 ← 2 (confluence): 3 (area 60, named mouth) and 4 (area 40) → 4 ← 5.
+  const areas = new Map([
+    [1, 100],
+    [2, 100],
+    [3, 60],
+    [4, 40],
+    [5, 30],
+  ]);
+  const area = (id: number) => areas.get(id) ?? 0;
+  const index = upstreamIndex([
+    { id: 2, nextDown: 1 },
+    { id: 3, nextDown: 2 },
+    { id: 4, nextDown: 2 },
+    { id: 5, nextDown: 4 },
+  ]);
+
+  it("skips a larger branch that is another named river", () => {
+    expect(traceNamedRiver(index, area, 1, new Set([3]))).toEqual([1, 2, 4, 5]);
+  });
+
+  it("follows the largest branch when nothing is claimed", () => {
+    expect(traceNamedRiver(index, area, 1, new Set())).toEqual([1, 2, 3]);
+  });
+
+  it("stops when every branch is claimed", () => {
+    expect(traceNamedRiver(index, area, 1, new Set([3, 4]))).toEqual([1, 2]);
   });
 });
