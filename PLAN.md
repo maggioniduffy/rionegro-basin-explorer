@@ -35,6 +35,9 @@ and a strip of land around it is visible, with river panels and a sub-basin view
   - DuckDB comes from the npm package `@duckdb/node-api`.
   - Only small outputs are committed (`report.json`, `rivers.ndjson`). `reaches.ndjson` and GeoJSON are regenerated locally.
   - Raw data is not stored in the cloud; `pipeline/checksums.json` pins the inputs.
+  - Endorheic reaches are kept and flagged, and a map filter can hide them (Phase 2).
+  - Intermittent streams are kept. They are labeled from GIRES v1.0 (modeled; caveat in the UI like HydroATLAS), and reaches without a GIRES prediction stay null.
+  - Global FileGDBs (RiverATLAS, GIRES) are deleted after the basin subset is cached.
 
 ## Repo layout
 
@@ -74,6 +77,7 @@ CLAUDE.md  PLAN.md
 - [ ] MapLibre + imagery + PMTiles rivers (tippecanoe `minzoom` by Strahler order so small rivers appear on zoom)
 - [ ] Basin mask + Visible Land slider
 - [ ] Filter to hide endorheic reaches (`network = "endorheic"`), with UI strings in both locales
+- [ ] Style non-perennial reaches (GIRES `predcat1`) distinctly, with a legend and modeled-data note in both locales
 - [ ] Dark/light toggle, zoom controls, scale bar
 - **Done when:** basin silhouette renders, small rivers appear progressively, slider is smooth.
 

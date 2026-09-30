@@ -17,14 +17,13 @@
  * flags), riveratlas_basin.parquet (all RiverATLAS columns for these reaches; cached
  * because the global scan takes minutes), report.json.
  */
-import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { lengthSpheroidKm, pctDiff } from "../lib/geo";
 import { INPUTS, requireInput } from "../lib/inputs";
 import { rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
+import { cachedSubset, idsHash } from "../lib/subset";
 
 /** Summed LENGTH_KM and geodesic line length must agree this closely (%). */
 const LENGTH_AGREEMENT_PCT = 2;
@@ -45,7 +44,6 @@ const FLOAT_REL_TOLERANCE = 1e-6;
 
 async function main() {
   const rivers = lit(requireInput(INPUTS.hydroRivers));
-  const atlas = lit(requireInput(INPUTS.riverAtlas));
   const basinDir = workPath("basin");
   const members = requireInput(`${basinDir}/hybas_l12.parquet`);
   const basinGeojson = requireInput(`${basinDir}/basin.geojson`);
@@ -129,27 +127,21 @@ async function main() {
             AND r.HYRIV_ID NOT IN (SELECT HYRIV_ID FROM reaches))::INT AS unselected_inside`);
 
     // 4. RiverATLAS join (cached basin subset of the global FileGDB).
-    const ids = (
-      await db.all(`SELECT HYRIV_ID FROM reaches ORDER BY HYRIV_ID`)
-    ).map((r) => Number(r.HYRIV_ID));
-    const idsHash = createHash("sha256").update(ids.join(",")).digest("hex");
+    const hash = idsHash(
+      (await db.all(`SELECT HYRIV_ID FROM reaches`)).map((r) =>
+        Number(r.HYRIV_ID),
+      ),
+    );
     const atlasFile = `${outDir}/riveratlas_basin.parquet`;
-    const atlasHashFile = `${atlasFile}.ids-sha256`;
-    const cached =
-      existsSync(atlasFile) &&
-      existsSync(atlasHashFile) &&
-      (await readFile(atlasHashFile, "utf8")).trim() === idsHash;
-    if (!cached) {
-      console.log("scanning global RiverATLAS (takes a few minutes)...");
-      await db.conn.run(`
-        COPY (
-          SELECT a.* EXCLUDE (Shape) FROM ST_Read(${atlas}, layer='RiverATLAS_v10') a
-          WHERE a.HYRIV_ID IN (SELECT HYRIV_ID FROM reaches)
-        ) TO ${lit(atlasFile)} (FORMAT parquet)`);
-      await writeFile(atlasHashFile, idsHash + "\n");
-    } else {
-      console.log("RiverATLAS basin subset: cached");
-    }
+    const { cached } = await cachedSubset(db, {
+      label: "RiverATLAS",
+      source: INPUTS.riverAtlas,
+      layer: "RiverATLAS_v10",
+      geometryColumn: "Shape",
+      idsTable: "reaches",
+      hash,
+      file: atlasFile,
+    });
     const mismatchCases = SHARED_FIELDS.map((f) =>
       FLOAT_FIELDS.has(f)
         ? `sum((abs(r.${f} - a.${f}) > ${FLOAT_REL_TOLERANCE} * greatest(abs(r.${f}), 1)
@@ -163,6 +155,43 @@ async function main() {
     const [atlasRows] = await db.all(
       `SELECT count(*)::INT AS n FROM ${lit(atlasFile)}`,
     );
+
+    // 5. GIRES flow-intermittence predictions (Messager et al. 2021), a LEFT JOIN:
+    // GIRES only covers reaches with modeled mean annual flow > 0 (GIRES README),
+    // so the others stay null rather than being assumed intermittent.
+    const giresFile = `${outDir}/gires_basin.parquet`;
+    const gires = await cachedSubset(db, {
+      label: "GIRES",
+      source: INPUTS.gires,
+      layer: "GIRES_v10_rivers",
+      geometryColumn: "Shape",
+      idsTable: "reaches",
+      hash,
+      file: giresFile,
+    });
+    const [giresJoin] = await db.all(`
+      SELECT count(*)::INT AS rows, count(DISTINCT HYRIV_ID)::INT AS distinct_ids,
+             (SELECT count(*) FROM reaches r JOIN ${lit(giresFile)} g USING (HYRIV_ID)
+               WHERE r.NEXT_DOWN IS DISTINCT FROM g.NEXT_DOWN)::INT AS next_down_mismatches
+      FROM ${lit(giresFile)}`);
+    await db.conn.run(`
+      CREATE OR REPLACE TABLE reaches AS
+      SELECT r.*, g.predprob1, g.predcat1, g.predprob30, g.predcat30
+      FROM reaches r LEFT JOIN ${lit(giresFile)} g USING (HYRIV_ID)`);
+    const [coverage] = await db.all(`
+      SELECT sum((predcat1 IS NULL)::INT)::INT AS unpredicted,
+             sum((predcat1 IS NULL AND DIS_AV_CMS > 0)::INT)::INT AS unpredicted_with_flow,
+             sum((predcat1 IS NOT NULL AND DIS_AV_CMS = 0)::INT)::INT AS predicted_without_flow
+      FROM reaches`);
+    const intermittence = await db.all(`
+      SELECT network,
+             CASE predcat1 WHEN 1 THEN 'non-perennial' WHEN 0 THEN 'perennial' ELSE 'no prediction' END AS class_1day,
+             count(*)::INT AS n, round(sum(LENGTH_KM), 1) AS km
+      FROM reaches GROUP BY ALL ORDER BY ALL`);
+    const [intermittence30] = await db.all(`
+      SELECT sum((predcat30 = 1)::INT)::INT AS n,
+             round(sum(CASE WHEN predcat30 = 1 THEN LENGTH_KM ELSE 0 END), 1) AS km
+      FROM reaches`);
 
     const reachesFile = `${outDir}/reaches.parquet`;
     await db.conn.run(`COPY reaches TO ${lit(reachesFile)} (FORMAT parquet)`);
@@ -189,6 +218,9 @@ async function main() {
       riverAtlasSharedFieldsMatch: Object.values(mismatches).every(
         (v) => v === 0,
       ),
+      giresOneRowPerReach: giresJoin?.rows === giresJoin?.distinct_ids,
+      giresNextDownMatches: giresJoin?.next_down_mismatches === 0,
+      giresCoversAllFlowingReaches: coverage?.unpredicted_with_flow === 0,
     };
 
     await writeReport("rivers", {
@@ -218,11 +250,19 @@ async function main() {
         note: "Midpoint test against the dissolved polygon; boundary reaches may land either side.",
       },
       riverAtlasJoin: { ...join, subsetRows: atlasRows?.n, cached, mismatches },
+      gires: {
+        ...giresJoin,
+        cached: gires.cached,
+        coverage,
+        byNetworkAndClass1Day: intermittence,
+        nonPerennial30Days: intermittence30,
+      },
       notes: [
         "DIS_AV_CMS is modeled long-term natural discharge (1971–2000); zero means no modeled flow, not observed dryness.",
-        "No intermittency attribute exists in HydroRIVERS or RiverATLAS v1.0; intermittent streams are included but unlabeled.",
+        "No intermittency attribute exists in HydroRIVERS or RiverATLAS v1.0; intermittent streams are included and labeled from GIRES.",
+        "GIRES predcat1/predcat30 are modeled (random forest) predictions that a reach stops flowing at least 1 / 30 days a year; null means GIRES has no prediction (zero modeled flow).",
       ],
-      outputs: [rel(reachesFile), rel(atlasFile)],
+      outputs: [rel(reachesFile), rel(atlasFile), rel(giresFile)],
     });
   } finally {
     db.close();

@@ -26,8 +26,10 @@ Install notes:
   directly. System GDAL (`ogr2ogr`) is handy for ad-hoc checks but not required.
 - **tippecanoe**: build from https://github.com/felt/tippecanoe (`make -j && sudo make install`). Recent versions write `.pmtiles` directly.
 
-Disk: about 2.9 GB of archives (deleted after extraction) and about 8.2 GB extracted, of which the
-global RiverATLAS FileGDB is 7 GB. A later step keeps only the basin's reaches.
+Disk: the global FileGDBs are large: RiverATLAS is 7 GB and GIRES is 3.3 GB extracted.
+`pipeline:rivers` caches the basin's rows from each to Parquet. After that, the FileGDB folders can be
+deleted; on the dev machine they have been. If the reach selection changes, the step asks for the
+source again: remove `data/raw/<id>/.source.json` and rerun `pipeline:download`.
 
 ## Steps
 
@@ -75,7 +77,10 @@ Selects every HydroRIVERS reach whose `HYBAS_L12` is a basin member and tags eac
 The map can use `network` to hide endorheic reaches, and network traversal skips them. Nothing is
 filtered by flow. HydroRIVERS keeps intermittent streams, but no v1.0 source labels them.
 
-It then joins every RiverATLAS column by `HYRIV_ID`. The first run scans the global FileGDB (about
+It then adds GIRES flow-intermittence predictions (`predprob1`, `predcat1`, `predprob30`,
+`predcat30`) with a left join. GIRES has no prediction for zero-flow reaches, which stay null.
+
+It also joins every RiverATLAS column by `HYRIV_ID`. The first run scans the global FileGDB (about
 3 minutes) and caches the basin subset to `data/work/rivers/riveratlas_basin.parquet`, keyed by a
 hash of the reach IDs. After that the 7 GB FileGDB is only needed if the basin changes.
 
