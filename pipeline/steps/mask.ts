@@ -29,7 +29,7 @@ async function main() {
   const basin = lit(requireInput(workPath("tiles/basin.geojson")));
   const outFile = workPath("tiles/mask.geojson");
   await mkdir(workPath("tiles"), { recursive: true });
-  const { bounds, mask } = mapConfig;
+  const { basinBbox, bounds, mask } = mapConfig;
   const db = await openDb();
 
   try {
@@ -93,6 +93,7 @@ async function main() {
     // The mask must stay inside the bounds, and the basin must fit inside them.
     const [fit] = await db.all(`
       SELECT ST_Within((SELECT g4326 FROM b), ${envelope(bounds)}) AS basin_inside,
+             (SELECT [ST_XMin(g4326), ST_YMin(g4326), ST_XMax(g4326), ST_YMax(g4326)] FROM b) AS extent,
              bool_and(ST_Within(geom, ST_Buffer(${envelope(bounds)}, 1e-9))) AS masks_inside
       FROM masks`);
 
@@ -102,6 +103,13 @@ async function main() {
       TO ${lit(outFile)} WITH (FORMAT gdal, DRIVER 'GeoJSON',
                                LAYER_CREATION_OPTIONS 'COORDINATE_PRECISION=6')`);
 
+    const extent = (fit?.extent as number[] | undefined) ?? [];
+    const configBbox = [
+      basinBbox.xmin,
+      basinBbox.ymin,
+      basinBbox.xmax,
+      basinBbox.ymax,
+    ];
     const visible = levels.map((l) => Number(l.visiblePctOfBasin));
     const checks = {
       allValid: levels.every((l) => l.valid === true),
@@ -110,12 +118,17 @@ async function main() {
       visibleAreaGrowsWithLevel: visible.every(
         (v, i) => i === 0 || v > (visible[i - 1] ?? 0),
       ),
+      // basinBbox is typed into map.config.json for the app's initial view.
+      basinBboxMatchesData: configBbox.every(
+        (v, i) => Math.abs(v - (extent[i] ?? NaN)) < 1e-3,
+      ),
       lastLevelIsWholeBasin: Math.abs((visible.at(-1) ?? 0) - 100) < 0.1,
     };
     await writeReport("mask", {
       ok: Object.values(checks).every(Boolean),
       checks,
       basinKm2: basinRow?.km2,
+      basinExtent: extent,
       strahlerFactor: mask.strahlerFactor,
       levels,
       outputs: [rel(outFile)],

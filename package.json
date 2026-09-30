@@ -22,7 +22,9 @@
     "pipeline:named": "tsx pipeline/steps/named.ts",
     "pipeline:export": "tsx pipeline/steps/export.ts",
     "pipeline:mask": "tsx pipeline/steps/mask.ts",
-    "pipeline:tiles": "tsx pipeline/steps/tiles.ts"
+    "pipeline:tiles": "tsx pipeline/steps/tiles.ts",
+    "predev": "tsx scripts/copy-maplibre-worker.ts",
+    "prebuild": "tsx scripts/copy-maplibre-worker.ts"
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",
@@ -38,6 +40,7 @@
   },
   "devDependencies": {
     "@duckdb/node-api": "^1.5.6-r.1",
+    "@maplibre/maplibre-gl-style-spec": "^26.4.4",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.19.0",

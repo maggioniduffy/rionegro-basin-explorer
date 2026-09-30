@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     "data/**",
     "test-results/**",
     "playwright-report/**",
+    "public/maplibre/**",
   ]),
 ]);
 

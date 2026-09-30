@@ -3,13 +3,16 @@ import raw from "../map.config.json";
 
 const byStrahler = z.record(z.string(), z.number());
 
+const bbox = z.object({
+  xmin: z.number(),
+  ymin: z.number(),
+  xmax: z.number(),
+  ymax: z.number(),
+});
+
 const schema = z.object({
-  bounds: z.object({
-    xmin: z.number(),
-    ymin: z.number(),
-    xmax: z.number(),
-    ymax: z.number(),
-  }),
+  basinBbox: bbox,
+  bounds: bbox,
   maxzoom: z.number().int(),
   reachMinzoomByStrahler: byStrahler,
   mask: z.object({

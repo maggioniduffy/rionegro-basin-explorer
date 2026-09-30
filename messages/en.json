@@ -4,11 +4,46 @@
     "description": "Satellite explorer of the Río Negro basin: the Limay, Neuquén and Río Negro rivers and their tributaries."
   },
   "home": {
-    "title": "Río Negro Basin Explorer",
-    "subtitle": "Rivers and sub-basins of the Limay, Neuquén and Río Negro. Coming soon."
+    "title": "Río Negro Basin Explorer"
   },
   "localeSwitcher": {
     "label": "Language",
     "locale": "{locale, select, en {English} es {Español} other {Unknown}}"
+  },
+  "controls": {
+    "label": "Map controls",
+    "visibleLand": "Visible land",
+    "visibleLandValue": "Level {level} of {count}",
+    "visibleLandMin": "Rivers only",
+    "visibleLandMax": "Whole basin",
+    "hideEndorheic": "Hide endorheic streams",
+    "hideEndorheicHint": "Inland drainage inside the basin outline that does not reach the sea."
+  },
+  "legend": {
+    "title": "Flow regime",
+    "perennial": "Perennial",
+    "nonPerennial": "Non-perennial (stops flowing at least 1 day a year)",
+    "unknown": "No prediction",
+    "modeledNote": "Modeled, not observed: GIRES v1.0 predictions (Messager et al., 2021). Local conditions may differ."
+  },
+  "theme": {
+    "toLight": "Light theme",
+    "toDark": "Dark theme"
+  },
+  "map": {
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "webglError": "The map needs WebGL, which this browser does not support or has turned off.",
+    "attribution": {
+      "hydrosheds": "HydroSHEDS © WWF",
+      "gires": "GIRES v1.0 (Messager et al., 2021)"
+    },
+    "maplibre": {
+      "title": "Map of the Río Negro basin",
+      "toggleAttribution": "Toggle attribution",
+      "mapFeedback": "Map feedback",
+      "kilometers": "km",
+      "meters": "m"
+    }
   }
 }

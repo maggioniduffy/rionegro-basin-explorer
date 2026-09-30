@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import en from "../messages/en.json";
 import es from "../messages/es.json";
+import { openMap, stubImagery } from "./map-helpers";
 
 const locales = [
   { locale: "en", other: "es", messages: en, otherMessages: es },
@@ -24,6 +25,7 @@ for (const [browserLocale, expected] of [
 for (const { locale, other, messages, otherMessages } of locales) {
   test.describe(`/${locale}`, () => {
     test("renders translated content", async ({ page }) => {
+      await stubImagery(page);
       await page.goto(`/${locale}`);
       await expect(page.locator("html")).toHaveAttribute("lang", locale);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(
@@ -33,6 +35,7 @@ for (const { locale, other, messages, otherMessages } of locales) {
     });
 
     test("locale switcher keeps the query string", async ({ page }) => {
+      await stubImagery(page);
       await page.goto(`/${locale}?r=test`);
       await page.getByLabel(messages.localeSwitcher.label).selectOption(other);
       await expect(page).toHaveURL(new RegExp(`/${other}\\?r=test$`));
@@ -42,7 +45,7 @@ for (const { locale, other, messages, otherMessages } of locales) {
     });
 
     test("screenshot", async ({ page }) => {
-      await page.goto(`/${locale}`);
+      await openMap(page, `/${locale}`);
       await expect(page).toHaveScreenshot(`home-${locale}.png`);
     });
   });

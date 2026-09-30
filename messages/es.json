@@ -4,11 +4,46 @@
     "description": "Explorador satelital de la cuenca del Río Negro: los ríos Limay, Neuquén y Negro y sus afluentes."
   },
   "home": {
-    "title": "Explorador de la Cuenca del Río Negro",
-    "subtitle": "Ríos y subcuencas del Limay, el Neuquén y el Río Negro. Próximamente."
+    "title": "Explorador de la Cuenca del Río Negro"
   },
   "localeSwitcher": {
     "label": "Idioma",
     "locale": "{locale, select, en {English} es {Español} other {Desconocido}}"
+  },
+  "controls": {
+    "label": "Controles del mapa",
+    "visibleLand": "Tierra visible",
+    "visibleLandValue": "Nivel {level} de {count}",
+    "visibleLandMin": "Solo ríos",
+    "visibleLandMax": "Toda la cuenca",
+    "hideEndorheic": "Ocultar cursos endorreicos",
+    "hideEndorheicHint": "Drenaje interno dentro del contorno de la cuenca que no llega al mar."
+  },
+  "legend": {
+    "title": "Régimen de flujo",
+    "perennial": "Permanente",
+    "nonPerennial": "No permanente (deja de fluir al menos 1 día al año)",
+    "unknown": "Sin predicción",
+    "modeledNote": "Modelado, no observado: predicciones de GIRES v1.0 (Messager et al., 2021). Las condiciones locales pueden diferir."
+  },
+  "theme": {
+    "toLight": "Tema claro",
+    "toDark": "Tema oscuro"
+  },
+  "map": {
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "webglError": "El mapa necesita WebGL, que este navegador no admite o tiene desactivado.",
+    "attribution": {
+      "hydrosheds": "HydroSHEDS © WWF",
+      "gires": "GIRES v1.0 (Messager et al., 2021)"
+    },
+    "maplibre": {
+      "title": "Mapa de la cuenca del Río Negro",
+      "toggleAttribution": "Mostrar u ocultar créditos",
+      "mapFeedback": "Comentarios sobre el mapa",
+      "kilometers": "km",
+      "meters": "m"
+    }
   }
 }
