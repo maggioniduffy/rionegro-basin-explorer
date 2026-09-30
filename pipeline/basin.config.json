@@ -1,0 +1,14 @@
+{
+  "$comment": "Inputs for pipeline:basin. outletSearchBbox is a search window, not a coordinate: the step picks the sea-draining reach with the largest upstream area inside it and reports it for review. The Río Colorado mouth (~39.8°S) is outside it on purpose. reference.areaKm2 stays null until an official figure is agreed (PLAN.md open decision).",
+  "outletSearchBbox": {
+    "xmin": -63.5,
+    "ymin": -41.6,
+    "xmax": -62.0,
+    "ymax": -40.4
+  },
+  "reference": {
+    "areaKm2": null,
+    "source": null,
+    "tolerancePct": 10
+  }
+}

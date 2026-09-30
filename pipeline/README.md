@@ -9,7 +9,7 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 Final artifacts go to `data/out/`: PMTiles for the map and NDJSON for `npm run seed`.
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: **Phase 1 in progress.** `download` and `inspect` are implemented; the other steps are planned.
+Status: **Phase 1 in progress.** `download`, `inspect` and `basin` are implemented; the other steps are planned.
 
 ## Prerequisites
 
@@ -44,6 +44,25 @@ review the change, then rerun with `-- --accept-new` to record the new checksum.
 Writes one JSON file per layer to `data/work/inspect/`: columns and types, feature count, CRS, extent
 and three sample rows. `data/work/inspect/report.json` summarizes all layers. **Later steps only use
 attribute names that appear there.**
+
+### `npm run pipeline:basin`
+
+Delineates the basin from HydroBASINS level 12. Configuration is in `pipeline/basin.config.json`.
+
+1. **Outlet.** Picks the sea-draining HydroRIVERS reach (`NEXT_DOWN = 0`) with the largest
+   `UPLAND_SKM` inside a search box and reports it with the runners-up.
+2. **Members.** Takes the level-12 polygon holding that reach plus everything upstream via
+   `NEXT_DOWN`, and checks that this equals the `MAIN_BAS` group.
+3. **Dissolve and measure.** Writes `data/work/basin/basin.geojson` and `hybas_l12.parquet`.
+
+Area has two definitions. HydroBASINS links some endorheic sinks to the surrounding basin through
+a "virtual" `NEXT_DOWN` (TechDoc v1c), and `UP_AREA` excludes those regions:
+
+- **total**: every traversed polygon; this is the outline written to `basin.geojson`.
+- **connected**: only polygons with surface flow to the outlet (`ENDO = 0`).
+
+The report compares the outlet's `UP_AREA`, the sums of `SUB_AREA`, and the dissolved polygon's
+geodesic and Albers areas. It also checks the result against `reference.areaKm2` ± `tolerancePct`.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.

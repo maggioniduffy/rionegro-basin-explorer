@@ -14,7 +14,8 @@
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
     "test:e2e": "playwright test",
     "pipeline:download": "tsx pipeline/steps/download.ts",
-    "pipeline:inspect": "tsx pipeline/steps/inspect.ts"
+    "pipeline:inspect": "tsx pipeline/steps/inspect.ts",
+    "pipeline:basin": "tsx pipeline/steps/basin.ts"
   },
   "dependencies": {
     "mongodb": "^7.7.0",

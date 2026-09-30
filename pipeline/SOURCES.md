@@ -91,8 +91,8 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 - Local copy: `data/raw/alos/AP_27847_PLR_F6470_RT1*` (origin unknown). ALOS PALSAR radiometric terrain
   corrected product processed by the Alaska Satellite Facility: HH/HV/VH/VV backscatter, 12.5 m DEM,
   incidence and layover/shadow maps. Acquired 2011-04-17, UTM 19S.
-- Footprint 35.31°S–35.97°S, 70.57°W–71.12°W, probably north of the Río Negro basin (to be confirmed
-  against the delineated basin).
+- Footprint 35.31°S–35.97°S, 70.57°W–71.12°W: **outside the Río Negro basin**, whose northern edge
+  in the HydroBASINS delineation is 36.17°S (`data/work/basin/report.json`, 2026-09-30).
 - Terms: **not verified.** The ISO metadata asks users to credit ASF processing and says "research
   agreements specify separate conditions by the Foreign Space Agencies" (JAXA for ALOS). Check ASF's
   data use terms before using any of it in the app.
