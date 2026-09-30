@@ -9,7 +9,7 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 Final artifacts go to `data/out/`: PMTiles for the map and NDJSON for `npm run seed`.
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: **Phase 1 in progress.** `download`, `inspect`, `basin` and `rivers` are implemented; the other steps are planned.
+Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers` and `candidates` are implemented; the other steps are planned.
 
 ## Prerequisites
 
@@ -92,6 +92,15 @@ The report checks:
 - a midpoint-in-polygon cross-check;
 - a 1:1 join with matching shared fields (float32 tolerance for `LENGTH_KM` and `UPLAND_SKM`);
 - `LENGTH_KM` against geodesic length.
+
+### `npm run pipeline:candidates`
+
+Lists the major branches of the connected network so they can be named in `pipeline/names.json`
+(HydroRIVERS has no names). A candidate is either the outlet reach, or a branch at a confluence where
+at least two branches drain ≥ 2,000 km² (`-- --min-area=<km²>` to change). Both branches of such a
+confluence are listed. Each candidate's segment runs up the largest branch to the next candidate
+confluence. Segments do not overlap. Writes `data/work/candidates/candidates.json`
+(with OpenStreetMap links at each mouth) and `candidates.geojson` for a GIS viewer.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.

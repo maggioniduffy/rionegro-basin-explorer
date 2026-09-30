@@ -39,3 +39,44 @@ export function upstreamSet<Id>(index: Map<Id, Id[]>, root: Id): Set<Id> {
 export function difference<T>(a: Set<T>, b: Set<T>): T[] {
   return [...a].filter((x) => !b.has(x));
 }
+
+/**
+ * Mouth reaches of major branches: the outlet, plus every reach at a confluence
+ * where at least two upstream branches have area >= `minArea` (all such branches
+ * are returned, so both rivers at a major confluence become candidates).
+ */
+export function majorBranchMouths<Id>(
+  index: Map<Id, Id[]>,
+  area: (id: Id) => number,
+  outlet: Id,
+  minArea: number,
+): Id[] {
+  const mouths = [outlet];
+  for (const id of upstreamSet(index, outlet)) {
+    const big = (index.get(id) ?? []).filter((up) => area(up) >= minArea);
+    if (big.length >= 2) mouths.push(...big);
+  }
+  return mouths;
+}
+
+/**
+ * Reaches from `start` upstream, always taking the branch with the largest area.
+ * Stops at a headwater, or before entering a reach in `stopAt`.
+ */
+export function traceLargestUpstream<Id>(
+  index: Map<Id, Id[]>,
+  area: (id: Id) => number,
+  start: Id,
+  stopAt: ReadonlySet<Id> = new Set(),
+): Id[] {
+  const path = [start];
+  let node = start;
+  for (;;) {
+    const ups = index.get(node) ?? [];
+    if (ups.length === 0) return path;
+    const next = ups.reduce((best, id) => (area(id) > area(best) ? id : best));
+    if (stopAt.has(next)) return path;
+    path.push(next);
+    node = next;
+  }
+}

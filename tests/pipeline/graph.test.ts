@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   difference,
+  majorBranchMouths,
+  traceLargestUpstream,
   upstreamIndex,
   upstreamSet,
 } from "../../pipeline/lib/graph";
@@ -54,5 +56,48 @@ describe("upstreamSet", () => {
 describe("difference", () => {
   it("lists elements only in the first set", () => {
     expect(difference(new Set([1, 2, 3]), new Set([2]))).toEqual([1, 3]);
+  });
+});
+
+//  Outlet 1 ← 2 ← 3 (confluence): 4 (area 60) and 5 (area 40) join into 3.
+//  4 ← 6 ← 7 (headwater); 2 also gets a small tributary 8 (area 5).
+describe("major branches", () => {
+  const areas = new Map([
+    [1, 106],
+    [2, 106],
+    [3, 100],
+    [4, 60],
+    [5, 40],
+    [6, 55],
+    [7, 50],
+    [8, 5],
+  ]);
+  const area = (id: number) => areas.get(id) ?? 0;
+  const index = upstreamIndex([
+    { id: 2, nextDown: 1 },
+    { id: 3, nextDown: 2 },
+    { id: 8, nextDown: 2 },
+    { id: 4, nextDown: 3 },
+    { id: 5, nextDown: 3 },
+    { id: 6, nextDown: 4 },
+    { id: 7, nextDown: 6 },
+  ]);
+
+  it("returns the outlet and both branches of a major confluence", () => {
+    expect(majorBranchMouths(index, area, 1, 20).sort()).toEqual([1, 4, 5]);
+  });
+
+  it("ignores confluences with only one large branch", () => {
+    expect(majorBranchMouths(index, area, 1, 50)).toEqual([1]);
+  });
+
+  it("traces the largest branch to the headwater", () => {
+    expect(traceLargestUpstream(index, area, 1)).toEqual([1, 2, 3, 4, 6, 7]);
+  });
+
+  it("stops before entering another candidate's mouth", () => {
+    expect(traceLargestUpstream(index, area, 1, new Set([4, 5]))).toEqual([
+      1, 2, 3,
+    ]);
   });
 });
