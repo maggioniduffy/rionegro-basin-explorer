@@ -28,6 +28,13 @@ and a strip of land around it is visible, with river panels and a sub-basin view
   - CI: GitHub Actions runs `npm run check`. Playwright stays local until Phase 2.
   - `/api/health` pings Mongo to prove the wiring.
   - Dark theme is the default.
+- **Phase 1 decisions (2026-09-30):**
+  - Basin area shown in the app is the computed HydroBASINS polygon area, which includes the endorheic parts virtually linked to the basin: 136,204 km².
+  - AIC's 140,000 km² ("La Cuenca" page, a rounded figure) is only a sanity check, ±10%. The latest result is −2.7%.
+  - The surface-connected area (113,040 km², matching HydroBASINS `UP_AREA`) stays in the report as context.
+  - DuckDB comes from the npm package `@duckdb/node-api`.
+  - Only small outputs are committed (`report.json`, `rivers.ndjson`). `reaches.ndjson` and GeoJSON are regenerated locally.
+  - Raw data is not stored in the cloud; `pipeline/checksums.json` pins the inputs.
 
 ## Repo layout
 
@@ -54,8 +61,8 @@ CLAUDE.md  PLAN.md
 
 ## Phase 1 — Pipeline v1 (HydroRIVERS / HydroATLAS / HydroBASINS only)
 
-- [ ] Download South America HydroRIVERS, RiverATLAS, HydroBASINS into `data/raw/` with checksums
-- [ ] Delineate the basin: traverse HydroBASINS upstream from the Río Negro mouth via `NEXT_DOWN`, dissolve
+- [x] Download South America HydroRIVERS, RiverATLAS, HydroBASINS into `data/raw/` with checksums
+- [x] Delineate the basin: traverse HydroBASINS upstream from the Río Negro mouth via `NEXT_DOWN`, dissolve
 - [ ] Clip river reaches to the basin and join RiverATLAS attributes
 - [ ] Build "named rivers": trace main stem upstream from each confluence choosing the branch with the largest upstream area; aggregate length, source/mouth elevation, discharge at outlet
 - [ ] Manual `names.json` for the ~10 largest rivers (HydroRIVERS has no names)
@@ -118,7 +125,6 @@ CLAUDE.md  PLAN.md
 
 - Imagery provider and license
 - PMTiles hosting (`/public` vs object storage)
-- Official basin area figure for validation
 - Exact sub-basin list per level (validate against AIC/official cartography)
 - Whether Mongo stays or a static JSON is enough (revisit after Phase 3)
 
