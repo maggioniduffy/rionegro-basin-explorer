@@ -181,6 +181,17 @@ level is present at each checked zoom, and records file sizes and the tippecanoe
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
 `export` → `mask` → `tiles`.
 
+## Tools
+
+### `npm run inspect:file -- <path> [--layer=<name>] [--samples=<n>]`
+
+Profiles one file without dumping it: columns and types, row count, DuckDB `SUMMARIZE` stats (null
+%, min/max, approximate distinct values, mean), geometry types, extent and invalid count, and three
+sample rows without geometry. It reads Parquet, CSV, NDJSON and anything GDAL opens (GeoJSON,
+Shapefile, or a FileGDB with `--layer`). The full profile goes to
+`data/work/inspect/adhoc/<file>.json`. The `inspect-dataset` skill and the `data-inspector` agent
+(`.claude/`) use it.
+
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.
 

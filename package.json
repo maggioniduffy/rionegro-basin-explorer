@@ -24,7 +24,8 @@
     "pipeline:mask": "tsx pipeline/steps/mask.ts",
     "pipeline:tiles": "tsx pipeline/steps/tiles.ts",
     "predev": "tsx scripts/copy-maplibre-worker.ts",
-    "prebuild": "tsx scripts/copy-maplibre-worker.ts"
+    "prebuild": "tsx scripts/copy-maplibre-worker.ts",
+    "inspect:file": "tsx pipeline/tools/inspect-file.ts"
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",

@@ -67,7 +67,7 @@ CLAUDE.md  PLAN.md
 - [x] Decide: imagery provider, PMTiles hosting
 - [x] `pipeline/SOURCES.md` started (HydroSHEDS/HydroATLAS, IGN, OSM, imagery): license + citation for each
 - [x] Playwright set up with one smoke screenshot
-- [ ] `.claude/agents/`: `data-inspector`, `pipeline-runner`, `license-checker`; skill `inspect-dataset` (verify frontmatter fields in the Claude Code docs first)
+- [x] `.claude/agents/`: `data-inspector`, `pipeline-runner`, `license-checker`; skill `inspect-dataset` (verify frontmatter fields in the Claude Code docs first)
 - **Done when:** repo runs, `npm run check` passes, empty deploy is live in both locales.
 
 ## Phase 1 — Pipeline v1 (HydroRIVERS / HydroATLAS / HydroBASINS only) ✅
