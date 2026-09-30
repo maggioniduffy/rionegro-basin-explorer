@@ -21,6 +21,7 @@ import {
   BACKGROUND_LAYER_ID,
   buildStyle,
   FLOW_CLASSES,
+  IMAGERY_LAYER_ID,
   MASK_LAYER_IDS,
   OUTLINE_LAYER_ID,
   reachFilter,
@@ -68,7 +69,6 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
       const id = MASK_LAYER_IDS[k];
       if (!id) return;
       map.setPaintProperty(id, "fill-opacity", opacity);
-      map.setLayoutProperty(id, "visibility", opacity > 0 ? "visible" : "none");
     });
   }
   if (!prev || s.hideEndorheic !== prev.hideEndorheic) {
@@ -86,12 +86,22 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
 
 export default function MapView() {
   const t = useTranslations("map");
+  // Read by the map-creating effect, which must not depend on `t`: `t` changes on a
+  // locale switch, and the map should survive that (only its labels change).
+  const tRef = useRef(t);
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   // Client-only component (ssr: false), so document is available here.
   const [supported] = useState(webglSupported);
 
   useEffect(() => {
+    tRef.current = t;
+    // MapLibre sets the canvas label once, from the locale option; keep it current.
+    mapRef.current?.getCanvas().setAttribute("aria-label", t("maplibre.title"));
+  }, [t]);
+
+  useEffect(() => {
+    const t = tRef.current;
     const el = container.current;
     if (!el || !supported) return;
     initMaplibre();
@@ -157,13 +167,29 @@ export default function MapView() {
     map.on("idle", () => setIdle(true));
     map.on("error", (e) => console.error(e.error));
 
+    // Reveal the imagery only once the mask can cover it.
+    const revealImagery = () => {
+      if (!map.getLayer(IMAGERY_LAYER_ID) || !map.isSourceLoaded("mask"))
+        return;
+      map.setPaintProperty(IMAGERY_LAYER_ID, "raster-opacity", 1);
+      map.off("sourcedata", revealImagery);
+    };
+    map.on("sourcedata", revealImagery);
+
     let loaded = false;
     map.on("load", () => {
       loaded = true;
       applyState(map, useMapStore.getState());
     });
     const unsubscribe = useMapStore.subscribe((s, prev) => {
-      if (!loaded) return;
+      // Only style state needs applying; other store fields don't touch the map.
+      if (
+        !loaded ||
+        (s.visibleLand === prev.visibleLand &&
+          s.hideEndorheic === prev.hideEndorheic &&
+          s.theme === prev.theme)
+      )
+        return;
       setIdle(false);
       applyState(map, s, prev);
     });
@@ -173,7 +199,7 @@ export default function MapView() {
       map.remove();
       mapRef.current = null;
     };
-  }, [t, supported]);
+  }, [supported]);
 
   if (!supported) {
     return (

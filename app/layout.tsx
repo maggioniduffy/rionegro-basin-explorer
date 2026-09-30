@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
-import { notFound } from "next/navigation";
-import { routing } from "@/i18n/routing";
 import { THEME_STORAGE_KEY } from "@/lib/store";
-import "../globals.css";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,10 +19,6 @@ const geistMono = Geist_Mono({
 // never flashes dark; ThemeToggle adopts it after hydration.
 const themeScript = `try{if(localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)})==="light")document.documentElement.dataset.theme="light"}catch(e){}`;
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
   return {
@@ -33,14 +27,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: LayoutProps<"/[locale]">) {
-  const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
+// The locale comes from a cookie (i18n/request.ts), so this layout renders per request.
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
 
   return (
     <html

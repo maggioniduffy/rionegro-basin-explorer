@@ -17,7 +17,7 @@ and a strip of land around it is visible, with river panels and a sub-basin view
 - **"Visible land" mask (prototype):** black overlay with a precomputed river-buffer "hole" at a few widths, driven by the slider. Fallback if edges/performance are poor: a raster reveal grid with a custom tile protocol, as in Amazon Basin Explorer.
 - **Imagery:** tile URL from an env var so the provider can be swapped. Verify the license/attribution terms of the chosen provider (Esri World Imagery is the reference app's choice) before a public deploy.
 - **Data pipeline:** TS scripts (`tsx`) orchestrating DuckDB, GDAL/ogr2ogr and tippecanoe. Python only if DEM-based delineation is needed.
-- **i18n:** next-intl, locale-prefixed routes (`/en`, `/es`), messages in `/messages`. Verify current next-intl version/API against the docs when installing. Proper nouns are not translated; units toggle km/mi independently of locale.
+- **i18n:** next-intl without i18n routing: no locale in the URL, the locale lives in the `NEXT_LOCALE` cookie (fallback `Accept-Language`, then `es`), messages in `/messages`. Verify current next-intl version/API against the docs when installing. Proper nouns are not translated; units toggle km/mi independently of locale.
 - **State:** Zustand synced to URL (`?r=<river>&s=<subbasin>&lang` via route).
 - **Hosting/cost:** Vercel + Atlas M0. PMTiles in `/public` if small, otherwise object storage with HTTP Range support. Check limits and pricing for each before committing.
 - **Phase 0 decisions (2026-09-29):**
@@ -44,6 +44,7 @@ and a strip of land around it is visible, with river panels and a sub-basin view
   - tippecanoe v2.82.0 is built locally into `~/.local` (no sudo; see `pipeline/README.md`).
   - Visible Land buffers scale with Strahler order (`pipeline/map.config.json`). The six levels show 4.6%, 9%, 17%, 33%, 57% and 100% of the basin (`data/work/mask/report.json`).
   - The endorheic filter hides lines only; the mask always includes endorheic reaches.
+  - Locale prefixes dropped (reverses the Phase 0 `/en`, `/es` routes). A prefixed root layout remounted the whole tree on a language switch, rebuilding the map. Now the switcher sets the cookie and calls `router.refresh()`, so the map, the slider and the URL are kept. Old `/en/…` and `/es/…` links are redirected by `proxy.ts`, which sets the cookie. Pages now render per request because they read cookies and headers.
 
 ## Repo layout
 

@@ -3,9 +3,10 @@ import en from "../messages/en.json";
 import es from "../messages/es.json";
 import { openMap, setVisibleLand, waitForMapIdle } from "./map-helpers";
 
-test.describe("map (/en)", () => {
+test.describe("map (en)", () => {
+  test.use({ locale: "en-US" });
   test.beforeEach(async ({ page }) => {
-    await openMap(page, "/en");
+    await openMap(page, "/");
   });
 
   test("rivers only: narrowest Visible Land level", async ({ page }) => {
@@ -54,9 +55,14 @@ test.describe("map (/en)", () => {
   });
 });
 
-test("map controls are translated (/es)", async ({ page }) => {
-  await openMap(page, "/es");
-  await expect(page.getByRole("button", { name: es.map.zoomIn })).toBeVisible();
-  await expect(page.getByLabel(es.controls.visibleLand)).toBeVisible();
-  await expect(page.getByText(es.legend.modeledNote)).toBeVisible();
+test.describe("map (es)", () => {
+  test.use({ locale: "es-AR" });
+  test("map controls are translated", async ({ page }) => {
+    await openMap(page, "/");
+    await expect(
+      page.getByRole("button", { name: es.map.zoomIn }),
+    ).toBeVisible();
+    await expect(page.getByLabel(es.controls.visibleLand)).toBeVisible();
+    await expect(page.getByText(es.legend.modeledNote)).toBeVisible();
+  });
 });

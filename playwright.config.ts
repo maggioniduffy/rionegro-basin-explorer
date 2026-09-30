@@ -27,7 +27,7 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run build && npx next start -p ${PORT}`,
-    url: `http://localhost:${PORT}/en`,
+    url: `http://localhost:${PORT}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     // Stubbed imagery (e2e/map-helpers.ts) so screenshots match locally and in CI.

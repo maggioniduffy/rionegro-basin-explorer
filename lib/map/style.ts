@@ -40,6 +40,7 @@ export const MASK_LAYER_IDS = Array.from({ length: MASK_LEVEL_COUNT }, (_, k) =>
 );
 export const REACH_LAYER_IDS = FLOW_CLASSES.map(reachLayerId);
 export const OUTLINE_LAYER_ID = "basin-outline";
+export const IMAGERY_LAYER_ID = "imagery";
 export const BACKGROUND_LAYER_ID = "background";
 
 // tippecanoe omits null attributes, so "no GIRES prediction" is a missing property.
@@ -88,7 +89,8 @@ export interface StyleOptions {
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
   const { mask, outline } = THEME_COLORS[o.theme];
-  const { xmin, ymin, xmax, ymax } = mapConfig.bounds;
+  // Everything outside the basin is always masked, so no imagery is needed there.
+  const { xmin, ymin, xmax, ymax } = mapConfig.basinBbox;
   const opacities = maskOpacities(o.visibleLand, MASK_LEVEL_COUNT);
 
   const layers: LayerSpecification[] = [
@@ -99,7 +101,14 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     },
   ];
   if (o.imageryUrl) {
-    layers.push({ id: "imagery", type: "raster", source: "imagery" });
+    layers.push({
+      id: IMAGERY_LAYER_ID,
+      type: "raster",
+      source: "imagery",
+      // Transparent until the mask has loaded (MapView fades it in), so the imagery
+      // outside the basin never shows on first load or after a locale switch.
+      paint: { "raster-opacity": 0 },
+    });
   }
   for (let k = 0; k < MASK_LEVEL_COUNT; k++) {
     const opacity = opacities[k] ?? 0;
@@ -109,8 +118,15 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       source: "mask",
       "source-layer": "mask",
       filter: ["==", ["get", "level"], k],
-      layout: { visibility: opacity > 0 ? "visible" : "none" },
-      paint: { "fill-color": mask, "fill-opacity": opacity },
+      // Always visible, driven by opacity only: toggling visibility makes MapLibre
+      // re-process the source's tiles, and while it does the level isn't drawn, so the
+      // imagery outside the basin flashes through.
+      paint: {
+        "fill-color": mask,
+        "fill-opacity": opacity,
+        // Follow the slider exactly; the default 300 ms fade lags behind a drag.
+        "fill-opacity-transition": { duration: 0, delay: 0 },
+      },
     });
   }
   layers.push({
@@ -148,7 +164,6 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
               tiles: [o.imageryUrl],
               tileSize: 256,
               maxzoom: IMAGERY_MAXZOOM,
-              // Tiles outside the mask rectangle would never be seen.
               bounds: [xmin, ymin, xmax, ymax],
               attribution: o.imageryAttribution ?? "",
             },

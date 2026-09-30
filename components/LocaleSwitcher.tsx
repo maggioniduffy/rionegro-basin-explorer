@@ -1,42 +1,67 @@
 "use client";
 
-import { hasLocale, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
+import {
+  isLocale,
+  LOCALE_COOKIE,
+  LOCALE_COOKIE_MAX_AGE,
+  LOCALES,
+  type Locale,
+} from "@/i18n/config";
+
+/** Persist the choice; i18n/request.ts reads it on the next server render. */
+function saveLocale(locale: Locale) {
+  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE}; samesite=lax`;
+}
 
 export function LocaleSwitcher() {
   const t = useTranslations("localeSwitcher");
   const locale = useLocale();
-  const pathname = usePathname();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  // No navigation: save the choice and re-render server components with the new
+  // messages. Client state (the map, the slider) and the URL stay as they are.
   function onChange(nextLocale: string) {
-    if (!hasLocale(routing.locales, nextLocale)) return;
-    // Keep the query string (?r=, ?s= in later phases) when switching locale.
-    // Read at event time to avoid a Suspense boundary for useSearchParams.
-    const href = `${pathname}${window.location.search}`;
-    startTransition(() => {
-      router.replace(href, { locale: nextLocale });
-    });
+    if (!isLocale(nextLocale)) return;
+    saveLocale(nextLocale);
+    startTransition(() => router.refresh());
   }
 
   return (
-    <label className="text-muted flex items-center gap-2 text-sm">
-      <span>{t("label")}</span>
-      <select
-        className="text-foreground rounded border border-(--border) bg-transparent px-2 py-1"
-        value={locale}
-        disabled={isPending}
-        onChange={(e) => onChange(e.target.value)}
+    <div className="text-muted flex items-center gap-2 text-sm">
+      <span id="locale-switcher-label">{t("label")}</span>
+      {/* Two locales: a segmented toggle, one click on the other language switches. */}
+      <div
+        role="group"
+        aria-labelledby="locale-switcher-label"
+        className="flex overflow-hidden rounded-md border border-(--border)"
       >
-        {routing.locales.map((l) => (
-          <option key={l} value={l} className="bg-background">
-            {t("locale", { locale: l })}
-          </option>
-        ))}
-      </select>
-    </label>
+        {LOCALES.map((l) => {
+          const active = l === locale;
+          return (
+            <button
+              key={l}
+              type="button"
+              lang={l}
+              aria-pressed={active}
+              aria-label={t("locale", { locale: l })}
+              title={t("locale", { locale: l })}
+              disabled={isPending}
+              onClick={() => !active && onChange(l)}
+              className={`px-2.5 py-1 font-medium transition-colors ${
+                active
+                  ? "bg-sky-400 text-black"
+                  : "text-foreground hover:bg-(--panel-hover)"
+              }`}
+            >
+              {t("short", { locale: l })}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -8,7 +8,8 @@
   },
   "localeSwitcher": {
     "label": "Language",
-    "locale": "{locale, select, en {English} es {Español} other {Unknown}}"
+    "locale": "{locale, select, en {English} es {Español} other {Unknown}}",
+    "short": "{locale, select, en {EN} es {ES} other {?}}"
   },
   "controls": {
     "label": "Map controls",
