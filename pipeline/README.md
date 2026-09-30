@@ -9,7 +9,7 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 Final artifacts go to `data/out/`: PMTiles for the map and NDJSON for `npm run seed`.
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers` and `candidates` are implemented; the other steps are planned.
+Status: **Phase 1 in progress.** `download`, `inspect`, `basin`, `rivers`, `candidates` and `osm-names` are implemented; the other steps are planned.
 
 ## Prerequisites
 
@@ -101,6 +101,15 @@ at least two branches drain ≥ 2,000 km² (`-- --min-area=<km²>` to change). B
 confluence are listed. Each candidate's segment runs up the largest branch to the next candidate
 confluence. Segments do not overlap. Writes `data/work/candidates/candidates.json`
 (with OpenStreetMap links at each mouth) and `candidates.geojson` for a GIS viewer.
+
+### `npm run pipeline:osm-names`
+
+Name evidence from OpenStreetMap (ODbL; see SOURCES.md). The step makes **one** Overpass request
+for the named waterways and water bodies in the basin bbox, cached in
+`data/work/osm-names/overpass.json`, so reruns send nothing. It retries on 429 and 504, which the
+public instance returns when busy. Each candidate segment gets up to five sample points, matched
+locally to OSM lines within 750 m. `matches.json` lists the names per candidate, such as
+"Río Limay 5/5". A person reviews it to write `pipeline/names.json`.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.

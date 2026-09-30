@@ -8,8 +8,8 @@
  * candidate confluence, so segments partition the major network without overlap.
  * Every row has an OpenStreetMap link at the mouth for checking the name.
  *
- * Outputs in data/work/candidates/: candidates.json, candidates.geojson (one line
- * per segment, for a GIS viewer), report.json.
+ * Outputs in data/work/candidates/: candidates.json (with each segment's reach
+ * ids), candidates.geojson (one line per segment, for a GIS viewer), report.json.
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import { lit, openDb, type Row } from "../lib/duckdb";
@@ -128,14 +128,7 @@ async function main() {
     };
     const jsonFile = `${outDir}/candidates.json`;
     const geojsonFile = `${outDir}/candidates.geojson`;
-    await writeFile(
-      jsonFile,
-      JSON.stringify(
-        withParent.map((c) => ({ ...c, segment: undefined })),
-        null,
-        2,
-      ) + "\n",
-    );
+    await writeFile(jsonFile, JSON.stringify(withParent, null, 2) + "\n");
     await writeFile(geojsonFile, JSON.stringify(geojson));
 
     const coveredKm = candidates.reduce((s, c) => s + c.segmentKm, 0);

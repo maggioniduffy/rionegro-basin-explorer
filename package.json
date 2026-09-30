@@ -17,7 +17,8 @@
     "pipeline:inspect": "tsx pipeline/steps/inspect.ts",
     "pipeline:basin": "tsx pipeline/steps/basin.ts",
     "pipeline:rivers": "tsx pipeline/steps/rivers.ts",
-    "pipeline:candidates": "tsx pipeline/steps/candidates.ts"
+    "pipeline:candidates": "tsx pipeline/steps/candidates.ts",
+    "pipeline:osm-names": "tsx pipeline/steps/osm-names.ts"
   },
   "dependencies": {
     "mongodb": "^7.7.0",
