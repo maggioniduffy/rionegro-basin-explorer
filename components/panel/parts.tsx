@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { formatQuantity, type Quantity } from "@/lib/units";
+import { Icon } from "../Icon";
 
 /** Which caveat explains a modeled value (messages panel.caveat.*). */
 export type Caveat =
@@ -65,7 +66,10 @@ export function Caveats({ caveats }: { caveats: Caveat[] }) {
     <footer className="text-muted flex flex-col gap-1 border-t border-(--border) pt-3 text-xs">
       {caveats.length > 0 && (
         <>
-          <p className="font-medium">{t("title")}</p>
+          <p className="flex items-center gap-1.5 font-medium">
+            <Icon name="info" size={14} className="shrink-0" />
+            {t("title")}
+          </p>
           <ul className="flex list-disc flex-col gap-1 pl-4">
             {caveats.map((c) => (
               <li key={c}>{t(c)}</li>

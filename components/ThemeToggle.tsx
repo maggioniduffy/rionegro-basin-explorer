@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import type { Theme } from "@/lib/map/style";
 import { THEME_STORAGE_KEY, useMapStore } from "@/lib/store";
+import { Icon } from "./Icon";
 
 export function ThemeToggle() {
   const t = useTranslations("theme");
@@ -31,8 +32,9 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-pressed={theme === "light"}
-      className="self-start rounded-md border border-(--border) px-2.5 py-1 hover:bg-(--panel-hover)"
+      className="flex items-center gap-2 self-start rounded-md border border-(--border) px-2.5 py-1 hover:bg-(--panel-hover)"
     >
+      <Icon name="theme" />
       {theme === "dark" ? t("toLight") : t("toDark")}
     </button>
   );

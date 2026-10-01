@@ -6,6 +6,7 @@ import type { SearchHit } from "@/lib/data/queries";
 import { parseSearchQuery } from "@/lib/data/params";
 import { useMapStore } from "@/lib/store";
 import { useApi } from "@/lib/use-api";
+import { Icon } from "./Icon";
 
 const DEBOUNCE_MS = 200;
 
@@ -60,6 +61,10 @@ export function SearchBox() {
 
   return (
     <div className="relative w-full max-w-64">
+      <Icon
+        name="search"
+        className="text-muted pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2"
+      />
       <input
         type="search"
         role="combobox"
@@ -81,7 +86,7 @@ export function SearchBox() {
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
-        className="w-full rounded-md border border-(--border) bg-(--panel) px-3 py-1.5 text-sm shadow backdrop-blur placeholder:text-(--muted) focus:ring-2 focus:ring-sky-400/60 focus:outline-none"
+        className="w-full rounded-md border border-(--border) bg-(--panel) py-1.5 pr-3 pl-8 text-sm shadow backdrop-blur placeholder:text-(--muted) focus:ring-2 focus:ring-sky-400/60 focus:outline-none"
       />
       {showList && (
         <ul

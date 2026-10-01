@@ -10,6 +10,7 @@ import {
   LOCALES,
   type Locale,
 } from "@/i18n/config";
+import { Icon } from "./Icon";
 
 /** Persist the choice; i18n/request.ts reads it on the next server render. */
 function saveLocale(locale: Locale) {
@@ -31,8 +32,14 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <div className="text-muted flex items-center gap-2 text-sm">
-      <span id="locale-switcher-label">{t("label")}</span>
+    <div
+      className="text-muted flex items-center gap-2 text-sm"
+      title={t("label")}
+    >
+      <Icon name="language" />
+      <span id="locale-switcher-label" className="sr-only">
+        {t("label")}
+      </span>
       {/* Two locales: a segmented toggle, one click on the other language switches. */}
       <div
         role="group"

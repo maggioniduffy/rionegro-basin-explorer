@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { MASK_LEVEL_COUNT } from "@/lib/map/config";
 import { useMapStore } from "@/lib/store";
+import { Icon } from "./Icon";
 import { Legend } from "./Legend";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -32,23 +33,14 @@ export function Controls() {
         title={open ? t("minimize") : t("expand")}
         className="flex items-center justify-between gap-3 rounded-lg px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
       >
-        <span>{t("label")}</span>
-        <svg
-          aria-hidden
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          className={`transition-transform ${open ? "" : "rotate-180"}`}
-        >
-          <path
-            d="M2 4.5 6 8.5 10 4.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <span className="flex items-center gap-2">
+          <Icon name="layers" />
+          {t("label")}
+        </span>
+        <Icon
+          name="chevron"
+          className={`transition-transform ${open ? "rotate-90" : "-rotate-90"}`}
+        />
       </button>
 
       {/* Hidden rather than unmounted, so slider and checkbox keep their state. */}
@@ -58,7 +50,11 @@ export function Controls() {
         className="flex flex-col gap-4 px-4 pt-1 pb-4"
       >
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="visible-land" className="font-medium">
+          <label
+            htmlFor="visible-land"
+            className="flex items-center gap-2 font-medium"
+          >
+            <Icon name="mask" />
             {t("visibleLand")}
           </label>
           <input

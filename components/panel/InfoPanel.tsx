@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import type { ReachResponse, RiverResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
 import { useApi } from "@/lib/use-api";
+import { Icon } from "../Icon";
 import type { Selection } from "@/lib/url-state";
 import { ReachPanel } from "./ReachPanel";
 import { RiverPanel } from "./RiverPanel";
@@ -60,14 +61,7 @@ function Panel({ selection }: { selection: Selection }) {
         title={t("close")}
         className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-md hover:bg-(--panel-hover)"
       >
-        <svg aria-hidden width="12" height="12" viewBox="0 0 12 12">
-          <path
-            d="M2 2l8 8M10 2l-8 8"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Icon name="close" />
       </button>
       {state.status === "loading" && (
         <p className="text-muted pr-8">{t("loading")}</p>
