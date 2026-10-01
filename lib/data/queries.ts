@@ -26,9 +26,10 @@ export interface SearchHit {
   name: string;
 }
 
-const rivers = () => getDb().collection<RiverDoc>("rivers");
-const reaches = () => getDb().collection<Reach>("reaches");
-const subbasins = () => getDb().collection<Subbasin>("subbasins");
+const rivers = async () => (await getDb()).collection<RiverDoc>("rivers");
+const reaches = async () => (await getDb()).collection<Reach>("reaches");
+const subbasins = async () =>
+  (await getDb()).collection<Subbasin>("subbasins");
 
 /** Names of `ids`, in the order given; unknown ids are left out. */
 async function names(
@@ -36,7 +37,7 @@ async function names(
   ids: string[],
 ): Promise<NamedRef[]> {
   if (ids.length === 0) return [];
-  const docs = await getDb()
+  const docs = await (await getDb())
     .collection<{ _id: string; name: string }>(collection)
     .find({ _id: { $in: ids } }, { projection: { name: 1 } })
     .toArray();
@@ -49,7 +50,7 @@ async function names(
 
 async function riverName(id: string | null): Promise<string | null> {
   if (!id || id === "sea") return null;
-  const doc = await rivers().findOne(
+  const doc = await (await rivers()).findOne(
     { _id: id },
     { projection: { name: 1 } },
   );
@@ -57,7 +58,7 @@ async function riverName(id: string | null): Promise<string | null> {
 }
 
 export async function getRiver(id: string): Promise<RiverResponse | null> {
-  const doc = await rivers().findOne(
+  const doc = await (await rivers()).findOne(
     { _id: id },
     { projection: { searchTerms: 0 } },
   );
@@ -66,7 +67,7 @@ export async function getRiver(id: string): Promise<RiverResponse | null> {
 }
 
 export async function getReach(id: number): Promise<ReachResponse | null> {
-  const doc = await reaches().findOne({ _id: id });
+  const doc = await (await reaches()).findOne({ _id: id });
   if (!doc) return null;
   return { ...doc, riverName: await riverName(doc.river) };
 }
@@ -74,7 +75,7 @@ export async function getReach(id: number): Promise<ReachResponse | null> {
 export async function getSubbasin(
   id: string,
 ): Promise<SubbasinResponse | null> {
-  const doc = await subbasins().findOne({ _id: id });
+  const doc = await (await subbasins()).findOne({ _id: id });
   if (!doc) return null;
   const [parent, children, riverRefs] = await Promise.all([
     doc.parentId === null ? [] : names("subbasins", [doc.parentId]),
@@ -86,7 +87,7 @@ export async function getSubbasin(
 
 /** Rivers whose name has a word starting with the normalized query; longest first. */
 export async function searchRivers(q: string): Promise<SearchHit[]> {
-  const docs = await rivers()
+  const docs = await (await rivers())
     .find(
       { searchTerms: { $regex: searchPattern(q) } },
       { projection: { name: 1 } },

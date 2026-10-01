@@ -3,7 +3,7 @@ import { getDb } from "@/lib/mongo";
 export async function GET() {
   let db: "up" | "down";
   try {
-    await getDb().command({ ping: 1 });
+    await (await getDb()).command({ ping: 1 });
     db = "up";
   } catch (error) {
     // Log server-side only; the response never includes error details.
