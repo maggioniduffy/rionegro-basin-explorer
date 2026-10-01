@@ -7,6 +7,8 @@
  *   public/tiles/mask.pmtiles    layers `mask` (Visible Land levels) and `endorheic` (land
  *                                visible only because of endorheic drainage, per level),
  *                                both from pipeline:mask
+ *   public/tiles/subbasins.pmtiles layer `subbasins` (own areas from pipeline:subbasins);
+ *                                --detect-shared-borders keeps neighbours gap-free
  *
  * The files are committed: Vercel serves them from /public and tippecanoe does not run
  * there. Feature and tile-size limits are off, so no reach is dropped; the report
@@ -64,11 +66,30 @@ function run(cmd: string, args: string[]): Promise<string> {
 }
 
 /** Distinct values of `prop` among the features of one layer at one zoom. */
-async function decodeDistinct(
+function decodeDistinct(
   file: string,
   layer: string,
   zoom: number,
   prop: string,
+): Promise<Set<string>> {
+  return decodeMatches(file, layer, zoom, `"${prop}": ?(-?\\d+)`);
+}
+
+/** As decodeDistinct, for a string-valued property. */
+function decodeDistinctString(
+  file: string,
+  layer: string,
+  zoom: number,
+  prop: string,
+): Promise<Set<string>> {
+  return decodeMatches(file, layer, zoom, `"${prop}": ?"([^"]*)"`);
+}
+
+async function decodeMatches(
+  file: string,
+  layer: string,
+  zoom: number,
+  regex: string,
 ): Promise<Set<string>> {
   const child = spawn(DECODE, [
     `--layer=${layer}`,
@@ -77,7 +98,7 @@ async function decodeDistinct(
     file,
   ]);
   const seen = new Set<string>();
-  const pattern = new RegExp(`"${prop}": ?(-?\\d+)`);
+  const pattern = new RegExp(regex);
   const lines = createInterface({ input: child.stdout });
   for await (const line of lines) {
     const m = pattern.exec(line);
@@ -132,9 +153,11 @@ async function main() {
   const maskIn = requireInput(workPath("tiles/mask.geojson"));
   const endoIn = requireInput(workPath("tiles/mask_endorheic.geojson"));
   const lakesIn = requireInput(workPath("lakes/lakes.geojson"));
+  const subbasinsIn = requireInput(workPath("tiles/subbasins.geojson"));
   const reachesZ = workPath("tiles/reaches.minzoom.geojson");
   const riversOut = `${TILES_DIR}/rivers.pmtiles`;
   const maskOut = `${TILES_DIR}/mask.pmtiles`;
+  const subbasinsOut = `${TILES_DIR}/subbasins.pmtiles`;
   await mkdir(TILES_DIR, { recursive: true });
   const maxzoom = mapConfig.maxzoom;
   const version = (await run(TIPPECANOE, ["--version"])).trim();
@@ -189,6 +212,18 @@ async function main() {
     `--named-layer=mask:${maskIn}`,
     `--named-layer=endorheic:${endoIn}`,
   ]);
+  await rm(subbasinsOut, { force: true });
+  await run(TIPPECANOE, [
+    ...common,
+    `--output=${subbasinsOut}`,
+    "--detect-shared-borders",
+    `--named-layer=subbasins:${subbasinsIn}`,
+  ]);
+  const subbasinIds = new Set(
+    (
+      JSON.parse(await readFile(subbasinsIn, "utf8")) as { features: Feature[] }
+    ).features.map((f) => String(f.properties.id)),
+  );
 
   // 3. Decode back: reach ids per zoom vs the expected set; mask levels per zoom.
   const reachesByZoom = [];
@@ -224,10 +259,17 @@ async function main() {
   for (const z of [minzoom, Math.round((minzoom + maxzoom) / 2), maxzoom]) {
     const got = await decodeDistinct(maskOut, "mask", z, "level");
     const endo = await decodeDistinct(maskOut, "endorheic", z, "level");
+    const subbasins = await decodeDistinctString(
+      subbasinsOut,
+      "subbasins",
+      z,
+      "id",
+    );
     maskLevelsByZoom.push({
       zoom: z,
       levels: [...got].map(Number).sort(),
       endorheicLevels: [...endo].map(Number).sort(),
+      subbasins: [...subbasins].sort(),
     });
   }
 
@@ -248,6 +290,11 @@ async function main() {
     everyEndorheicLevelAtEveryCheckedZoom: maskLevelsByZoom.every(
       (m) => m.endorheicLevels.length === levelCount,
     ),
+    everySubbasinAtEveryCheckedZoom: maskLevelsByZoom.every(
+      (m) =>
+        m.subbasins.length === subbasinIds.size &&
+        m.subbasins.every((id) => subbasinIds.has(id)),
+    ),
   };
   await writeReport("tiles", {
     ok: Object.values(checks).every(Boolean),
@@ -261,8 +308,9 @@ async function main() {
     sizesKb: {
       [rel(riversOut)]: await sizeKb(riversOut),
       [rel(maskOut)]: await sizeKb(maskOut),
+      [rel(subbasinsOut)]: await sizeKb(subbasinsOut),
     },
-    outputs: [rel(riversOut), rel(maskOut)],
+    outputs: [rel(riversOut), rel(maskOut), rel(subbasinsOut)],
   });
   if (!Object.values(checks).every(Boolean))
     throw new Error(`tiles checks failed: ${JSON.stringify(checks)}`);

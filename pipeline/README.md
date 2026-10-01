@@ -10,7 +10,8 @@ Final artifacts: NDJSON for `npm run seed` in `data/out/`, and PMTiles for the m
 (committed, because Vercel serves them from `/public` and tippecanoe does not run there).
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-Status: Phase 1 is complete (`download` … `export`). Phase 2 adds `mask` and `tiles`.
+Status: Phase 1 is complete (`download` … `export`). Phase 2 adds `mask` and `tiles`; Phase 4 adds
+`subbasins` (run it after `export` and before `tiles`).
 
 ## Prerequisites
 
@@ -194,6 +195,26 @@ Output: `data/work/tiles/mask.geojson`. The report lists each level's visible ar
 basin and its vertex count. It checks that every geometry is valid, that the visible area grows
 with each level, and that the last level is the whole basin.
 
+### `npm run pipeline:subbasins`
+
+Builds the sub-basin hierarchy listed in `pipeline/subbasins.config.json` from HydroBASINS level 12.
+The root (`negro`) is the whole basin; level 1 is `limay` and `neuquen`.
+
+1. **Sets.** Each sub-basin is the level-12 polygon holding its river's `mouthReach` plus
+   everything upstream via `NEXT_DOWN`. Endorheic sinks follow HydroBASINS' virtual links, so a
+   9,365 km² endorheic area north of the confluence belongs to the root's own area, not to the
+   Neuquén.
+2. **Partition.** A node's own area is its set minus its children's sets. The own areas must
+   partition the basin: their areas sum to the outline, with no overlaps or gaps over 1 km².
+3. **Reaches.** Assigned by `HYBAS_L12`. The connected reaches of each sub-basin must equal the
+   HydroRIVERS upstream set of its mouth reach.
+4. **Metrics.** Summed or `CATCH_SKM`-weighted over RiverATLAS catchment attributes (`pop_ct_csu`,
+   `lka_pc_cse`, `inu_pc_cmn/cmx`, `ele_mt_cmn/cmx`), endorheic catchments included. Over the
+   connected reaches they must reproduce the upstream values at the mouth, which confirms the units.
+
+Outputs: `data/out/subbasins.ndjson` (committed, seed input) and `data/work/tiles/subbasins.geojson`
+(own areas, one feature per sub-basin, for tiles).
+
 ### `npm run pipeline:tiles`
 
 Runs tippecanoe with the feature and tile-size limits off:
@@ -201,11 +222,13 @@ Runs tippecanoe with the feature and tile-size limits off:
 - `public/tiles/rivers.pmtiles`: layer `reaches`, with the properties the map styles on and a
   per-feature minzoom from `reachMinzoomByStrahler`; layer `basin`, the outline.
 - `public/tiles/mask.pmtiles`: layer `mask`, one feature per level.
+- `public/tiles/subbasins.pmtiles`: layer `subbasins`, the own areas from `pipeline:subbasins`,
+  built with `--detect-shared-borders` so simplification leaves no slivers between neighbours.
 
 The report decodes the tiles back. It checks that every reach is present from its minzoom up and
 never before it. The only exception is a reach shorter than one tile unit at that zoom (an eighth of
 a pixel), which tippecanoe drops because it collapses to a point. It also checks that every mask
-level is present at each checked zoom, and records file sizes and the tippecanoe version.
+level and every sub-basin is present at each checked zoom, and records file sizes and the tippecanoe version.
 
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
 `lakes` → `export` → `mask` → `tiles`.

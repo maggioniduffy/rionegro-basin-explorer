@@ -1,0 +1,8 @@
+{
+  "$comment": "Inputs for pipeline:subbasins. Each sub-basin is everything upstream (HydroBASINS level-12 NEXT_DOWN) of the polygon holding its river's mouthReach (data/out/rivers.ndjson). The root is the whole basin; a node's own area is its set minus its children's sets, and the own areas must partition the root. level 1 = main tributaries (Phase 4); levels 2-3 come in Phase 6.",
+  "subbasins": [
+    { "id": "negro", "river": "negro", "parentId": null, "level": 0 },
+    { "id": "limay", "river": "limay", "parentId": "negro", "level": 1 },
+    { "id": "neuquen", "river": "neuquen", "parentId": "negro", "level": 1 }
+  ]
+}

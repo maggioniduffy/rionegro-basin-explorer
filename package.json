@@ -27,7 +27,8 @@
     "prebuild": "tsx scripts/copy-maplibre-worker.ts",
     "inspect:file": "tsx pipeline/tools/inspect-file.ts",
     "pipeline:lakes": "tsx pipeline/steps/lakes.ts",
-    "seed": "tsx --env-file=.env.local scripts/seed.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "pipeline:subbasins": "tsx pipeline/steps/subbasins.ts"
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",
