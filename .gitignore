@@ -58,3 +58,5 @@ next-env.d.ts
 
 # MapLibre worker, copied from node_modules by scripts/copy-maplibre-worker.ts
 /public/maplibre/
+
+atlas-credentials.env
