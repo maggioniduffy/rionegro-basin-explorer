@@ -33,6 +33,11 @@ import {
   reachLayerId,
   SELECTED_LAYER_ID,
   selectionFilter,
+  SUBBASIN_FILL_LAYER_ID,
+  SUBBASIN_LINE_LAYER_ID,
+  subbasinFillOpacity,
+  subbasinLineOpacity,
+  subbasinLineWidth,
   THEME_COLORS,
 } from "@/lib/map/style";
 import { setupMaplibreWorker } from "@/lib/map/worker";
@@ -79,12 +84,28 @@ function selectionPadding() {
 /** Clicks within this many px of a line hit it; river lines are thin. */
 const HIT_TOLERANCE_PX = 6;
 
-/** The reach under a point, preferring the largest river; null when none. */
+/**
+ * What a click at a point selects: the reach under it, preferring the largest river;
+ * otherwise, in the sub-basin view, the sub-basin; otherwise null.
+ */
 function hitSelection(
   map: MapLibreMap,
   x: number,
   y: number,
 ): Selection | null {
+  return hitReach(map, x, y) ?? hitSubbasin(map, x, y);
+}
+
+function hitSubbasin(map: MapLibreMap, x: number, y: number): Selection | null {
+  if (useMapStore.getState().viewMode !== "subbasins") return null;
+  const [feature] = map.queryRenderedFeatures([x, y], {
+    layers: [SUBBASIN_FILL_LAYER_ID],
+  });
+  const id: unknown = feature?.properties.id;
+  return typeof id === "string" && id ? { kind: "subbasin", id } : null;
+}
+
+function hitReach(map: MapLibreMap, x: number, y: number): Selection | null {
   const r = HIT_TOLERANCE_PX;
   const features = map.queryRenderedFeatures(
     [
@@ -132,6 +153,23 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
   }
   if (!prev || s.selection !== prev.selection) {
     map.setFilter(SELECTED_LAYER_ID, selectionFilter(s.selection));
+    map.setPaintProperty(
+      SUBBASIN_LINE_LAYER_ID,
+      "line-width",
+      subbasinLineWidth(s.selection),
+    );
+  }
+  if (!prev || s.selection !== prev.selection || s.viewMode !== prev.viewMode) {
+    map.setPaintProperty(
+      SUBBASIN_FILL_LAYER_ID,
+      "fill-opacity",
+      subbasinFillOpacity(s.viewMode, s.selection),
+    );
+    map.setPaintProperty(
+      SUBBASIN_LINE_LAYER_ID,
+      "line-opacity",
+      subbasinLineOpacity(s.viewMode),
+    );
   }
   if (!prev || s.theme !== prev.theme) {
     const { mask, outline, lake } = THEME_COLORS[s.theme];
@@ -191,6 +229,7 @@ export default function MapView() {
           hideEndorheic: initial.hideEndorheic,
           visibleLand: initial.visibleLand,
           selection: initial.selection,
+          viewMode: initial.viewMode,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
         fitBoundsOptions: { padding: fitPadding() },
@@ -241,8 +280,9 @@ export default function MapView() {
     };
     map.on("sourcedata", revealImagery);
 
-    // Click a line to select its river (or the reach, if unnamed); click elsewhere to
-    // clear. Hovering a line shows a pointer.
+    // Click a line to select its river (or the reach, if unnamed); in the sub-basin
+    // view, click land to select its sub-basin; click elsewhere to clear. Hovering
+    // something selectable shows a pointer.
     map.on("click", (e) => {
       useMapStore.getState().select(hitSelection(map, e.point.x, e.point.y));
     });
@@ -274,7 +314,8 @@ export default function MapView() {
         s.visibleLand === prev.visibleLand &&
         s.hideEndorheic === prev.hideEndorheic &&
         s.theme === prev.theme &&
-        s.selection === prev.selection
+        s.selection === prev.selection &&
+        s.viewMode === prev.viewMode
       )
         return;
       setIdle(false);

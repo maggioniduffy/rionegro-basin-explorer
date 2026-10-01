@@ -10,6 +10,7 @@ import {
   mapConfig,
   TILE_PATHS,
 } from "./config";
+import type { ViewMode } from "../store";
 import type { Selection } from "../url-state";
 import { maskOpacities } from "./mask";
 
@@ -44,6 +45,51 @@ export const THEME_COLORS: Record<
     lake: "rgba(31, 35, 40, 0.35)",
   },
 };
+
+/**
+ * Sub-basin colours by id (pipeline/subbasins.config.json). Like the river colours,
+ * the same in both themes, and kept apart from the river blues, amber and the
+ * selection yellow. The root's colour marks its own area: the land in no sub-basin.
+ */
+export const SUBBASIN_COLORS: Record<string, string> = {
+  limay: "#a78bfa",
+  neuquen: "#4ade80",
+  negro: "#fb7185",
+};
+const SUBBASIN_FALLBACK_COLOR = "#9aa3ab";
+export const SUBBASIN_FILL_LAYER_ID = "subbasins-fill";
+export const SUBBASIN_LINE_LAYER_ID = "subbasins-outline";
+
+// The spec's tuple type can't express a spread of label/output pairs.
+const subbasinColor = (): ExpressionSpecification =>
+  [
+    "match",
+    ["get", "id"],
+    ...Object.entries(SUBBASIN_COLORS).flat(),
+    SUBBASIN_FALLBACK_COLOR,
+  ] as unknown as ExpressionSpecification;
+
+const selectedSubbasin = (sel: Selection | null) =>
+  sel?.kind === "subbasin" ? sel.id : "";
+
+/** Tint of each sub-basin: none in the basin view, stronger when selected. */
+export function subbasinFillOpacity(
+  mode: ViewMode,
+  sel: Selection | null,
+): ExpressionSpecification | number {
+  if (mode === "basin") return 0;
+  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.5, 0.25];
+}
+
+export function subbasinLineOpacity(mode: ViewMode): number {
+  return mode === "basin" ? 0 : 0.9;
+}
+
+export function subbasinLineWidth(
+  sel: Selection | null,
+): ExpressionSpecification {
+  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 3, 1.5];
+}
 
 export const maskLayerId = (level: number) => `mask-${level}`;
 export const reachLayerId = (c: FlowClass) => `reaches-${c}`;
@@ -87,7 +133,7 @@ export const SELECTED_COLOR = "#fde68a";
 
 /** Tile features carry the reach id as feature id and the river slug as `river`. */
 export function selectionFilter(sel: Selection | null): FilterSpecification {
-  if (!sel) return ["boolean", false];
+  if (!sel || sel.kind === "subbasin") return ["boolean", false];
   return sel.kind === "river"
     ? ["==", ["get", "river"], sel.id]
     : ["==", ["id"], sel.id];
@@ -136,6 +182,7 @@ export interface StyleOptions {
   hideEndorheic: boolean;
   visibleLand: number;
   selection: Selection | null;
+  viewMode: ViewMode;
 }
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
@@ -161,6 +208,17 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       paint: { "raster-opacity": 0 },
     });
   }
+  // Below the mask, so sub-basins are tinted only on the visible land.
+  layers.push({
+    id: SUBBASIN_FILL_LAYER_ID,
+    type: "fill",
+    source: "subbasins",
+    "source-layer": "subbasins",
+    paint: {
+      "fill-color": subbasinColor(),
+      "fill-opacity": subbasinFillOpacity(o.viewMode, o.selection),
+    },
+  });
   for (let k = 0; k < MASK_LEVEL_COUNT; k++) {
     const opacity = opacities[k] ?? 0;
     layers.push({
@@ -216,6 +274,19 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     "source-layer": "basin",
     paint: { "line-color": outline, "line-width": 1 },
   });
+  // Above the mask: sub-basin borders show at every Visible Land level.
+  layers.push({
+    id: SUBBASIN_LINE_LAYER_ID,
+    type: "line",
+    source: "subbasins",
+    "source-layer": "subbasins",
+    layout: { "line-join": "round" },
+    paint: {
+      "line-color": subbasinColor(),
+      "line-opacity": subbasinLineOpacity(o.viewMode),
+      "line-width": subbasinLineWidth(o.selection),
+    },
+  });
   layers.push({
     id: SELECTED_LAYER_ID,
     type: "line",
@@ -269,6 +340,10 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
         attribution: o.dataAttribution,
       },
       mask: { type: "vector", url: `pmtiles://${o.origin}${TILE_PATHS.mask}` },
+      subbasins: {
+        type: "vector",
+        url: `pmtiles://${o.origin}${TILE_PATHS.subbasins}`,
+      },
     },
     layers,
   };

@@ -20,14 +20,22 @@
     "hideEndorheic": "Hide endorheic streams",
     "hideEndorheicHint": "Inland drainage inside the basin outline that does not reach the sea.",
     "minimize": "Minimize panel",
-    "expand": "Show panel"
+    "expand": "Show panel",
+    "view": "View",
+    "viewBasin": "Basin",
+    "viewSubbasins": "Sub-basins"
   },
   "legend": {
     "title": "Flow regime",
     "perennial": "Perennial",
     "nonPerennial": "Non-perennial (stops flowing at least 1 day a year)",
     "unknown": "No prediction",
-    "modeledNote": "Modeled, not observed: GIRES v1.0 predictions (Messager et al., 2021). Local conditions may differ."
+    "modeledNote": "Modeled, not observed: GIRES v1.0 predictions (Messager et al., 2021). Local conditions may differ.",
+    "subbasins": {
+      "title": "Sub-basins",
+      "own": "{name}, rest of the basin",
+      "hint": "Click the land to see a sub-basin's data. Colours show on the visible land; borders always show."
+    }
   },
   "theme": {
     "toLight": "Light theme",
@@ -80,7 +88,13 @@
       "course": "Course",
       "reach": "This section",
       "watershed": "Upstream watershed",
-      "watershedHint": "{place, select, mouth {All the land that drains to its mouth.} other {All the land that drains to the end of this section.}}"
+      "watershedHint": "{place, select, mouth {All the land that drains to its mouth.} other {All the land that drains to the end of this section.}}",
+      "land": "Land",
+      "landHint": "All of its land, including endorheic areas that drain inland and that HydroBASINS links to this basin.",
+      "streams": "Streams",
+      "outlet": "At the mouth",
+      "outletHint": "Measured where the {river} ends, so it includes everything upstream.",
+      "rivers": "Named rivers"
     },
     "fields": {
       "length": "Length",
@@ -103,7 +117,14 @@
       "floodedValue": "{min} to {max}",
       "lakes": "Lake area",
       "population": "Population",
-      "regulation": "Dam regulation"
+      "regulation": "Dam regulation",
+      "area": "Area",
+      "endorheicArea": "Endorheic area",
+      "elevationRange": "Elevation",
+      "rangeValue": "{min} to {max}",
+      "streamLength": "Total stream length",
+      "endorheicLength": "Endorheic streams",
+      "reachCount": "HydroRIVERS reaches"
     },
     "caveat": {
       "title": "Values marked * are modeled or estimated:",
@@ -113,6 +134,13 @@
       "population": "Population: 2010 estimate (GPWv4).",
       "regulation": "Dam regulation: storage of the reservoirs upstream (GRanD v1.1) as a share of the modeled natural annual flow. Above 100%, they can hold more than a year of flow. Capped at 1,000%.",
       "source": "Data: HydroRIVERS and RiverATLAS v1.0 (Linke et al., 2019)."
+    },
+    "subbasin": {
+      "label": "Basin details",
+      "title": "{name} basin",
+      "wholeBasin": "The whole basin.",
+      "partOf": "Part of the <link>{parent}</link> basin.",
+      "children": "Sub-basins:"
     }
   }
 }

@@ -6,6 +6,9 @@ import type { Selection } from "./url-state";
 /** localStorage key; read before hydration by the inline script in the layout. */
 export const THEME_STORAGE_KEY = "theme";
 
+/** "basin" shows the basin as one; "subbasins" colours its sub-basins. */
+export type ViewMode = "basin" | "subbasins";
+
 /** Slider starts on the fourth level (~33% of the basin; data/work/mask/report.json). */
 export const DEFAULT_VISIBLE_LAND = 3;
 
@@ -17,7 +20,13 @@ interface MapState {
   setVisibleLand: (v: number) => void;
   setHideEndorheic: (v: boolean) => void;
   setTheme: (t: Theme) => void;
-  /** Selected river or reach; mirrored in the URL by UrlSync. */
+  viewMode: ViewMode;
+  /** Leaving the sub-basin view also clears a selected sub-basin. */
+  setViewMode: (m: ViewMode) => void;
+  /**
+   * Selected river, reach or sub-basin; mirrored in the URL by UrlSync. Selecting a
+   * sub-basin switches to the sub-basin view.
+   */
   selection: Selection | null;
   /** Fit the map to the selection once its data (bbox) has loaded. */
   fitPending: boolean;
@@ -34,11 +43,24 @@ export const useMapStore = create<MapState>()((set) => ({
   setVisibleLand: (visibleLand) => set({ visibleLand }),
   setHideEndorheic: (hideEndorheic) => set({ hideEndorheic }),
   setTheme: (theme) => set({ theme }),
+  viewMode: "basin",
+  setViewMode: (viewMode) =>
+    set((s) => ({
+      viewMode,
+      selection:
+        viewMode === "basin" && s.selection?.kind === "subbasin"
+          ? null
+          : s.selection,
+    })),
   selection: null,
   fitPending: false,
   focus: null,
   select: (selection, opts) =>
-    set({ selection, fitPending: Boolean(selection && opts?.fit) }),
+    set((s) => ({
+      selection,
+      fitPending: Boolean(selection && opts?.fit),
+      viewMode: selection?.kind === "subbasin" ? "subbasins" : s.viewMode,
+    })),
   focusOn: (bbox) =>
     set((s) => ({
       fitPending: false,

@@ -18,6 +18,7 @@ export const MASK_LEVEL_COUNT = config.mask.baseHalfWidthKm.length + 1;
 export const TILE_PATHS = {
   rivers: "/tiles/rivers.pmtiles",
   mask: "/tiles/mask.pmtiles",
+  subbasins: "/tiles/subbasins.pmtiles",
 } as const;
 
 /** EOX Sentinel-2 tiles are ~10 m imagery; above this MapLibre overzooms. */

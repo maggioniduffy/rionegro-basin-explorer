@@ -20,14 +20,22 @@
     "hideEndorheic": "Ocultar cursos endorreicos",
     "hideEndorheicHint": "Drenaje interno dentro del contorno de la cuenca que no llega al mar.",
     "minimize": "Minimizar panel",
-    "expand": "Mostrar panel"
+    "expand": "Mostrar panel",
+    "view": "Vista",
+    "viewBasin": "Cuenca",
+    "viewSubbasins": "Subcuencas"
   },
   "legend": {
     "title": "Régimen de flujo",
     "perennial": "Permanente",
     "nonPerennial": "No permanente (deja de fluir al menos 1 día al año)",
     "unknown": "Sin predicción",
-    "modeledNote": "Modelado, no observado: predicciones de GIRES v1.0 (Messager et al., 2021). Las condiciones locales pueden diferir."
+    "modeledNote": "Modelado, no observado: predicciones de GIRES v1.0 (Messager et al., 2021). Las condiciones locales pueden diferir.",
+    "subbasins": {
+      "title": "Subcuencas",
+      "own": "{name}, resto de la cuenca",
+      "hint": "Un clic sobre el terreno muestra los datos de la subcuenca. Los colores se ven sobre la tierra visible; los límites, siempre."
+    }
   },
   "theme": {
     "toLight": "Tema claro",
@@ -80,7 +88,13 @@
       "course": "Recorrido",
       "reach": "Este tramo",
       "watershed": "Cuenca aguas arriba",
-      "watershedHint": "{place, select, mouth {Todo el terreno que drena hasta su desembocadura.} other {Todo el terreno que drena hasta el final de este tramo.}}"
+      "watershedHint": "{place, select, mouth {Todo el terreno que drena hasta su desembocadura.} other {Todo el terreno que drena hasta el final de este tramo.}}",
+      "land": "Territorio",
+      "landHint": "Todo su territorio, incluidas las áreas endorreicas que drenan hacia el interior y que HydroBASINS vincula a esta cuenca.",
+      "streams": "Cursos de agua",
+      "outlet": "En la desembocadura",
+      "outletHint": "Medido donde termina el {river}, así que incluye todo lo que está aguas arriba.",
+      "rivers": "Ríos con nombre"
     },
     "fields": {
       "length": "Longitud",
@@ -103,7 +117,14 @@
       "floodedValue": "{min} a {max}",
       "lakes": "Superficie de lagos",
       "population": "Población",
-      "regulation": "Regulación por represas"
+      "regulation": "Regulación por represas",
+      "area": "Superficie",
+      "endorheicArea": "Superficie endorreica",
+      "elevationRange": "Altitud",
+      "rangeValue": "{min} a {max}",
+      "streamLength": "Longitud total de cursos",
+      "endorheicLength": "Cursos endorreicos",
+      "reachCount": "Tramos HydroRIVERS"
     },
     "caveat": {
       "title": "Los valores marcados con * son modelados o estimados:",
@@ -113,6 +134,13 @@
       "population": "Población: estimación de 2010 (GPWv4).",
       "regulation": "Regulación por represas: almacenamiento de los embalses aguas arriba (GRanD v1.1) como proporción del caudal anual natural modelado. Por encima del 100 %, pueden retener más de un año de caudal. Tope de 1000 %.",
       "source": "Datos: HydroRIVERS y RiverATLAS v1.0 (Linke et al., 2019)."
+    },
+    "subbasin": {
+      "label": "Detalles de la cuenca",
+      "title": "Cuenca del {name}",
+      "wholeBasin": "La cuenca completa.",
+      "partOf": "Parte de la cuenca del <link>{parent}</link>.",
+      "children": "Subcuencas:"
     }
   }
 }

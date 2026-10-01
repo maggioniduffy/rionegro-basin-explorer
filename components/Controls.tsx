@@ -6,7 +6,9 @@ import { MASK_LEVEL_COUNT } from "@/lib/map/config";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
 import { Legend } from "./Legend";
+import { SubbasinLegend } from "./SubbasinLegend";
 import { ThemeToggle } from "./ThemeToggle";
+import { ViewModeToggle } from "./ViewModeToggle";
 
 export function Controls() {
   const t = useTranslations("controls");
@@ -14,6 +16,7 @@ export function Controls() {
   const setVisibleLand = useMapStore((s) => s.setVisibleLand);
   const hideEndorheic = useMapStore((s) => s.hideEndorheic);
   const setHideEndorheic = useMapStore((s) => s.setHideEndorheic);
+  const viewMode = useMapStore((s) => s.viewMode);
   const max = MASK_LEVEL_COUNT - 1;
   const [open, setOpen] = useState(true);
 
@@ -49,6 +52,8 @@ export function Controls() {
         hidden={!open}
         className="flex flex-col gap-4 px-4 pt-1 pb-4"
       >
+        <ViewModeToggle />
+
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="visible-land"
@@ -92,6 +97,7 @@ export function Controls() {
           </span>
         </label>
 
+        {viewMode === "subbasins" && <SubbasinLegend />}
         <Legend />
         <ThemeToggle />
       </div>
