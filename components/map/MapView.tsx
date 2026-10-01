@@ -5,6 +5,7 @@ import {
   AttributionControl,
   addProtocol,
   Map as MapLibreMap,
+  type MapMouseEvent,
   ScaleControl,
 } from "maplibre-gl";
 import { useTranslations } from "next-intl";
@@ -285,6 +286,9 @@ export default function MapView() {
     map.addControl(new AttributionControl({ compact: false }), "bottom-right");
     map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
     mapRef.current = map;
+    // Test hook for e2e and scripts/perf-zoom.ts; inlined at build time, so production
+    // builds without NEXT_PUBLIC_E2E carry no reference to it.
+    if (process.env.NEXT_PUBLIC_E2E === "1") window.__map = map;
 
     // Screenshot tests wait for data-map-idle="true" after each change.
     const setIdle = (idle: boolean) =>
@@ -310,11 +314,13 @@ export default function MapView() {
     map.on("click", (e) => {
       useMapStore.getState().select(hitSelection(map, e.point.x, e.point.y));
     });
-    map.on("mousemove", (e) => {
+    const onHover = (e: MapMouseEvent) => {
       map.getCanvas().style.cursor = hitSelection(map, e.point.x, e.point.y)
         ? "pointer"
         : "";
-    });
+    };
+    map.on("mousemove", onHover);
+    if (process.env.NEXT_PUBLIC_E2E === "1") window.__mapHover = onHover;
 
     const fitTo = (bbox: [number, number, number, number]) =>
       map.fitBounds(bbox, {
@@ -349,6 +355,10 @@ export default function MapView() {
 
     return () => {
       unsubscribe();
+      if (process.env.NEXT_PUBLIC_E2E === "1") {
+        delete window.__map;
+        delete window.__mapHover;
+      }
       map.remove();
       mapRef.current = null;
     };
