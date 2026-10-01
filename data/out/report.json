@@ -40,7 +40,9 @@
       "mouthElevationM": 0,
       "sourceElevationM": 260,
       "dischargeM3s": 869.7,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 154.1,
+      "population": 600371
     },
     {
       "id": "limay",
@@ -50,7 +52,9 @@
       "mouthElevationM": 258,
       "sourceElevationM": 1276,
       "dischargeM3s": 762.2,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 158.6,
+      "population": 271659
     },
     {
       "id": "neuquen",
@@ -60,7 +64,9 @@
       "mouthElevationM": 260,
       "sourceElevationM": 2008,
       "dischargeM3s": 347.2,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 38,
+      "population": 191388
     },
     {
       "id": "collon-cura",
@@ -70,7 +76,9 @@
       "mouthElevationM": 577,
       "sourceElevationM": 676,
       "dischargeM3s": 328.1,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 48855
     },
     {
       "id": "agrio",
@@ -80,7 +88,9 @@
       "mouthElevationM": 547,
       "sourceElevationM": 1875,
       "dischargeM3s": 102.7,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 11364
     },
     {
       "id": "alumine",
@@ -90,7 +100,9 @@
       "mouthElevationM": 675,
       "sourceElevationM": 1361,
       "dischargeM3s": 116.6,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 14312
     },
     {
       "id": "catan-lil",
@@ -100,7 +112,9 @@
       "mouthElevationM": 677,
       "sourceElevationM": 1766,
       "dischargeM3s": 31.3,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 1042
     },
     {
       "id": "chimehuin",
@@ -110,7 +124,9 @@
       "mouthElevationM": 646,
       "sourceElevationM": 1411,
       "dischargeM3s": 82.6,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 11144
     },
     {
       "id": "caleufu",
@@ -120,7 +136,9 @@
       "mouthElevationM": 576,
       "sourceElevationM": 1092,
       "dischargeM3s": 62.9,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 14146
     },
     {
       "id": "pichileufu",
@@ -130,7 +148,9 @@
       "mouthElevationM": 579,
       "sourceElevationM": 1150,
       "dischargeM3s": 45.2,
-      "nonPerennialPct": 9.1
+      "nonPerennialPct": 9.1,
+      "regulationPct": 0,
+      "population": 2492
     },
     {
       "id": "comallo",
@@ -140,7 +160,9 @@
       "mouthElevationM": 577,
       "sourceElevationM": 1385,
       "dischargeM3s": 41.9,
-      "nonPerennialPct": 3.4
+      "nonPerennialPct": 3.4,
+      "regulationPct": 0,
+      "population": 3097
     },
     {
       "id": "picun-leufu",
@@ -150,7 +172,9 @@
       "mouthElevationM": 370,
       "sourceElevationM": 1847,
       "dischargeM3s": 24,
-      "nonPerennialPct": 83.7
+      "nonPerennialPct": 83.7,
+      "regulationPct": 0,
+      "population": 8338
     },
     {
       "id": "covunco",
@@ -160,7 +184,9 @@
       "mouthElevationM": 522,
       "sourceElevationM": 1688,
       "dischargeM3s": 36.6,
-      "nonPerennialPct": 44.3
+      "nonPerennialPct": 44.3,
+      "regulationPct": 0,
+      "population": 20404
     },
     {
       "id": "curi-leuvu",
@@ -170,7 +196,9 @@
       "mouthElevationM": 839,
       "sourceElevationM": 2922,
       "dischargeM3s": 26.4,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 7194
     },
     {
       "id": "trocoman",
@@ -180,7 +208,9 @@
       "mouthElevationM": 977,
       "sourceElevationM": 1806,
       "dischargeM3s": 41.6,
-      "nonPerennialPct": 0
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 1901
     }
   ],
   "intermittence": [

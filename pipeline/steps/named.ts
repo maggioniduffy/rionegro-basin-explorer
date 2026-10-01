@@ -18,6 +18,12 @@
  *                       (Río Negro: 419 m vs 260 m), so it is only reported
  *   mouth.dischargeM3s  HydroRIVERS DIS_AV_CMS at the mouth reach (modeled 1971–2000)
  *   nonPerennialPct     share of length with GIRES predcat1 = 1 (modeled)
+ *   watershed.*         RiverATLAS upstream ("u") attributes of the mouth reach, i.e.
+ *                       the whole watershed of the river: inu_pc_umn / inu_pc_umx
+ *                       (percent), lka_pc_use (percent × 10), pop_ct_usu (thousands)
+ *   mouth.regulationPct RiverATLAS dor_pc_pva at the mouth reach (percent × 10, capped
+ *                       at 1000 %). Units from RiverATLAS_Catalog_v10.pdf sheets H03,
+ *                       H04, H07 and A01.
  *
  * Outputs: data/out/rivers.ndjson (committed; seed input), data/work/named/
  * river_reaches.parquet (reach → river), data/work/named/report.json.
@@ -59,6 +65,16 @@ const PROVENANCE = {
   "mouth.strahler": "HydroRIVERS v1.0 ORD_STRA at the mouth reach",
   nonPerennialPct:
     "GIRES v1.0 predcat1 = 1 (modeled, ≥ 1 no-flow day per year), share of lengthKm; reaches without a prediction are counted in unknownPct",
+  "watershed.floodedMinPct":
+    "RiverATLAS v1.0 inu_pc_umn at the mouth reach: mean annual minimum inundation extent of the upstream watershed, GIEMS-D15 (satellite, 1993–2004, downscaled)",
+  "watershed.floodedMaxPct":
+    "RiverATLAS v1.0 inu_pc_umx at the mouth reach: mean annual maximum inundation extent of the upstream watershed, GIEMS-D15 (satellite, 1993–2004, downscaled)",
+  "watershed.lakesPct":
+    "RiverATLAS v1.0 lka_pc_use / 10 at the mouth reach: percent lake area of the upstream watershed (HydroLAKES)",
+  "watershed.population":
+    "RiverATLAS v1.0 pop_ct_usu × 1000 at the mouth reach: population of the upstream watershed, GPWv4 estimate for 2010",
+  "mouth.regulationPct":
+    "RiverATLAS v1.0 dor_pc_pva / 10 at the mouth reach: degree of regulation, reservoir storage of GRanD v1.1 dams upstream as a percent of the modeled natural annual flow (capped at 1000 %)",
   name: "pipeline/names.json (hand-approved; OpenStreetMap spelling, ODbL)",
 };
 
@@ -79,6 +95,7 @@ async function main() {
     const rows = await db.all(`
       SELECT r.HYRIV_ID, r.NEXT_DOWN, r.UPLAND_SKM, r.LENGTH_KM, r.DIST_DN_KM, r.DIS_AV_CMS,
              r.ORD_STRA, r.predcat1, a.ele_mt_cmn, a.sgr_dk_rav,
+             a.inu_pc_umn, a.inu_pc_umx, a.lka_pc_use, a.pop_ct_usu, a.dor_pc_pva,
              ST_X(ST_StartPoint(r.geom)) AS start_lon, ST_Y(ST_StartPoint(r.geom)) AS start_lat,
              ST_X(ST_EndPoint(r.geom)) AS end_lon, ST_Y(ST_EndPoint(r.geom)) AS end_lat
       FROM ${lit(reachesFile)} r JOIN ${lit(atlasFile)} a USING (HYRIV_ID)
@@ -175,6 +192,13 @@ async function main() {
           uplandKm2: round(Number(m.UPLAND_SKM)),
           distanceToSeaKm: round(Number(m.DIST_DN_KM)),
           strahler: Number(m.ORD_STRA),
+          regulationPct: round(Number(m.dor_pc_pva) / 10),
+        },
+        watershed: {
+          floodedMinPct: Number(m.inu_pc_umn),
+          floodedMaxPct: Number(m.inu_pc_umx),
+          lakesPct: round(Number(m.lka_pc_use) / 10),
+          population: Math.round(Number(m.pop_ct_usu) * 1000),
         },
         source: {
           kind: sourceKind,
@@ -184,7 +208,14 @@ async function main() {
         },
         nonPerennialPct: round((nonPerennialKm / lengthKm) * 100),
         unknownPct: round((unknownKm / lengthKm) * 100),
-        modeled: ["mouth.dischargeM3s", "nonPerennialPct"],
+        modeled: [
+          "mouth.dischargeM3s",
+          "mouth.regulationPct",
+          "nonPerennialPct",
+          "watershed.floodedMinPct",
+          "watershed.floodedMaxPct",
+          "watershed.population",
+        ],
         provenance: PROVENANCE,
       };
     });
@@ -224,6 +255,8 @@ async function main() {
         sourceElevationM: d.source.elevationM,
         dischargeM3s: d.mouth.dischargeM3s,
         nonPerennialPct: d.nonPerennialPct,
+        regulationPct: d.mouth.regulationPct,
+        population: d.watershed.population,
       })),
       namedKm: round(docs.reduce((s, d) => s + d.lengthKm, 0)),
       overlaps: overlaps.slice(0, 20),

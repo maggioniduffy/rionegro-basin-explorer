@@ -10,8 +10,9 @@
  *                                  area check, named rivers
  *
  * Only RiverATLAS fields whose units were checked in the catalog are exported:
- * ele_mt_cmn (m a.s.l.) and sgr_dk_rav (dm/km). Flooded %, lakes %, population and
- * dam regulation need their catalog sheets read first (Phase 3).
+ * ele_mt_cmn (m a.s.l.), sgr_dk_rav (dm/km), inu_pc_umn / inu_pc_umx (percent),
+ * lka_pc_use (percent × 10), pop_ct_usu (thousands) and dor_pc_pva (percent × 10).
+ * The "upstream*" fields cover the whole watershed upstream of the reach's pour point.
  */
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
@@ -66,6 +67,10 @@ async function main() {
              round(r.DIS_AV_CMS::DOUBLE, 3) AS dischargeM3s,
              a.ele_mt_cmn AS catchmentMinElevationM,
              round(a.sgr_dk_rav / 10.0, 2) AS gradientMPerKm,
+             a.inu_pc_umn AS upstreamFloodedMinPct, a.inu_pc_umx AS upstreamFloodedMaxPct,
+             round(a.lka_pc_use / 10.0, 1) AS upstreamLakesPct,
+             round(a.pop_ct_usu * 1000)::BIGINT AS upstreamPopulation,
+             round(a.dor_pc_pva / 10.0, 1) AS regulationPct,
              r.predcat1 AS nonPerennial1d, round(r.predprob1::DOUBLE, 3) AS nonPerennialProb1d,
              r.predcat30 AS nonPerennial30d, round(r.predprob30::DOUBLE, 3) AS nonPerennialProb30d,
              r.geom
