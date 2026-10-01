@@ -308,13 +308,19 @@ export default function MapView() {
     };
     map.on("sourcedata", revealImagery);
 
+    // Set on "load": until then the style's layers don't exist, and querying them
+    // logs an error on every pointer move.
+    let loaded = false;
+
     // Click a line to select its river (or the reach, if unnamed); in the sub-basin
     // view, click land to select its sub-basin; click elsewhere to clear. Hovering
     // something selectable shows a pointer.
     map.on("click", (e) => {
+      if (!loaded) return;
       useMapStore.getState().select(hitSelection(map, e.point.x, e.point.y));
     });
     const onHover = (e: MapMouseEvent) => {
+      if (!loaded) return;
       map.getCanvas().style.cursor = hitSelection(map, e.point.x, e.point.y)
         ? "pointer"
         : "";
@@ -329,7 +335,6 @@ export default function MapView() {
         duration: 800,
       });
 
-    let loaded = false;
     map.on("load", () => {
       loaded = true;
       const s = useMapStore.getState();
