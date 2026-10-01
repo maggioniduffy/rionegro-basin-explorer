@@ -2,28 +2,14 @@
 
 import { useTranslations } from "next-intl";
 import type { SubbasinResponse } from "@/lib/data/queries";
-import { SUBBASIN_COLORS } from "@/lib/map/style";
 import { useApi } from "@/lib/use-api";
 import { useSubbasinLabel } from "./panel/subbasin-label";
 
-/** The basin whose sub-basins the map colours (pipeline/subbasins.config.json). */
+/** The basin whose sub-basins the map outlines (pipeline/subbasins.config.json). */
 const ROOT_ID = "negro";
 
-function Swatch({ id }: { id: string }) {
-  return (
-    <span
-      aria-hidden
-      className="h-3 w-3 shrink-0 rounded-sm border"
-      style={{
-        backgroundColor: `${SUBBASIN_COLORS[id] ?? "#9aa3ab"}66`,
-        borderColor: SUBBASIN_COLORS[id],
-      }}
-    />
-  );
-}
-
 /**
- * Sub-basin colours, named from the API; the root's colour is its own area, the land
+ * The parts the map outlines, named from the API; the root's own area is the land
  * that drains straight to its river.
  */
 export function SubbasinLegend() {
@@ -36,15 +22,13 @@ export function SubbasinLegend() {
     <div className="flex flex-col gap-1.5">
       <h2 className="font-medium">{t("title")}</h2>
       {root && (
-        <ul className="flex flex-col gap-1">
+        <ul className="flex list-disc flex-col gap-1 pl-4">
           {root.children.map((c) => (
-            <li key={c.id} className="flex items-center gap-2">
-              <Swatch id={c.id} />
+            <li key={c.id}>
               <span>{c.kind === "endorheic" ? t("endorheic") : label(c)}</span>
             </li>
           ))}
-          <li className="flex items-center gap-2">
-            <Swatch id={root._id} />
+          <li>
             <span>{t("own", { name: root.name ?? "" })}</span>
           </li>
         </ul>

@@ -47,18 +47,10 @@ export const THEME_COLORS: Record<
 };
 
 /**
- * Sub-basin colours by id (pipeline/subbasins.config.json). Like the river colours,
- * the same in both themes, and kept apart from the river blues, amber and the
- * selection yellow. The root's colour marks its own area: the land in no sub-basin.
+ * One colour for every sub-basin, in both themes: they are told apart by their
+ * borders and the selection's stronger tint, not by hue.
  */
-export const SUBBASIN_COLORS: Record<string, string> = {
-  limay: "#a78bfa",
-  neuquen: "#4ade80",
-  negro: "#fb7185",
-  // Pale and neutral: land that drains to no river.
-  endorheic: "#e2e8f0",
-};
-const SUBBASIN_FALLBACK_COLOR = "#9aa3ab";
+export const SUBBASIN_COLOR = "#ffffff";
 export const SUBBASIN_FILL_LAYER_ID = "subbasins-fill";
 export const SUBBASIN_LINE_LAYER_ID = "subbasins-outline";
 /** Covers every sub-basin but the isolated ones, rivers included, in the mask colour. */
@@ -71,15 +63,6 @@ export function hiddenSubbasinsFilter(
     ? ["!", ["in", ["get", "id"], ["literal", isolatedIds]]]
     : ["boolean", false];
 }
-
-// The spec's tuple type can't express a spread of label/output pairs.
-const subbasinColor = (): ExpressionSpecification =>
-  [
-    "match",
-    ["get", "id"],
-    ...Object.entries(SUBBASIN_COLORS).flat(),
-    SUBBASIN_FALLBACK_COLOR,
-  ] as unknown as ExpressionSpecification;
 
 const selectedSubbasin = (sel: Selection | null) =>
   sel?.kind === "subbasin" ? sel.id : "";
@@ -249,7 +232,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     "source-layer": "subbasins",
     filter: subbasinFilter(o.hideEndorheic, o.isolatedIds),
     paint: {
-      "fill-color": subbasinColor(),
+      "fill-color": SUBBASIN_COLOR,
       "fill-opacity": subbasinFillOpacity(o.viewMode, o.selection),
     },
   });
@@ -321,7 +304,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     filter: subbasinFilter(o.hideEndorheic, o.isolatedIds),
     layout: { "line-join": "round" },
     paint: {
-      "line-color": subbasinColor(),
+      "line-color": SUBBASIN_COLOR,
       "line-opacity": subbasinLineOpacity(o.viewMode),
       "line-width": subbasinLineWidth(o.selection),
     },

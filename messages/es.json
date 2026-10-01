@@ -34,7 +34,7 @@
     "subbasins": {
       "title": "Subcuencas",
       "own": "{name}, drenaje directo",
-      "hint": "Un clic sobre el terreno muestra los datos de la subcuenca. Los colores se ven sobre la tierra visible; los límites, siempre.",
+      "hint": "Un clic sobre el terreno muestra los datos de la subcuenca. El relleno se ve sobre la tierra visible; los límites, siempre.",
       "endorheic": "Áreas endorreicas (no drenan a ningún río)"
     }
   },
