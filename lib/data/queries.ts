@@ -1,13 +1,25 @@
 import "server-only";
 import { getDb } from "@/lib/mongo";
 import { searchPattern, SEARCH_LIMIT } from "./params";
-import type { Reach, River, RiverDoc } from "./schemas";
+import type { Reach, River, RiverDoc, Subbasin } from "./schemas";
 
 /** River as served by /api/rivers/[id]: the stored document plus names it refers to. */
 export type RiverResponse = River & { flowsIntoName: string | null };
 
 /** Reach as served by /api/reaches/[id]. */
 export type ReachResponse = Reach & { riverName: string | null };
+
+export interface NamedRef {
+  id: string;
+  name: string;
+}
+
+/** Sub-basin as served by /api/subbasins/[id], with the names of what it links to. */
+export type SubbasinResponse = Subbasin & {
+  parent: NamedRef | null;
+  children: NamedRef[];
+  riverRefs: NamedRef[];
+};
 
 export interface SearchHit {
   id: string;
@@ -16,6 +28,24 @@ export interface SearchHit {
 
 const rivers = () => getDb().collection<RiverDoc>("rivers");
 const reaches = () => getDb().collection<Reach>("reaches");
+const subbasins = () => getDb().collection<Subbasin>("subbasins");
+
+/** Names of `ids`, in the order given; unknown ids are left out. */
+async function names(
+  collection: "rivers" | "subbasins",
+  ids: string[],
+): Promise<NamedRef[]> {
+  if (ids.length === 0) return [];
+  const docs = await getDb()
+    .collection<{ _id: string; name: string }>(collection)
+    .find({ _id: { $in: ids } }, { projection: { name: 1 } })
+    .toArray();
+  const byId = new Map(docs.map((d) => [d._id, d.name]));
+  return ids.flatMap((id) => {
+    const name = byId.get(id);
+    return name === undefined ? [] : [{ id, name }];
+  });
+}
 
 async function riverName(id: string | null): Promise<string | null> {
   if (!id || id === "sea") return null;
@@ -39,6 +69,19 @@ export async function getReach(id: number): Promise<ReachResponse | null> {
   const doc = await reaches().findOne({ _id: id });
   if (!doc) return null;
   return { ...doc, riverName: await riverName(doc.river) };
+}
+
+export async function getSubbasin(
+  id: string,
+): Promise<SubbasinResponse | null> {
+  const doc = await subbasins().findOne({ _id: id });
+  if (!doc) return null;
+  const [parent, children, riverRefs] = await Promise.all([
+    doc.parentId === null ? [] : names("subbasins", [doc.parentId]),
+    names("subbasins", doc.childIds),
+    names("rivers", doc.rivers),
+  ]);
+  return { ...doc, parent: parent[0] ?? null, children, riverRefs };
 }
 
 /** Rivers whose name has a word starting with the normalized query; longest first. */

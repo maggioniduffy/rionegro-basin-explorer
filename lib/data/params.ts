@@ -9,6 +9,9 @@ export function parseRiverId(raw: string): string | null {
   return /^[a-z0-9-]{1,64}$/.test(raw) ? raw : null;
 }
 
+/** Sub-basin ids are slugs too (pipeline/subbasins.config.json). */
+export const parseSubbasinId = parseRiverId;
+
 /** HydroRIVERS HYRIV_ID: a positive integer. */
 export function parseReachId(raw: string): number | null {
   if (!/^[1-9]\d{0,9}$/.test(raw)) return null;

@@ -88,3 +88,42 @@ export const reachSchema = z.strictObject({
   bbox: bboxSchema,
 });
 export type Reach = z.infer<typeof reachSchema>;
+
+const slug = z.string().regex(/^[a-z0-9-]+$/);
+
+/** data/out/subbasins.ndjson (pipeline:subbasins). The root (level 0) is the whole basin. */
+export const subbasinSchema = z.strictObject({
+  _id: slug,
+  name: z.string().min(1),
+  level: z.number().int().nonnegative(),
+  parentId: slug.nullable(),
+  childIds: z.array(slug),
+  /** Slug of the river whose mouth closes the sub-basin. */
+  river: slug,
+  areaKm2: num,
+  endorheicAreaKm2: num,
+  reachCount: z.number().int().positive(),
+  lengthKm: num,
+  endorheicLengthKm: num,
+  nonPerennialPct: num,
+  unknownPct: num,
+  elevationMinM: num,
+  elevationMaxM: num,
+  population: z.number().int(),
+  lakesPct: num,
+  floodedMinPct: num,
+  floodedMaxPct: num,
+  outlet: z.strictObject({
+    hyrivId: z.number().int(),
+    lat: num,
+    lon: num,
+    dischargeM3s: num,
+    regulationPct: num,
+  }),
+  /** Named rivers whose mouth lies in the sub-basin, largest first. */
+  rivers: z.array(slug),
+  bbox: bboxSchema,
+  modeled: z.array(z.string()),
+  provenance: z.record(z.string(), z.string()),
+});
+export type Subbasin = z.infer<typeof subbasinSchema>;

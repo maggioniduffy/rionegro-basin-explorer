@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { reachSchema, riverSchema } from "@/lib/data/schemas";
+import { reachSchema, riverSchema, subbasinSchema } from "@/lib/data/schemas";
 import { normalizeSearch, searchTerms } from "@/lib/data/search";
 import { chunk, parseNdjson, toRiverDoc, upsertOps } from "../scripts/seed-lib";
 
@@ -89,5 +89,15 @@ describe("toRiverDoc", () => {
 describe("chunk", () => {
   it("splits into batches", () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
+  });
+});
+
+describe("subbasinSchema", () => {
+  it("accepts the committed pipeline output", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const text = await readFile("data/out/subbasins.ndjson", "utf8");
+    const docs = parseNdjson(text, subbasinSchema);
+    expect(docs.map((d) => d._id)).toEqual(["negro", "limay", "neuquen"]);
+    expect(docs[0]?.parentId).toBeNull();
   });
 });

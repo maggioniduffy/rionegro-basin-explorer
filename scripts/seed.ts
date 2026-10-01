@@ -1,5 +1,5 @@
 /**
- * npm run seed — load data/out/rivers.ndjson and reaches.ndjson into Mongo.
+ * npm run seed — load data/out/rivers.ndjson, reaches.ndjson and subbasins.ndjson into Mongo.
  *
  * Idempotent: whole-document upserts keyed on _id, documents no longer in the files
  * are deleted, indexes are created only if missing. Re-run after the pipeline changes
@@ -10,6 +10,7 @@
  *   rivers   _id is the slug (unique by definition); text index on name/shortName;
  *            searchTerms (normalized names) for prefix search
  *   reaches  river (reaches of a named river)
+ *   subbasins _id is the slug; parentId (children of a sub-basin)
  */
 import { readFile } from "node:fs/promises";
 import {
@@ -19,7 +20,7 @@ import {
   type Filter,
 } from "mongodb";
 import { z } from "zod";
-import { reachSchema, riverSchema } from "../lib/data/schemas";
+import { reachSchema, riverSchema, subbasinSchema } from "../lib/data/schemas";
 import { OUT_DIR } from "../pipeline/lib/paths";
 import { writeReport } from "../pipeline/lib/report";
 import { chunk, parseNdjson, toRiverDoc, upsertOps } from "./seed-lib";
@@ -61,6 +62,10 @@ async function main() {
     await readFile(`${OUT_DIR}/reaches.ndjson`, "utf8"),
     reachSchema,
   );
+  const subbasins = parseNdjson(
+    await readFile(`${OUT_DIR}/subbasins.ndjson`, "utf8"),
+    subbasinSchema,
+  );
 
   const client = new MongoClient(env.MONGODB_URI, {
     serverSelectionTimeoutMS: 10_000,
@@ -69,9 +74,12 @@ async function main() {
     const db = client.db(env.MONGODB_DB);
     const riversColl = db.collection<(typeof rivers)[number]>("rivers");
     const reachesColl = db.collection<(typeof reaches)[number]>("reaches");
+    const subbasinsColl =
+      db.collection<(typeof subbasins)[number]>("subbasins");
 
     const riverResult = await sync(riversColl, rivers);
     const reachResult = await sync(reachesColl, reaches);
+    const subbasinResult = await sync(subbasinsColl, subbasins);
 
     await riversColl.createIndex(
       { name: "text", shortName: "text" },
@@ -79,12 +87,22 @@ async function main() {
     );
     await riversColl.createIndex({ searchTerms: 1 }, { name: "searchTerms" });
     await reachesColl.createIndex({ river: 1 }, { name: "river" });
+    await subbasinsColl.createIndex({ parentId: 1 }, { name: "parentId" });
 
     const checks = {
       riversCountMatchesFile: riverResult.count === rivers.length,
       reachesCountMatchesFile: reachResult.count === reaches.length,
       everyNamedReachRiverExists: reaches.every(
         (r) => r.river === null || rivers.some((v) => v._id === r.river),
+      ),
+      subbasinsCountMatchesFile: subbasinResult.count === subbasins.length,
+      everySubbasinRiverExists: subbasins.every((b) =>
+        [b.river, ...b.rivers].every((id) => rivers.some((v) => v._id === id)),
+      ),
+      subbasinLinksResolve: subbasins.every((b) =>
+        [...(b.parentId === null ? [] : [b.parentId]), ...b.childIds].every(
+          (id) => subbasins.some((o) => o._id === id),
+        ),
       ),
     };
     await writeReport("seed", {
@@ -93,9 +111,11 @@ async function main() {
       db: env.MONGODB_DB,
       rivers: riverResult,
       reaches: reachResult,
+      subbasins: subbasinResult,
       indexes: {
         rivers: (await riversColl.indexes()).map((i) => i.name),
         reaches: (await reachesColl.indexes()).map((i) => i.name),
+        subbasins: (await subbasinsColl.indexes()).map((i) => i.name),
       },
     });
   } finally {
