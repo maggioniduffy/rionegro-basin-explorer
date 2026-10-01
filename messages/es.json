@@ -144,7 +144,9 @@
       "partOf": "Parte de la cuenca del <link>{parent}</link>.",
       "children": "Subcuencas:",
       "endorheicTitle": "Áreas endorreicas",
-      "endorheicNote": "Tierras que drenan hacia depresiones cerradas y no llegan a ningún río. HydroBASINS vincula parte de ellas a la red de ríos de forma virtual; aquí se muestran aparte."
+      "endorheicNote": "Tierras que drenan hacia depresiones cerradas y no llegan a ningún río. HydroBASINS vincula parte de ellas a la red de ríos de forma virtual; aquí se muestran aparte.",
+      "hideOthers": "Ocultar el resto de la cuenca",
+      "showOthers": "Mostrar toda la cuenca"
     }
   }
 }

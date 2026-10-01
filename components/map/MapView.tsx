@@ -37,6 +37,9 @@ import {
   SUBBASIN_LINE_LAYER_ID,
   subbasinFillOpacity,
   subbasinFilter,
+  basinOutlineOpacity,
+  SUBBASIN_HIDE_LAYER_ID,
+  hiddenSubbasinsFilter,
   subbasinLineOpacity,
   subbasinLineWidth,
   THEME_COLORS,
@@ -94,6 +97,12 @@ function hitSelection(
   x: number,
   y: number,
 ): Selection | null {
+  // Hidden land behaves like the empty map around the basin.
+  if (
+    map.queryRenderedFeatures([x, y], { layers: [SUBBASIN_HIDE_LAYER_ID] })
+      .length > 0
+  )
+    return null;
   return hitReach(map, x, y) ?? hitSubbasin(map, x, y);
 }
 
@@ -151,8 +160,15 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     for (const c of FLOW_CLASSES)
       map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic));
     map.setFilter(LAKE_LAYER_ID, lakeFilter(s.hideEndorheic));
+  }
+  if (endoChanged || !prev || s.isolatedIds !== prev.isolatedIds) {
     for (const id of [SUBBASIN_FILL_LAYER_ID, SUBBASIN_LINE_LAYER_ID])
-      map.setFilter(id, subbasinFilter(s.hideEndorheic));
+      map.setFilter(id, subbasinFilter(s.hideEndorheic, s.isolatedIds));
+    map.setPaintProperty(
+      OUTLINE_LAYER_ID,
+      "line-opacity",
+      basinOutlineOpacity(s.isolatedIds),
+    );
   }
   if (!prev || s.selection !== prev.selection) {
     map.setFilter(SELECTED_LAYER_ID, selectionFilter(s.selection));
@@ -161,6 +177,9 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
       "line-width",
       subbasinLineWidth(s.selection),
     );
+  }
+  if (!prev || s.isolatedIds !== prev.isolatedIds) {
+    map.setFilter(SUBBASIN_HIDE_LAYER_ID, hiddenSubbasinsFilter(s.isolatedIds));
   }
   if (!prev || s.selection !== prev.selection || s.viewMode !== prev.viewMode) {
     map.setPaintProperty(
@@ -180,6 +199,7 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     for (const id of [...MASK_LAYER_IDS, ...ENDO_MASK_LAYER_IDS])
       map.setPaintProperty(id, "fill-color", mask);
     map.setPaintProperty(OUTLINE_LAYER_ID, "line-color", outline);
+    map.setPaintProperty(SUBBASIN_HIDE_LAYER_ID, "fill-color", mask);
     map.setPaintProperty(LAKE_LAYER_ID, "line-color", lake);
   }
 }
@@ -233,6 +253,7 @@ export default function MapView() {
           visibleLand: initial.visibleLand,
           selection: initial.selection,
           viewMode: initial.viewMode,
+          isolatedIds: initial.isolatedIds,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
         fitBoundsOptions: { padding: fitPadding() },
@@ -318,7 +339,8 @@ export default function MapView() {
         s.hideEndorheic === prev.hideEndorheic &&
         s.theme === prev.theme &&
         s.selection === prev.selection &&
-        s.viewMode === prev.viewMode
+        s.viewMode === prev.viewMode &&
+        s.isolatedIds === prev.isolatedIds
       )
         return;
       setIdle(false);

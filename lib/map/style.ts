@@ -61,6 +61,16 @@ export const SUBBASIN_COLORS: Record<string, string> = {
 const SUBBASIN_FALLBACK_COLOR = "#9aa3ab";
 export const SUBBASIN_FILL_LAYER_ID = "subbasins-fill";
 export const SUBBASIN_LINE_LAYER_ID = "subbasins-outline";
+/** Covers every sub-basin but the isolated ones, rivers included, in the mask colour. */
+export const SUBBASIN_HIDE_LAYER_ID = "subbasins-hidden";
+
+export function hiddenSubbasinsFilter(
+  isolatedIds: string[] | null,
+): FilterSpecification {
+  return isolatedIds
+    ? ["!", ["in", ["get", "id"], ["literal", isolatedIds]]]
+    : ["boolean", false];
+}
 
 // The spec's tuple type can't express a spread of label/output pairs.
 const subbasinColor = (): ExpressionSpecification =>
@@ -80,15 +90,28 @@ export function subbasinFillOpacity(
   sel: Selection | null,
 ): ExpressionSpecification | number {
   if (mode === "basin") return 0;
-  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.35, 0.15];
+  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.2, 0.08];
 }
 
-/** Endorheic land hides with the endorheic streams, its border too. */
-export function subbasinFilter(hideEndorheic: boolean): FilterSpecification {
-  return hideEndorheic
-    ? ["!=", ["get", "kind"], "endorheic"]
-    : ["literal", true];
+/**
+ * Sub-basins drawn: endorheic land hides with the endorheic streams, and while some
+ * are isolated only those keep their tint and border (a border's outer half would
+ * otherwise show past the hiding layer).
+ */
+export function subbasinFilter(
+  hideEndorheic: boolean,
+  isolatedIds: string[] | null = null,
+): FilterSpecification {
+  return [
+    "all",
+    hideEndorheic ? ["!=", ["get", "kind"], "endorheic"] : true,
+    isolatedIds ? ["in", ["get", "id"], ["literal", isolatedIds]] : true,
+  ];
 }
+
+/** The basin outline steps aside while sub-basins are isolated. */
+export const basinOutlineOpacity = (isolatedIds: string[] | null) =>
+  isolatedIds ? 0 : 1;
 
 export function subbasinLineOpacity(mode: ViewMode): number {
   return mode === "basin" ? 0 : 0.9;
@@ -192,6 +215,7 @@ export interface StyleOptions {
   visibleLand: number;
   selection: Selection | null;
   viewMode: ViewMode;
+  isolatedIds: string[] | null;
 }
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
@@ -223,7 +247,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "fill",
     source: "subbasins",
     "source-layer": "subbasins",
-    filter: subbasinFilter(o.hideEndorheic),
+    filter: subbasinFilter(o.hideEndorheic, o.isolatedIds),
     paint: {
       "fill-color": subbasinColor(),
       "fill-opacity": subbasinFillOpacity(o.viewMode, o.selection),
@@ -282,7 +306,11 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "line",
     source: "rivers",
     "source-layer": "basin",
-    paint: { "line-color": outline, "line-width": 1 },
+    paint: {
+      "line-color": outline,
+      "line-width": 1,
+      "line-opacity": basinOutlineOpacity(o.isolatedIds),
+    },
   });
   // Above the mask: sub-basin borders show at every Visible Land level.
   layers.push({
@@ -290,7 +318,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "line",
     source: "subbasins",
     "source-layer": "subbasins",
-    filter: subbasinFilter(o.hideEndorheic),
+    filter: subbasinFilter(o.hideEndorheic, o.isolatedIds),
     layout: { "line-join": "round" },
     paint: {
       "line-color": subbasinColor(),
@@ -329,6 +357,15 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       },
     });
   }
+  // On top of everything, so the hidden sub-basins lose their rivers too.
+  layers.push({
+    id: SUBBASIN_HIDE_LAYER_ID,
+    type: "fill",
+    source: "subbasins",
+    "source-layer": "subbasins",
+    filter: hiddenSubbasinsFilter(o.isolatedIds),
+    paint: { "fill-color": mask, "fill-opacity": 1 },
+  });
 
   return {
     version: 8,

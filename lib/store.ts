@@ -34,6 +34,12 @@ interface MapState {
   focus: { bbox: Bbox; key: number } | null;
   select: (selection: Selection | null, opts?: { fit?: boolean }) => void;
   focusOn: (bbox: Bbox) => void;
+  /**
+   * Sub-basin ids to keep visible while the rest of the basin is hidden, or null.
+   * Set from the sub-basin panel; any new selection clears it.
+   */
+  isolatedIds: string[] | null;
+  setIsolatedIds: (ids: string[] | null) => void;
 }
 
 export const useMapStore = create<MapState>()((set) => ({
@@ -47,10 +53,9 @@ export const useMapStore = create<MapState>()((set) => ({
   setViewMode: (viewMode) =>
     set((s) => ({
       viewMode,
-      selection:
-        viewMode === "basin" && s.selection?.kind === "subbasin"
-          ? null
-          : s.selection,
+      ...(viewMode === "basin" && s.selection?.kind === "subbasin"
+        ? { selection: null, isolatedIds: null }
+        : {}),
     })),
   selection: null,
   fitPending: false,
@@ -58,6 +63,7 @@ export const useMapStore = create<MapState>()((set) => ({
   select: (selection, opts) =>
     set((s) => ({
       selection,
+      isolatedIds: null,
       fitPending: Boolean(selection && opts?.fit),
       viewMode: selection?.kind === "subbasin" ? "subbasins" : s.viewMode,
     })),
@@ -66,4 +72,6 @@ export const useMapStore = create<MapState>()((set) => ({
       fitPending: false,
       focus: { bbox, key: (s.focus?.key ?? 0) + 1 },
     })),
+  isolatedIds: null,
+  setIsolatedIds: (isolatedIds) => set({ isolatedIds }),
 }));

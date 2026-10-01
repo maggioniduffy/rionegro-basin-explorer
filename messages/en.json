@@ -144,7 +144,9 @@
       "partOf": "Part of the <link>{parent}</link> basin.",
       "children": "Sub-basins:",
       "endorheicTitle": "Endorheic areas",
-      "endorheicNote": "Land that drains to closed depressions and reaches no river. HydroBASINS links some of it to the river network virtually; here it is kept apart."
+      "endorheicNote": "Land that drains to closed depressions and reaches no river. HydroBASINS links some of it to the river network virtually; here it is kept apart.",
+      "hideOthers": "Hide the rest of the basin",
+      "showOthers": "Show the whole basin"
     }
   }
 }

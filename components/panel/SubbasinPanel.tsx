@@ -6,6 +6,7 @@ import { useMapStore } from "@/lib/store";
 import type { Selection } from "@/lib/url-state";
 import { type Caveat, Caveats, Group, Row, useFormat } from "./parts";
 import { useSubbasinLabel } from "./subbasin-label";
+import { Icon } from "../Icon";
 
 /** Modeled value path (Subbasin.modeled) → the caveat that explains it. */
 const CAVEAT_BY_PATH: [string, Caveat][] = [
@@ -42,6 +43,9 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
   const isRoot = b.parentId === null;
   const modeled = (path: string) => b.modeled.includes(path);
   const parentId = b.parent?.id;
+  const isolatedIds = useMapStore((s) => s.isolatedIds);
+  const setIsolatedIds = useMapStore((s) => s.setIsolatedIds);
+  const isolated = isolatedIds !== null;
   const caveats = CAVEAT_BY_PATH.filter(([path]) => modeled(path)).map(
     ([, c]) => c,
   );
@@ -79,6 +83,20 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
               </span>
             ))}
           </p>
+        )}
+        {/* The whole basin has nothing else to hide. */}
+        {!isRoot && (
+          <button
+            type="button"
+            aria-pressed={isolated}
+            onClick={() =>
+              setIsolatedIds(isolated ? null : [b._id, ...b.childIds])
+            }
+            className="mt-1 flex items-center gap-2 self-start rounded-md border border-(--border) px-2.5 py-1 hover:bg-(--panel-hover)"
+          >
+            <Icon name="mask" />
+            {isolated ? t("subbasin.showOthers") : t("subbasin.hideOthers")}
+          </button>
         )}
       </header>
 
