@@ -245,6 +245,12 @@ Shapefile, or a FileGDB with `--layer`). The full profile goes to
 `data/work/inspect/adhoc/<file>.json`. The `inspect-dataset` skill and the `data-inspector` agent
 (`.claude/`) use it.
 
+### `npm run inspect:tiles -- <file.pmtiles> [--by=<prop>]`
+
+Per-zoom summary of a PMTiles archive: tile count, stored tile bytes (min / median / max) and,
+per layer, features and vertices (total and worst tile). `--by=level` splits the mask's vertices
+by level. Use it to check tile weight after changing `pipeline:tiles` flags.
+
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.
 
