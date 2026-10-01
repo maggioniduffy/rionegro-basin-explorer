@@ -19,7 +19,14 @@
  *   npm run perf:zoom -- [--label name] [--out path] [--runs 3] [--port 3200]
  *                        [--no-build] [--headless] [--real-imagery]
  *                        [--hide mask,subbasins,rivers,imagery] [--no-hover]
- *                        [--cpu-throttle 4]
+ *                        [--cpu-throttle 4] [--mode api|events] [--url <page>]
+ *
+ * --mode events uses only real wheel and drag input, with no window.__map: no ease
+ * segment, fixed waits instead of the idle signal (settleMs is not measured), and a
+ * fixed wait after load. It works on any map page, so --url can point at another site
+ * (no build, no server) to get a comparable target. It has more variance than the
+ * default mode: the waits don't track tile loading, and other sites load over the
+ * network.
  *
  * Headed by default: headless Chromium falls back to SwiftShader (software WebGL),
  * which skews frame times. The output records the WebGL renderer actually used.
@@ -40,6 +47,8 @@ const VSYNC_JITTER_MS = 1;
 const DROPPED_MS = 1.5 * FRAME_BUDGET_MS;
 const VIEWPORT = { width: 1440, height: 900 };
 
+const pause = (page: Page, ms: number) => page.waitForTimeout(ms);
+
 const { values: args } = parseArgs({
   options: {
     label: { type: "string", default: "run" },
@@ -52,12 +61,23 @@ const { values: args } = parseArgs({
     hide: { type: "string", default: "" },
     "no-hover": { type: "boolean", default: false },
     "cpu-throttle": { type: "string", default: "1" },
+    mode: { type: "string", default: "api" },
+    url: { type: "string" },
   },
 });
 const port = Number(args.port);
 const runs = Number(args.runs);
 const cpuThrottle = Number(args["cpu-throttle"]);
 const hide = args.hide.split(",").filter(Boolean);
+const events = args.mode === "events" || Boolean(args.url);
+if (args.mode !== "api" && args.mode !== "events")
+  throw new Error(`--mode must be api or events, not ${args.mode}`);
+if (events && (hide.length || args["no-hover"]))
+  throw new Error("--hide and --no-hover need window.__map (--mode api)");
+const pageUrl = args.url ?? `http://localhost:${port}/`;
+/** Events mode: wait after load, and after each segment, instead of the idle signal. */
+const EVENTS_LOAD_WAIT_MS = 8000;
+const EVENTS_SETTLE_MS = 2000;
 const outPath = path.resolve(
   ROOT,
   args.out ?? `data/work/perf/${args.label}.json`,
@@ -105,6 +125,17 @@ async function startServer(): Promise<ChildProcess> {
     await new Promise((r) => setTimeout(r, 500));
   }
   throw new Error(`next start did not answer on ${url}`);
+}
+
+/** After a segment: the map's idle signal, or a fixed wait in events mode. */
+const settle = (page: Page) =>
+  events ? pause(page, EVENTS_SETTLE_MS) : waitIdle(page);
+
+/** After a page load: the map's idle signal, or a fixed wait in events mode. */
+async function ready(page: Page) {
+  if (!events) return waitIdle(page);
+  await page.locator("canvas").first().waitFor({ state: "visible" });
+  await pause(page, EVENTS_LOAD_WAIT_MS);
 }
 
 async function waitIdle(page: Page) {
@@ -200,8 +231,9 @@ async function measure(
   await startFrames(page);
   await body();
   const inputDone = performance.now();
-  await waitIdle(page);
-  const settleMs = performance.now() - inputDone;
+  await settle(page);
+  // Not measured in events mode: the wait is fixed.
+  const settleMs = events ? 0 : performance.now() - inputDone;
   const frames = await stopFrames(page);
   const after = await scriptMs(cdp);
   return stats(
@@ -212,8 +244,6 @@ async function measure(
   );
 }
 
-const pause = (page: Page, ms: number) => page.waitForTimeout(ms);
-
 /** Wheel zoom in, then out, at a point on the Limay–Neuquén confluence side. */
 async function wheel(page: Page) {
   await page.mouse.move(VIEWPORT.width * 0.45, VIEWPORT.height * 0.5);
@@ -222,9 +252,11 @@ async function wheel(page: Page) {
       await page.mouse.wheel(0, dy);
       await pause(page, 30);
     }
-    await page.waitForFunction(() => !window.__map?.isMoving(), undefined, {
-      polling: 50,
-    });
+    if (events) await pause(page, 1000);
+    else
+      await page.waitForFunction(() => !window.__map?.isMoving(), undefined, {
+        polling: 50,
+      });
   }
 }
 
@@ -268,13 +300,26 @@ async function ease(page: Page) {
   }
 }
 
-const SEGMENTS = { wheel, drag, ease } as const;
+const ALL_SEGMENTS = { wheel, drag, ease } as const;
+const SEGMENTS: Partial<typeof ALL_SEGMENTS> = events
+  ? { wheel, drag }
+  : ALL_SEGMENTS;
 // Setup runs before a segment is measured. Evaluations return nothing: returning the
 // Map would make Playwright serialize its whole object graph (a > 1 s stall).
 const SETUP: Partial<
-  Record<keyof typeof SEGMENTS, (page: Page) => Promise<void>>
+  Record<keyof typeof ALL_SEGMENTS, (page: Page) => Promise<void>>
 > = {
   drag: async (page) => {
+    if (events) {
+      // Zoom in with the wheel, as a user would.
+      await page.mouse.move(VIEWPORT.width * 0.5, VIEWPORT.height * 0.5);
+      for (let i = 0; i < 10; i++) {
+        await page.mouse.wheel(0, -120);
+        await pause(page, 30);
+      }
+      await pause(page, EVENTS_SETTLE_MS);
+      return;
+    }
     await page.evaluate(() => {
       window.__map?.jumpTo({ zoom: 8 });
     });
@@ -282,7 +327,7 @@ const SETUP: Partial<
   },
 };
 
-type SegmentName = keyof typeof SEGMENTS | "total";
+type SegmentName = keyof typeof ALL_SEGMENTS | "total";
 
 async function oneRun(
   page: Page,
@@ -290,7 +335,7 @@ async function oneRun(
   trace: boolean,
 ): Promise<Record<SegmentName, SegmentStats>> {
   await page.reload();
-  await waitIdle(page);
+  await ready(page);
   if (args["no-hover"])
     await page.evaluate(() => {
       if (window.__mapHover) window.__map?.off("mousemove", window.__mapHover);
@@ -319,7 +364,7 @@ async function oneRun(
   const result: Partial<Record<SegmentName, SegmentStats>> = {};
   const all: SegmentStats[] = [];
   for (const [name, body] of Object.entries(SEGMENTS)) {
-    await SETUP[name as keyof typeof SEGMENTS]?.(page);
+    await SETUP[name as keyof typeof ALL_SEGMENTS]?.(page);
     const s = await measure(page, cdp, () => body(page));
     result[name as SegmentName] = s;
     all.push(s);
@@ -357,8 +402,9 @@ function median(xs: number[]) {
 }
 
 async function main() {
-  if (!args["no-build"]) await run("npm", ["run", "build"], appEnv());
-  const server = await startServer();
+  const local = !args.url;
+  if (local && !args["no-build"]) await run("npm", ["run", "build"], appEnv());
+  const server = local ? await startServer() : null;
   const profile = await mkdtemp(path.join(tmpdir(), "perf-zoom-"));
   try {
     const context = await chromium.launchPersistentContext(profile, {
@@ -374,17 +420,20 @@ async function main() {
       ],
     });
     const page = context.pages()[0] ?? (await context.newPage());
-    if (!args["real-imagery"]) await stubImagery(page);
+    if (local && !args["real-imagery"]) await stubImagery(page);
     const cdp = await context.newCDPSession(page);
     await cdp.send("Performance.enable");
     // Optional: emulate a slower CPU, so main-thread costs show up as dropped frames.
     if (cpuThrottle > 1)
       await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpuThrottle });
-    await page.goto(`http://localhost:${port}/`);
-    await waitIdle(page);
-    const hasHook = await page.evaluate(() => Boolean(window.__map));
-    if (!hasHook)
+    await page.goto(pageUrl);
+    await ready(page);
+    if (!events && !(await page.evaluate(() => Boolean(window.__map))))
       throw new Error("window.__map missing: build with NEXT_PUBLIC_E2E=1");
+    // What the benchmark sees after load, to check no splash or dialog is in the way.
+    await page.screenshot({
+      path: tracePath.replace(/\.trace\.json$/, ".png"),
+    });
     const renderer = await page.evaluate(() => {
       const gl = document.createElement("canvas").getContext("webgl2");
       const ext = gl?.getExtension("WEBGL_debug_renderer_info");
@@ -434,6 +483,8 @@ async function main() {
         hide,
         noHover: args["no-hover"],
         cpuThrottle,
+        mode: events ? "events" : "api",
+        url: pageUrl,
       },
       median: med,
       runs: measured,
@@ -446,7 +497,7 @@ async function main() {
     console.table(med);
     console.log(`→ ${path.relative(ROOT, outPath)}`);
   } finally {
-    if (server.pid) process.kill(-server.pid, "SIGTERM");
+    if (server?.pid) process.kill(-server.pid, "SIGTERM");
     await rm(profile, { recursive: true, force: true });
   }
 }
