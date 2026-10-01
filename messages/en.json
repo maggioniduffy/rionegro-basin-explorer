@@ -49,5 +49,70 @@
       "kilometers": "km",
       "meters": "m"
     }
+  },
+  "search": {
+    "label": "Search rivers",
+    "placeholder": "Search a river",
+    "noResults": "No river found",
+    "error": "Search is not available right now."
+  },
+  "panel": {
+    "close": "Close",
+    "loading": "Loading…",
+    "error": "The data could not be loaded. Try again later.",
+    "notFound": "Not found. The link may be out of date.",
+    "modeledMark": "Modeled or estimated value",
+    "river": {
+      "label": "River details",
+      "flowsInto": "Flows into",
+      "sea": "the sea",
+      "weakName": "This river's name is less certain than the others."
+    },
+    "reach": {
+      "label": "Stream details",
+      "title": "Unnamed stream",
+      "titleOf": "Section of the {river}",
+      "id": "HydroRIVERS reach {id}",
+      "showRiver": "Show the whole {river}",
+      "endorheic": "Endorheic: drains inland and does not reach the sea."
+    },
+    "groups": {
+      "course": "Course",
+      "reach": "This section",
+      "watershed": "Upstream watershed",
+      "watershedHint": "{place, select, mouth {All the land that drains to its mouth.} other {All the land that drains to the end of this section.}}"
+    },
+    "fields": {
+      "length": "Length",
+      "distanceToSea": "Distance to the sea",
+      "sourceElevation": "Source elevation",
+      "sourceElevationConfluence": "Elevation at its starting confluence",
+      "mouthElevation": "Mouth elevation",
+      "drop": "Elevation drop",
+      "gradient": "Mean gradient",
+      "strahler": "Strahler order",
+      "discharge": "Mean discharge",
+      "nonPerennial": "Non-perennial length",
+      "noPrediction": "{pct} without a prediction",
+      "catchmentMinElevation": "Lowest elevation of its catchment",
+      "flowRegime": "Flow regime",
+      "flowRegimeValue": "{regime, select, perennial {Perennial} nonPerennial {Non-perennial} other {No prediction}}",
+      "probability": "{pct} probability of at least 1 no-flow day a year",
+      "drainageArea": "Drainage area",
+      "flooded": "Flooded area",
+      "floodedValue": "{min} to {max}",
+      "lakes": "Lake area",
+      "population": "Population",
+      "regulation": "Dam regulation"
+    },
+    "caveat": {
+      "title": "Values marked * are modeled or estimated:",
+      "discharge": "Discharge: natural long-term average for 1971–2000 (WaterGAP model). It does not reflect today's dam regulation.",
+      "nonPerennial": "Flow regime: GIRES v1.0 predictions (Messager et al., 2021), not observations.",
+      "flooded": "Flooded area: mean annual minimum and maximum from satellite data, 1993–2004 (GIEMS-D15).",
+      "population": "Population: 2010 estimate (GPWv4).",
+      "regulation": "Dam regulation: storage of the reservoirs upstream (GRanD v1.1) as a share of the modeled natural annual flow. Above 100%, they can hold more than a year of flow. Capped at 1,000%.",
+      "source": "Data: HydroRIVERS and RiverATLAS v1.0 (Linke et al., 2019)."
+    }
   }
 }

@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { MASK_LEVEL_COUNT } from "../lib/map/config";
 import { maskOpacities } from "../lib/map/mask";
-import { endoMaskOpacities, lakeFilter } from "../lib/map/style";
+import {
+  endoMaskOpacities,
+  lakeFilter,
+  selectionFilter,
+} from "../lib/map/style";
 
 describe("maskOpacities", () => {
   it("shows exactly one level, opaque, on a level stop", () => {
@@ -38,5 +42,21 @@ describe("endorheic overlay", () => {
   it("filters endorheic lake outlines only when hidden", () => {
     expect(lakeFilter(false)).toEqual(["literal", true]);
     expect(lakeFilter(true)).toEqual(["!=", ["get", "network"], "endorheic"]);
+  });
+});
+
+describe("selectionFilter", () => {
+  it("matches a river by slug, a reach by feature id, nothing otherwise", () => {
+    expect(selectionFilter({ kind: "river", id: "limay" })).toEqual([
+      "==",
+      ["get", "river"],
+      "limay",
+    ]);
+    expect(selectionFilter({ kind: "reach", id: 7 })).toEqual([
+      "==",
+      ["id"],
+      7,
+    ]);
+    expect(selectionFilter(null)).toEqual(["boolean", false]);
   });
 });

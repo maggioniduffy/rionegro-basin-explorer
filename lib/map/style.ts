@@ -10,6 +10,7 @@ import {
   mapConfig,
   TILE_PATHS,
 } from "./config";
+import type { Selection } from "../url-state";
 import { maskOpacities } from "./mask";
 
 export type Theme = "dark" | "light";
@@ -80,6 +81,17 @@ export const OUTLINE_LAYER_ID = "basin-outline";
 export const LAKE_LAYER_ID = "lake-outline";
 export const IMAGERY_LAYER_ID = "imagery";
 export const BACKGROUND_LAYER_ID = "background";
+/** Halo under the selected river or reach, drawn below the flow-class lines. */
+export const SELECTED_LAYER_ID = "reaches-selected";
+export const SELECTED_COLOR = "#fde68a";
+
+/** Tile features carry the reach id as feature id and the river slug as `river`. */
+export function selectionFilter(sel: Selection | null): FilterSpecification {
+  if (!sel) return ["boolean", false];
+  return sel.kind === "river"
+    ? ["==", ["get", "river"], sel.id]
+    : ["==", ["id"], sel.id];
+}
 
 // tippecanoe omits null attributes, so "no GIRES prediction" is a missing property.
 const CLASS_FILTER: Record<FlowClass, ExpressionSpecification> = {
@@ -97,19 +109,19 @@ export function reachFilter(
     : CLASS_FILTER[c];
 }
 
-/** Line width in px, by Strahler order (1–7) and zoom. */
-function reachWidth(scale: number): ExpressionSpecification {
+/** Line width in px, by Strahler order (1–7) and zoom, plus `extra` px. */
+function reachWidth(scale: number, extra = 0): ExpressionSpecification {
   const s: ExpressionSpecification = ["get", "strahler"];
   return [
     "interpolate",
     ["linear"],
     ["zoom"],
     4,
-    ["*", 0.35 * scale, s],
+    ["+", extra, ["*", 0.35 * scale, s]],
     10,
-    ["*", scale, ["+", 0.4, ["*", 0.8, s]]],
+    ["+", extra, ["*", scale, ["+", 0.4, ["*", 0.8, s]]]],
     14,
-    ["*", scale, ["+", 1, ["*", 1.4, s]]],
+    ["+", extra, ["*", scale, ["+", 1, ["*", 1.4, s]]]],
   ];
 }
 
@@ -123,6 +135,7 @@ export interface StyleOptions {
   theme: Theme;
   hideEndorheic: boolean;
   visibleLand: number;
+  selection: Selection | null;
 }
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
@@ -202,6 +215,20 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     source: "rivers",
     "source-layer": "basin",
     paint: { "line-color": outline, "line-width": 1 },
+  });
+  layers.push({
+    id: SELECTED_LAYER_ID,
+    type: "line",
+    source: "rivers",
+    "source-layer": "reaches",
+    filter: selectionFilter(o.selection),
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: {
+      "line-color": SELECTED_COLOR,
+      "line-opacity": 0.9,
+      "line-width": reachWidth(1, 5),
+      "line-blur": 1,
+    },
   });
   // Drawn smallest class first so perennial rivers sit on top.
   for (const c of ["unknown", "nonPerennial", "perennial"] as const) {

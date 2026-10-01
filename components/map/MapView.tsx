@@ -28,12 +28,16 @@ import {
   lakeFilter,
   MASK_LAYER_IDS,
   OUTLINE_LAYER_ID,
+  REACH_LAYER_IDS,
   reachFilter,
   reachLayerId,
+  SELECTED_LAYER_ID,
+  selectionFilter,
   THEME_COLORS,
 } from "@/lib/map/style";
 import { setupMaplibreWorker } from "@/lib/map/worker";
 import { useMapStore } from "@/lib/store";
+import type { Selection } from "@/lib/url-state";
 
 let initialized = false;
 function initMaplibre() {
@@ -64,6 +68,45 @@ function fitPadding() {
   return { top: 64, bottom: 32, right: 64, left: wide ? 312 : 16 };
 }
 
+/** Fitting to a selection also keeps clear of the info panel on the right. */
+function selectionPadding() {
+  const wide = window.innerWidth >= 768;
+  return wide
+    ? { top: 80, bottom: 48, right: 400, left: 312 }
+    : { top: 80, bottom: 48, right: 32, left: 32 };
+}
+
+/** Clicks within this many px of a line hit it; river lines are thin. */
+const HIT_TOLERANCE_PX = 6;
+
+/** The reach under a point, preferring the largest river; null when none. */
+function hitSelection(
+  map: MapLibreMap,
+  x: number,
+  y: number,
+): Selection | null {
+  const r = HIT_TOLERANCE_PX;
+  const features = map.queryRenderedFeatures(
+    [
+      [x - r, y - r],
+      [x + r, y + r],
+    ],
+    { layers: REACH_LAYER_IDS },
+  );
+  const best = features.reduce<(typeof features)[number] | undefined>(
+    (a, f) =>
+      !a || Number(f.properties.strahler) > Number(a.properties.strahler)
+        ? f
+        : a,
+    undefined,
+  );
+  if (!best) return null;
+  const river: unknown = best.properties.river;
+  if (typeof river === "string" && river) return { kind: "river", id: river };
+  const id = Number(best.id);
+  return Number.isSafeInteger(id) && id > 0 ? { kind: "reach", id } : null;
+}
+
 type State = ReturnType<typeof useMapStore.getState>;
 
 /** Push store state into an already-loaded map. */
@@ -86,6 +129,9 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     for (const c of FLOW_CLASSES)
       map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic));
     map.setFilter(LAKE_LAYER_ID, lakeFilter(s.hideEndorheic));
+  }
+  if (!prev || s.selection !== prev.selection) {
+    map.setFilter(SELECTED_LAYER_ID, selectionFilter(s.selection));
   }
   if (!prev || s.theme !== prev.theme) {
     const { mask, outline, lake } = THEME_COLORS[s.theme];
@@ -144,6 +190,7 @@ export default function MapView() {
           theme: initial.theme,
           hideEndorheic: initial.hideEndorheic,
           visibleLand: initial.visibleLand,
+          selection: initial.selection,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
         fitBoundsOptions: { padding: fitPadding() },
@@ -194,18 +241,40 @@ export default function MapView() {
     };
     map.on("sourcedata", revealImagery);
 
+    // Click a line to select its river (or the reach, if unnamed); click elsewhere to
+    // clear. Hovering a line shows a pointer.
+    map.on("click", (e) => {
+      useMapStore.getState().select(hitSelection(map, e.point.x, e.point.y));
+    });
+    map.on("mousemove", (e) => {
+      map.getCanvas().style.cursor = hitSelection(map, e.point.x, e.point.y)
+        ? "pointer"
+        : "";
+    });
+
+    const fitTo = (bbox: [number, number, number, number]) =>
+      map.fitBounds(bbox, {
+        padding: selectionPadding(),
+        maxZoom: 11,
+        duration: 800,
+      });
+
     let loaded = false;
     map.on("load", () => {
       loaded = true;
-      applyState(map, useMapStore.getState());
+      const s = useMapStore.getState();
+      applyState(map, s);
+      if (s.focus) fitTo(s.focus.bbox);
     });
     const unsubscribe = useMapStore.subscribe((s, prev) => {
+      if (!loaded) return;
+      if (s.focus && s.focus !== prev.focus) fitTo(s.focus.bbox);
       // Only style state needs applying; other store fields don't touch the map.
       if (
-        !loaded ||
-        (s.visibleLand === prev.visibleLand &&
-          s.hideEndorheic === prev.hideEndorheic &&
-          s.theme === prev.theme)
+        s.visibleLand === prev.visibleLand &&
+        s.hideEndorheic === prev.hideEndorheic &&
+        s.theme === prev.theme &&
+        s.selection === prev.selection
       )
         return;
       setIdle(false);

@@ -49,5 +49,70 @@
       "kilometers": "km",
       "meters": "m"
     }
+  },
+  "search": {
+    "label": "Buscar ríos",
+    "placeholder": "Buscar un río",
+    "noResults": "No se encontró ningún río",
+    "error": "La búsqueda no está disponible en este momento."
+  },
+  "panel": {
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "error": "No se pudieron cargar los datos en este momento.",
+    "notFound": "No encontrado. Puede que el enlace esté desactualizado.",
+    "modeledMark": "Valor modelado o estimado",
+    "river": {
+      "label": "Detalles del río",
+      "flowsInto": "Desemboca en",
+      "sea": "el mar",
+      "weakName": "El nombre de este río es menos seguro que el de los demás."
+    },
+    "reach": {
+      "label": "Detalles del curso",
+      "title": "Curso sin nombre",
+      "titleOf": "Tramo del {river}",
+      "id": "Tramo HydroRIVERS {id}",
+      "showRiver": "Ver todo el {river}",
+      "endorheic": "Endorreico: drena hacia el interior y no llega al mar."
+    },
+    "groups": {
+      "course": "Recorrido",
+      "reach": "Este tramo",
+      "watershed": "Cuenca aguas arriba",
+      "watershedHint": "{place, select, mouth {Todo el terreno que drena hasta su desembocadura.} other {Todo el terreno que drena hasta el final de este tramo.}}"
+    },
+    "fields": {
+      "length": "Longitud",
+      "distanceToSea": "Distancia al mar",
+      "sourceElevation": "Altitud de la naciente",
+      "sourceElevationConfluence": "Altitud de la confluencia donde nace",
+      "mouthElevation": "Altitud de la desembocadura",
+      "drop": "Desnivel",
+      "gradient": "Pendiente media",
+      "strahler": "Orden de Strahler",
+      "discharge": "Caudal medio",
+      "nonPerennial": "Longitud no permanente",
+      "noPrediction": "{pct} sin predicción",
+      "catchmentMinElevation": "Altitud mínima de su cuenca local",
+      "flowRegime": "Régimen",
+      "flowRegimeValue": "{regime, select, perennial {Permanente} nonPerennial {No permanente} other {Sin predicción}}",
+      "probability": "{pct} de probabilidad de al menos 1 día sin flujo al año",
+      "drainageArea": "Área de drenaje",
+      "flooded": "Área inundada",
+      "floodedValue": "{min} a {max}",
+      "lakes": "Superficie de lagos",
+      "population": "Población",
+      "regulation": "Regulación por represas"
+    },
+    "caveat": {
+      "title": "Los valores marcados con * son modelados o estimados:",
+      "discharge": "Caudal: promedio natural de largo plazo 1971–2000 (modelo WaterGAP). No refleja la regulación actual de las represas.",
+      "nonPerennial": "Régimen: predicciones de GIRES v1.0 (Messager et al., 2021), no observaciones.",
+      "flooded": "Área inundada: mínimo y máximo anual medio a partir de datos satelitales, 1993–2004 (GIEMS-D15).",
+      "population": "Población: estimación de 2010 (GPWv4).",
+      "regulation": "Regulación por represas: almacenamiento de los embalses aguas arriba (GRanD v1.1) como proporción del caudal anual natural modelado. Por encima del 100 %, pueden retener más de un año de caudal. Tope de 1000 %.",
+      "source": "Datos: HydroRIVERS y RiverATLAS v1.0 (Linke et al., 2019)."
+    }
   }
 }
