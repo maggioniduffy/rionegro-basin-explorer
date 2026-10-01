@@ -218,11 +218,17 @@ Outputs: `data/out/subbasins.ndjson` (committed, seed input) and `data/work/tile
 
 ### `npm run pipeline:tiles`
 
-Runs tippecanoe with the feature and tile-size limits off:
+Runs tippecanoe with the feature and tile-size limits off, except for the mask (below):
 
 - `public/tiles/rivers.pmtiles`: layer `reaches`, with the properties the map styles on and a
   per-feature minzoom from `reachMinzoomByStrahler`; layer `basin`, the outline.
-- `public/tiles/mask.pmtiles`: layer `mask`, one feature per level.
+- `public/tiles/mask.pmtiles`: layer `mask`, one feature per level, and layer `endorheic`. Built
+  in two parts joined with `tile-join`: z0–7 at `--full-detail=10` (about 2 tile units per screen
+  pixel), z8 and up at full detail, both with `--detect-shared-borders` and a 100 KB tile cap.
+  tippecanoe lowers an oversized tile's detail rather than dropping features, and fails if it still
+  doesn't fit. This keeps the worst tile near 75k vertices instead of ~274k (z6), which MapLibre
+  would otherwise triangulate on every tile load while zooming. `tile-join` must be on PATH next to
+  tippecanoe.
 - `public/tiles/subbasins.pmtiles`: layer `subbasins`, the own areas from `pipeline:subbasins`,
   built with `--detect-shared-borders` so simplification leaves no slivers between neighbours.
 
@@ -244,6 +250,12 @@ sample rows without geometry. It reads Parquet, CSV, NDJSON and anything GDAL op
 Shapefile, or a FileGDB with `--layer`). The full profile goes to
 `data/work/inspect/adhoc/<file>.json`. The `inspect-dataset` skill and the `data-inspector` agent
 (`.claude/`) use it.
+
+### `npm run inspect:tiles -- <file.pmtiles> [--by=<prop>]`
+
+Per-zoom summary of a PMTiles archive: tile count, stored tile bytes (min / median / max) and,
+per layer, features and vertices (total and worst tile). `--by=level` splits the mask's vertices
+by level. Use it to check tile weight after changing `pipeline:tiles` flags.
 
 Local-only inputs (not fetched by the pipeline): `data/raw/ign/` (IGN layers, for Phase 5) and
 `data/raw/alos/` (one ALOS PALSAR scene, unused). See SOURCES.md.

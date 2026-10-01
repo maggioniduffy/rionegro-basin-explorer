@@ -5,6 +5,7 @@ import {
   AttributionControl,
   addProtocol,
   Map as MapLibreMap,
+  type MapMouseEvent,
   ScaleControl,
 } from "maplibre-gl";
 import { useTranslations } from "next-intl";
@@ -285,6 +286,9 @@ export default function MapView() {
     map.addControl(new AttributionControl({ compact: false }), "bottom-right");
     map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
     mapRef.current = map;
+    // Test hook for e2e and scripts/perf-zoom.ts; inlined at build time, so production
+    // builds without NEXT_PUBLIC_E2E carry no reference to it.
+    if (process.env.NEXT_PUBLIC_E2E === "1") window.__map = map;
 
     // Screenshot tests wait for data-map-idle="true" after each change.
     const setIdle = (idle: boolean) =>
@@ -304,17 +308,25 @@ export default function MapView() {
     };
     map.on("sourcedata", revealImagery);
 
+    // Set on "load": until then the style's layers don't exist, and querying them
+    // logs an error on every pointer move.
+    let loaded = false;
+
     // Click a line to select its river (or the reach, if unnamed); in the sub-basin
     // view, click land to select its sub-basin; click elsewhere to clear. Hovering
     // something selectable shows a pointer.
     map.on("click", (e) => {
+      if (!loaded) return;
       useMapStore.getState().select(hitSelection(map, e.point.x, e.point.y));
     });
-    map.on("mousemove", (e) => {
+    const onHover = (e: MapMouseEvent) => {
+      if (!loaded) return;
       map.getCanvas().style.cursor = hitSelection(map, e.point.x, e.point.y)
         ? "pointer"
         : "";
-    });
+    };
+    map.on("mousemove", onHover);
+    if (process.env.NEXT_PUBLIC_E2E === "1") window.__mapHover = onHover;
 
     const fitTo = (bbox: [number, number, number, number]) =>
       map.fitBounds(bbox, {
@@ -323,7 +335,6 @@ export default function MapView() {
         duration: 800,
       });
 
-    let loaded = false;
     map.on("load", () => {
       loaded = true;
       const s = useMapStore.getState();
@@ -349,6 +360,10 @@ export default function MapView() {
 
     return () => {
       unsubscribe();
+      if (process.env.NEXT_PUBLIC_E2E === "1") {
+        delete window.__map;
+        delete window.__mapHover;
+      }
       map.remove();
       mapRef.current = null;
     };

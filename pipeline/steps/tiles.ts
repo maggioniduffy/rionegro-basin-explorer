@@ -26,6 +26,20 @@ import { writeReport } from "../lib/report";
 
 const TIPPECANOE = process.env.TIPPECANOE ?? "tippecanoe";
 const DECODE = `${TIPPECANOE}-decode`;
+const TILE_JOIN = TIPPECANOE.replace(/tippecanoe$/, "tile-join");
+
+/**
+ * The mask's polygons (river buffers with thousands of holes) dominate tile weight:
+ * up to ~274k vertices in one z6 tile at full detail, which MapLibre must triangulate
+ * on every tile load while zooming. Up to MASK_LOW_MAXZOOM the mask is written at
+ * MASK_LOW_DETAIL (2^10 = 1024 units per tile, about 2 per screen pixel, so edges
+ * look the same); higher zooms keep full detail. Every mask tile is capped at
+ * MASK_MAX_TILE_BYTES: tippecanoe lowers a bigger tile's detail rather than drop
+ * features, and fails if it still doesn't fit, so no level ever goes missing.
+ */
+const MASK_LOW_MAXZOOM = 7;
+const MASK_LOW_DETAIL = 10;
+const MASK_MAX_TILE_BYTES = 100_000;
 const TILES_DIR = `${ROOT}/public/tiles`;
 
 interface Feature {
@@ -205,12 +219,41 @@ async function main() {
     `--named-layer=basin:${basinIn}`,
     `--named-layer=lakes:${lakesIn}`,
   ]);
-  await rm(maskOut, { force: true });
-  await run(TIPPECANOE, [
-    ...common,
-    `--output=${maskOut}`,
+  // Mask: low zooms at lower detail, high zooms at full detail, joined into one file.
+  // --detect-shared-borders keeps each level's edge with its endorheic overlay in step.
+  const maskLow = workPath("tiles/mask.low.pmtiles");
+  const maskHigh = workPath("tiles/mask.high.pmtiles");
+  const maskCommon = [
+    "--force",
+    "--no-feature-limit",
+    `--maximum-tile-bytes=${MASK_MAX_TILE_BYTES}`,
+    "--detect-shared-borders",
+    "--quiet",
     `--named-layer=mask:${maskIn}`,
     `--named-layer=endorheic:${endoIn}`,
+  ];
+  for (const f of [maskOut, maskLow, maskHigh]) await rm(f, { force: true });
+  await run(TIPPECANOE, [
+    ...maskCommon,
+    `--output=${maskLow}`,
+    "--minimum-zoom=0",
+    `--maximum-zoom=${MASK_LOW_MAXZOOM}`,
+    `--full-detail=${MASK_LOW_DETAIL}`,
+    `--low-detail=${MASK_LOW_DETAIL}`,
+  ]);
+  await run(TIPPECANOE, [
+    ...maskCommon,
+    `--output=${maskHigh}`,
+    `--minimum-zoom=${MASK_LOW_MAXZOOM + 1}`,
+    `--maximum-zoom=${maxzoom}`,
+  ]);
+  await run(TILE_JOIN, [
+    "--force",
+    "--no-tile-size-limit",
+    "--quiet",
+    `--output=${maskOut}`,
+    maskLow,
+    maskHigh,
   ]);
   await rm(subbasinsOut, { force: true });
   await run(TIPPECANOE, [

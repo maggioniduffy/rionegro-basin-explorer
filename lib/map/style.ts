@@ -221,7 +221,9 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       source: "imagery",
       // Transparent until the mask has loaded (MapView fades it in), so the imagery
       // outside the basin never shows on first load or after a locale switch.
-      paint: { "raster-opacity": 0 },
+      // No cross-fade between zoom levels: fading draws parent and child tiles
+      // together on every frame of a zoom (perf:zoom, 4x CPU throttle).
+      paint: { "raster-opacity": 0, "raster-fade-duration": 0 },
     });
   }
   // Below the mask, so sub-basins are tinted only on the visible land.
