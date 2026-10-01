@@ -6,17 +6,17 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 
 ## Summary
 
-| Source                                 | Used for                                                            | License                                                               | Commercial use                      | Verified   | Downloaded                        |
-| -------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------- | ---------- | --------------------------------- |
-| HydroRIVERS v1.0                       | River network geometry, topology                                    | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution    | Yes                                 | 2026-09-29 | 2026-09-30                        |
-| HydroBASINS v1c                        | Basin delineation, sub-basins                                       | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution    | Yes                                 | 2026-09-29 | 2026-09-30                        |
-| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.)                       | CC BY 4.0                                                             | Yes                                 | 2026-09-29 | 2026-09-30 (RiverATLAS only)      |
-| GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                  | CC BY 4.0 per figshare metadata (README wording ambiguous, see below) | Yes, if CC BY                       | 2026-09-30 | 2026-09-30                        |
-| HydroLAKES v1.0                        | Lake and reservoir polygons (line clipping, mask, outlines)         | CC BY 4.0                                                             | Yes                                 | 2026-09-30 | 2026-09-30                        |
-| IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)                           | **Not verified** (believed CC BY 4.0)                                 | Unknown                             | —          | —                                 |
-| OpenStreetMap                          | River name evidence (Phase 1); localities, reservoirs, dams (later) | ODbL 1.0                                                              | Yes (share-alike on the database)   | 2026-09-30 | 2026-09-30 (Overpass, basin bbox) |
-| Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                          | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license     | Only with an EOX commercial license | 2026-09-29 | n/a (tiles)                       |
-| Imagery: Esri World Imagery            | Candidate satellite basemap                                         | **Not verified** (Esri terms of use)                                  | Unknown                             | —          | n/a (tiles)                       |
+| Source                                 | Used for                                                            | License                                                                | Commercial use                                     | Verified                                    | Downloaded                        |
+| -------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- | --------------------------------- |
+| HydroRIVERS v1.0                       | River network geometry, topology                                    | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
+| HydroBASINS v1c                        | Basin delineation, sub-basins                                       | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
+| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.)                       | CC BY 4.0                                                              | Yes                                                | 2026-09-29                                  | 2026-09-30 (RiverATLAS only)      |
+| GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                  | CC BY 4.0 per figshare metadata (README wording ambiguous, see below)  | Yes, if CC BY                                      | 2026-09-30                                  | 2026-09-30                        |
+| HydroLAKES v1.0                        | Lake and reservoir polygons (line clipping, mask, outlines)         | CC BY 4.0                                                              | Yes                                                | 2026-09-30                                  | 2026-09-30                        |
+| IGN Argentina — SIG layers             | Watercourse names, extra detail (Phase 5)                           | IGN "Términos y Condiciones" (custom, no named license; **not** CC BY) | Only for derived works; non-commercial use is fine | 2026-10-01 (terms read; layer metadata not) | — (local copy origin unknown)     |
+| OpenStreetMap                          | River name evidence (Phase 1); localities, reservoirs, dams (later) | ODbL 1.0                                                               | Yes (share-alike on the database)                  | 2026-09-30                                  | 2026-09-30 (Overpass, basin bbox) |
+| Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                          | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license      | Only with an EOX commercial license                | 2026-09-29                                  | n/a (tiles)                       |
+| Imagery: Esri World Imagery            | Candidate satellite basemap                                         | **Not verified** (Esri terms of use)                                   | Unknown                                            | —                                           | n/a (tiles)                       |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
 
@@ -130,13 +130,43 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 
 ## IGN Argentina: SIG layers
 
-- URL: https://www.ign.gob.ar/NuestrasActividades/InformacionGeoespacial/CapasSIG
-- Relevant layers: "Aguas continentales", i.e. perennial and intermittent watercourses, published as
-  Shapefile, KML, GeoJSON and CSV.
-- License: **not verified.** The layers page links to "Términos y Condiciones", but it could not be
-  fetched on 2026-09-29 (404 at the guessed URLs). We believe it is CC BY 4.0 with credit to
-  "Instituto Geográfico Nacional de la República Argentina". To check, open the link from the layers
-  page in a browser and record the exact text here before Phase 5 (the IGN gate).
+- URLs:
+  - Layers: https://www.ign.gob.ar/NuestrasActividades/InformacionGeoespacial/CapasSIG
+  - Terms: https://www.ign.gob.ar/descargas/tyc1.html (read 2026-10-01)
+- Relevant layers: "Aguas continentales" (watercourses, reservoirs, water bodies, canals), published as
+  Shapefile, KML, GeoJSON and CSV, with a metadata PDF per layer.
+- License: custom IGN terms ("Política de licenciamiento de datos"). It is **not** CC BY 4.0 and names
+  no standard license. Conditions, verbatim:
+  1. "Debe citarse la fuente de los documentos objeto de la reutilización: "FUENTE: Instituto Geográfico Nacional de la República Argentina"."
+  2. "No se podrá indicar, insinuar o sugerir que el Instituto Geográfico Nacional, participa, patrocina o apoya la utilización o reutilización de la misma."
+  3. "Deben conservarse, y por tanto no alterarse ni suprimirse los metadatos sobre la fecha de actualización y las condiciones de reutilización aplicables incluidos, en su caso, en el documento puesto a disposición para su utilización o reutilización."
+  4. "En el caso de que se generen productos derivados, deberá además mencionarse la fecha de los datos originales del IGN."
+  5. "Los datos descargados deben compartirse de manera libre y gratuita."
+  6. "Se permite su uso comercial únicamente en el caso de obras derivadas en que la información sea utilizada como insumo para generar un nuevo producto."
+
+  Also: "La reutilización puede incluir la copia, difusión, modificación, adaptación, extracción,
+  reordenamiento y combinación de la información contenida en el sitio, siempre que su utilización no
+  desnaturalice el sentido de la información." Liability is on the user ("bajo su propia cuenta y riesgo…").
+
+- Commercial use: conditional (clause 6). The site is non-commercial and ships only derived tiles, so we
+  believe we comply. A paywall or paid tier around IGN-derived data would conflict with clause 5.
+- **Required attribution** (clause 1, verbatim): "FUENTE: Instituto Geográfico Nacional de la República
+  Argentina". Show it in the in-map attribution and on the Phase 8 attributions page, with the date of the
+  original IGN data (clause 4) and a statement that IGN does not endorse this product (clause 2). Do not
+  alter the layers' update-date metadata (clause 3). Where the credit appears is our choice; the terms
+  don't say.
+- Citation: none provided beyond the credit line.
+- Usage limits / API key: none stated on the terms page. The OGC services page
+  (https://www.ign.gob.ar/NuestrasActividades/InformacionGeoespacial/ServiciosOGC) states no terms for
+  the WMS/WFS endpoints.
+- Not verified:
+  - Date of the original data: needs the layer metadata PDFs or a fresh download (clause 4). The local
+    copy's origin and download date are unknown.
+  - Clause 5 can be read as "free redistribution only". Ask contacto@ign.gob.ar if monetization is ever
+    planned.
+  - How clause 3 applies to vector tiles, and whether the same terms cover data taken from the WFS.
+  - The quoted text came through a page-to-text tool (checked twice, sentences matched). Confirm once in
+    a browser before release.
 - Local copy: `data/raw/ign/` (not downloaded by the pipeline; origin and download date unknown).
   Six national layers in WGS84 (EPSG:4326) with attribute text in **ISO-8859-1** (per the `.cst`
   files; read with `open_options=['ENCODING=ISO-8859-1']`). Layer codes and `objeto` values:
