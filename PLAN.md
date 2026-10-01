@@ -47,12 +47,21 @@ and a strip of land around it is visible, with river panels and a sub-basin view
   - Lakes: HydroLAKES v1.0 (CC BY 4.0). River lines are removed inside all 245 basin lakes, except that 5 Limay reservoirs keep the Limay line (`pipeline/lakes.json`): Ezequiel Ramos Mexía, Piedra del Águila, Alicurá, Arroyito and Pichi Picún Leufú. Los Barreales and Mari Menuco have no named river through them, so all their lines are removed. Lakes are visible at every mask level and have a thin outline. GRanD itself is not used because its terms are unverified.
   - Locale prefixes dropped (reverses the Phase 0 `/en`, `/es` routes). A prefixed root layout remounted the whole tree on a language switch, rebuilding the map. Now the switcher sets the cookie and calls `router.refresh()`, so the map, the slider and the URL are kept. Old `/en/…` and `/es/…` links are redirected by `proxy.ts`, which sets the cookie. Pages now render per request because they read cookies and headers.
 
+- **Phase 3 decisions (2026-09-30):**
+  - Mongo stays: it serves search plus 8,016 reach documents for the unnamed-stream panel, which is more than a static JSON should ship to the browser. Collections `rivers` (15, `_id` = slug) and `reaches` (`_id` = HYRIV_ID).
+  - `npm run seed` (`scripts/seed.ts`) validates `data/out/*.ndjson` against strict zod schemas (`lib/data/schemas.ts`), upserts whole documents by `_id`, deletes documents no longer in the files, and writes `data/work/seed/report.json`. A second run reports 0 upserted, 0 modified. It uses the app's `MONGODB_URI` for now; a separate read-only app user is a Phase 8 task.
+  - Panel metrics come from RiverATLAS upstream attributes at the mouth reach (`inu_pc_umn/umx`, `lka_pc_use`, `pop_ct_usu`) and `dor_pc_pva` at the mouth; units are from the catalog (sheets H03, H04, H07, A01). Rule 4 in CLAUDE.md now names each value's period.
+  - Rivers and reaches carry a `bbox` from HydroRIVERS geometry, so search results and shared links can fit the map without loaded tiles.
+  - Clicking a line selects its named river; an unnamed reach opens a reach panel. Empty map or Escape clears.
+  - URL: `?r=<slug>` or `?reach=<HYRIV_ID>`, kept with `history.replaceState` (no history entry per click).
+  - API responses send `Cache-Control: public, max-age=300, s-maxage=86400, stale-while-revalidate=604800` (checked on `next start`). Search matches the start of any word, ignoring accents and case.
+
 ## Repo layout
 
 ```
-/app                 pages, /api/rivers/[id], /api/subbasins/[id], /api/search
-/components          Map, RiverPanel, SubbasinPanel, Controls, LocaleSwitcher
-/lib                 mongo.ts, map/, store.ts, units.ts
+/app                 pages, /api/rivers/[id], /api/reaches/[id], /api/subbasins/[id], /api/search
+/components          map/, panel/ (River, Reach, Info), SearchBox, UrlSync, SubbasinPanel, Controls, LocaleSwitcher
+/lib                 mongo.ts, data/ (schemas, queries), map/, store.ts, url-state.ts, units.ts
 /messages            en.json, es.json
 /pipeline            TS steps + README.md + SOURCES.md
 /data                raw/ work/ (gitignored) · out/ (tiles, NDJSON)
@@ -65,7 +74,7 @@ CLAUDE.md  PLAN.md
 
 - [x] `create-next-app` (TS strict, Tailwind, ESLint), Prettier, `npm run check`
 - [x] next-intl wired with `/en` and `/es`, locale switcher, one translated string as a smoke test
-- [ ] Atlas M0 cluster, Vercel project, env vars (`MONGODB_URI`, imagery URL)
+- [~] Atlas M0 cluster, Vercel project, env vars (`MONGODB_URI`, imagery URL) — Atlas cluster live and seeded (2026-09-30); Vercel pending
 - [x] Decide: imagery provider, PMTiles hosting
 - [x] `pipeline/SOURCES.md` started (HydroSHEDS/HydroATLAS, IGN, OSM, imagery): license + citation for each
 - [x] Playwright set up with one smoke screenshot
@@ -89,12 +98,12 @@ CLAUDE.md  PLAN.md
 - [x] Dark/light toggle, zoom controls, scale bar
 - **Done when:** basin silhouette renders, small rivers appear progressively, slider is smooth.
 
-## Phase 3 — Mongo & river panel
+## Phase 3 — Mongo & river panel ✅
 
-- [ ] `seed.ts` idempotent (bulk upsert); indexes (unique slug, text on names)
-- [ ] `/api/rivers/[id]` and `/api/search` with `Cache-Control` for CDN caching
-- [ ] River panel (length, distance to sea, source/mouth elevation, gradient, Strahler order, discharge, flooded %, lakes %, population, dam regulation %) with the modeled-data caveat in both languages
-- [ ] Search box; shareable URL state
+- [x] `seed.ts` idempotent (bulk upsert); indexes (unique slug, text on names)
+- [x] `/api/rivers/[id]` and `/api/search` with `Cache-Control` for CDN caching (plus `/api/reaches/[id]`)
+- [x] River panel (length, distance to sea, source/mouth elevation, gradient, Strahler order, discharge, flooded %, lakes %, population, dam regulation %) with the modeled-data caveat in both languages
+- [x] Search box; shareable URL state
 - **Done when:** clicking a river opens real data; the link reproduces the state.
 
 ## Phase 4 — Sub-basins level 1 (Limay, Neuquén, Río Negro)
@@ -140,7 +149,6 @@ CLAUDE.md  PLAN.md
 - PMTiles hosting (`/public` vs object storage)
 - Official basin area figure for validation
 - Exact sub-basin list per level (validate against AIC/official cartography)
-- Whether Mongo stays or a static JSON is enough (revisit after Phase 3)
 
 ## Risks
 

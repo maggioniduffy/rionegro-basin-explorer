@@ -63,8 +63,21 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   hydro-environmental sub-basin and river reach characteristics at high spatial resolution.
   Scientific Data 6: 283. https://doi.org/10.1038/s41597-019-0300-6
   (The authors and DOI are verified from the product page. The title and journal were written from memory; confirm them via the DOI.)
-- Caveat (CLAUDE.md rule 4): discharge and population are modeled long-term averages
-  (1971–2000) and do not reflect current dam regulation.
+- Attributes used (Phase 3; units and sources from `RiverATLAS_Catalog_v10.pdf`, all listed there
+  as CC BY 4.0). Each is shown with its own period in the app:
+  - `ele_mt_cmn`, `sgr_dk_rav`: EarthEnv-DEM90 elevation and reach gradient.
+  - `inu_pc_umn`, `inu_pc_umx` (sheet H03, percent): GIEMS-D15 inundation extent, satellite data
+    1993–2004. Fluet-Chouinard, E., Lehner, B., Rebelo, L. M., Papa, F., & Hamilton, S. K. (2015).
+    Remote Sensing of Environment, 158, 348–361.
+  - `lka_pc_use` (sheet H04, percent × 10): limnicity from HydroLAKES (Messager et al., 2016).
+  - `dor_pc_pva` (sheet H07, percent × 10, capped at 1000 %): degree of regulation from GRanD v1.1
+    dams (Lehner et al., 2011, Frontiers in Ecology and the Environment 9(9), 494–502). This is
+    GRanD as delivered inside RiverATLAS; GRanD itself is still not downloaded (see HydroLAKES).
+  - `pop_ct_usu` (sheet A01, thousands): GPWv4 population count for 2010 (CIESIN, 2016,
+    https://doi.org/10.7927/H4X63JVC).
+- Caveat (CLAUDE.md rule 4): discharge is a modeled natural average for 1971–2000 that does not
+  reflect current dam regulation; population is a 2010 estimate; inundation is 1993–2004
+  satellite data; regulation is based on GRanD v1.1 dams.
 
 ## GIRES v1.0: global prevalence of non-perennial rivers and streams
 
