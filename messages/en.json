@@ -34,7 +34,7 @@
     "subbasins": {
       "title": "Sub-basins",
       "own": "{name}, direct drainage",
-      "hint": "Click the land to see a sub-basin's data. The tint shows on the visible land; borders always show.",
+      "hint": "Click the land to see a sub-basin's data. The selected one is tinted on the visible land; borders always show.",
       "endorheic": "Endorheic areas (drain to no river)"
     }
   },

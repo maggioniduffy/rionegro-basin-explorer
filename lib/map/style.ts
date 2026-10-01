@@ -67,13 +67,13 @@ export function hiddenSubbasinsFilter(
 const selectedSubbasin = (sel: Selection | null) =>
   sel?.kind === "subbasin" ? sel.id : "";
 
-/** Tint of each sub-basin: none in the basin view, stronger when selected. */
+/** Only the selected sub-basin is tinted; the others show by their borders. */
 export function subbasinFillOpacity(
   mode: ViewMode,
   sel: Selection | null,
 ): ExpressionSpecification | number {
   if (mode === "basin") return 0;
-  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.2, 0.08];
+  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.12, 0];
 }
 
 /**
