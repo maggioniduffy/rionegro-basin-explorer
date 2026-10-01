@@ -56,11 +56,19 @@ and a strip of land around it is visible, with river panels and a sub-basin view
   - URL: `?r=<slug>` or `?reach=<HYRIV_ID>`, kept with `history.replaceState` (no history entry per click).
   - API responses send `Cache-Control: public, max-age=300, s-maxage=86400, stale-while-revalidate=604800` (checked on `next start`). Search matches the start of any word, ignoring accents and case.
 
+- **Phase 4 decisions (2026-10-01):**
+  - Río Negro is the whole basin, not the stretch below the confluence. It is the root of the hierarchy (`level 0`); Limay and Neuquén are its children (`level 1`, `parentId: "negro"`). Its own area, the land in neither child, is drawn in a third colour and opens the whole-basin panel.
+  - Each sub-basin is everything upstream (HydroBASINS level 12 `NEXT_DOWN`) of the polygon holding its river's mouth reach (`pipeline/subbasins.config.json`). The own areas partition the basin: Limay 61,878 km², Neuquén 38,351 km², Río Negro own area 35,975 km², sum = basin, 0 km² overlap and gap (`data/work/subbasins/report.json`). 6 invalid level-12 polygons are repaired with `ST_MakeValid`.
+  - Endorheic land follows HydroBASINS' virtual links. A 9,365 km² endorheic area north of the confluence links to the lower Río Negro, so it is part of the root's own area (a second, detached part), not of the Neuquén. Not verified against official cartography (see Risks).
+  - Reaches are assigned by their `HYBAS_L12` attribute. The connected reaches of each sub-basin equal the HydroRIVERS upstream set of its mouth reach (0 mismatches), and every reach midpoint lies in its owner's polygon.
+  - Sub-basin metrics sum or `CATCH_SKM`-weight the RiverATLAS catchment attributes (`pop_ct_csu`, `lka_pc_cse`, `inu_pc_cmn/cmx`, `ele_mt_cmn/cmx`) over all the land, endorheic areas included, so they exceed the river panel's upstream values (e.g. population 765,417 vs 600,371 for the Río Negro). Units are confirmed by the report: over connected reaches they reproduce the mouth's upstream values (population within 0.01%). Discharge and dam regulation are taken at the mouth reach.
+  - `public/tiles/subbasins.pmtiles` (100 KB) is built with `--detect-shared-borders`. Colours sit under the Visible Land mask; borders are drawn above it. The view mode is not in the URL on its own; `?s=` implies the sub-basin view.
+
 ## Repo layout
 
 ```
 /app                 pages, /api/rivers/[id], /api/reaches/[id], /api/subbasins/[id], /api/search
-/components          map/, panel/ (River, Reach, Info), SearchBox, UrlSync, SubbasinPanel, Controls, LocaleSwitcher
+/components          map/, panel/ (River, Reach, Subbasin, Info), SearchBox, UrlSync, Controls, ViewModeToggle, SubbasinLegend, LocaleSwitcher
 /lib                 mongo.ts, data/ (schemas, queries), map/, store.ts, url-state.ts, units.ts
 /messages            en.json, es.json
 /pipeline            TS steps + README.md + SOURCES.md
@@ -106,11 +114,11 @@ CLAUDE.md  PLAN.md
 - [x] Search box; shareable URL state
 - **Done when:** clicking a river opens real data; the link reproduces the state.
 
-## Phase 4 — Sub-basins level 1 (Limay, Neuquén, Río Negro)
+## Phase 4 — Sub-basins level 1 (Limay, Neuquén, Río Negro) ✅
 
-- [ ] Dissolve HydroBASINS polygons by main tributary; assign reaches by point-in-polygon
-- [ ] Aggregate metrics into `subbasins` collection
-- [ ] Color layer, "basin / sub-basins" toggle, sub-basin panel, `?s=`
+- [x] Dissolve HydroBASINS polygons by main tributary; assign reaches (by `HYBAS_L12`, point-in-polygon as a cross-check)
+- [x] Aggregate metrics into `subbasins` collection
+- [x] Color layer, "basin / sub-basins" toggle, sub-basin panel, `?s=`
 - **Done when:** areas sum to the basin with no overlaps or gaps (automatic check in the report).
 
 ## Gate — measure IGN data (before Phase 5)
