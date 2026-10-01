@@ -24,6 +24,8 @@
  *   mouth.regulationPct RiverATLAS dor_pc_pva at the mouth reach (percent × 10, capped
  *                       at 1000 %). Units from RiverATLAS_Catalog_v10.pdf sheets H03,
  *                       H04, H07 and A01.
+ *   bbox                [west, south, east, north] of the traced reaches' HydroRIVERS
+ *                       geometry (the app fits the map to it)
  *
  * Outputs: data/out/rivers.ndjson (committed; seed input), data/work/named/
  * river_reaches.parquet (reach → river), data/work/named/report.json.
@@ -75,6 +77,7 @@ const PROVENANCE = {
     "RiverATLAS v1.0 pop_ct_usu × 1000 at the mouth reach: population of the upstream watershed, GPWv4 estimate for 2010",
   "mouth.regulationPct":
     "RiverATLAS v1.0 dor_pc_pva / 10 at the mouth reach: degree of regulation, reservoir storage of GRanD v1.1 dams upstream as a percent of the modeled natural annual flow (capped at 1000 %)",
+  bbox: "HydroRIVERS v1.0 geometry extent of the traced reaches",
   name: "pipeline/names.json (hand-approved; OpenStreetMap spelling, ODbL)",
 };
 
@@ -97,7 +100,9 @@ async function main() {
              r.ORD_STRA, r.predcat1, a.ele_mt_cmn, a.sgr_dk_rav,
              a.inu_pc_umn, a.inu_pc_umx, a.lka_pc_use, a.pop_ct_usu, a.dor_pc_pva,
              ST_X(ST_StartPoint(r.geom)) AS start_lon, ST_Y(ST_StartPoint(r.geom)) AS start_lat,
-             ST_X(ST_EndPoint(r.geom)) AS end_lon, ST_Y(ST_EndPoint(r.geom)) AS end_lat
+             ST_X(ST_EndPoint(r.geom)) AS end_lon, ST_Y(ST_EndPoint(r.geom)) AS end_lat,
+             ST_XMin(r.geom) AS xmin, ST_YMin(r.geom) AS ymin,
+             ST_XMax(r.geom) AS xmax, ST_YMax(r.geom) AS ymax
       FROM ${lit(reachesFile)} r JOIN ${lit(atlasFile)} a USING (HYRIV_ID)
       WHERE r.network = 'connected'`);
     const byId = new Map<number, Row>(rows.map((r) => [Number(r.HYRIV_ID), r]));
@@ -170,6 +175,8 @@ async function main() {
       const down = num(mouth, "NEXT_DOWN");
       const flowsInto = down === 0 ? "sea" : (riverOf.get(down) ?? "unnamed");
       const m = byId.get(mouth)!;
+      const extent = (field: string, pick: (...v: number[]) => number) =>
+        round(pick(...path.map((id) => num(id, field))), 5);
       const h = byId.get(head)!;
       return {
         _id: slug,
@@ -206,6 +213,12 @@ async function main() {
           lon: round(Number(h.start_lon), 5),
           elevationM: Math.round(sourceElevation),
         },
+        bbox: [
+          extent("xmin", Math.min),
+          extent("ymin", Math.min),
+          extent("xmax", Math.max),
+          extent("ymax", Math.max),
+        ],
         nonPerennialPct: round((nonPerennialKm / lengthKm) * 100),
         unknownPct: round((unknownKm / lengthKm) * 100),
         modeled: [

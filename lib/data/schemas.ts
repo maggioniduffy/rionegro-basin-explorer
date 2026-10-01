@@ -8,6 +8,10 @@ import { z } from "zod";
 
 const num = z.number().finite();
 
+/** [west, south, east, north] in degrees. */
+const bboxSchema = z.tuple([num, num, num, num]);
+export type Bbox = z.infer<typeof bboxSchema>;
+
 export const riverSchema = z.strictObject({
   _id: z.string().regex(/^[a-z0-9-]+$/),
   name: z.string().min(1),
@@ -44,6 +48,7 @@ export const riverSchema = z.strictObject({
     lakesPct: num,
     population: z.number().int(),
   }),
+  bbox: bboxSchema,
   nonPerennialPct: num,
   unknownPct: num,
   /** Dotted paths of modeled or estimated values (CLAUDE.md rule 4). */
@@ -80,5 +85,6 @@ export const reachSchema = z.strictObject({
   nonPerennialProb1d: num.nullable(),
   nonPerennial30d: z.union([z.literal(0), z.literal(1)]).nullable(),
   nonPerennialProb30d: num.nullable(),
+  bbox: bboxSchema,
 });
 export type Reach = z.infer<typeof reachSchema>;

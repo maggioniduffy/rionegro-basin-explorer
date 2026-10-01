@@ -25,6 +25,7 @@ const reach = {
   nonPerennialProb1d: null,
   nonPerennial30d: 0,
   nonPerennialProb30d: 0.437,
+  bbox: [-71.1, -39.2, -71.09, -39.19],
 };
 
 describe("normalizeSearch", () => {

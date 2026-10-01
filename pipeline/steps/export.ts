@@ -12,6 +12,7 @@
  * Only RiverATLAS fields whose units were checked in the catalog are exported:
  * ele_mt_cmn (m a.s.l.), sgr_dk_rav (dm/km), inu_pc_umn / inu_pc_umx (percent),
  * lka_pc_use (percent × 10), pop_ct_usu (thousands) and dor_pc_pva (percent × 10).
+ * bbox is [west, south, east, north] of the reach's HydroRIVERS line.
  * The "upstream*" fields cover the whole watershed upstream of the reach's pour point.
  */
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
@@ -73,6 +74,8 @@ async function main() {
              round(a.dor_pc_pva / 10.0, 1) AS regulationPct,
              r.predcat1 AS nonPerennial1d, round(r.predprob1::DOUBLE, 3) AS nonPerennialProb1d,
              r.predcat30 AS nonPerennial30d, round(r.predprob30::DOUBLE, 3) AS nonPerennialProb30d,
+             [round(ST_XMin(r.geom), 5), round(ST_YMin(r.geom), 5),
+              round(ST_XMax(r.geom), 5), round(ST_YMax(r.geom), 5)] AS bbox,
              r.geom
       FROM ${lit(reachesFile)} r
       JOIN ${lit(atlasFile)} a USING (HYRIV_ID)
