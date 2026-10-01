@@ -91,15 +91,21 @@ export type Reach = z.infer<typeof reachSchema>;
 
 const slug = z.string().regex(/^[a-z0-9-]+$/);
 
-/** data/out/subbasins.ndjson (pipeline:subbasins). The root (level 0) is the whole basin. */
+/**
+ * data/out/subbasins.ndjson (pipeline:subbasins). The root (level 0) is the whole basin.
+ * A "river" node drains to its river's mouth; the "endorheic" node is the land that
+ * drains to closed depressions, so it has no river, name or outlet.
+ */
 export const subbasinSchema = z.strictObject({
   _id: slug,
-  name: z.string().min(1),
+  kind: z.enum(["river", "endorheic"]),
+  /** Proper noun of a river node; null for endorheic land (labelled per locale). */
+  name: z.string().min(1).nullable(),
   level: z.number().int().nonnegative(),
   parentId: slug.nullable(),
   childIds: z.array(slug),
   /** Slug of the river whose mouth closes the sub-basin. */
-  river: slug,
+  river: slug.nullable(),
   areaKm2: num,
   endorheicAreaKm2: num,
   reachCount: z.number().int().positive(),
@@ -113,13 +119,15 @@ export const subbasinSchema = z.strictObject({
   lakesPct: num,
   floodedMinPct: num,
   floodedMaxPct: num,
-  outlet: z.strictObject({
-    hyrivId: z.number().int(),
-    lat: num,
-    lon: num,
-    dischargeM3s: num,
-    regulationPct: num,
-  }),
+  outlet: z
+    .strictObject({
+      hyrivId: z.number().int(),
+      lat: num,
+      lon: num,
+      dischargeM3s: num,
+      regulationPct: num,
+    })
+    .nullable(),
   /** Named rivers whose mouth lies in the sub-basin, largest first. */
   rivers: z.array(slug),
   bbox: bboxSchema,

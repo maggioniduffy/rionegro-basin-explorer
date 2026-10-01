@@ -1,8 +1,27 @@
 {
-  "$comment": "Inputs for pipeline:subbasins. Each sub-basin is everything upstream (HydroBASINS level-12 NEXT_DOWN) of the polygon holding its river's mouthReach (data/out/rivers.ndjson). The root is the whole basin; a node's own area is its set minus its children's sets, and the own areas must partition the root. level 1 = main tributaries (Phase 4); levels 2-3 come in Phase 6.",
+  "$comment": "Inputs for pipeline:subbasins. A river node is everything upstream (HydroBASINS level-12 NEXT_DOWN) of the polygon holding its river's mouthReach (data/out/rivers.ndjson); below the root, endorheic polygons (ENDO > 0) are left out because they drain to closed depressions, not to the river. An endorheic node holds every endorheic polygon of its parent. The root is the whole basin; a node's own area is its set minus its children's sets, and the own areas must partition the root. level 1 = main tributaries (Phase 4); levels 2-3 come in Phase 6.",
   "subbasins": [
-    { "id": "negro", "river": "negro", "parentId": null, "level": 0 },
-    { "id": "limay", "river": "limay", "parentId": "negro", "level": 1 },
-    { "id": "neuquen", "river": "neuquen", "parentId": "negro", "level": 1 }
+    {
+      "id": "negro",
+      "kind": "river",
+      "river": "negro",
+      "parentId": null,
+      "level": 0
+    },
+    {
+      "id": "limay",
+      "kind": "river",
+      "river": "limay",
+      "parentId": "negro",
+      "level": 1
+    },
+    {
+      "id": "neuquen",
+      "kind": "river",
+      "river": "neuquen",
+      "parentId": "negro",
+      "level": 1
+    },
+    { "id": "endorheic", "kind": "endorheic", "parentId": "negro", "level": 1 }
   ]
 }

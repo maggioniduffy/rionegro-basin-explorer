@@ -33,8 +33,9 @@
     "modeledNote": "Modelado, no observado: predicciones de GIRES v1.0 (Messager et al., 2021). Las condiciones locales pueden diferir.",
     "subbasins": {
       "title": "Subcuencas",
-      "own": "{name}, resto de la cuenca",
-      "hint": "Un clic sobre el terreno muestra los datos de la subcuenca. Los colores se ven sobre la tierra visible; los límites, siempre."
+      "own": "{name}, drenaje directo",
+      "hint": "Un clic sobre el terreno muestra los datos de la subcuenca. Los colores se ven sobre la tierra visible; los límites, siempre.",
+      "endorheic": "Áreas endorreicas (no drenan a ningún río)"
     }
   },
   "theme": {
@@ -90,11 +91,12 @@
       "watershed": "Cuenca aguas arriba",
       "watershedHint": "{place, select, mouth {Todo el terreno que drena hasta su desembocadura.} other {Todo el terreno que drena hasta el final de este tramo.}}",
       "land": "Territorio",
-      "landHint": "Todo su territorio, incluidas las áreas endorreicas que drenan hacia el interior y que HydroBASINS vincula a esta cuenca.",
       "streams": "Cursos de agua",
       "outlet": "En la desembocadura",
       "outletHint": "Medido donde termina el {river}, así que incluye todo lo que está aguas arriba.",
-      "rivers": "Ríos con nombre"
+      "rivers": "Ríos con nombre",
+      "landHintWhole": "Todo su territorio, incluidas las áreas endorreicas, que drenan hacia el interior y no llegan a ningún río.",
+      "landHintRiver": "Solo la tierra que drena al {river}. Las áreas endorreicas se muestran aparte."
     },
     "fields": {
       "length": "Longitud",
@@ -140,7 +142,9 @@
       "title": "Cuenca del {name}",
       "wholeBasin": "La cuenca completa.",
       "partOf": "Parte de la cuenca del <link>{parent}</link>.",
-      "children": "Subcuencas:"
+      "children": "Subcuencas:",
+      "endorheicTitle": "Áreas endorreicas",
+      "endorheicNote": "Tierras que drenan hacia depresiones cerradas y no llegan a ningún río. HydroBASINS vincula parte de ellas a la red de ríos de forma virtual; aquí se muestran aparte."
     }
   }
 }

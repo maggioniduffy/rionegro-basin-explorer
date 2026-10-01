@@ -5,6 +5,7 @@ import type { SubbasinResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
 import type { Selection } from "@/lib/url-state";
 import { type Caveat, Caveats, Group, Row, useFormat } from "./parts";
+import { useSubbasinLabel } from "./subbasin-label";
 
 /** Modeled value path (Subbasin.modeled) → the caveat that explains it. */
 const CAVEAT_BY_PATH: [string, Caveat][] = [
@@ -37,6 +38,8 @@ function LinkButton({
 export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
   const t = useTranslations("panel");
   const f = useFormat();
+  const label = useSubbasinLabel();
+  const isRoot = b.parentId === null;
   const modeled = (path: string) => b.modeled.includes(path);
   const parentId = b.parent?.id;
   const caveats = CAVEAT_BY_PATH.filter(([path]) => modeled(path)).map(
@@ -46,13 +49,11 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
   return (
     <>
       <header className="flex flex-col gap-1 pr-8">
-        <h2 className="text-lg leading-tight font-semibold">
-          {t("subbasin.title", { name: b.name })}
-        </h2>
+        <h2 className="text-lg leading-tight font-semibold">{label(b)}</h2>
         <p className="text-muted text-sm">
           {b.parent && parentId
             ? t.rich("subbasin.partOf", {
-                parent: b.parent.name,
+                parent: b.parent.name ?? label(b.parent),
                 link: (chunks) => (
                   <LinkButton to={{ kind: "subbasin", id: parentId }}>
                     {chunks}
@@ -61,6 +62,11 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
               })
             : t("subbasin.wholeBasin")}
         </p>
+        {b.kind === "endorheic" && (
+          <p className="text-xs text-amber-300">
+            {t("subbasin.endorheicNote")}
+          </p>
+        )}
         {b.children.length > 0 && (
           <p className="text-muted text-sm">
             {t("subbasin.children")}{" "}
@@ -68,7 +74,7 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
               <span key={c.id}>
                 {i > 0 && ", "}
                 <LinkButton to={{ kind: "subbasin", id: c.id }}>
-                  {t("subbasin.title", { name: c.name })}
+                  {label(c)}
                 </LinkButton>
               </span>
             ))}
@@ -76,11 +82,23 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
         )}
       </header>
 
-      <Group title={t("groups.land")} hint={t("groups.landHint")}>
+      <Group
+        title={t("groups.land")}
+        hint={
+          b.kind === "endorheic"
+            ? undefined
+            : isRoot
+              ? t("groups.landHintWhole")
+              : t("groups.landHintRiver", { river: b.name ?? "" })
+        }
+      >
         <Row label={t("fields.area")}>{f("km2", b.areaKm2)}</Row>
-        <Row label={t("fields.endorheicArea")}>
-          {f("km2", b.endorheicAreaKm2)}
-        </Row>
+        {/* Only the whole basin mixes river and endorheic land. */}
+        {b.kind === "river" && b.endorheicAreaKm2 > 0 && (
+          <Row label={t("fields.endorheicArea")}>
+            {f("km2", b.endorheicAreaKm2)}
+          </Row>
+        )}
         <Row label={t("fields.elevationRange")}>
           {t("fields.rangeValue", {
             min: f("m", b.elevationMinM),
@@ -101,9 +119,11 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
 
       <Group title={t("groups.streams")}>
         <Row label={t("fields.streamLength")}>{f("km", b.lengthKm)}</Row>
-        <Row label={t("fields.endorheicLength")}>
-          {f("km", b.endorheicLengthKm)}
-        </Row>
+        {b.kind === "river" && b.endorheicLengthKm > 0 && (
+          <Row label={t("fields.endorheicLength")}>
+            {f("km", b.endorheicLengthKm)}
+          </Row>
+        )}
         <Row label={t("fields.reachCount")}>{f("count", b.reachCount)}</Row>
         <Row
           label={t("fields.nonPerennial")}
@@ -118,23 +138,25 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
         </Row>
       </Group>
 
-      <Group
-        title={t("groups.outlet")}
-        hint={t("groups.outletHint", { river: b.name })}
-      >
-        <Row
-          label={t("fields.discharge")}
-          modeled={modeled("outlet.dischargeM3s")}
+      {b.outlet && (
+        <Group
+          title={t("groups.outlet")}
+          hint={t("groups.outletHint", { river: b.name ?? "" })}
         >
-          {f("m3s", b.outlet.dischargeM3s)}
-        </Row>
-        <Row
-          label={t("fields.regulation")}
-          modeled={modeled("outlet.regulationPct")}
-        >
-          {f("pct", b.outlet.regulationPct)}
-        </Row>
-      </Group>
+          <Row
+            label={t("fields.discharge")}
+            modeled={modeled("outlet.dischargeM3s")}
+          >
+            {f("m3s", b.outlet.dischargeM3s)}
+          </Row>
+          <Row
+            label={t("fields.regulation")}
+            modeled={modeled("outlet.regulationPct")}
+          >
+            {f("pct", b.outlet.regulationPct)}
+          </Row>
+        </Group>
+      )}
 
       {b.riverRefs.length > 0 && (
         // Not a Group: a list of links, not a <dl> of values.

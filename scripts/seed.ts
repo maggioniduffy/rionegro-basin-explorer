@@ -97,7 +97,9 @@ async function main() {
       ),
       subbasinsCountMatchesFile: subbasinResult.count === subbasins.length,
       everySubbasinRiverExists: subbasins.every((b) =>
-        [b.river, ...b.rivers].every((id) => rivers.some((v) => v._id === id)),
+        [...(b.river === null ? [] : [b.river]), ...b.rivers].every((id) =>
+          rivers.some((v) => v._id === id),
+        ),
       ),
       subbasinLinksResolve: subbasins.every((b) =>
         [...(b.parentId === null ? [] : [b.parentId]), ...b.childIds].every(

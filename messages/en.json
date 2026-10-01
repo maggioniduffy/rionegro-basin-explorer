@@ -33,8 +33,9 @@
     "modeledNote": "Modeled, not observed: GIRES v1.0 predictions (Messager et al., 2021). Local conditions may differ.",
     "subbasins": {
       "title": "Sub-basins",
-      "own": "{name}, rest of the basin",
-      "hint": "Click the land to see a sub-basin's data. Colours show on the visible land; borders always show."
+      "own": "{name}, direct drainage",
+      "hint": "Click the land to see a sub-basin's data. Colours show on the visible land; borders always show.",
+      "endorheic": "Endorheic areas (drain to no river)"
     }
   },
   "theme": {
@@ -90,11 +91,12 @@
       "watershed": "Upstream watershed",
       "watershedHint": "{place, select, mouth {All the land that drains to its mouth.} other {All the land that drains to the end of this section.}}",
       "land": "Land",
-      "landHint": "All of its land, including endorheic areas that drain inland and that HydroBASINS links to this basin.",
       "streams": "Streams",
       "outlet": "At the mouth",
       "outletHint": "Measured where the {river} ends, so it includes everything upstream.",
-      "rivers": "Named rivers"
+      "rivers": "Named rivers",
+      "landHintWhole": "All of its land, including endorheic areas, which drain inland and reach no river.",
+      "landHintRiver": "Only the land that drains to the {river}. Endorheic areas are shown apart."
     },
     "fields": {
       "length": "Length",
@@ -140,7 +142,9 @@
       "title": "{name} basin",
       "wholeBasin": "The whole basin.",
       "partOf": "Part of the <link>{parent}</link> basin.",
-      "children": "Sub-basins:"
+      "children": "Sub-basins:",
+      "endorheicTitle": "Endorheic areas",
+      "endorheicNote": "Land that drains to closed depressions and reaches no river. HydroBASINS links some of it to the river network virtually; here it is kept apart."
     }
   }
 }

@@ -198,16 +198,17 @@ with each level, and that the last level is the whole basin.
 ### `npm run pipeline:subbasins`
 
 Builds the sub-basin hierarchy listed in `pipeline/subbasins.config.json` from HydroBASINS level 12.
-The root (`negro`) is the whole basin; level 1 is `limay` and `neuquen`.
+The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorheic`.
 
-1. **Sets.** Each sub-basin is the level-12 polygon holding its river's `mouthReach` plus
-   everything upstream via `NEXT_DOWN`. Endorheic sinks follow HydroBASINS' virtual links, so a
-   9,365 km² endorheic area north of the confluence belongs to the root's own area, not to the
-   Neuquén.
+1. **Sets.** A river node is the level-12 polygon holding its river's `mouthReach` plus
+   everything upstream via `NEXT_DOWN`. Below the root, endorheic polygons (`ENDO > 0`) are left
+   out, even where HydroBASINS links them to the river virtually: they drain to closed depressions.
+   The `endorheic` node holds all of them (23,163 km² in 17 parts).
 2. **Partition.** A node's own area is its set minus its children's sets. The own areas must
    partition the basin: their areas sum to the outline, with no overlaps or gaps over 1 km².
-3. **Reaches.** Assigned by `HYBAS_L12`. The connected reaches of each sub-basin must equal the
-   HydroRIVERS upstream set of its mouth reach.
+3. **Reaches.** Assigned by `HYBAS_L12`. The connected reaches of each river node must equal the
+   HydroRIVERS upstream set of its mouth reach, and every endorheic reach must lie in an endorheic
+   polygon (and no connected reach in one).
 4. **Metrics.** Summed or `CATCH_SKM`-weighted over RiverATLAS catchment attributes (`pop_ct_csu`,
    `lka_pc_cse`, `inu_pc_cmn/cmx`, `ele_mt_cmn/cmx`), endorheic catchments included. Over the
    connected reaches they must reproduce the upstream values at the mouth, which confirms the units.

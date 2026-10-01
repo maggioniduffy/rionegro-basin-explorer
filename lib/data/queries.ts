@@ -14,10 +14,13 @@ export interface NamedRef {
   name: string;
 }
 
+/** Link to a sub-basin; endorheic land has no name (the app labels it). */
+export type SubbasinRef = Pick<Subbasin, "kind" | "name"> & { id: string };
+
 /** Sub-basin as served by /api/subbasins/[id], with the names of what it links to. */
 export type SubbasinResponse = Subbasin & {
-  parent: NamedRef | null;
-  children: NamedRef[];
+  parent: SubbasinRef | null;
+  children: SubbasinRef[];
   riverRefs: NamedRef[];
 };
 
@@ -31,20 +34,29 @@ const reaches = async () => (await getDb()).collection<Reach>("reaches");
 const subbasins = async () =>
   (await getDb()).collection<Subbasin>("subbasins");
 
-/** Names of `ids`, in the order given; unknown ids are left out. */
-async function names(
-  collection: "rivers" | "subbasins",
-  ids: string[],
-): Promise<NamedRef[]> {
+/** Refs of the rivers `ids`, in the order given; unknown ids are left out. */
+async function namedRivers(ids: string[]): Promise<NamedRef[]> {
   if (ids.length === 0) return [];
-  const docs = await (await getDb())
-    .collection<{ _id: string; name: string }>(collection)
+  const docs = await (await rivers())
     .find({ _id: { $in: ids } }, { projection: { name: 1 } })
     .toArray();
   const byId = new Map(docs.map((d) => [d._id, d.name]));
   return ids.flatMap((id) => {
     const name = byId.get(id);
     return name === undefined ? [] : [{ id, name }];
+  });
+}
+
+/** Refs of the sub-basins `ids`, in the order given; unknown ids are left out. */
+async function subbasinRefs(ids: string[]): Promise<SubbasinRef[]> {
+  if (ids.length === 0) return [];
+  const docs = await (await subbasins())
+    .find({ _id: { $in: ids } }, { projection: { name: 1, kind: 1 } })
+    .toArray();
+  const byId = new Map(docs.map((d) => [d._id, d]));
+  return ids.flatMap((id) => {
+    const d = byId.get(id);
+    return d ? [{ id, name: d.name, kind: d.kind }] : [];
   });
 }
 
@@ -78,9 +90,9 @@ export async function getSubbasin(
   const doc = await (await subbasins()).findOne({ _id: id });
   if (!doc) return null;
   const [parent, children, riverRefs] = await Promise.all([
-    doc.parentId === null ? [] : names("subbasins", [doc.parentId]),
-    names("subbasins", doc.childIds),
-    names("rivers", doc.rivers),
+    doc.parentId === null ? [] : subbasinRefs([doc.parentId]),
+    subbasinRefs(doc.childIds),
+    namedRivers(doc.rivers),
   ]);
   return { ...doc, parent: parent[0] ?? null, children, riverRefs };
 }

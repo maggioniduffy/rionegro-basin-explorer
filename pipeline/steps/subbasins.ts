@@ -1,20 +1,25 @@
 /**
  * pipeline:subbasins — sub-basin hierarchy from HydroBASINS level 12 (Phase 4: level 1).
  *
- * 1. Sets. Each sub-basin in subbasins.config.json is the level-12 polygon holding its
- *    river's mouthReach (data/out/rivers.ndjson) plus everything upstream via NEXT_DOWN.
- *    Endorheic sinks follow HydroBASINS' virtual NEXT_DOWN links into a sub-basin.
+ * 1. Sets. Two kinds of node in subbasins.config.json:
+ *    - river: the level-12 polygon holding its river's mouthReach (data/out/rivers.ndjson)
+ *      plus everything upstream via NEXT_DOWN. Below the root, endorheic polygons
+ *      (ENDO > 0) are left out: they drain to closed depressions, not to the river, even
+ *      where HydroBASINS links them to it with a virtual NEXT_DOWN. The root keeps them,
+ *      since it is the whole basin.
+ *    - endorheic: every endorheic polygon of its parent.
  * 2. Partition. A node's own area is its set minus its children's sets; the own areas
  *    must partition the root (the whole basin). Polygons are ST_MakeValid'ed first.
  * 3. Reaches. Assigned by their HydroRIVERS HYBAS_L12 attribute. Cross-checks: the
- *    connected reaches of each sub-basin equal the HydroRIVERS upstream set of its mouth
- *    reach, and a point on each reach falls in its owner's polygon (reported only).
- * 4. Metrics. Summed or CATCH_SKM-weighted over every reach catchment in the sub-basin,
- *    endorheic ones included, from RiverATLAS v1.0 catchment ("c") attributes:
- *    pop_ct_csu (thousands), lka_pc_cse (percent × 10), inu_pc_cmn / inu_pc_cmx (percent),
- *    ele_mt_cmn / ele_mt_cmx (m). Their units are confirmed by the report: over the
- *    connected reaches they must reproduce the upstream ("u") values at the mouth reach,
- *    whose units come from the catalog (see export.ts).
+ *    connected reaches of each river node equal the HydroRIVERS upstream set of its mouth
+ *    reach; endorheic reaches lie in endorheic polygons and connected ones outside them;
+ *    a point on each reach falls in its owner's polygon (reported only).
+ * 4. Metrics. Summed or CATCH_SKM-weighted over every reach catchment in the node, from
+ *    RiverATLAS v1.0 catchment ("c") attributes: pop_ct_csu (thousands), lka_pc_cse
+ *    (percent × 10), inu_pc_cmn / inu_pc_cmx (percent), ele_mt_cmn / ele_mt_cmx (m).
+ *    Their units are confirmed by the report: over the connected reaches of a river node
+ *    they must reproduce the upstream ("u") values at the mouth reach, whose units come
+ *    from the catalog (see export.ts).
  *
  * Outputs: data/out/subbasins.ndjson (seed input, committed),
  * data/work/tiles/subbasins.geojson (own areas, tippecanoe input), report.json.
@@ -28,10 +33,10 @@ import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import { partition, type SubbasinNode } from "../lib/subbasins";
 
-interface ConfigNode extends SubbasinNode {
-  river: string;
-  level: number;
-}
+type ConfigNode = SubbasinNode & { level: number } & (
+    { kind: "river"; river: string } | { kind: "endorheic" }
+  );
+type RiverNode = Extract<ConfigNode, { kind: "river" }>;
 interface RiverDoc {
   _id: string;
   name: string;
@@ -52,20 +57,19 @@ const PERCENT_POINTS = 0.5;
 const r1 = (x: number) => Math.round(x * 10) / 10;
 const num = (v: unknown) => Number(v);
 
-const MODELED = [
-  "outlet.dischargeM3s",
-  "outlet.regulationPct",
+const MODELED_LAND = [
   "nonPerennialPct",
   "floodedMinPct",
   "floodedMaxPct",
   "population",
 ];
+const MODELED_OUTLET = ["outlet.dischargeM3s", "outlet.regulationPct"];
 const PROVENANCE = {
   areaKm2:
-    "Geodesic area of the dissolved HydroBASINS v1c level-12 polygons upstream of the mouth reach's polygon (NEXT_DOWN), endorheic sinks included",
+    "Geodesic area of the dissolved HydroBASINS v1c level-12 polygons upstream of the mouth reach's polygon (NEXT_DOWN); below the root, endorheic polygons (ENDO > 0) are left out",
   endorheicAreaKm2:
-    "Geodesic area of the sub-basin's HydroBASINS v1c level-12 polygons with ENDO > 0",
-  reachCount: "HydroRIVERS v1.0 reaches whose HYBAS_L12 is in the sub-basin",
+    "Geodesic area of the node's HydroBASINS v1c level-12 polygons with ENDO > 0",
+  reachCount: "HydroRIVERS v1.0 reaches whose HYBAS_L12 is in the node",
   lengthKm: "HydroRIVERS v1.0 LENGTH_KM, summed",
   nonPerennialPct:
     "GIRES v1.0 predcat1 = 1 (modeled, ≥ 1 no-flow day per year), share of lengthKm; reaches without a prediction are counted in unknownPct",
@@ -85,13 +89,19 @@ const PROVENANCE = {
     "HydroRIVERS v1.0 DIS_AV_CMS at the mouth reach; modeled natural long-term average 1971–2000 (WaterGAP), does not reflect dam regulation",
   "outlet.regulationPct":
     "RiverATLAS v1.0 dor_pc_pva / 10 at the mouth reach: degree of regulation from GRanD v1.1 dams",
-  rivers: "Named rivers whose mouth reach lies in the sub-basin",
+  rivers: "Named rivers whose mouth reach lies in the node",
+};
+const ENDORHEIC_PROVENANCE = {
+  ...PROVENANCE,
+  areaKm2:
+    "Geodesic area of the dissolved HydroBASINS v1c level-12 polygons with ENDO > 0 in the parent: land draining to closed depressions, not to a river",
 };
 
 async function main() {
   const { subbasins: nodes } = JSON.parse(
     await readFile(`${ROOT}/pipeline/subbasins.config.json`, "utf8"),
   ) as { subbasins: ConfigNode[] };
+  const riverNodes = nodes.filter((n): n is RiverNode => n.kind === "river");
   const lev12File = requireInput(workPath("basin/hybas_l12.parquet"));
   const basinFile = requireInput(workPath("basin/basin.geojson"));
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
@@ -103,6 +113,11 @@ async function main() {
     .filter(Boolean)
     .map((l) => JSON.parse(l) as RiverDoc);
   const riverById = new Map(rivers.map((r) => [r._id, r]));
+  const riverOf = (node: RiverNode) => {
+    const river = riverById.get(node.river);
+    if (!river) throw new Error(`${node.id}: river ${node.river} not found`);
+    return river;
+  };
   const tilesDir = workPath("tiles");
   await mkdir(tilesDir, { recursive: true });
   const db = await openDb();
@@ -125,7 +140,7 @@ async function main() {
 
     // 1. Polygon sets.
     const links = await db.all(
-      `SELECT HYBAS_ID, NEXT_DOWN, UP_AREA FROM lev12`,
+      `SELECT HYBAS_ID, NEXT_DOWN, UP_AREA, ENDO FROM lev12`,
     );
     const polyIndex = upstreamIndex(
       links.map((r) => ({
@@ -135,6 +150,9 @@ async function main() {
     );
     const upAreaOf = new Map(
       links.map((r) => [String(r.HYBAS_ID), num(r.UP_AREA)]),
+    );
+    const endoPolygons = new Set(
+      links.filter((r) => num(r.ENDO) > 0).map((r) => String(r.HYBAS_ID)),
     );
     const reachLinks = await db.all(
       `SELECT HYRIV_ID, NEXT_DOWN, HYBAS_L12, network FROM reaches`,
@@ -149,15 +167,26 @@ async function main() {
 
     const setOf = new Map<string, Set<string>>();
     const mouthPolygon = new Map<string, string>();
-    for (const node of nodes) {
-      const river = riverById.get(node.river);
-      if (!river) throw new Error(`${node.id}: river ${node.river} not found`);
+    for (const node of riverNodes) {
+      const river = riverOf(node);
       const reach = reachById.get(river.mouthReach);
       if (!reach)
         throw new Error(`${node.id}: mouth reach ${river.mouthReach} missing`);
       const poly = String(reach.HYBAS_L12);
       mouthPolygon.set(node.id, poly);
-      setOf.set(node.id, upstreamSet(polyIndex, poly));
+      const set = upstreamSet(polyIndex, poly);
+      if (node.parentId !== null) for (const p of endoPolygons) set.delete(p);
+      setOf.set(node.id, set);
+    }
+    for (const node of nodes) {
+      if (node.kind !== "endorheic") continue;
+      const parent =
+        node.parentId === null ? undefined : setOf.get(node.parentId);
+      if (!parent) throw new Error(`${node.id}: endorheic node needs a parent`);
+      setOf.set(
+        node.id,
+        new Set([...parent].filter((p) => endoPolygons.has(p))),
+      );
     }
     const allPolygons = new Set(links.map((r) => String(r.HYBAS_ID)));
     const root = nodes.find((n) => n.parentId === null);
@@ -214,6 +243,11 @@ async function main() {
       SELECT count(*)::INT AS n, count(o.node)::INT AS with_owner,
              (SELECT count(*) FROM reaches)::INT AS total
       FROM reaches r LEFT JOIN owner o ON o.HYBAS_ID = r.HYBAS_L12`);
+    const [network] = await db.all(`
+      SELECT sum((r.network = 'endorheic' AND l.ENDO = 0)::INT)::INT AS endorheic_outside,
+             sum((r.network = 'connected' AND l.ENDO > 0)::INT)::INT AS connected_inside,
+             list(r.HYRIV_ID) FILTER (WHERE (r.network = 'endorheic') <> (l.ENDO > 0))[1:10] AS sample
+      FROM reaches r JOIN lev12 l ON l.HYBAS_ID = r.HYBAS_L12`);
     const [pip] = await db.all(`
       WITH pts AS (
         SELECT r.HYRIV_ID, r.LENGTH_KM, o.node,
@@ -232,9 +266,8 @@ async function main() {
         ).map((r) => num(r.HYRIV_ID)),
       );
     const topology = [];
-    for (const node of nodes) {
-      const mouth = riverById.get(node.river)?.mouthReach as number;
-      const upstream = upstreamSet(reachIndex, mouth);
+    for (const node of riverNodes) {
+      const upstream = upstreamSet(reachIndex, riverOf(node).mouthReach);
       const inPolygons = await connectedOf(node.id);
       topology.push({
         node: node.id,
@@ -279,7 +312,7 @@ async function main() {
           SELECT HYRIV_ID, DIS_AV_CMS, dor_pc_pva, pop_ct_usu, lka_pc_use, inu_pc_umn,
                  inu_pc_umx, ST_X(ST_EndPoint(geom)) AS lon, ST_Y(ST_EndPoint(geom)) AS lat
           FROM reaches
-          WHERE HYRIV_ID IN (${nodes.map((n) => riverById.get(n.river)?.mouthReach).join(",")})`)
+          WHERE HYRIV_ID IN (${riverNodes.map((n) => riverOf(n).mouthReach).join(",")})`)
       ).map((r) => [num(r.HYRIV_ID), r]),
     );
 
@@ -287,14 +320,14 @@ async function main() {
     const crossChecks = [];
     const areaChecks = [];
     for (const node of nodes) {
-      const river = riverById.get(node.river) as RiverDoc;
       const a = all.get(node.id) as Row;
       const c = connected.get(node.id) as Row;
       const g = geoms.get(node.id) as Row;
-      const m = mouths.get(river.mouthReach) as Row;
       const set = setOf.get(node.id) as Set<string>;
       const km = num(a.km);
-      const mouthUpArea = upAreaOf.get(mouthPolygon.get(node.id) as string);
+      const river = node.kind === "river" ? riverOf(node) : null;
+      const m = river ? (mouths.get(river.mouthReach) as Row) : null;
+      const mouthUpArea = upAreaOf.get(mouthPolygon.get(node.id) ?? "");
       areaChecks.push({
         node: node.id,
         polygons: g.polygons,
@@ -302,42 +335,45 @@ async function main() {
         areaKm2: r1(num(g.area)),
         sumSubArea: r1(num(g.sum_sub_area)),
         connectedSubArea: r1(num(g.connected_sub_area)),
-        mouthPolygonUpArea: mouthUpArea,
+        mouthPolygonUpArea: mouthUpArea ?? null,
         diffPct: {
           areaVsSumSubArea: pctDiff(num(g.area), num(g.sum_sub_area)),
-          connectedVsUpArea: pctDiff(
-            num(g.connected_sub_area),
-            mouthUpArea as number,
-          ),
+          connectedVsUpArea:
+            mouthUpArea === undefined
+              ? null
+              : pctDiff(num(g.connected_sub_area), mouthUpArea),
         },
       });
-      crossChecks.push({
-        node: node.id,
-        population: {
-          catchments: Math.round(num(c.population)),
-          mouthUpstream: Math.round(num(m.pop_ct_usu) * 1000),
-          diffPct: pctDiff(num(c.population), num(m.pop_ct_usu) * 1000),
-        },
-        lakesPct: {
-          catchments: num(c.lakes_pct),
-          mouthUpstream: num(m.lka_pc_use) / 10,
-        },
-        floodedMinPct: {
-          catchments: num(c.flooded_min_pct),
-          mouthUpstream: num(m.inu_pc_umn),
-        },
-        floodedMaxPct: {
-          catchments: num(c.flooded_max_pct),
-          mouthUpstream: num(m.inu_pc_umx),
-        },
-      });
+      if (m)
+        crossChecks.push({
+          node: node.id,
+          population: {
+            catchments: Math.round(num(c.population)),
+            mouthUpstream: Math.round(num(m.pop_ct_usu) * 1000),
+            diffPct: pctDiff(num(c.population), num(m.pop_ct_usu) * 1000),
+          },
+          lakesPct: {
+            catchments: num(c.lakes_pct),
+            mouthUpstream: num(m.lka_pc_use) / 10,
+          },
+          floodedMinPct: {
+            catchments: num(c.flooded_min_pct),
+            mouthUpstream: num(m.inu_pc_umn),
+          },
+          floodedMaxPct: {
+            catchments: num(c.flooded_max_pct),
+            mouthUpstream: num(m.inu_pc_umx),
+          },
+        });
       docs.push({
         _id: node.id,
-        name: river.name,
+        kind: node.kind,
+        // Endorheic land has no proper name; the app labels it per locale.
+        name: river?.name ?? null,
         level: node.level,
         parentId: node.parentId,
         childIds: nodes.filter((n) => n.parentId === node.id).map((n) => n.id),
-        river: node.river,
+        river: river?._id ?? null,
         areaKm2: Math.round(num(g.area)),
         endorheicAreaKm2: Math.round(num(g.endo_area)),
         reachCount: num(a.reaches),
@@ -351,13 +387,16 @@ async function main() {
         lakesPct: r1(num(a.lakes_pct)),
         floodedMinPct: r1(num(a.flooded_min_pct)),
         floodedMaxPct: r1(num(a.flooded_max_pct)),
-        outlet: {
-          hyrivId: river.mouthReach,
-          lat: num(m.lat),
-          lon: num(m.lon),
-          dischargeM3s: r1(num(m.DIS_AV_CMS)),
-          regulationPct: r1(num(m.dor_pc_pva) / 10),
-        },
+        outlet:
+          river && m
+            ? {
+                hyrivId: river.mouthReach,
+                lat: num(m.lat),
+                lon: num(m.lon),
+                dischargeM3s: r1(num(m.DIS_AV_CMS)),
+                regulationPct: r1(num(m.dor_pc_pva) / 10),
+              }
+            : null,
         rivers: rivers
           .filter((r) => {
             const reach = reachById.get(r.mouthReach);
@@ -366,8 +405,8 @@ async function main() {
           .sort((x, y) => y.mouth.uplandKm2 - x.mouth.uplandKm2)
           .map((r) => r._id),
         bbox: g.bbox,
-        modeled: MODELED,
-        provenance: PROVENANCE,
+        modeled: river ? [...MODELED_OUTLET, ...MODELED_LAND] : MODELED_LAND,
+        provenance: river ? PROVENANCE : ENDORHEIC_PROVENANCE,
       });
     }
 
@@ -378,7 +417,7 @@ async function main() {
       docs.map((d) => JSON.stringify(d)).join("\n") + "\n",
     );
     const geojson = `${tilesDir}/subbasins.geojson`;
-    const levelOf = new Map(nodes.map((n) => [n.id, n.level]));
+    const byId = new Map(nodes.map((n) => [n.id, n]));
     const features = await db.all(
       `SELECT node, ST_AsGeoJSON(geom) AS g FROM own_geom ORDER BY node`,
     );
@@ -386,11 +425,14 @@ async function main() {
       geojson,
       JSON.stringify({
         type: "FeatureCollection",
-        features: features.map((f) => ({
-          type: "Feature",
-          properties: { id: f.node, level: levelOf.get(String(f.node)) },
-          geometry: JSON.parse(String(f.g)),
-        })),
+        features: features.map((f) => {
+          const node = byId.get(String(f.node));
+          return {
+            type: "Feature",
+            properties: { id: f.node, kind: node?.kind, level: node?.level },
+            geometry: JSON.parse(String(f.g)),
+          };
+        }),
       }),
     );
 
@@ -408,7 +450,9 @@ async function main() {
         (a) => Math.abs(a.diffPct.areaVsSumSubArea) <= AREA_AGREEMENT_PCT,
       ),
       connectedAreaMatchesUpArea: areaChecks.every(
-        (a) => Math.abs(a.diffPct.connectedVsUpArea) <= AREA_AGREEMENT_PCT,
+        (a) =>
+          a.diffPct.connectedVsUpArea === null ||
+          Math.abs(a.diffPct.connectedVsUpArea) <= AREA_AGREEMENT_PCT,
       ),
       everyReachAssignedOnce:
         assigned?.n === assigned?.total &&
@@ -416,6 +460,8 @@ async function main() {
       reachTopologyMatchesPolygons: topology.every(
         (t) => t.onlyUpstream.length === 0 && t.onlyPolygons.length === 0,
       ),
+      reachNetworkMatchesEndo:
+        network?.endorheic_outside === 0 && network.connected_inside === 0,
       catchmentUnitsMatchUpstream: crossChecks.every(
         (x) =>
           Math.abs(x.population.diffPct) <= POPULATION_PCT &&
@@ -442,6 +488,7 @@ async function main() {
       reaches: {
         ...assigned,
         topology,
+        network,
         // A reach's middle vertex outside its owner's polygon: HydroRIVERS lines can
         // cross level-12 borders near confluences. Informational.
         midpointOutsideOwner: pip,

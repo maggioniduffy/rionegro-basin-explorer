@@ -97,7 +97,14 @@ describe("subbasinSchema", () => {
     const { readFile } = await import("node:fs/promises");
     const text = await readFile("data/out/subbasins.ndjson", "utf8");
     const docs = parseNdjson(text, subbasinSchema);
-    expect(docs.map((d) => d._id)).toEqual(["negro", "limay", "neuquen"]);
+    expect(docs.map((d) => d._id)).toEqual([
+      "negro",
+      "limay",
+      "neuquen",
+      "endorheic",
+    ]);
+    const endo = docs.find((d) => d.kind === "endorheic");
+    expect(endo).toMatchObject({ name: null, river: null, outlet: null });
     expect(docs[0]?.parentId).toBeNull();
   });
 });

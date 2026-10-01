@@ -55,6 +55,8 @@ export const SUBBASIN_COLORS: Record<string, string> = {
   limay: "#a78bfa",
   neuquen: "#4ade80",
   negro: "#fb7185",
+  // Pale and neutral: land that drains to no river.
+  endorheic: "#e2e8f0",
 };
 const SUBBASIN_FALLBACK_COLOR = "#9aa3ab";
 export const SUBBASIN_FILL_LAYER_ID = "subbasins-fill";
@@ -78,7 +80,14 @@ export function subbasinFillOpacity(
   sel: Selection | null,
 ): ExpressionSpecification | number {
   if (mode === "basin") return 0;
-  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.5, 0.25];
+  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.35, 0.15];
+}
+
+/** Endorheic land hides with the endorheic streams, its border too. */
+export function subbasinFilter(hideEndorheic: boolean): FilterSpecification {
+  return hideEndorheic
+    ? ["!=", ["get", "kind"], "endorheic"]
+    : ["literal", true];
 }
 
 export function subbasinLineOpacity(mode: ViewMode): number {
@@ -214,6 +223,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "fill",
     source: "subbasins",
     "source-layer": "subbasins",
+    filter: subbasinFilter(o.hideEndorheic),
     paint: {
       "fill-color": subbasinColor(),
       "fill-opacity": subbasinFillOpacity(o.viewMode, o.selection),
@@ -280,6 +290,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "line",
     source: "subbasins",
     "source-layer": "subbasins",
+    filter: subbasinFilter(o.hideEndorheic),
     layout: { "line-join": "round" },
     paint: {
       "line-color": subbasinColor(),

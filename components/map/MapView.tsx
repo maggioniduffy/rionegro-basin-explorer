@@ -36,6 +36,7 @@ import {
   SUBBASIN_FILL_LAYER_ID,
   SUBBASIN_LINE_LAYER_ID,
   subbasinFillOpacity,
+  subbasinFilter,
   subbasinLineOpacity,
   subbasinLineWidth,
   THEME_COLORS,
@@ -150,6 +151,8 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     for (const c of FLOW_CLASSES)
       map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic));
     map.setFilter(LAKE_LAYER_ID, lakeFilter(s.hideEndorheic));
+    for (const id of [SUBBASIN_FILL_LAYER_ID, SUBBASIN_LINE_LAYER_ID])
+      map.setFilter(id, subbasinFilter(s.hideEndorheic));
   }
   if (!prev || s.selection !== prev.selection) {
     map.setFilter(SELECTED_LAYER_ID, selectionFilter(s.selection));
