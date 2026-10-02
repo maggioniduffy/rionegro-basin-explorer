@@ -14,7 +14,6 @@ const DEBOUNCE_MS = 200;
 export function SearchBox() {
   const t = useTranslations("search");
   const select = useMapStore((s) => s.select);
-  const focusOn = useMapStore((s) => s.focusOn);
   const listId = useId();
   const [text, setText] = useState("");
   const [query, setQuery] = useState<string | null>(null);
@@ -33,13 +32,13 @@ export function SearchBox() {
   const showList = open && query !== null && state.status !== "loading";
 
   function choose(hit: SearchHit) {
-    if (hit.kind === "river")
-      select({ kind: "river", id: hit.id }, { fit: true });
-    else {
-      // An IGN name: open its longest reach and show every reach that carries the name.
-      select({ kind: "reach", id: Number(hit.id) });
-      focusOn(hit.bbox);
-    }
+    // A river fits to the whole river; an IGN name opens its longest reach and fits to it.
+    select(
+      hit.kind === "river"
+        ? { kind: "river", id: hit.id }
+        : { kind: "reach", id: Number(hit.id) },
+      { fit: true },
+    );
     setText("");
     setOpen(false);
   }
