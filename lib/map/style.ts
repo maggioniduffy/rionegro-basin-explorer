@@ -10,7 +10,7 @@ import {
   mapConfig,
   TILE_PATHS,
 } from "./config";
-import type { ViewMode } from "../store";
+import type { LayerVisibility, ViewMode } from "../store";
 import type { Selection } from "../url-state";
 import { maskOpacities } from "./mask";
 
@@ -157,6 +157,32 @@ export function lakeFilter(hideEndorheic: boolean): FilterSpecification {
     ? ["!=", ["get", "network"], "endorheic"]
     : ["literal", true];
 }
+
+/**
+ * Water-body `kind`s per Display toggle (pipeline:ign-layers). A HydroLAKES controlled
+ * lake (type 3) is a natural lake with a regulating structure, so it counts as natural;
+ * IGN "espejo de agua perenne" (`waterbody`) is kept apart from its `Embalse` layer, so
+ * it counts as natural too.
+ */
+export const NATURAL_WATER_KINDS = ["lake", "controlled-lake", "waterbody"];
+export const ARTIFICIAL_WATER_KINDS = ["reservoir"];
+
+/** Lake layers (not dams): the endorheic rule plus the natural/artificial toggles. */
+export function waterFilter(
+  hideEndorheic: boolean,
+  layers: Pick<LayerVisibility, "naturalLakes" | "artificialLakes">,
+): FilterSpecification {
+  const kinds = [
+    ...(layers.naturalLakes ? NATURAL_WATER_KINDS : []),
+    ...(layers.artificialLakes ? ARTIFICIAL_WATER_KINDS : []),
+  ];
+  if (kinds.length === 0) return ["boolean", false];
+  return [
+    "all",
+    lakeFilter(hideEndorheic) as ExpressionSpecification,
+    ["in", ["get", "kind"], ["literal", kinds]],
+  ];
+}
 export const REACH_LAYER_IDS = FLOW_CLASSES.map(reachLayerId);
 export const OUTLINE_LAYER_ID = "basin-outline";
 export const LAKE_LAYER_ID = "lake-outline";
@@ -202,10 +228,13 @@ const CLASS_FILTER: Record<FlowClass, ExpressionSpecification> = {
   unknown: ["!", ["has", "nonPerennial1d"]],
 };
 
+/** One flow class's reaches; hidden with all rivers or by its own toggle. */
 export function reachFilter(
   c: FlowClass,
   hideEndorheic: boolean,
+  layers: Pick<LayerVisibility, "rivers" | "flow">,
 ): FilterSpecification {
+  if (!layers.rivers || !layers.flow[c]) return ["boolean", false];
   return hideEndorheic
     ? ["all", CLASS_FILTER[c], ["!=", ["get", "network"], "endorheic"]]
     : CLASS_FILTER[c];
@@ -241,6 +270,7 @@ export interface StyleOptions {
   viewMode: ViewMode;
   isolatedIds: string[] | null;
   showIgnDetail: boolean;
+  layers: LayerVisibility;
 }
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
@@ -288,7 +318,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "fill",
       source: "ign",
       "source-layer": "lakes_extra",
-      filter: lakeFilter(o.hideEndorheic),
+      filter: waterFilter(o.hideEndorheic, o.layers),
       paint: { "fill-color": IGN_DETAIL_COLOR, "fill-opacity": 0.25 },
     },
     {
@@ -296,7 +326,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "line",
       source: "ign",
       "source-layer": "lakes_extra",
-      filter: lakeFilter(o.hideEndorheic),
+      filter: waterFilter(o.hideEndorheic, o.layers),
       paint: {
         "line-color": lake,
         "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.4, 12, 1],
@@ -358,7 +388,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "line",
     source: "rivers",
     "source-layer": "lakes",
-    filter: lakeFilter(o.hideEndorheic),
+    filter: waterFilter(o.hideEndorheic, o.layers),
     paint: {
       "line-color": lake,
       "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 12, 1.2],
@@ -369,7 +399,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "fill",
     source: "rivers",
     "source-layer": "lakes",
-    filter: lakeFilter(o.hideEndorheic),
+    filter: waterFilter(o.hideEndorheic, o.layers),
     paint: { "fill-opacity": 0 },
   });
   layers.push({
@@ -432,7 +462,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "line",
       source: "rivers",
       "source-layer": "reaches",
-      filter: reachFilter(c, o.hideEndorheic),
+      filter: reachFilter(c, o.hideEndorheic, o.layers),
       layout: { "line-cap": dash ? "butt" : "round", "line-join": "round" },
       paint: {
         "line-color": color,

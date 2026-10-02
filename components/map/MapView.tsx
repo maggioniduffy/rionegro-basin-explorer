@@ -39,6 +39,7 @@ import {
   OUTLINE_LAYER_ID,
   REACH_LAYER_IDS,
   reachFilter,
+  waterFilter,
   reachLayerId,
   SELECTED_LAYER_ID,
   selectionFilter,
@@ -243,17 +244,20 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
       if (id) map.setPaintProperty(id, "fill-opacity", opacity);
     });
   }
-  if (endoChanged) {
+  const layersChanged = !prev || s.layers !== prev.layers;
+  if (endoChanged || layersChanged) {
     for (const c of FLOW_CLASSES)
-      map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic));
+      map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic, s.layers));
     for (const id of [
       LAKE_LAYER_ID,
       LAKE_HIT_LAYER_ID,
       IGN_LAKE_FILL_LAYER_ID,
       IGN_LAKE_LINE_LAYER_ID,
-      DAM_LAYER_ID,
-      DAM_WALL_LAYER_ID,
     ])
+      map.setFilter(id, waterFilter(s.hideEndorheic, s.layers));
+  }
+  if (endoChanged) {
+    for (const id of [DAM_LAYER_ID, DAM_WALL_LAYER_ID])
       map.setFilter(id, lakeFilter(s.hideEndorheic));
   }
   if (endoChanged || !prev || s.showIgnDetail !== prev.showIgnDetail) {
@@ -354,6 +358,7 @@ export default function MapView() {
           viewMode: initial.viewMode,
           isolatedIds: initial.isolatedIds,
           showIgnDetail: initial.showIgnDetail,
+          layers: initial.layers,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
         fitBoundsOptions: { padding: fitPadding() },
@@ -461,7 +466,8 @@ export default function MapView() {
         s.selection === prev.selection &&
         s.viewMode === prev.viewMode &&
         s.isolatedIds === prev.isolatedIds &&
-        s.showIgnDetail === prev.showIgnDetail
+        s.showIgnDetail === prev.showIgnDetail &&
+        s.layers === prev.layers
       )
         return;
       setIdle(false);

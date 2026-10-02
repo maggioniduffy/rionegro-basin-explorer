@@ -35,6 +35,13 @@
       "label": "Unidades",
       "metric": "Kilómetros",
       "imperial": "Millas"
+    },
+    "layers": {
+      "title": "Capas",
+      "rivers": "Ríos",
+      "flowHint": "Régimen de flujo modelado por GIRES v1.0, no observado.",
+      "naturalLakes": "Lagos naturales",
+      "artificialLakes": "Embalses (lagos artificiales)"
     }
   },
   "legend": {

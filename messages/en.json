@@ -35,6 +35,13 @@
       "label": "Units",
       "metric": "Kilometres",
       "imperial": "Miles"
+    },
+    "layers": {
+      "title": "Layers",
+      "rivers": "Rivers",
+      "flowHint": "Flow regime as modeled by GIRES v1.0, not observed.",
+      "naturalLakes": "Natural lakes",
+      "artificialLakes": "Reservoirs (artificial lakes)"
     }
   },
   "legend": {

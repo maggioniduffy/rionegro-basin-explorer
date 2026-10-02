@@ -3,7 +3,11 @@ import { useMapStore } from "@/lib/store";
 import { FLOW_CLASSES, FLOW_STYLE, IGN_DETAIL_COLOR } from "@/lib/map/style";
 
 /** Line swatch drawn like the map layer: solid, dashed, or thin. */
-function Swatch({ color, dash, widthScale }: (typeof FLOW_STYLE)["unknown"]) {
+export function Swatch({
+  color,
+  dash,
+  widthScale,
+}: (typeof FLOW_STYLE)["unknown"]) {
   const width = 3 * widthScale;
   return (
     <svg width="28" height="8" aria-hidden className="shrink-0">

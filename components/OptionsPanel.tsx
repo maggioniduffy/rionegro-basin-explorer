@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
+import { LayerToggles } from "./LayerToggles";
 import { UnitsToggle } from "./UnitsToggle";
 
 /**
@@ -44,6 +45,7 @@ export function OptionsPanel() {
         className="flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-1 pb-4"
       >
         <UnitsToggle />
+        <LayerToggles />
       </div>
     </section>
   );

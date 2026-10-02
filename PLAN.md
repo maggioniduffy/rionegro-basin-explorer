@@ -112,7 +112,7 @@ Decisions, figures and the AIC comparison: [DECISSIONS.md](DECISSIONS.md#phase-6
 ## Phase 7 — Extras
 
 - [ ] km/mi toggle, minimap, snapshot export, localities layer, mobile bottom-sheet panel
-- [ ] Hide/show: lakes (natural/artificial), rivers, and perennial vs non-perennial streams (GIRES `nonPerennial1d`); "arroyos" dropped (owner, 2026-10-02)
+- [x] Hide/show: lakes (natural/artificial), rivers, and perennial vs non-perennial streams (GIRES `nonPerennial1d`); "arroyos" dropped (owner, 2026-10-02)
 - [x] Layout: the new Phase 7 panel (localities, km/mi, …) sits at the bottom right; while it is open, the right column splits in two vertical halves (river/basin panel on top, new panel below), each scrolling on its own. Both columns keep the shared top edge (`--panel-top`)
 
 Decisions: [DECISSIONS.md](DECISSIONS.md#phase-7-2026-10-02).
