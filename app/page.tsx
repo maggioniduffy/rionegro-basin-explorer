@@ -3,7 +3,7 @@ import { Controls } from "@/components/Controls";
 import { Logomark } from "@/components/Icon";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { BasinMap } from "@/components/map/BasinMap";
-import { InfoPanel } from "@/components/panel/InfoPanel";
+import { RightColumn } from "@/components/RightColumn";
 import { SearchBox } from "@/components/SearchBox";
 import { UrlSync } from "@/components/UrlSync";
 
@@ -28,7 +28,7 @@ export default function HomePage() {
         </div>
       </header>
       <Controls />
-      <InfoPanel />
+      <RightColumn />
       <UrlSync />
     </main>
   );

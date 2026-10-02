@@ -27,6 +27,11 @@
     "showIgnDetail": "IGN stream detail",
     "showIgnDetailHint": "Perennial streams from IGN that HydroRIVERS does not draw. Name and length only, no hydrology."
   },
+  "options": {
+    "label": "Display",
+    "minimize": "Minimize panel",
+    "expand": "Show panel"
+  },
   "legend": {
     "title": "Flow regime",
     "perennial": "Perennial",

@@ -50,6 +50,12 @@ interface MapState {
    */
   isolatedIds: string[] | null;
   setIsolatedIds: (ids: string[] | null) => void;
+  /**
+   * Display options panel (bottom right). While it is open, the right column splits
+   * in two halves: the info panel on top, the options below.
+   */
+  optionsOpen: boolean;
+  setOptionsOpen: (v: boolean) => void;
 }
 
 export const useMapStore = create<MapState>()((set) => ({
@@ -89,4 +95,6 @@ export const useMapStore = create<MapState>()((set) => ({
     })),
   isolatedIds: null,
   setIsolatedIds: (isolatedIds) => set({ isolatedIds }),
+  optionsOpen: false,
+  setOptionsOpen: (optionsOpen) => set({ optionsOpen }),
 }));

@@ -27,6 +27,11 @@
     "showIgnDetail": "Detalle de cursos del IGN",
     "showIgnDetailHint": "Cursos permanentes del IGN que HydroRIVERS no dibuja. Solo nombre y longitud, sin datos hidrológicos."
   },
+  "options": {
+    "label": "Visualización",
+    "minimize": "Minimizar panel",
+    "expand": "Mostrar panel"
+  },
   "legend": {
     "title": "Régimen de flujo",
     "perennial": "Permanente",

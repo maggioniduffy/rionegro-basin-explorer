@@ -111,7 +111,7 @@ export function PanelFrame({
       aria-label={label}
       aria-busy={busy}
       data-testid="info-panel"
-      className="absolute top-(--panel-top) right-14 left-3 flex max-h-[calc(100dvh-9rem)] flex-col gap-4 overflow-y-auto rounded-lg border border-(--border) bg-(--panel) p-4 text-sm shadow-lg backdrop-blur md:left-auto md:w-88"
+      className="pointer-events-auto relative flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain rounded-lg border border-(--border) bg-(--panel) p-4 text-sm shadow-lg backdrop-blur group-data-[split=true]:max-h-[calc(50%-0.375rem)]"
     >
       <button
         type="button"
