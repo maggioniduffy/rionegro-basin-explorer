@@ -24,6 +24,13 @@ const schema = z.object({
     extraLakeMinzoomByKm2: z.array(step),
     damsMinzoom: z.number().int(),
   }),
+  localities: z.object({
+    minzoomByPlace: z.object({
+      city: z.number().int(),
+      town: z.number().int(),
+      village: z.number().int(),
+    }),
+  }),
   mask: z.object({
     strahlerFactor: byStrahler,
     baseHalfWidthKm: z.array(z.number().positive()).min(1),

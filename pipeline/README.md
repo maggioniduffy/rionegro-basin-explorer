@@ -122,6 +122,17 @@ public instance returns when busy. Each candidate segment gets up to five sample
 locally to OSM lines within 750 m. `matches.json` lists the names per candidate, such as
 "Río Limay 5/5". A person reviews it to write `pipeline/names.json`.
 
+### `npm run pipeline:localities`
+
+Cities, towns and villages from OpenStreetMap (ODbL; see SOURCES.md). One Overpass request for the
+named `place=city|town|village` nodes in the basin bbox, cached in
+`data/work/localities/overpass.json` (retries on 429 and 504). DuckDB keeps the nodes inside
+`data/work/basin/basin.geojson` and writes `data/work/tiles/localities.geojson` (id, name, place; no
+population). Report: counts inside and outside the basin, per class; checks: unique ids, all named,
+all inside the basin. Places mapped only as areas are not included. Run it after `basin` and before
+`tiles`, which writes `public/tiles/localities.pmtiles` with a minzoom per class
+(`map.config.json`, `localities`).
+
 ### `npm run pipeline:named`
 
 Traces every river in `pipeline/names.json`, a hand-approved list keyed by mouth reach, with OSM
@@ -329,7 +340,7 @@ a pixel), which tippecanoe drops because it collapses to a point. It also checks
 level and every sub-basin is present at each checked zoom, and records file sizes and the tippecanoe version.
 
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
-`lakes` → `ign` → `ign-match` → `ign-layers` → `export` → `mask` → `subbasins` → `tiles`.
+`lakes` → `ign` → `ign-match` → `ign-layers` → `localities` → `export` → `mask` → `subbasins` → `tiles`.
 
 ## Tools
 

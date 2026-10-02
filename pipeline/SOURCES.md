@@ -6,17 +6,17 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 
 ## Summary
 
-| Source                                 | Used for                                                                    | License                                                                | Commercial use                                     | Verified                                    | Downloaded                        |
-| -------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- | --------------------------------- |
-| HydroRIVERS v1.0                       | River network geometry, topology                                            | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
-| HydroBASINS v1c                        | Basin delineation, sub-basins                                               | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
-| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.)                               | CC BY 4.0                                                              | Yes                                                | 2026-09-29                                  | 2026-09-30 (RiverATLAS only)      |
-| GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                          | CC BY 4.0 per figshare metadata (README wording ambiguous, see below)  | Yes, if CC BY                                      | 2026-09-30                                  | 2026-09-30                        |
-| HydroLAKES v1.0                        | Lake and reservoir polygons (line clipping, mask, outlines)                 | CC BY 4.0                                                              | Yes                                                | 2026-09-30                                  | 2026-09-30                        |
-| IGN Argentina — SIG layers             | Watercourse names, detail lines, lake names and extra lakes, dams (Phase 5) | IGN "Términos y Condiciones" (custom, no named license; **not** CC BY) | Only for derived works; non-commercial use is fine | 2026-10-01 (terms read; layer metadata not) | — (local copy origin unknown)     |
-| OpenStreetMap                          | River name evidence (Phase 1); localities, reservoirs, dams (later)         | ODbL 1.0                                                               | Yes (share-alike on the database)                  | 2026-09-30                                  | 2026-09-30 (Overpass, basin bbox) |
-| Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                                  | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license      | Only with an EOX commercial license                | 2026-09-29                                  | n/a (tiles)                       |
-| Imagery: Esri World Imagery            | Candidate satellite basemap                                                 | **Not verified** (Esri terms of use)                                   | Unknown                                            | —                                           | n/a (tiles)                       |
+| Source                                 | Used for                                                                      | License                                                                | Commercial use                                     | Verified                                    | Downloaded                        |
+| -------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- | --------------------------------- |
+| HydroRIVERS v1.0                       | River network geometry, topology                                              | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
+| HydroBASINS v1c                        | Basin delineation, sub-basins                                                 | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
+| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.)                                 | CC BY 4.0                                                              | Yes                                                | 2026-09-29                                  | 2026-09-30 (RiverATLAS only)      |
+| GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                            | CC BY 4.0 per figshare metadata (README wording ambiguous, see below)  | Yes, if CC BY                                      | 2026-09-30                                  | 2026-09-30                        |
+| HydroLAKES v1.0                        | Lake and reservoir polygons (line clipping, mask, outlines)                   | CC BY 4.0                                                              | Yes                                                | 2026-09-30                                  | 2026-09-30                        |
+| IGN Argentina — SIG layers             | Watercourse names, detail lines, lake names and extra lakes, dams (Phase 5)   | IGN "Términos y Condiciones" (custom, no named license; **not** CC BY) | Only for derived works; non-commercial use is fine | 2026-10-01 (terms read; layer metadata not) | — (local copy origin unknown)     |
+| OpenStreetMap                          | River name evidence (Phase 1); localities (Phase 7); reservoirs, dams (later) | ODbL 1.0                                                               | Yes (share-alike on the database)                  | 2026-09-30                                  | 2026-09-30 (Overpass, basin bbox) |
+| Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                                    | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license      | Only with an EOX commercial license                | 2026-09-29                                  | n/a (tiles)                       |
+| Imagery: Esri World Imagery            | Candidate satellite basemap                                                   | **Not verified** (Esri terms of use)                                   | Unknown                                            | —                                           | n/a (tiles)                       |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
 
@@ -226,10 +226,17 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   guidance is about 10,000 requests or 1 GB a day). It asks for the named waterways and water bodies
   in the basin bbox, and the response is cached in `data/work/osm-names/overpass.json`. The names are
   evidence for choosing the river names in `pipeline/names.json` by hand.
+- Use in Phase 7: `pipeline:localities` makes one more Overpass request for the named
+  `place=city|town|village` nodes in the basin bbox (cached in `data/work/localities/overpass.json`)
+  and keeps those inside the basin polygon: 116 points, name and class only (no population). They are
+  shipped in `public/tiles/localities.pmtiles`, so the tiles hold an extract of OSM data. The map's
+  attribution line credits "© OpenStreetMap contributors", linked to the copyright page.
 - Share-alike: `names.json` holds a few dozen river names, each confirmed by a person. We believe
   that is an insubstantial extract, which would not trigger share-alike, but this is **not
   verified**. The OSMF "Substantial – Guideline" on the OSM wiki needs reading before release. We
-  attribute OSM either way (Phase 8 attributions page).
+  attribute OSM either way (Phase 8 attributions page). The localities tiles (116 place nodes,
+  name and class) are a larger extract than `names.json`; whether they count as a substantial
+  extract is also **not verified**. Check the same guideline before release.
 
 ## Satellite imagery (EOxCloudless 2024, chosen in Phase 2)
 
