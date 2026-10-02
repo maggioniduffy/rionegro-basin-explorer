@@ -135,6 +135,12 @@ async function main() {
           (id) => subbasins.some((o) => o._id === id),
         ),
       ),
+      subbasinPathsMatchParents: subbasins.every(
+        (b) =>
+          b.path.at(-1) === b._id &&
+          b.path.length === b.level + 1 &&
+          b.path.at(-2) === (b.parentId ?? undefined),
+      ),
     };
     await writeReport("seed", {
       ok: Object.values(checks).every(Boolean),

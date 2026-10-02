@@ -27,6 +27,8 @@ export type SubbasinRef = Pick<Subbasin, "kind" | "name"> & { id: string };
 /** Sub-basin as served by /api/subbasins/[id], with the names of what it links to. */
 export type SubbasinResponse = Subbasin & {
   parent: SubbasinRef | null;
+  /** From the root down to the parent, for the breadcrumb. */
+  ancestors: SubbasinRef[];
   children: SubbasinRef[];
   riverRefs: NamedRef[];
 };
@@ -35,6 +37,10 @@ export type SubbasinResponse = Subbasin & {
  * A search result: a named river (id = slug) or an IGN name (id = the longest reach with
  * that name, bbox = all its reaches).
  */
+/** A node of the sub-basin tree served by /api/subbasins, in hierarchy order. */
+export type SubbasinTreeNode = SubbasinRef &
+  Pick<Subbasin, "level" | "parentId" | "childIds" | "areaKm2">;
+
 export type SearchHit =
   | { kind: "river"; id: string; name: string }
   | { kind: "reach"; id: string; name: string; bbox: Bbox };
@@ -101,12 +107,38 @@ export async function getSubbasin(
 ): Promise<SubbasinResponse | null> {
   const doc = await (await subbasins()).findOne({ _id: id });
   if (!doc) return null;
-  const [parent, children, riverRefs] = await Promise.all([
-    doc.parentId === null ? [] : subbasinRefs([doc.parentId]),
+  const [ancestors, children, riverRefs] = await Promise.all([
+    subbasinRefs(doc.path.slice(0, -1)),
     subbasinRefs(doc.childIds),
     namedRivers(doc.rivers),
   ]);
-  return { ...doc, parent: parent[0] ?? null, children, riverRefs };
+  return {
+    ...doc,
+    parent: ancestors.at(-1) ?? null,
+    ancestors,
+    children,
+    riverRefs,
+  };
+}
+
+/** Every sub-basin, without metrics; the seed keeps the pipeline's hierarchy order. */
+export async function getSubbasinTree(): Promise<SubbasinTreeNode[]> {
+  const docs = await (await subbasins())
+    .find(
+      {},
+      {
+        projection: {
+          name: 1,
+          kind: 1,
+          level: 1,
+          parentId: 1,
+          childIds: 1,
+          areaKm2: 1,
+        },
+      },
+    )
+    .toArray();
+  return docs.map(({ _id, ...rest }) => ({ id: _id, ...rest }));
 }
 
 /**
