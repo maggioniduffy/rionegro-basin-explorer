@@ -31,6 +31,11 @@
     "label": "Display",
     "minimize": "Minimize panel",
     "expand": "Show panel",
+    "minimap": {
+      "show": "Overview map",
+      "label": "Overview map of the basin; the box is the current view",
+      "hint": "Click or drag to move the map"
+    },
     "units": {
       "label": "Units",
       "metric": "Kilometres",

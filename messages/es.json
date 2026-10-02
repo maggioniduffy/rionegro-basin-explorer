@@ -31,6 +31,11 @@
     "label": "Visualización",
     "minimize": "Minimizar panel",
     "expand": "Mostrar panel",
+    "minimap": {
+      "show": "Mapa general",
+      "label": "Mapa general de la cuenca; el recuadro es la vista actual",
+      "hint": "Un clic o un arrastre mueve el mapa"
+    },
     "units": {
       "label": "Unidades",
       "metric": "Kilómetros",

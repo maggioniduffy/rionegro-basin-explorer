@@ -9,6 +9,8 @@ import type { Selection } from "./url-state";
 export const THEME_STORAGE_KEY = "theme";
 /** localStorage key for the km/mi choice; read on mount by UnitsToggle. */
 export const UNITS_STORAGE_KEY = "units";
+/** localStorage key for the overview map's show/hide; read on mount by OptionsPanel. */
+export const MINIMAP_STORAGE_KEY = "minimap";
 
 /**
  * Display toggles for the map's water layers (Display panel). Rivers are the
@@ -81,6 +83,9 @@ interface MapState {
   /** km/mi; panels and the scale bar follow it, independently of the locale. */
   units: UnitSystem;
   setUnits: (u: UnitSystem) => void;
+  /** Overview map at the top of the Display panel. */
+  showMinimap: boolean;
+  setShowMinimap: (v: boolean) => void;
   layers: LayerVisibility;
   setLayers: (patch: Partial<LayerVisibility>) => void;
 }
@@ -126,6 +131,8 @@ export const useMapStore = create<MapState>()((set) => ({
   setOptionsOpen: (optionsOpen) => set({ optionsOpen }),
   units: "metric",
   setUnits: (units) => set({ units }),
+  showMinimap: true,
+  setShowMinimap: (showMinimap) => set({ showMinimap }),
   layers: DEFAULT_LAYERS,
   setLayers: (patch) => set((s) => ({ layers: { ...s.layers, ...patch } })),
 }));

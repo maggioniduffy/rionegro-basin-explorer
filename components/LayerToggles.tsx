@@ -7,7 +7,7 @@ import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
 import { Swatch } from "./Legend";
 
-function Toggle({
+export function Toggle({
   checked,
   onChange,
   disabled = false,

@@ -3,13 +3,11 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   AttributionControl,
-  addProtocol,
   Map as MapLibreMap,
   type MapMouseEvent,
   ScaleControl,
 } from "maplibre-gl";
 import { useTranslations } from "next-intl";
-import { Protocol } from "pmtiles";
 import { useEffect, useRef, useState } from "react";
 import {
   MAP_MAXZOOM,
@@ -55,17 +53,10 @@ import {
   SUBBASIN_SELECTED_LAYER_ID,
   THEME_COLORS,
 } from "@/lib/map/style";
-import { setupMaplibreWorker } from "@/lib/map/worker";
+import { initMaplibre } from "@/lib/map/init";
+import { setMainMap } from "@/lib/map/main-map";
 import { useMapStore } from "@/lib/store";
 import type { Selection } from "@/lib/url-state";
-
-let initialized = false;
-function initMaplibre() {
-  if (initialized) return;
-  setupMaplibreWorker();
-  addProtocol("pmtiles", new Protocol().tile);
-  initialized = true;
-}
 
 const escapeHtml = (s: string) =>
   s.replace(
@@ -396,6 +387,7 @@ export default function MapView() {
     const scale = new ScaleControl({ unit: initial.units });
     map.addControl(scale, "bottom-left");
     mapRef.current = map;
+    setMainMap(map);
     // Test hook for e2e and scripts/perf-zoom.ts; inlined at build time, so production
     // builds without NEXT_PUBLIC_E2E carry no reference to it.
     if (process.env.NEXT_PUBLIC_E2E === "1") window.__map = map;
@@ -480,6 +472,7 @@ export default function MapView() {
         delete window.__map;
         delete window.__mapHover;
       }
+      setMainMap(null);
       map.remove();
       mapRef.current = null;
     };

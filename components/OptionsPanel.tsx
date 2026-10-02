@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
 import { LayerToggles } from "./LayerToggles";
+import { MinimapSection } from "./Minimap";
 import { UnitsToggle } from "./UnitsToggle";
 
 /**
@@ -38,12 +39,14 @@ export function OptionsPanel() {
         />
       </button>
 
-      {/* Hidden rather than unmounted, so inputs keep their state. */}
+      {/* Hidden rather than unmounted, so inputs keep their state. The minimap is
+          unmounted while closed, so it holds no WebGL context then. */}
       <div
         id="display-options-body"
         hidden={!open}
         className="flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-1 pb-4"
       >
+        {open && <MinimapSection />}
         <UnitsToggle />
         <LayerToggles />
       </div>
