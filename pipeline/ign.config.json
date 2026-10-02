@@ -1,0 +1,15 @@
+{
+  "$comment": "Thresholds of pipeline:ign-match. PROVISIONAL (2026-10-01): chosen before looking at the score distribution, to be calibrated against the 15 approved rivers and the report's distributions, then recorded in DECISSIONS.md. coverage = fraction of a reach within bufferM of the lines carrying one IGN name; margin = coverage of the best name minus the runner-up. bufferM 250 follows the IGN gate (HydroRIVERS comes from a coarse grid, so positions are offset).",
+  "bufferM": 250,
+  "high": { "minCoverage": 0.8, "minMargin": 0.3 },
+  "medium": { "minCoverage": 0.3, "minMargin": 0.3 },
+  "low": { "minCoverage": 0.2 },
+  "riverNameMinShare": 0.6,
+  "riverNameMinEvidenceKm": 50,
+  "minDetailPieceM": 500,
+  "water": {
+    "lakeNameMinOverlap": 0.5,
+    "extraLakeMaxCoverage": 0.5,
+    "minExtraLakeKm2": 0.01
+  }
+}

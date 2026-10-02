@@ -9,8 +9,9 @@ import type {
 } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
 import { useApi } from "@/lib/use-api";
-import { Icon } from "../Icon";
 import type { Selection } from "@/lib/url-state";
+import { FeaturePanel } from "./FeaturePanel";
+import { PanelFrame } from "./parts";
 import { ReachPanel } from "./ReachPanel";
 import { RiverPanel } from "./RiverPanel";
 import { SubbasinPanel } from "./SubbasinPanel";
@@ -32,10 +33,11 @@ const LABEL_KEY = {
   subbasin: "subbasin.label",
 } as const;
 
-/** Details of the selected river, reach or sub-basin, on the right of the map. */
+/** Details of the selected river, reach, sub-basin or clicked map feature. */
 export function InfoPanel() {
   const selection = useMapStore((s) => s.selection);
-  if (!selection) return null;
+  const picked = useMapStore((s) => s.picked);
+  if (!selection) return picked ? <FeaturePanel picked={picked} /> : null;
   // Remount per selection so scroll position and state start fresh.
   return (
     <Panel key={`${selection.kind}:${selection.id}`} selection={selection} />
@@ -56,30 +58,12 @@ function Panel({ selection }: { selection: Selection }) {
     if (fitPending && state.status === "ok") focusOn(state.data.bbox);
   }, [fitPending, state, focusOn]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !e.defaultPrevented) select(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [select]);
-
   return (
-    <aside
-      aria-label={t(LABEL_KEY[selection.kind])}
-      aria-busy={state.status === "loading"}
-      data-testid="info-panel"
-      className="absolute top-16 right-14 left-3 flex max-h-[calc(100dvh-9rem)] flex-col gap-4 overflow-y-auto rounded-lg border border-(--border) bg-(--panel) p-4 text-sm shadow-lg backdrop-blur md:left-auto md:w-88"
+    <PanelFrame
+      label={t(LABEL_KEY[selection.kind])}
+      busy={state.status === "loading"}
+      onClose={() => select(null)}
     >
-      <button
-        type="button"
-        onClick={() => select(null)}
-        aria-label={t("close")}
-        title={t("close")}
-        className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-md hover:bg-(--panel-hover)"
-      >
-        <Icon name="close" />
-      </button>
       {state.status === "loading" && (
         <p className="text-muted pr-8">{t("loading")}</p>
       )}
@@ -94,6 +78,6 @@ function Panel({ selection }: { selection: Selection }) {
       {state.status === "ok" && selection.kind === "subbasin" && (
         <SubbasinPanel subbasin={state.data as SubbasinResponse} />
       )}
-    </aside>
+    </PanelFrame>
   );
 }

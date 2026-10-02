@@ -1,5 +1,5 @@
 {
-  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). basinBbox is the basin outline's extent (initial view; pipeline:mask checks it against basin.geojson). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. minzoom is the lowest zoom the map allows (maxBounds alone would stop near z4 on a phone); tile checks start there. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin.",
+  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). basinBbox is the basin outline's extent (initial view; pipeline:mask checks it against basin.geojson). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. minzoom is the lowest zoom the map allows (maxBounds alone would stop near z4 on a phone); tile checks start there. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin. ign: zoom at which IGN layers appear (pipeline:tiles, Phase 5), PROVISIONAL until checked on the map: detail pieces by length (km), extra lakes by area (km2), dams and dam walls all at damsMinzoom; each list is read top to bottom and the first step whose min is <= the value applies.",
   "basinBbox": {
     "xmin": -71.9625,
     "ymin": -41.5042,
@@ -34,5 +34,36 @@
       "7": 11.4
     },
     "baseHalfWidthKm": [0.05, 0.1, 0.2, 0.4, 0.8]
+  },
+  "ign": {
+    "detailMinzoomByKm": [
+      {
+        "min": 20,
+        "minzoom": 7
+      },
+      {
+        "min": 5,
+        "minzoom": 8
+      },
+      {
+        "min": 0,
+        "minzoom": 9
+      }
+    ],
+    "extraLakeMinzoomByKm2": [
+      {
+        "min": 1,
+        "minzoom": 6
+      },
+      {
+        "min": 0.1,
+        "minzoom": 8
+      },
+      {
+        "min": 0,
+        "minzoom": 9
+      }
+    ],
+    "damsMinzoom": 6
   }
 }

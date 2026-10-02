@@ -1,7 +1,14 @@
 import "server-only";
 import { getDb } from "@/lib/mongo";
 import { searchPattern, SEARCH_LIMIT } from "./params";
-import type { Reach, River, RiverDoc, Subbasin } from "./schemas";
+import type {
+  Bbox,
+  IgnNameDoc,
+  Reach,
+  River,
+  RiverDoc,
+  Subbasin,
+} from "./schemas";
 
 /** River as served by /api/rivers/[id]: the stored document plus names it refers to. */
 export type RiverResponse = River & { flowsIntoName: string | null };
@@ -24,12 +31,17 @@ export type SubbasinResponse = Subbasin & {
   riverRefs: NamedRef[];
 };
 
-export interface SearchHit {
-  id: string;
-  name: string;
-}
+/**
+ * A search result: a named river (id = slug) or an IGN name (id = the longest reach with
+ * that name, bbox = all its reaches).
+ */
+export type SearchHit =
+  | { kind: "river"; id: string; name: string }
+  | { kind: "reach"; id: string; name: string; bbox: Bbox };
 
 const rivers = async () => (await getDb()).collection<RiverDoc>("rivers");
+const ignNames = async () =>
+  (await getDb()).collection<IgnNameDoc>("ignNames");
 const reaches = async () => (await getDb()).collection<Reach>("reaches");
 const subbasins = async () =>
   (await getDb()).collection<Subbasin>("subbasins");
@@ -97,15 +109,40 @@ export async function getSubbasin(
   return { ...doc, parent: parent[0] ?? null, children, riverRefs };
 }
 
-/** Rivers whose name has a word starting with the normalized query; longest first. */
-export async function searchRivers(q: string): Promise<SearchHit[]> {
-  const docs = await (await rivers())
-    .find(
-      { searchTerms: { $regex: searchPattern(q) } },
-      { projection: { name: 1 } },
-    )
-    .sort({ lengthKm: -1 })
-    .limit(SEARCH_LIMIT)
-    .toArray();
-  return docs.map((d) => ({ id: d._id, name: d.name }));
+/**
+ * Rivers and IGN names with a word starting with the normalized query, longest first.
+ * Both collections are asked for the limit, then merged by total length.
+ */
+export async function searchNames(q: string): Promise<SearchHit[]> {
+  const filter = { searchTerms: { $regex: searchPattern(q) } };
+  const [riverDocs, nameDocs] = await Promise.all([
+    (await rivers())
+      .find(filter, { projection: { name: 1, lengthKm: 1 } })
+      .sort({ lengthKm: -1 })
+      .limit(SEARCH_LIMIT)
+      .toArray(),
+    (await ignNames())
+      .find(filter, { projection: { searchTerms: 0 } })
+      .sort({ lengthKm: -1 })
+      .limit(SEARCH_LIMIT)
+      .toArray(),
+  ]);
+  return [
+    ...riverDocs.map((d) => ({
+      lengthKm: d.lengthKm,
+      hit: { kind: "river" as const, id: d._id, name: d.name },
+    })),
+    ...nameDocs.map((d) => ({
+      lengthKm: d.lengthKm,
+      hit: {
+        kind: "reach" as const,
+        id: String(d.longestReach),
+        name: d.name,
+        bbox: d.bbox,
+      },
+    })),
+  ]
+    .sort((a, b) => b.lengthKm - a.lengthKm)
+    .slice(0, SEARCH_LIMIT)
+    .map((x) => x.hit);
 }

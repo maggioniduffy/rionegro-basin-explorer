@@ -23,7 +23,9 @@
     "expand": "Mostrar panel",
     "view": "Vista",
     "viewBasin": "Cuenca",
-    "viewSubbasins": "Subcuencas"
+    "viewSubbasins": "Subcuencas",
+    "showIgnDetail": "Detalle de cursos del IGN",
+    "showIgnDetailHint": "Cursos permanentes del IGN que HydroRIVERS no dibuja. Solo nombre y longitud, sin datos hidrológicos."
   },
   "legend": {
     "title": "Régimen de flujo",
@@ -36,7 +38,8 @@
       "own": "{name}, drenaje directo",
       "hint": "Un clic sobre el terreno muestra los datos de la subcuenca. La seleccionada se resalta sobre la tierra visible; los límites se ven siempre.",
       "endorheic": "Áreas endorreicas (no drenan a ningún río)"
-    }
+    },
+    "ignDetail": "Curso del IGN que no está en HydroRIVERS"
   },
   "theme": {
     "toLight": "Tema claro",
@@ -49,7 +52,8 @@
     "attribution": {
       "hydrosheds": "HydroSHEDS © WWF",
       "gires": "GIRES v1.0 (Messager et al., 2021)",
-      "hydrolakes": "HydroLAKES (Messager et al., 2016)"
+      "hydrolakes": "HydroLAKES (Messager et al., 2016)",
+      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina"
     },
     "maplibre": {
       "title": "Mapa de la cuenca del Río Negro",
@@ -60,9 +64,9 @@
     }
   },
   "search": {
-    "label": "Buscar ríos",
-    "placeholder": "Buscar un río",
-    "noResults": "No se encontró ningún río",
+    "label": "Buscar ríos y arroyos",
+    "placeholder": "Buscar un río o arroyo",
+    "noResults": "No se encontró ningún río o arroyo",
     "error": "La búsqueda no está disponible en este momento."
   },
   "panel": {
@@ -83,7 +87,9 @@
       "titleOf": "Tramo del {river}",
       "id": "Tramo HydroRIVERS {id}",
       "showRiver": "Ver todo el {river}",
-      "endorheic": "Endorreico: drena hacia el interior y no llega al mar."
+      "endorheic": "Endorreico: drena hacia el interior y no llega al mar.",
+      "ignName": "Nombre del IGN. Confianza de la coincidencia: {confidence, select, high {alta} medium {media} other {baja}}.",
+      "ignNameReviewed": "Nombre del IGN, confirmado a mano."
     },
     "groups": {
       "course": "Recorrido",
@@ -147,6 +153,33 @@
       "endorheicNote": "Tierras que drenan hacia depresiones cerradas y no llegan a ningún río. HydroBASINS vincula parte de ellas a la red de ríos de forma virtual; aquí se muestran aparte.",
       "hideOthers": "Ocultar el resto de la cuenca",
       "showOthers": "Mostrar toda la cuenca"
+    },
+    "feature": {
+      "label": "Detalles del elemento del mapa",
+      "detail": {
+        "title": "Curso del IGN",
+        "unnamed": "Curso del IGN sin nombre",
+        "note": "Un curso permanente dibujado por el IGN que HydroRIVERS no incluye. Tiene nombre y longitud, pero no datos hidrológicos: no hay caudal, pendiente ni cuenca para él."
+      },
+      "water": {
+        "unnamed": "{kind, select, lake {Lago sin nombre} reservoir {Embalse sin nombre} controlledLake {Lago regulado sin nombre} other {Espejo de agua sin nombre}}",
+        "kind": "{kind, select, lake {Lago} reservoir {Embalse} controlledLake {Lago regulado} other {Espejo de agua}}",
+        "areaHydrolakes": "Superficie (HydroLAKES, aproximada)",
+        "areaIgn": "Superficie (polígono del IGN, aproximada)",
+        "note": "Contorno de HydroLAKES (Messager et al., 2016) o del IGN; el nombre es el del IGN cuando lo tiene."
+      },
+      "dam": {
+        "title": "Presa",
+        "unnamed": "Presa sin nombre",
+        "wall": "Muro de presa",
+        "note": "Posición según el IGN. Aquí no hay datos de capacidad ni de operación."
+      },
+      "fields": {
+        "kind": "Tipo",
+        "length": "Longitud"
+      },
+      "source": "Fuente: FUENTE: Instituto Geográfico Nacional de la República Argentina. El IGN no avala ni patrocina esta aplicación.",
+      "group": "Datos"
     }
   }
 }

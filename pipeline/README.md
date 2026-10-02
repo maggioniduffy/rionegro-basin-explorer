@@ -11,7 +11,10 @@ Final artifacts: NDJSON for `npm run seed` in `data/out/`, and PMTiles for the m
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
 Status: Phase 1 is complete (`download` … `export`). Phase 2 adds `mask` and `tiles`; Phase 4 adds
-`subbasins` (run it after `export` and before `tiles`).
+`subbasins` (run it after `export` and before `tiles`). Phase 5 adds `ign`, `ign-match` and `ign-layers`
+(`ign-gate` is the measurement that preceded it). Order: … `named`, `lakes`, `ign`, `ign-match`,
+`ign-layers`, `export`, `mask`, `subbasins`, `tiles`: `export` reads the IGN names from `ign-match`, and
+`tiles` reads the IGN layers from `ign-layers`.
 
 ## Prerequisites
 
@@ -240,12 +243,63 @@ Output: `data/work/ign-gate/report.json`. Checks: IGN present, HydroRIVERS km eq
 report, clipped km within bbox km, deduplication never adds features. The overlap figure (unioned vs
 summed length) is computed for the perennial class only.
 
+### `npm run pipeline:ign`
+
+IGN perennial watercourse lines (`data/raw/ign/`, Shapefile, ISO-8859-1), cleaned and clipped to the
+basin: touching lines only, exact duplicate geometries dropped, clipped to the basin polygon, names
+cleaned (`pipeline/lib/names.ts`: NFC, spaces) and a stable `id` per line. A name is IGN's `fna` and
+nothing is inferred: no `fna`, no name. Intermittent lines are out of scope (DECISSIONS.md, gate).
+
+Output: `data/work/ign/lines.parquet`. Checks: unique ids, no empty geometry, clipped length within the
+bbox, and the same 10,556 lines / 13,635.3 km as `ign-gate` (same inputs and rules). The report also lists
+spelling variants (names that differ only by accents, case or punctuation) and `nam` values that are not
+part of `fna`.
+
+### `npm run pipeline:ign-match`
+
+Matches IGN names to HydroRIVERS reaches and keeps the IGN lines HydroRIVERS lacks. Everything is
+measured in Albers (approximate to a few percent). Settings: `pipeline/ign.config.json`; hand decisions:
+`pipeline/ign-overrides.json`.
+
+1. **Coverage.** For each reach and IGN name (compared by `nameKey`), the fraction of the reach within
+   `bufferM` (250 m, as the gate) of the lines carrying that name.
+2. **Tiers.** `classify` (`pipeline/lib/ign-match.ts`) turns the best name's coverage and its lead over the
+   runner-up into high, medium, low or none. High and medium are shown; low and none are not. An override
+   (`accept`, `reject`, `name`) decides a single reach and needs a note.
+3. **Review.** `review.json` lists the low or ambiguous reaches, longest first, with the candidates.
+   `proposed-overrides.json` proposes `accept` where the same name is already shown on the next reach
+   upstream or downstream (the river continues through it); copy the entries you agree with into
+   `pipeline/ign-overrides.json`. Not accepting costs nothing: a hidden name is the default.
+4. **Approved rivers.** For each river in `names.json`, the IGN name along its main stem is voted by km
+   (over the stem km that has a candidate: IGN draws no line through reservoirs). The report proposes a
+   name; `names.json` holds the approved result.
+5. **Detail layer.** The part of each IGN line farther than `bufferM` from every reach, in pieces of at least
+   `minDetailPieceM`. Name and length only.
+
+Outputs in `data/work/ign-match/`: `reach_ign.parquet`, `detail.parquet`, `review.json`,
+`proposed-overrides.json`, `report.json`. Checks: every reach once, coverage within 0..1, near + far km
+equal the IGN total, pieces not shorter than the minimum. The thresholds are provisional; see
+DECISSIONS.md (Phase 5) for how they were calibrated.
+
+### `npm run pipeline:ign-layers`
+
+IGN lakes, dams and the detail lines, as tippecanoe inputs: names for HydroLAKES lakes (an IGN polygon
+covering at least `water.lakeNameMinOverlap` of the lake), extra lakes (IGN water bodies HydroLAKES
+covers less than `water.extraLakeMaxCoverage`, minus what it covers, at least `water.minExtraLakeKm2`),
+detail lines cut out of every lake, and dam points and walls. Each feature gets `network` by the same
+rule as `pipeline:lakes`.
+
+Outputs: `data/work/tiles/ign_lakes.geojson`, `ign_lakes_extra.geojson`, `ign_detail.geojson`,
+`ign_dams.geojson`, `ign_dam_walls.geojson`; report in `data/work/ign-layers/`. Checks: one name per
+lake, valid extra lakes, extra lakes outside HydroLAKES, detail lines outside lakes, no lake lost.
+
 ### `npm run pipeline:tiles`
 
 Runs tippecanoe with the feature and tile-size limits off, except for the mask (below):
 
 - `public/tiles/rivers.pmtiles`: layer `reaches`, with the properties the map styles on and a
-  per-feature minzoom from `reachMinzoomByStrahler`; layer `basin`, the outline.
+  per-feature minzoom from `reachMinzoomByStrahler`; layer `basin`, the outline; layer `lakes`, the
+  HydroLAKES polygons with IGN names (`ign_lakes.geojson` from `pipeline:ign-layers`).
 - `public/tiles/mask.pmtiles`: layer `mask`, one feature per level, and layer `endorheic`. Built
   in two parts joined with `tile-join`: z0–7 at `--full-detail=10` (about 2 tile units per screen
   pixel), z8 and up at full detail, both with `--detect-shared-borders` and a 100 KB tile cap.
@@ -255,6 +309,9 @@ Runs tippecanoe with the feature and tile-size limits off, except for the mask (
   tippecanoe.
 - `public/tiles/subbasins.pmtiles`: layer `subbasins`, the own areas from `pipeline:subbasins`,
   built with `--detect-shared-borders` so simplification leaves no slivers between neighbours.
+- `public/tiles/ign.pmtiles`: layers `detail` (IGN streams HydroRIVERS lacks), `lakes_extra`, `dams` and
+  `dam_walls`, each feature with a minzoom from `map.config.json` (`ign`: by length, by area, dams from
+  z6). The report checks every feature is present at maxzoom and none before its first zoom.
 
 The report decodes the tiles back. It checks that every reach is present from its minzoom up and
 never before it. The only exception is a reach shorter than one tile unit at that zoom (an eighth of
@@ -262,7 +319,7 @@ a pixel), which tippecanoe drops because it collapses to a point. It also checks
 level and every sub-basin is present at each checked zoom, and records file sizes and the tippecanoe version.
 
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
-`lakes` → `export` → `mask` → `tiles`.
+`lakes` → `ign` → `ign-match` → `ign-layers` → `export` → `mask` → `subbasins` → `tiles`.
 
 ## Tools
 

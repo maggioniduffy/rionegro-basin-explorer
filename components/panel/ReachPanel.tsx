@@ -22,9 +22,16 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
         <h2 className="text-lg leading-tight font-semibold">
           {river && reach.riverName
             ? t("reach.titleOf", { river: reach.riverName })
-            : t("reach.title")}
+            : (reach.ign?.name ?? t("reach.title"))}
         </h2>
         <p className="text-muted text-sm">{t("reach.id", { id: reach._id })}</p>
+        {reach.ign && (
+          <p className="text-muted text-xs">
+            {reach.ign.reviewed
+              ? t("reach.ignNameReviewed")
+              : t("reach.ignName", { confidence: reach.ign.confidence })}
+          </p>
+        )}
         {river && reach.riverName && (
           <button
             type="button"

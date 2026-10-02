@@ -16,6 +16,8 @@ export function Controls() {
   const setVisibleLand = useMapStore((s) => s.setVisibleLand);
   const hideEndorheic = useMapStore((s) => s.hideEndorheic);
   const setHideEndorheic = useMapStore((s) => s.setHideEndorheic);
+  const showIgnDetail = useMapStore((s) => s.showIgnDetail);
+  const setShowIgnDetail = useMapStore((s) => s.setShowIgnDetail);
   const viewMode = useMapStore((s) => s.viewMode);
   const max = MASK_LEVEL_COUNT - 1;
   const [open, setOpen] = useState(true);
@@ -93,6 +95,21 @@ export function Controls() {
             {t("hideEndorheic")}
             <span className="text-muted block text-xs">
               {t("hideEndorheicHint")}
+            </span>
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            className="mt-0.5 accent-sky-400"
+            checked={showIgnDetail}
+            onChange={(e) => setShowIgnDetail(e.target.checked)}
+          />
+          <span>
+            {t("showIgnDetail")}
+            <span className="text-muted block text-xs">
+              {t("showIgnDetailHint")}
             </span>
           </span>
         </label>

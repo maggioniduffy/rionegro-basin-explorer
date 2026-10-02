@@ -18,13 +18,21 @@ import {
   toLngLatBounds,
 } from "@/lib/map/config";
 import { maskOpacities } from "@/lib/map/mask";
+import { type Picked, toPicked } from "@/lib/map/picked";
 import {
   BACKGROUND_LAYER_ID,
   buildStyle,
+  DAM_LAYER_ID,
+  DAM_WALL_LAYER_ID,
   ENDO_MASK_LAYER_IDS,
   endoMaskOpacities,
   FLOW_CLASSES,
+  IGN_DETAIL_LAYER_ID,
+  IGN_LAKE_FILL_LAYER_ID,
+  IGN_LAKE_LINE_LAYER_ID,
+  ignDetailFilter,
   IMAGERY_LAYER_ID,
+  LAKE_HIT_LAYER_ID,
   LAKE_LAYER_ID,
   lakeFilter,
   MASK_LAYER_IDS,
@@ -89,22 +97,99 @@ function selectionPadding() {
 /** Clicks within this many px of a line hit it; river lines are thin. */
 const HIT_TOLERANCE_PX = 6;
 
+/** What a click at a point finds: a river, reach or sub-basin, or a map feature. */
+type Hit =
+  | { type: "selection"; selection: Selection }
+  | { type: "picked"; picked: Picked };
+
 /**
- * What a click at a point selects: the reach under it, preferring the largest river;
- * otherwise, in the sub-basin view, the sub-basin; otherwise null.
+ * What a click at a point finds. Dams first (small, drawn on top), then the reach under
+ * it, preferring the largest river; then IGN streams and lakes; otherwise, in the
+ * sub-basin view, the sub-basin; otherwise null.
  */
-function hitSelection(
-  map: MapLibreMap,
-  x: number,
-  y: number,
-): Selection | null {
+function hitAt(map: MapLibreMap, x: number, y: number): Hit | null {
   // Hidden land behaves like the empty map around the basin.
   if (
     map.queryRenderedFeatures([x, y], { layers: [SUBBASIN_HIDE_LAYER_ID] })
       .length > 0
   )
     return null;
-  return hitReach(map, x, y) ?? hitSubbasin(map, x, y);
+  const dam = hitFeature(map, x, y, [DAM_LAYER_ID, DAM_WALL_LAYER_ID]);
+  if (dam) return { type: "picked", picked: dam };
+  const reach = hitReach(map, x, y);
+  if (reach) return { type: "selection", selection: reach };
+  const feature = hitFeature(map, x, y, [
+    IGN_DETAIL_LAYER_ID,
+    LAKE_HIT_LAYER_ID,
+    IGN_LAKE_FILL_LAYER_ID,
+  ]);
+  if (feature) return { type: "picked", picked: feature };
+  const subbasin = hitSubbasin(map, x, y);
+  return subbasin ? { type: "selection", selection: subbasin } : null;
+}
+
+/** Layers drawn below the mask: a feature there can be rendered but covered by it. */
+const BELOW_MASK_LAYER_IDS: string[] = [
+  IGN_DETAIL_LAYER_ID,
+  IGN_LAKE_FILL_LAYER_ID,
+];
+
+/**
+ * Whether the mask covers a point (what the user sees, not what is merely under it): the
+ * layers that draw the mask colour composite as 1 − Π(1 − opacity).
+ */
+function maskedAt(map: MapLibreMap, x: number, y: number): boolean {
+  const s = useMapStore.getState();
+  const layers = [
+    ...maskOpacities(s.visibleLand, MASK_LEVEL_COUNT).map((opacity, k) => ({
+      id: MASK_LAYER_IDS[k],
+      opacity,
+    })),
+    ...endoMaskOpacities(s.visibleLand, s.hideEndorheic).map((opacity, k) => ({
+      id: ENDO_MASK_LAYER_IDS[k],
+      opacity,
+    })),
+  ].filter((l) => l.id !== undefined && l.opacity > 0);
+  const found = new Set(
+    map
+      .queryRenderedFeatures([x, y], { layers: layers.map((l) => l.id!) })
+      .map((f) => f.layer.id),
+  );
+  const clear = layers
+    .filter((l) => found.has(l.id!))
+    .reduce((a, l) => a * (1 - l.opacity), 1);
+  return 1 - clear > 0.5;
+}
+
+/**
+ * The first feature of `layers` (in that order) at a point. Lines and points get the
+ * click tolerance; lakes need the point inside them.
+ */
+function hitFeature(
+  map: MapLibreMap,
+  x: number,
+  y: number,
+  layers: string[],
+): Picked | null {
+  const r = HIT_TOLERANCE_PX;
+  for (const id of layers) {
+    const area = id === LAKE_HIT_LAYER_ID || id === IGN_LAKE_FILL_LAYER_ID;
+    const features = map.queryRenderedFeatures(
+      area
+        ? [x, y]
+        : [
+            [x - r, y - r],
+            [x + r, y + r],
+          ],
+      { layers: [id] },
+    );
+    const feature = features[0];
+    if (!feature) continue;
+    if (BELOW_MASK_LAYER_IDS.includes(id) && maskedAt(map, x, y)) continue;
+    const picked = toPicked(id, feature.properties);
+    if (picked) return picked;
+  }
+  return null;
 }
 
 function hitSubbasin(map: MapLibreMap, x: number, y: number): Selection | null {
@@ -160,7 +245,21 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
   if (endoChanged) {
     for (const c of FLOW_CLASSES)
       map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic));
-    map.setFilter(LAKE_LAYER_ID, lakeFilter(s.hideEndorheic));
+    for (const id of [
+      LAKE_LAYER_ID,
+      LAKE_HIT_LAYER_ID,
+      IGN_LAKE_FILL_LAYER_ID,
+      IGN_LAKE_LINE_LAYER_ID,
+      DAM_LAYER_ID,
+      DAM_WALL_LAYER_ID,
+    ])
+      map.setFilter(id, lakeFilter(s.hideEndorheic));
+  }
+  if (endoChanged || !prev || s.showIgnDetail !== prev.showIgnDetail) {
+    map.setFilter(
+      IGN_DETAIL_LAYER_ID,
+      ignDetailFilter(s.showIgnDetail, s.hideEndorheic),
+    );
   }
   if (endoChanged || !prev || s.isolatedIds !== prev.isolatedIds) {
     for (const id of [SUBBASIN_FILL_LAYER_ID, SUBBASIN_LINE_LAYER_ID])
@@ -202,6 +301,7 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     map.setPaintProperty(OUTLINE_LAYER_ID, "line-color", outline);
     map.setPaintProperty(SUBBASIN_HIDE_LAYER_ID, "fill-color", mask);
     map.setPaintProperty(LAKE_LAYER_ID, "line-color", lake);
+    map.setPaintProperty(IGN_LAKE_LINE_LAYER_ID, "line-color", lake);
   }
 }
 
@@ -248,6 +348,7 @@ export default function MapView() {
               "https://www.hydrosheds.org/products/hydrolakes",
               t("attribution.hydrolakes"),
             ),
+            link("https://www.ign.gob.ar", t("attribution.ign")),
           ].join(" | "),
           theme: initial.theme,
           hideEndorheic: initial.hideEndorheic,
@@ -255,6 +356,7 @@ export default function MapView() {
           selection: initial.selection,
           viewMode: initial.viewMode,
           isolatedIds: initial.isolatedIds,
+          showIgnDetail: initial.showIgnDetail,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
         fitBoundsOptions: { padding: fitPadding() },
@@ -317,11 +419,14 @@ export default function MapView() {
     // something selectable shows a pointer.
     map.on("click", (e) => {
       if (!loaded) return;
-      useMapStore.getState().select(hitSelection(map, e.point.x, e.point.y));
+      const hit = hitAt(map, e.point.x, e.point.y);
+      const store = useMapStore.getState();
+      if (hit?.type === "picked") store.pick(hit.picked);
+      else store.select(hit?.selection ?? null);
     });
     const onHover = (e: MapMouseEvent) => {
       if (!loaded) return;
-      map.getCanvas().style.cursor = hitSelection(map, e.point.x, e.point.y)
+      map.getCanvas().style.cursor = hitAt(map, e.point.x, e.point.y)
         ? "pointer"
         : "";
     };
@@ -351,7 +456,8 @@ export default function MapView() {
         s.theme === prev.theme &&
         s.selection === prev.selection &&
         s.viewMode === prev.viewMode &&
-        s.isolatedIds === prev.isolatedIds
+        s.isolatedIds === prev.isolatedIds &&
+        s.showIgnDetail === prev.showIgnDetail
       )
         return;
       setIdle(false);

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Bbox } from "./data/schemas";
+import type { Picked } from "./map/picked";
 import type { Theme } from "./map/style";
 import type { Selection } from "./url-state";
 
@@ -19,6 +20,9 @@ interface MapState {
   theme: Theme;
   setVisibleLand: (v: number) => void;
   setHideEndorheic: (v: boolean) => void;
+  /** IGN perennial streams that HydroRIVERS lacks (the detail layer). */
+  showIgnDetail: boolean;
+  setShowIgnDetail: (v: boolean) => void;
   setTheme: (t: Theme) => void;
   viewMode: ViewMode;
   /** Leaving the sub-basin view also clears a selected sub-basin. */
@@ -33,6 +37,12 @@ interface MapState {
   /** Last fit request; `key` makes a repeated fit to the same bbox a change. */
   focus: { bbox: Bbox; key: number } | null;
   select: (selection: Selection | null, opts?: { fit?: boolean }) => void;
+  /**
+   * A lake, dam or IGN detail line the user clicked: shown in the panel, not in the URL.
+   * Any selection clears it, and picking one clears the selection.
+   */
+  picked: Picked | null;
+  pick: (picked: Picked | null) => void;
   focusOn: (bbox: Bbox) => void;
   /**
    * Sub-basin ids to keep visible while the rest of the basin is hidden, or null.
@@ -48,6 +58,8 @@ export const useMapStore = create<MapState>()((set) => ({
   theme: "dark",
   setVisibleLand: (visibleLand) => set({ visibleLand }),
   setHideEndorheic: (hideEndorheic) => set({ hideEndorheic }),
+  showIgnDetail: true,
+  setShowIgnDetail: (showIgnDetail) => set({ showIgnDetail }),
   setTheme: (theme) => set({ theme }),
   viewMode: "basin",
   setViewMode: (viewMode) =>
@@ -63,10 +75,13 @@ export const useMapStore = create<MapState>()((set) => ({
   select: (selection, opts) =>
     set((s) => ({
       selection,
+      picked: null,
       isolatedIds: null,
       fitPending: Boolean(selection && opts?.fit),
       viewMode: selection?.kind === "subbasin" ? "subbasins" : s.viewMode,
     })),
+  picked: null,
+  pick: (picked) => set({ picked, selection: null, isolatedIds: null }),
   focusOn: (bbox) =>
     set((s) => ({
       fitPending: false,
