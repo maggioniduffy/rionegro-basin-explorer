@@ -6,8 +6,8 @@ import {
   IGN_DETAIL_LAYER_ID,
   IGN_LAKE_FILL_LAYER_ID,
   LAKE_HIT_LAYER_ID,
-  ignDetailFilter,
-  lakeFilter,
+  LOCALITY_LAYER_ID,
+  localityFilter,
 } from "../lib/map/style";
 
 describe("toPicked", () => {
@@ -49,17 +49,25 @@ describe("toPicked", () => {
     });
   });
 
+  it("reads a locality: name and place class; null without either", () => {
+    expect(
+      toPicked(LOCALITY_LAYER_ID, { name: "Neuquén", place: "city", id: "1" }),
+    ).toEqual({ kind: "locality", name: "Neuquén", place: "city" });
+    expect(toPicked(LOCALITY_LAYER_ID, { place: "town" })).toBeNull();
+    expect(
+      toPicked(LOCALITY_LAYER_ID, { name: "X", place: "hamlet" }),
+    ).toBeNull();
+  });
+
   it("rejects a water body of an unknown kind and any other layer", () => {
     expect(toPicked(LAKE_HIT_LAYER_ID, { kind: "swamp" })).toBeNull();
     expect(toPicked("reaches-perennial", { name: "x" })).toBeNull();
   });
 });
 
-describe("IGN layer filters", () => {
-  it("hides the detail lines when toggled off, and endorheic ones when asked", () => {
-    expect(ignDetailFilter(false, false)).toEqual(["boolean", false]);
-    expect(ignDetailFilter(false, true)).toEqual(["boolean", false]);
-    expect(ignDetailFilter(true, false)).toEqual(["literal", true]);
-    expect(ignDetailFilter(true, true)).toEqual(lakeFilter(true));
+describe("localityFilter", () => {
+  it("shows every locality, or none when toggled off", () => {
+    expect(localityFilter(true)).toEqual(["literal", true]);
+    expect(localityFilter(false)).toEqual(["boolean", false]);
   });
 });

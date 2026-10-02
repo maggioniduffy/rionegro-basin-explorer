@@ -3,13 +3,12 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   AttributionControl,
-  addProtocol,
   Map as MapLibreMap,
   type MapMouseEvent,
+  Popup,
   ScaleControl,
 } from "maplibre-gl";
 import { useTranslations } from "next-intl";
-import { Protocol } from "pmtiles";
 import { useEffect, useRef, useState } from "react";
 import {
   MAP_MAXZOOM,
@@ -30,15 +29,17 @@ import {
   IGN_DETAIL_LAYER_ID,
   IGN_LAKE_FILL_LAYER_ID,
   IGN_LAKE_LINE_LAYER_ID,
-  ignDetailFilter,
   IMAGERY_LAYER_ID,
   LAKE_HIT_LAYER_ID,
   LAKE_LAYER_ID,
   lakeFilter,
+  LOCALITY_LAYER_ID,
+  localityFilter,
   MASK_LAYER_IDS,
   OUTLINE_LAYER_ID,
   REACH_LAYER_IDS,
   reachFilter,
+  waterFilter,
   reachLayerId,
   SELECTED_LAYER_ID,
   selectionFilter,
@@ -54,17 +55,12 @@ import {
   SUBBASIN_SELECTED_LAYER_ID,
   THEME_COLORS,
 } from "@/lib/map/style";
-import { setupMaplibreWorker } from "@/lib/map/worker";
+import { initMaplibre } from "@/lib/map/init";
+import { setMainMap } from "@/lib/map/main-map";
+import { SnapshotButton } from "./SnapshotButton";
+import { SHEET_PEEK_PX, sheetHeights } from "@/lib/sheet";
 import { useMapStore } from "@/lib/store";
 import type { Selection } from "@/lib/url-state";
-
-let initialized = false;
-function initMaplibre() {
-  if (initialized) return;
-  setupMaplibreWorker();
-  addProtocol("pmtiles", new Protocol().tile);
-  initialized = true;
-}
 
 const escapeHtml = (s: string) =>
   s.replace(
@@ -81,18 +77,30 @@ function webglSupported(): boolean {
   }
 }
 
-/** Keep the initial basin view clear of the header and, on wide screens, the controls panel. */
+/**
+ * Keep the initial basin view clear of the header and, on wide screens, the controls
+ * panel; on phones, of the closed bottom sheet.
+ */
 function fitPadding() {
   const wide = window.innerWidth >= 768;
-  return { top: 64, bottom: 32, right: 64, left: wide ? 312 : 16 };
+  return wide
+    ? { top: 64, bottom: 32, right: 64, left: 312 }
+    : { top: 64, bottom: 32 + SHEET_PEEK_PX, right: 64, left: 16 };
 }
 
-/** Fitting to a selection also keeps clear of the info panel on the right. */
+/**
+ * Fitting to a selection also keeps clear of the info panel on the right; on phones,
+ * of the bottom sheet, which a selection opens to half height.
+ */
 function selectionPadding() {
   const wide = window.innerWidth >= 768;
-  return wide
-    ? { top: 80, bottom: 48, right: 400, left: 312 }
-    : { top: 80, bottom: 48, right: 32, left: 32 };
+  if (wide) return { top: 80, bottom: 48, right: 400, left: 312 };
+  const sheet = sheetHeights({
+    viewport: window.innerHeight,
+    top: 0,
+    attribution: 0,
+  }).half;
+  return { top: 80, bottom: sheet + 16, right: 32, left: 32 };
 }
 
 /** Clicks within this many px of a line hit it; river lines are thin. */
@@ -104,7 +112,7 @@ type Hit =
   | { type: "picked"; picked: Picked };
 
 /**
- * What a click at a point finds. Dams first (small, drawn on top), then the reach under
+ * What a click at a point finds. Localities and dams first (small, drawn on top), then the reach under
  * it, preferring the largest river; then IGN streams and lakes; otherwise, in the
  * sub-basin view, the sub-basin; otherwise null.
  */
@@ -115,6 +123,8 @@ function hitAt(map: MapLibreMap, x: number, y: number): Hit | null {
       .length > 0
   )
     return null;
+  const locality = hitFeature(map, x, y, [LOCALITY_LAYER_ID]);
+  if (locality) return { type: "picked", picked: locality };
   const dam = hitFeature(map, x, y, [DAM_LAYER_ID, DAM_WALL_LAYER_ID]);
   if (dam) return { type: "picked", picked: dam };
   const reach = hitReach(map, x, y);
@@ -243,24 +253,25 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
       if (id) map.setPaintProperty(id, "fill-opacity", opacity);
     });
   }
-  if (endoChanged) {
+  const layersChanged = !prev || s.layers !== prev.layers;
+  if (endoChanged || layersChanged) {
     for (const c of FLOW_CLASSES)
-      map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic));
+      map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic, s.layers));
     for (const id of [
       LAKE_LAYER_ID,
       LAKE_HIT_LAYER_ID,
       IGN_LAKE_FILL_LAYER_ID,
       IGN_LAKE_LINE_LAYER_ID,
-      DAM_LAYER_ID,
-      DAM_WALL_LAYER_ID,
     ])
-      map.setFilter(id, lakeFilter(s.hideEndorheic));
+      map.setFilter(id, waterFilter(s.hideEndorheic, s.layers));
   }
-  if (endoChanged || !prev || s.showIgnDetail !== prev.showIgnDetail) {
-    map.setFilter(
-      IGN_DETAIL_LAYER_ID,
-      ignDetailFilter(s.showIgnDetail, s.hideEndorheic),
-    );
+  if (!prev || s.layers.localities !== prev.layers.localities) {
+    map.setFilter(LOCALITY_LAYER_ID, localityFilter(s.layers.localities));
+  }
+  if (endoChanged) {
+    // IGN detail lines always show; only the endorheic ones go with the option.
+    for (const id of [DAM_LAYER_ID, DAM_WALL_LAYER_ID, IGN_DETAIL_LAYER_ID])
+      map.setFilter(id, lakeFilter(s.hideEndorheic));
   }
   if (endoChanged || !prev || s.isolatedIds !== prev.isolatedIds) {
     for (const id of [SUBBASIN_FILL_LAYER_ID, SUBBASIN_LINE_LAYER_ID])
@@ -346,6 +357,10 @@ export default function MapView() {
               t("attribution.hydrolakes"),
             ),
             link("https://www.ign.gob.ar", t("attribution.ign")),
+            link(
+              "https://www.openstreetmap.org/copyright",
+              t("attribution.osm"),
+            ),
           ].join(" | "),
           theme: initial.theme,
           hideEndorheic: initial.hideEndorheic,
@@ -353,7 +368,7 @@ export default function MapView() {
           selection: initial.selection,
           viewMode: initial.viewMode,
           isolatedIds: initial.isolatedIds,
-          showIgnDetail: initial.showIgnDetail,
+          layers: initial.layers,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
         fitBoundsOptions: { padding: fitPadding() },
@@ -373,6 +388,8 @@ export default function MapView() {
           "AttributionControl.MapFeedback": t("maplibre.mapFeedback"),
           "ScaleControl.Kilometers": t("maplibre.kilometers"),
           "ScaleControl.Meters": t("maplibre.meters"),
+          "ScaleControl.Miles": t("maplibre.miles"),
+          "ScaleControl.Feet": t("maplibre.feet"),
         },
       });
     } catch (err) {
@@ -383,8 +400,13 @@ export default function MapView() {
     map.keyboard.disableRotation();
     // Attribution stays expanded: EOX requires it to be clearly visible.
     map.addControl(new AttributionControl({ compact: false }), "bottom-right");
-    map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
+    // Bottom left, under the map controls: the right column reaches down to the
+    // attribution, as the controls do.
+    // The scale bar follows the km/mi toggle.
+    const scale = new ScaleControl({ unit: initial.units });
+    map.addControl(scale, "bottom-left");
     mapRef.current = map;
+    setMainMap(map);
     // Test hook for e2e and scripts/perf-zoom.ts; inlined at build time, so production
     // builds without NEXT_PUBLIC_E2E carry no reference to it.
     if (process.env.NEXT_PUBLIC_E2E === "1") window.__map = map;
@@ -421,12 +443,27 @@ export default function MapView() {
       if (hit?.type === "picked") store.pick(hit.picked);
       else store.select(hit?.selection ?? null);
     });
+    // Hovering a locality also names it; the click opens its panel.
+    const nameTip = new Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 10,
+      className: "locality-tip",
+    });
     const onHover = (e: MapMouseEvent) => {
       if (!loaded) return;
-      map.getCanvas().style.cursor = hitAt(map, e.point.x, e.point.y)
-        ? "pointer"
-        : "";
+      const hit = hitAt(map, e.point.x, e.point.y);
+      map.getCanvas().style.cursor = hit ? "pointer" : "";
+      if (hit?.type === "picked" && hit.picked.kind === "locality") {
+        nameTip
+          .setLngLat(map.unproject(e.point))
+          .setText(hit.picked.name)
+          .addTo(map);
+      } else {
+        nameTip.remove();
+      }
     };
+    map.getCanvas().addEventListener("mouseleave", () => nameTip.remove());
     map.on("mousemove", onHover);
     if (process.env.NEXT_PUBLIC_E2E === "1") window.__mapHover = onHover;
 
@@ -446,6 +483,7 @@ export default function MapView() {
     const unsubscribe = useMapStore.subscribe((s, prev) => {
       if (!loaded) return;
       if (s.focus && s.focus !== prev.focus) fitTo(s.focus.bbox);
+      if (s.units !== prev.units) scale.setUnit(s.units);
       // Only style state needs applying; other store fields don't touch the map.
       if (
         s.visibleLand === prev.visibleLand &&
@@ -454,7 +492,7 @@ export default function MapView() {
         s.selection === prev.selection &&
         s.viewMode === prev.viewMode &&
         s.isolatedIds === prev.isolatedIds &&
-        s.showIgnDetail === prev.showIgnDetail
+        s.layers === prev.layers
       )
         return;
       setIdle(false);
@@ -467,6 +505,7 @@ export default function MapView() {
         delete window.__map;
         delete window.__mapHover;
       }
+      setMainMap(null);
       map.remove();
       mapRef.current = null;
     };
@@ -491,25 +530,31 @@ export default function MapView() {
           data-map-idle="false"
         />
       </div>
-      <div className="absolute top-16 right-3 flex flex-col overflow-hidden rounded-md border border-(--border) bg-(--panel) shadow">
-        <button
-          type="button"
-          className="h-9 w-9 text-lg hover:bg-(--panel-hover)"
-          aria-label={t("zoomIn")}
-          title={t("zoomIn")}
-          onClick={() => mapRef.current?.zoomIn()}
-        >
-          +
-        </button>
-        <button
-          type="button"
-          className="h-9 w-9 border-t border-(--border) text-lg hover:bg-(--panel-hover)"
-          aria-label={t("zoomOut")}
-          title={t("zoomOut")}
-          onClick={() => mapRef.current?.zoomOut()}
-        >
-          −
-        </button>
+      <div className="absolute top-16 right-3 flex flex-col gap-2">
+        <div className="flex flex-col overflow-hidden rounded-md border border-(--border) bg-(--panel) shadow">
+          <button
+            type="button"
+            className="h-9 w-9 text-lg hover:bg-(--panel-hover)"
+            aria-label={t("zoomIn")}
+            title={t("zoomIn")}
+            onClick={() => mapRef.current?.zoomIn()}
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="h-9 w-9 border-t border-(--border) text-lg hover:bg-(--panel-hover)"
+            aria-label={t("zoomOut")}
+            title={t("zoomOut")}
+            onClick={() => mapRef.current?.zoomOut()}
+          >
+            −
+          </button>
+        </div>
+        {/* Not in the clipped group above: its error message sits outside it. */}
+        <div className="rounded-md border border-(--border) bg-(--panel) shadow">
+          <SnapshotButton />
+        </div>
       </div>
     </>
   );

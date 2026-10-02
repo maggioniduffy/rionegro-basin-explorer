@@ -9,6 +9,10 @@
   --panel-hover: rgba(255, 255, 255, 0.08);
   --border: rgba(255, 255, 255, 0.14);
   color-scheme: dark;
+  /* Floating panels share one top edge, just below the header (title and search), and
+     one bottom edge, above the attribution. */
+  --panel-top: 4rem;
+  --panel-bottom: 2.5rem;
 }
 
 :root[data-theme="light"] {
@@ -45,4 +49,34 @@ body {
 }
 .maplibregl-map .maplibregl-ctrl.maplibregl-ctrl-scale {
   border-color: var(--foreground);
+}
+
+/* Phones: the bottom sheet covers the map's bottom edge, so the attribution (which the
+   imagery licence wants visible) and the scale bar ride above it. MobileSheet sets
+   --sheet-height. */
+@media (width < 48rem) {
+  .maplibregl-ctrl-bottom-left,
+  .maplibregl-ctrl-bottom-right {
+    bottom: var(--sheet-height, 0px);
+  }
+}
+
+/* Name shown when hovering a locality dot. */
+.maplibregl-popup.locality-tip .maplibregl-popup-content {
+  background: var(--panel);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8125rem;
+  pointer-events: none;
+}
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-top
+  .maplibregl-popup-tip,
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-bottom
+  .maplibregl-popup-tip,
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-left
+  .maplibregl-popup-tip,
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-right
+  .maplibregl-popup-tip {
+  display: none;
 }

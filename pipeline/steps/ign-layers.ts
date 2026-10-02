@@ -17,7 +17,8 @@
  *  - Detail lines: the pieces from pipeline:ign-match, with the parts inside any lake
  *    (HydroLAKES or extra) removed, as pipeline:lakes does for HydroRIVERS, and again
  *    dropping pieces shorter than `minDetailPieceM`.
- *  - Dams: BH051 points and BI020 lines inside the basin.
+ *  - Dams: BH051 points and BI020 lines inside the basin, minus the points rejected by
+ *    hand in pipeline/ign-overrides.json (`dams`, keyed by IGN gid).
  *  Every feature carries `network` ("connected" | "endorheic"), by the same rule as
  *  pipeline:lakes, so the map's endorheic filter covers them. Areas are Albers, so
  *  approximate; no hydrology is attached to any of it.
@@ -56,6 +57,13 @@ const SHP = {
     "ign/lineas_de_aguas_continentales_BI020/lineas_de_aguas_continentales_BI020Line.shp",
   ),
 };
+/** A hand decision on an IGN dam point (BH051), keyed by its IGN `gid`. */
+interface DamOverride {
+  gid: number;
+  action: "reject";
+  note: string;
+}
+
 const read = (shp: string) =>
   `ST_Read(${lit(requireInput(shp))}, ${IGN_ST_READ_OPTIONS})`;
 
@@ -64,6 +72,12 @@ async function main() {
     await readFile(`${ROOT}/pipeline/ign.config.json`, "utf8"),
   ) as MatchConfig & { water: WaterConfig };
   const water = cfg.water;
+  const overrides = JSON.parse(
+    await readFile(`${ROOT}/pipeline/ign-overrides.json`, "utf8"),
+  ) as { dams?: DamOverride[] };
+  const rejectedDamGids = (overrides.dams ?? [])
+    .filter((d) => d.action === "reject")
+    .map((d) => d.gid);
   const basinFile = requireInput(workPath("basin/basin.geojson"));
   const hybasFile = requireInput(workPath("basin/hybas_l12.parquet"));
   const lakesFile = requireInput(workPath("lakes/lakes.parquet"));
@@ -209,9 +223,14 @@ async function main() {
     // 6. Dams.
     log("dams…");
     await db.conn.run(`
-      CREATE TABLE dam_pts_raw AS
+      CREATE TABLE dam_pts_in AS
       SELECT gid, NULLIF(trim(fna), '') AS fna, geom FROM ${read(SHP.damPoints)}
       WHERE ST_Intersects(geom, (SELECT geom FROM basin))`);
+    // Points checked against the imagery and found to mark no dam (ign-overrides.json).
+    const rejectedList = `[${rejectedDamGids.map(Number).join(", ")}]::INTEGER[]`;
+    await db.conn.run(`
+      CREATE TABLE dam_pts_raw AS
+      SELECT * FROM dam_pts_in WHERE NOT list_contains(${rejectedList}, gid)`);
     await createNameMap(db, "dam_pts_raw", "fna");
     await db.conn.run(`
       CREATE TABLE dams AS
@@ -290,6 +309,7 @@ async function main() {
     );
     const [dam] = await db.all(`
       SELECT (SELECT count(*) FROM dams) AS points,
+             (SELECT count(*) FROM dam_pts_in) - (SELECT count(*) FROM dam_pts_raw) AS points_rejected,
              (SELECT count(*) FILTER (name IS NOT NULL) FROM dams) AS points_named,
              (SELECT count(*) FROM walls) AS walls,
              (SELECT count(*) FILTER (name IS NOT NULL) FROM walls) AS walls_named,
@@ -309,6 +329,8 @@ async function main() {
       detailOutsideLakes: num(detailCheck?.in_lake) === 0,
       detailNotLongerThanInput:
         num(detailCheck?.km) <= num(detailIn?.km) + 1e-6,
+      // A stale override (gid no longer in the basin's IGN points) fails the step.
+      everyDamRejectFound: num(dam?.points_rejected) === rejectedDamGids.length,
       everyHydroLakeKept:
         num((await db.all(`SELECT count(*) AS n FROM lakes_named`))[0]?.n) ===
         num(names?.lakes),
@@ -348,6 +370,7 @@ async function main() {
       dams: {
         points: num(dam?.points),
         pointsNamed: num(dam?.points_named),
+        pointsRejected: num(dam?.points_rejected),
         walls: num(dam?.walls),
         wallsNamed: num(dam?.walls_named),
         pointNames: dam?.point_names,

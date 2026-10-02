@@ -1,5 +1,5 @@
 {
-  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). basinBbox is the basin outline's extent (initial view; pipeline:mask checks it against basin.geojson). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. minzoom is the lowest zoom the map allows (maxBounds alone would stop near z4 on a phone); tile checks start there. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin. ign: zoom at which IGN layers appear (pipeline:tiles, Phase 5), PROVISIONAL until checked on the map: detail pieces by length (km), extra lakes by area (km2), dams and dam walls all at damsMinzoom; each list is read top to bottom and the first step whose min is <= the value applies.",
+  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). basinBbox is the basin outline's extent (initial view; pipeline:mask checks it against basin.geojson). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. minzoom is the lowest zoom the map allows (maxBounds alone would stop near z4 on a phone); tile checks start there. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin. ign: zoom at which IGN layers appear (pipeline:tiles, Phase 5), PROVISIONAL until checked on the map: detail pieces by length (km), extra lakes by area (km2), dams and dam walls all at damsMinzoom; each list is read top to bottom and the first step whose min is <= the value applies. localities.minzoomByPlace (Phase 7): zoom at which OSM cities, towns and villages appear, PROVISIONAL until checked on the map.",
   "basinBbox": {
     "xmin": -71.9625,
     "ymin": -41.5042,
@@ -65,5 +65,12 @@
       }
     ],
     "damsMinzoom": 6
+  },
+  "localities": {
+    "minzoomByPlace": {
+      "city": 4,
+      "town": 6,
+      "village": 8
+    }
   }
 }

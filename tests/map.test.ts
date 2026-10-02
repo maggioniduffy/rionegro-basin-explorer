@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { MASK_LEVEL_COUNT } from "../lib/map/config";
 import { maskOpacities } from "../lib/map/mask";
-import { validateStyleMin } from "@maplibre/maplibre-gl-style-spec";
+import {
+  featureFilter,
+  type FilterSpecification,
+  validateStyleMin,
+} from "@maplibre/maplibre-gl-style-spec";
+import { DEFAULT_LAYERS, type LayerVisibility } from "../lib/store";
 import {
   buildStyle,
   DAM_LAYER_ID,
@@ -12,8 +17,10 @@ import {
   LAKE_LAYER_ID,
   lakeFilter,
   maskLayerId,
+  reachFilter,
   reachLayerId,
   selectionFilter,
+  waterFilter,
 } from "../lib/map/style";
 
 describe("maskOpacities", () => {
@@ -80,7 +87,7 @@ describe("buildStyle with the IGN layers", () => {
     selection: null,
     viewMode: "basin",
     isolatedIds: null,
-    showIgnDetail: true,
+    layers: DEFAULT_LAYERS,
   });
   const index = (id: string) => style.layers.findIndex((l) => l.id === id);
 
@@ -108,5 +115,68 @@ describe("buildStyle with the IGN layers", () => {
       DAM_WALL_LAYER_ID,
     ])
       expect(style.layers[index(id)]).toMatchObject({ source: "ign" });
+  });
+});
+
+/** Whether `filter` keeps a feature with these properties. */
+const keeps = (
+  filter: FilterSpecification,
+  properties: Record<string, unknown>,
+) =>
+  featureFilter(filter, "layers[0].filter").filter({ zoom: 10 }, {
+    type: 1,
+    properties,
+    geometry: [],
+  } as never);
+
+const layersWith = (patch: Partial<LayerVisibility>): LayerVisibility => ({
+  ...DEFAULT_LAYERS,
+  ...patch,
+});
+
+describe("waterFilter", () => {
+  it("splits natural from artificial water bodies", () => {
+    const natural = waterFilter(false, layersWith({ artificialLakes: false }));
+    for (const kind of ["lake", "waterbody"])
+      expect(keeps(natural, { kind, network: "connected" })).toBe(true);
+    expect(keeps(natural, { kind: "reservoir", network: "connected" })).toBe(
+      false,
+    );
+
+    const artificial = waterFilter(false, layersWith({ naturalLakes: false }));
+    expect(keeps(artificial, { kind: "reservoir" })).toBe(true);
+    expect(keeps(artificial, { kind: "controlled-lake" })).toBe(true);
+    expect(keeps(artificial, { kind: "lake" })).toBe(false);
+  });
+
+  it("hides everything with both toggles off, and keeps the endorheic rule", () => {
+    const none = layersWith({ naturalLakes: false, artificialLakes: false });
+    expect(keeps(waterFilter(false, none), { kind: "lake" })).toBe(false);
+    const endo = { kind: "lake", network: "endorheic" };
+    expect(keeps(waterFilter(false, DEFAULT_LAYERS), endo)).toBe(true);
+    expect(keeps(waterFilter(true, DEFAULT_LAYERS), endo)).toBe(false);
+  });
+});
+
+describe("reachFilter with the Display toggles", () => {
+  const perennial = { nonPerennial1d: 0, network: "connected" };
+
+  it("hides a flow class on its own", () => {
+    const flow = { ...DEFAULT_LAYERS.flow, perennial: false };
+    const layers = layersWith({ flow });
+    expect(keeps(reachFilter("perennial", false, layers), perennial)).toBe(
+      false,
+    );
+    expect(
+      keeps(reachFilter("nonPerennial", false, layers), { nonPerennial1d: 1 }),
+    ).toBe(true);
+  });
+
+  it("hides every class with the rivers toggle", () => {
+    const layers = layersWith({ rivers: false });
+    expect(keeps(reachFilter("perennial", false, layers), perennial)).toBe(
+      false,
+    );
+    expect(keeps(reachFilter("unknown", false, layers), {})).toBe(false);
   });
 });

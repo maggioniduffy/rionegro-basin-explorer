@@ -1,5 +1,5 @@
 {
-  "$comment": "Hand decisions on IGN name matches (pipeline:ign-match applies them; written while triaging data/work/ign-match/review.json). reaches: accept (show the best candidate although low confidence), reject (hide it) or name (show this IGN name instead); every entry needs a note. riverNames: force the display name of an approved river (slug) when the stem vote is wrong or split. Entries accepted in bulk on 2026-10-01 from the continuity proposal (same name on the next reach up or downstream); the owner will review them later.",
+  "$comment": "Hand decisions on IGN name matches (pipeline:ign-match applies them; written while triaging data/work/ign-match/review.json). reaches: accept (show the best candidate although low confidence), reject (hide it) or name (show this IGN name instead); every entry needs a note. riverNames: force the display name of an approved river (slug) when the stem vote is wrong or split. Entries accepted in bulk on 2026-10-01 from the continuity proposal (same name on the next reach up or downstream); the owner will review them later. dams: IGN dam points (BH051 'Dique', keyed by gid) that pipeline:ign-layers drops after a check against the imagery; every entry needs a note.",
   "reaches": [
     {
       "id": 61550637,
@@ -908,5 +908,12 @@
       "note": "owner, 2026-10-02: IGN labels this reach Río Neuquén, but it is the last stretch of the Varvarco; the confluence is at its downstream end (town of Varvarco)"
     }
   ],
-  "riverNames": []
+  "riverNames": [],
+  "dams": [
+    {
+      "gid": 3454,
+      "action": "reject",
+      "note": "Unnamed 'Dique' (fdc Esri-World_Imagery) at -69.4593, -39.7679, on the braided Limay above the Ezequiel Ramos Mexía reservoir. The owner checked the imagery on 2026-10-02: there is no dam there."
+    }
+  ]
 }

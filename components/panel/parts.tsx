@@ -1,7 +1,8 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { type ReactNode, useEffect } from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
+import { useMapStore } from "@/lib/store";
 import { formatQuantity, type Quantity } from "@/lib/units";
 import { Icon } from "../Icon";
 
@@ -11,7 +12,8 @@ export type Caveat =
 
 export function useFormat() {
   const locale = useLocale();
-  return (q: Quantity, v: number) => formatQuantity(locale, q, v);
+  const units = useMapStore((s) => s.units);
+  return (q: Quantity, v: number) => formatQuantity(locale, q, v, units);
 }
 
 export function Row({
@@ -83,6 +85,12 @@ export function Caveats({ caveats }: { caveats: Caveat[] }) {
 }
 
 /**
+ * Where the info panel sits: a floating card in the right column (desktop), or the
+ * bottom sheet's Details tab (phones), which already draws the card.
+ */
+export const PanelVariant = createContext<"floating" | "sheet">("floating");
+
+/**
  * The panel on the right of the map: close button, Escape to close (unless something
  * else, like the search box, already handled the key), and a busy state while loading.
  */
@@ -98,6 +106,7 @@ export function PanelFrame({
   children: ReactNode;
 }) {
   const t = useTranslations("panel");
+  const variant = useContext(PanelVariant);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !e.defaultPrevented) onClose();
@@ -111,14 +120,18 @@ export function PanelFrame({
       aria-label={label}
       aria-busy={busy}
       data-testid="info-panel"
-      className="absolute top-16 right-14 left-3 flex max-h-[calc(100dvh-9rem)] flex-col gap-4 overflow-y-auto rounded-lg border border-(--border) bg-(--panel) p-4 text-sm shadow-lg backdrop-blur md:left-auto md:w-88"
+      className={
+        variant === "sheet"
+          ? "relative flex flex-col gap-4 text-sm"
+          : "pointer-events-auto relative flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain rounded-lg border border-(--border) bg-(--panel) p-4 text-sm shadow-lg backdrop-blur group-data-[split=true]:max-h-[calc(50%-0.375rem)]"
+      }
     >
       <button
         type="button"
         onClick={onClose}
         aria-label={t("close")}
         title={t("close")}
-        className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-md hover:bg-(--panel-hover)"
+        className={`absolute flex h-7 w-7 ${variant === "sheet" ? "-top-1.5 right-0" : "top-2.5 right-2.5"} items-center justify-center rounded-md hover:bg-(--panel-hover)`}
       >
         <Icon name="close" />
       </button>

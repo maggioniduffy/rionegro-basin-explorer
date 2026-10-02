@@ -10,7 +10,7 @@ import {
   mapConfig,
   TILE_PATHS,
 } from "./config";
-import type { ViewMode } from "../store";
+import type { LayerVisibility, ViewMode } from "../store";
 import type { Selection } from "../url-state";
 import { maskOpacities } from "./mask";
 
@@ -157,6 +157,33 @@ export function lakeFilter(hideEndorheic: boolean): FilterSpecification {
     ? ["!=", ["get", "network"], "endorheic"]
     : ["literal", true];
 }
+
+/**
+ * Water-body `kind`s per Display toggle (pipeline:ign-layers). A HydroLAKES controlled
+ * lake (type 3) has a regulating structure, so it counts as artificial (owner). IGN
+ * water bodies follow IGN: "espejo de agua perenne" (`waterbody`) is natural, its
+ * `Embalse` layer (`reservoir`) artificial. The two never overlap: the IGN extra
+ * layer has the HydroLAKES part cut out.
+ */
+export const NATURAL_WATER_KINDS = ["lake", "waterbody"];
+export const ARTIFICIAL_WATER_KINDS = ["reservoir", "controlled-lake"];
+
+/** Lake layers (not dams): the endorheic rule plus the natural/artificial toggles. */
+export function waterFilter(
+  hideEndorheic: boolean,
+  layers: Pick<LayerVisibility, "naturalLakes" | "artificialLakes">,
+): FilterSpecification {
+  const kinds = [
+    ...(layers.naturalLakes ? NATURAL_WATER_KINDS : []),
+    ...(layers.artificialLakes ? ARTIFICIAL_WATER_KINDS : []),
+  ];
+  if (kinds.length === 0) return ["boolean", false];
+  return [
+    "all",
+    lakeFilter(hideEndorheic) as ExpressionSpecification,
+    ["in", ["get", "kind"], ["literal", kinds]],
+  ];
+}
 export const REACH_LAYER_IDS = FLOW_CLASSES.map(reachLayerId);
 export const OUTLINE_LAYER_ID = "basin-outline";
 export const LAKE_LAYER_ID = "lake-outline";
@@ -168,19 +195,18 @@ export const IGN_LAKE_FILL_LAYER_ID = "ign-lakes-extra-fill";
 export const IGN_LAKE_LINE_LAYER_ID = "ign-lakes-extra-outline";
 export const DAM_WALL_LAYER_ID = "dam-walls";
 export const DAM_LAYER_ID = "dams";
+/** OSM cities, towns and villages (pipeline:localities), drawn above the dams. */
+export const LOCALITY_LAYER_ID = "localities";
+export const LOCALITY_COLOR = "#fb923c";
+
+/** Localities: hidden by the Display toggle. */
+export function localityFilter(show: boolean): FilterSpecification {
+  return show ? ["literal", true] : ["boolean", false];
+}
+
 /** Colour of the IGN detail lines, also used by the legend. */
 export const IGN_DETAIL_COLOR = "#67e8f9";
 
-/** IGN detail lines: hidden by the toggle, and with the endorheic streams when asked. */
-export function ignDetailFilter(
-  show: boolean,
-  hideEndorheic: boolean,
-): FilterSpecification {
-  if (!show) return ["boolean", false];
-  return hideEndorheic
-    ? ["!=", ["get", "network"], "endorheic"]
-    : ["literal", true];
-}
 export const IMAGERY_LAYER_ID = "imagery";
 export const BACKGROUND_LAYER_ID = "background";
 /** Halo under the selected river or reach, drawn below the flow-class lines. */
@@ -202,10 +228,13 @@ const CLASS_FILTER: Record<FlowClass, ExpressionSpecification> = {
   unknown: ["!", ["has", "nonPerennial1d"]],
 };
 
+/** One flow class's reaches; hidden with all rivers or by its own toggle. */
 export function reachFilter(
   c: FlowClass,
   hideEndorheic: boolean,
+  layers: Pick<LayerVisibility, "rivers" | "flow">,
 ): FilterSpecification {
+  if (!layers.rivers || !layers.flow[c]) return ["boolean", false];
   return hideEndorheic
     ? ["all", CLASS_FILTER[c], ["!=", ["get", "network"], "endorheic"]]
     : CLASS_FILTER[c];
@@ -240,7 +269,7 @@ export interface StyleOptions {
   selection: Selection | null;
   viewMode: ViewMode;
   isolatedIds: string[] | null;
-  showIgnDetail: boolean;
+  layers: LayerVisibility;
 }
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
@@ -288,7 +317,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "fill",
       source: "ign",
       "source-layer": "lakes_extra",
-      filter: lakeFilter(o.hideEndorheic),
+      filter: waterFilter(o.hideEndorheic, o.layers),
       paint: { "fill-color": IGN_DETAIL_COLOR, "fill-opacity": 0.25 },
     },
     {
@@ -296,7 +325,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "line",
       source: "ign",
       "source-layer": "lakes_extra",
-      filter: lakeFilter(o.hideEndorheic),
+      filter: waterFilter(o.hideEndorheic, o.layers),
       paint: {
         "line-color": lake,
         "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.4, 12, 1],
@@ -307,7 +336,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "line",
       source: "ign",
       "source-layer": "detail",
-      filter: ignDetailFilter(o.showIgnDetail, o.hideEndorheic),
+      filter: lakeFilter(o.hideEndorheic),
       layout: { "line-cap": "round", "line-join": "round" },
       paint: {
         "line-color": IGN_DETAIL_COLOR,
@@ -358,7 +387,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "line",
     source: "rivers",
     "source-layer": "lakes",
-    filter: lakeFilter(o.hideEndorheic),
+    filter: waterFilter(o.hideEndorheic, o.layers),
     paint: {
       "line-color": lake,
       "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 12, 1.2],
@@ -369,7 +398,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     type: "fill",
     source: "rivers",
     "source-layer": "lakes",
-    filter: lakeFilter(o.hideEndorheic),
+    filter: waterFilter(o.hideEndorheic, o.layers),
     paint: { "fill-opacity": 0 },
   });
   layers.push({
@@ -432,7 +461,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "line",
       source: "rivers",
       "source-layer": "reaches",
-      filter: reachFilter(c, o.hideEndorheic),
+      filter: reachFilter(c, o.hideEndorheic, o.layers),
       layout: { "line-cap": dash ? "butt" : "round", "line-join": "round" },
       paint: {
         "line-color": color,
@@ -468,6 +497,28 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       },
     },
   );
+  layers.push({
+    id: LOCALITY_LAYER_ID,
+    type: "circle",
+    source: "localities",
+    "source-layer": "localities",
+    filter: localityFilter(o.layers.localities),
+    paint: {
+      // Bigger for a bigger class: city, town, village.
+      "circle-radius": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        4,
+        ["match", ["get", "place"], "city", 3.5, 2.5],
+        12,
+        ["match", ["get", "place"], "city", 8, "town", 6.5, 5],
+      ],
+      "circle-color": LOCALITY_COLOR,
+      "circle-stroke-color": "#0f172a",
+      "circle-stroke-width": 1.25,
+    },
+  });
   // On top of everything, so the hidden sub-basins lose their rivers too.
   layers.push({
     id: SUBBASIN_HIDE_LAYER_ID,
@@ -504,6 +555,10 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
         url: `pmtiles://${o.origin}${TILE_PATHS.subbasins}`,
       },
       ign: { type: "vector", url: `pmtiles://${o.origin}${TILE_PATHS.ign}` },
+      localities: {
+        type: "vector",
+        url: `pmtiles://${o.origin}${TILE_PATHS.localities}`,
+      },
     },
     layers,
   };

@@ -122,6 +122,17 @@ public instance returns when busy. Each candidate segment gets up to five sample
 locally to OSM lines within 750 m. `matches.json` lists the names per candidate, such as
 "Río Limay 5/5". A person reviews it to write `pipeline/names.json`.
 
+### `npm run pipeline:localities`
+
+Cities, towns and villages from OpenStreetMap (ODbL; see SOURCES.md). One Overpass request for the
+named `place=city|town|village` nodes in the basin bbox, cached in
+`data/work/localities/overpass.json` (retries on 429 and 504). DuckDB keeps the nodes inside
+`data/work/basin/basin.geojson` and writes `data/work/tiles/localities.geojson` (id, name, place; no
+population). Report: counts inside and outside the basin, per class; checks: unique ids, all named,
+all inside the basin. Places mapped only as areas are not included. Run it after `basin` and before
+`tiles`, which writes `public/tiles/localities.pmtiles` with a minzoom per class
+(`map.config.json`, `localities`).
+
 ### `npm run pipeline:named`
 
 Traces every river in `pipeline/names.json`, a hand-approved list keyed by mouth reach, with OSM
@@ -294,12 +305,14 @@ DECISSIONS.md (Phase 5) for how they were calibrated.
 IGN lakes, dams and the detail lines, as tippecanoe inputs: names for HydroLAKES lakes (an IGN polygon
 covering at least `water.lakeNameMinOverlap` of the lake), extra lakes (IGN water bodies HydroLAKES
 covers less than `water.extraLakeMaxCoverage`, minus what it covers, at least `water.minExtraLakeKm2`),
-detail lines cut out of every lake, and dam points and walls. Each feature gets `network` by the same
-rule as `pipeline:lakes`.
+detail lines cut out of every lake, and dam points and walls. Dam points listed under `dams` in
+`pipeline/ign-overrides.json` (by IGN `gid`, each with a note) are dropped: points checked against the
+imagery that mark no dam. Each feature gets `network` by the same rule as `pipeline:lakes`.
 
 Outputs: `data/work/tiles/ign_lakes.geojson`, `ign_lakes_extra.geojson`, `ign_detail.geojson`,
 `ign_dams.geojson`, `ign_dam_walls.geojson`; report in `data/work/ign-layers/`. Checks: one name per
-lake, valid extra lakes, extra lakes outside HydroLAKES, detail lines outside lakes, no lake lost.
+lake, valid extra lakes, extra lakes outside HydroLAKES, detail lines outside lakes, no lake lost,
+every rejected dam point found (a stale `gid` fails the step).
 
 ### `npm run pipeline:tiles`
 
@@ -327,7 +340,7 @@ a pixel), which tippecanoe drops because it collapses to a point. It also checks
 level and every sub-basin is present at each checked zoom, and records file sizes and the tippecanoe version.
 
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
-`lakes` → `ign` → `ign-match` → `ign-layers` → `export` → `mask` → `subbasins` → `tiles`.
+`lakes` → `ign` → `ign-match` → `ign-layers` → `localities` → `export` → `mask` → `subbasins` → `tiles`.
 
 ## Tools
 

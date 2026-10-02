@@ -14,6 +14,9 @@
  *                                lines HydroRIVERS lacks), `lakes_extra` (water bodies
  *                                HydroLAKES lacks), `dams` (points), `dam_walls` (lines);
  *                                per-feature minzoom from map.config.json (ign)
+ *   public/tiles/localities.pmtiles layer `localities` (OSM city, town, village points from
+ *                                pipeline:localities; per-feature minzoom by class,
+ *                                map.config.json localities)
  *
  * The files are committed: Vercel serves them from /public and tippecanoe does not run
  * there. Feature and tile-size limits are off, so no reach is dropped; the report
@@ -180,6 +183,9 @@ async function main() {
   const maskOut = `${TILES_DIR}/mask.pmtiles`;
   const subbasinsOut = `${TILES_DIR}/subbasins.pmtiles`;
   const ignOut = `${TILES_DIR}/ign.pmtiles`;
+  const localitiesIn = requireInput(workPath("tiles/localities.geojson"));
+  const localitiesZ = workPath("tiles/localities.minzoom.geojson");
+  const localitiesOut = `${TILES_DIR}/localities.pmtiles`;
   await mkdir(TILES_DIR, { recursive: true });
   const maxzoom = mapConfig.maxzoom;
   const version = (await run(TIPPECANOE, ["--version"])).trim();
@@ -319,6 +325,47 @@ async function main() {
   }
   await rm(ignOut, { force: true });
   await run(TIPPECANOE, [...common, `--output=${ignOut}`, ...ignArgs]);
+
+  // Localities: a minzoom per class, like the reaches.
+  const localityZoom = mapConfig.localities.minzoomByPlace;
+  const localities = (
+    JSON.parse(await readFile(localitiesIn, "utf8")) as { features: Feature[] }
+  ).features.map((f): Feature => {
+    const place = String(f.properties.place) as keyof typeof localityZoom;
+    const minzoom = localityZoom[place];
+    if (minzoom === undefined) throw new Error(`unknown place ${place}`);
+    return { ...f, tippecanoe: { minzoom } };
+  });
+  await writeFile(
+    localitiesZ,
+    JSON.stringify({ type: "FeatureCollection", features: localities }),
+  );
+  await rm(localitiesOut, { force: true });
+  await run(TIPPECANOE, [
+    ...common,
+    `--output=${localitiesOut}`,
+    "--drop-rate=1",
+    `--named-layer=localities:${localitiesZ}`,
+  ]);
+  const localityIds = new Set(localities.map((f) => String(f.properties.id)));
+  const localitiesAtMax = await decodeDistinctString(
+    localitiesOut,
+    "localities",
+    maxzoom,
+    "id",
+  );
+  const localitiesFirstZoom = Math.min(
+    ...localities.map((f) => f.tippecanoe?.minzoom ?? 0),
+  );
+  const localitiesBefore =
+    localitiesFirstZoom > 0
+      ? await decodeDistinctString(
+          localitiesOut,
+          "localities",
+          localitiesFirstZoom - 1,
+          "id",
+        )
+      : new Set<string>();
   const ignByLayer = [];
   for (const [layer, { ids, minzoom }] of ignExpected) {
     const atMax = await decodeDistinct(ignOut, layer, maxzoom, "id");
@@ -398,6 +445,10 @@ async function main() {
   }
 
   const checks = {
+    localitiesAllAtMaxzoom:
+      localityIds.size > 0 &&
+      [...localityIds].every((id) => localitiesAtMax.has(id)),
+    localitiesNothingBeforeFirstZoom: localitiesBefore.size === 0,
     ignAllFeaturesAtMaxzoom: ignByLayer.every((l) => l.missingAtMaxzoom === 0),
     ignNothingBeforeItsMinzoom: ignByLayer.every(
       (l) => l.presentBeforeFirstZoom === 0,
@@ -439,13 +490,26 @@ async function main() {
     reachesByZoom,
     maskLevelsByZoom,
     ignByLayer,
+    localities: {
+      features: localityIds.size,
+      foundAtMaxzoom: localitiesAtMax.size,
+      firstZoom: localitiesFirstZoom,
+      minzoomByPlace: localityZoom,
+    },
     sizesKb: {
       [rel(riversOut)]: await sizeKb(riversOut),
       [rel(maskOut)]: await sizeKb(maskOut),
       [rel(subbasinsOut)]: await sizeKb(subbasinsOut),
       [rel(ignOut)]: await sizeKb(ignOut),
+      [rel(localitiesOut)]: await sizeKb(localitiesOut),
     },
-    outputs: [rel(riversOut), rel(maskOut), rel(subbasinsOut), rel(ignOut)],
+    outputs: [
+      rel(riversOut),
+      rel(maskOut),
+      rel(subbasinsOut),
+      rel(ignOut),
+      rel(localitiesOut),
+    ],
   });
   if (!Object.values(checks).every(Boolean))
     throw new Error(`tiles checks failed: ${JSON.stringify(checks)}`);

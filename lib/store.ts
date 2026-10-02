@@ -1,11 +1,38 @@
 import { create } from "zustand";
 import type { Bbox } from "./data/schemas";
 import type { Picked } from "./map/picked";
-import type { Theme } from "./map/style";
+import type { FlowClass, Theme } from "./map/style";
+import type { UnitSystem } from "./units";
 import type { Selection } from "./url-state";
 
 /** localStorage key; read before hydration by the inline script in the layout. */
 export const THEME_STORAGE_KEY = "theme";
+/** localStorage key for the km/mi choice; read on mount by UnitsToggle. */
+export const UNITS_STORAGE_KEY = "units";
+/** localStorage key for the overview map's show/hide; read on mount by OptionsPanel. */
+export const MINIMAP_STORAGE_KEY = "minimap";
+
+/**
+ * Display toggles for the map's water layers (Display panel). Rivers are the
+ * HydroRIVERS reaches, split by GIRES flow class; natural lakes are HydroLAKES lakes
+ * and controlled lakes plus IGN water bodies, artificial ones are reservoirs.
+ */
+export interface LayerVisibility {
+  rivers: boolean;
+  flow: Record<FlowClass, boolean>;
+  naturalLakes: boolean;
+  artificialLakes: boolean;
+  /** OSM cities, towns and villages. */
+  localities: boolean;
+}
+
+export const DEFAULT_LAYERS: LayerVisibility = {
+  rivers: true,
+  flow: { perennial: true, nonPerennial: true, unknown: true },
+  naturalLakes: true,
+  artificialLakes: true,
+  localities: true,
+};
 
 /** "basin" shows the basin as one; "subbasins" colours its sub-basins. */
 export type ViewMode = "basin" | "subbasins";
@@ -20,9 +47,6 @@ interface MapState {
   theme: Theme;
   setVisibleLand: (v: number) => void;
   setHideEndorheic: (v: boolean) => void;
-  /** IGN perennial streams that HydroRIVERS lacks (the detail layer). */
-  showIgnDetail: boolean;
-  setShowIgnDetail: (v: boolean) => void;
   setTheme: (t: Theme) => void;
   viewMode: ViewMode;
   /** Leaving the sub-basin view also clears a selected sub-basin. */
@@ -38,7 +62,7 @@ interface MapState {
   focus: { bbox: Bbox; key: number } | null;
   select: (selection: Selection | null, opts?: { fit?: boolean }) => void;
   /**
-   * A lake, dam or IGN detail line the user clicked: shown in the panel, not in the URL.
+   * A lake, dam, locality or IGN detail line the user clicked: shown in the panel, not in the URL.
    * Any selection clears it, and picking one clears the selection.
    */
   picked: Picked | null;
@@ -50,6 +74,20 @@ interface MapState {
    */
   isolatedIds: string[] | null;
   setIsolatedIds: (ids: string[] | null) => void;
+  /**
+   * Display options panel (bottom right). While it is open, the right column splits
+   * in two halves: the info panel on top, the options below.
+   */
+  optionsOpen: boolean;
+  setOptionsOpen: (v: boolean) => void;
+  /** km/mi; panels and the scale bar follow it, independently of the locale. */
+  units: UnitSystem;
+  setUnits: (u: UnitSystem) => void;
+  /** Overview map at the top of the Display panel. */
+  showMinimap: boolean;
+  setShowMinimap: (v: boolean) => void;
+  layers: LayerVisibility;
+  setLayers: (patch: Partial<LayerVisibility>) => void;
 }
 
 export const useMapStore = create<MapState>()((set) => ({
@@ -58,8 +96,6 @@ export const useMapStore = create<MapState>()((set) => ({
   theme: "dark",
   setVisibleLand: (visibleLand) => set({ visibleLand }),
   setHideEndorheic: (hideEndorheic) => set({ hideEndorheic }),
-  showIgnDetail: true,
-  setShowIgnDetail: (showIgnDetail) => set({ showIgnDetail }),
   setTheme: (theme) => set({ theme }),
   viewMode: "basin",
   setViewMode: (viewMode) =>
@@ -89,4 +125,12 @@ export const useMapStore = create<MapState>()((set) => ({
     })),
   isolatedIds: null,
   setIsolatedIds: (isolatedIds) => set({ isolatedIds }),
+  optionsOpen: false,
+  setOptionsOpen: (optionsOpen) => set({ optionsOpen }),
+  units: "metric",
+  setUnits: (units) => set({ units }),
+  showMinimap: true,
+  setShowMinimap: (showMinimap) => set({ showMinimap }),
+  layers: DEFAULT_LAYERS,
+  setLayers: (patch) => set((s) => ({ layers: { ...s.layers, ...patch } })),
 }));

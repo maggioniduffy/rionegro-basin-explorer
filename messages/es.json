@@ -18,14 +18,45 @@
     "visibleLandMin": "Solo ríos",
     "visibleLandMax": "Toda la cuenca",
     "hideEndorheic": "Ocultar cursos endorreicos",
-    "hideEndorheicHint": "Drenaje interno dentro del contorno de la cuenca que no llega al mar.",
     "minimize": "Minimizar panel",
     "expand": "Mostrar panel",
     "view": "Vista",
     "viewBasin": "Cuenca",
-    "viewSubbasins": "Subcuencas",
-    "showIgnDetail": "Detalle de cursos del IGN",
-    "showIgnDetailHint": "Cursos permanentes del IGN que HydroRIVERS no dibuja. Solo nombre y longitud, sin datos hidrológicos."
+    "viewSubbasins": "Subcuencas"
+  },
+  "options": {
+    "label": "Visualización",
+    "minimize": "Minimizar panel",
+    "expand": "Mostrar panel",
+    "minimap": {
+      "show": "Mapa general",
+      "label": "Mapa general de la cuenca; el recuadro es la vista actual",
+      "hint": "Un clic o un arrastre mueve el mapa"
+    },
+    "units": {
+      "label": "Unidades",
+      "metric": "Kilómetros",
+      "imperial": "Millas"
+    },
+    "layers": {
+      "title": "Capas",
+      "rivers": "Ríos",
+      "flowHint": "Régimen de flujo modelado por GIRES v1.0, no observado.",
+      "naturalLakes": "Lagos naturales",
+      "artificialLakes": "Embalses y lagos regulados",
+      "localities": "Ciudades, pueblos y parajes"
+    }
+  },
+  "sheet": {
+    "label": "Paneles del mapa",
+    "expand": "Expandir panel",
+    "collapse": "Contraer panel",
+    "tabs": {
+      "map": "Mapa",
+      "info": "Detalles",
+      "display": "Visualización"
+    },
+    "empty": "Un toque sobre un río, un lago o una presa muestra sus detalles. En la vista de subcuencas, también sobre el terreno."
   },
   "legend": {
     "title": "Régimen de flujo",
@@ -50,19 +81,24 @@
   "map": {
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
+    "snapshot": "Guardar el mapa como imagen",
+    "snapshotError": "No se pudo guardar la imagen.",
     "webglError": "El mapa necesita WebGL, que este navegador no admite o tiene desactivado.",
     "attribution": {
       "hydrosheds": "HydroSHEDS © WWF",
       "gires": "GIRES v1.0 (Messager et al., 2021)",
       "hydrolakes": "HydroLAKES (Messager et al., 2016)",
-      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina"
+      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina",
+      "osm": "© colaboradores de OpenStreetMap"
     },
     "maplibre": {
       "title": "Mapa de la cuenca del Río Negro",
       "toggleAttribution": "Mostrar u ocultar créditos",
       "mapFeedback": "Comentarios sobre el mapa",
       "kilometers": "km",
-      "meters": "m"
+      "meters": "m",
+      "miles": "mi",
+      "feet": "ft"
     }
   },
   "search": {
@@ -175,6 +211,11 @@
         "unnamed": "Presa sin nombre",
         "wall": "Muro de presa",
         "note": "Posición según el IGN. Aquí no hay datos de capacidad ni de operación."
+      },
+      "locality": {
+        "place": "{place, select, city {Ciudad} town {Pueblo} village {Paraje} other {Localidad}}",
+        "note": "Posición y nombre de OpenStreetMap. Aquí no se muestran población ni otros datos.",
+        "source": "Fuente: © colaboradores de OpenStreetMap, ODbL 1.0."
       },
       "fields": {
         "kind": "Tipo",

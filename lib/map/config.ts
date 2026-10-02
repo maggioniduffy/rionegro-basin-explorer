@@ -20,6 +20,7 @@ export const TILE_PATHS = {
   mask: "/tiles/mask.pmtiles",
   subbasins: "/tiles/subbasins.pmtiles",
   ign: "/tiles/ign.pmtiles",
+  localities: "/tiles/localities.pmtiles",
 } as const;
 
 /** EOX Sentinel-2 tiles are ~10 m imagery; above this MapLibre overzooms. */

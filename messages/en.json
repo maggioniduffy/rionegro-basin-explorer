@@ -18,14 +18,45 @@
     "visibleLandMin": "Rivers only",
     "visibleLandMax": "Whole basin",
     "hideEndorheic": "Hide endorheic streams",
-    "hideEndorheicHint": "Inland drainage inside the basin outline that does not reach the sea.",
     "minimize": "Minimize panel",
     "expand": "Show panel",
     "view": "View",
     "viewBasin": "Basin",
-    "viewSubbasins": "Sub-basins",
-    "showIgnDetail": "IGN stream detail",
-    "showIgnDetailHint": "Perennial streams from IGN that HydroRIVERS does not draw. Name and length only, no hydrology."
+    "viewSubbasins": "Sub-basins"
+  },
+  "options": {
+    "label": "Display",
+    "minimize": "Minimize panel",
+    "expand": "Show panel",
+    "minimap": {
+      "show": "Overview map",
+      "label": "Overview map of the basin; the box is the current view",
+      "hint": "Click or drag to move the map"
+    },
+    "units": {
+      "label": "Units",
+      "metric": "Kilometres",
+      "imperial": "Miles"
+    },
+    "layers": {
+      "title": "Layers",
+      "rivers": "Rivers",
+      "flowHint": "Flow regime as modeled by GIRES v1.0, not observed.",
+      "naturalLakes": "Natural lakes",
+      "artificialLakes": "Reservoirs and regulated lakes",
+      "localities": "Cities, towns and villages"
+    }
+  },
+  "sheet": {
+    "label": "Map panels",
+    "expand": "Expand panel",
+    "collapse": "Collapse panel",
+    "tabs": {
+      "map": "Map",
+      "info": "Details",
+      "display": "Display"
+    },
+    "empty": "Tap a river, a lake or a dam to see its details. In the sub-basin view, tap the land."
   },
   "legend": {
     "title": "Flow regime",
@@ -50,19 +81,24 @@
   "map": {
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
+    "snapshot": "Save the map as an image",
+    "snapshotError": "The image could not be saved.",
     "webglError": "The map needs WebGL, which this browser does not support or has turned off.",
     "attribution": {
       "hydrosheds": "HydroSHEDS © WWF",
       "gires": "GIRES v1.0 (Messager et al., 2021)",
       "hydrolakes": "HydroLAKES (Messager et al., 2016)",
-      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina"
+      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina",
+      "osm": "© OpenStreetMap contributors"
     },
     "maplibre": {
       "title": "Map of the Río Negro basin",
       "toggleAttribution": "Toggle attribution",
       "mapFeedback": "Map feedback",
       "kilometers": "km",
-      "meters": "m"
+      "meters": "m",
+      "miles": "mi",
+      "feet": "ft"
     }
   },
   "search": {
@@ -175,6 +211,11 @@
         "unnamed": "Unnamed dam",
         "wall": "Dam wall",
         "note": "Position from IGN. No data on capacity or operation is available here."
+      },
+      "locality": {
+        "place": "{place, select, city {City} town {Town} village {Village} other {Locality}}",
+        "note": "Position and name from OpenStreetMap. No population or other data is shown here.",
+        "source": "Source: © OpenStreetMap contributors, ODbL 1.0."
       },
       "fields": {
         "kind": "Type",

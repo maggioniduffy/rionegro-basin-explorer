@@ -4,6 +4,7 @@ import {
   IGN_DETAIL_LAYER_ID,
   IGN_LAKE_FILL_LAYER_ID,
   LAKE_HIT_LAYER_ID,
+  LOCALITY_LAYER_ID,
 } from "./style";
 
 /** What the lake layers call a water body (pipeline:ign-layers). */
@@ -14,6 +15,10 @@ export const WATER_KINDS = [
   "waterbody",
 ] as const;
 export type WaterKind = (typeof WATER_KINDS)[number];
+
+/** OSM place classes the localities layer carries (pipeline:localities). */
+export const PLACE_KINDS = ["city", "town", "village"] as const;
+export type PlaceKind = (typeof PLACE_KINDS)[number];
 
 /**
  * A map feature that is not a HydroRIVERS reach: it has no API document, so the panel
@@ -29,10 +34,12 @@ export type Picked =
       /** Where the area comes from: HydroLAKES polygons, or IGN for the extra lakes. */
       areaSource: "hydrolakes" | "ign";
     }
-  | { kind: "dam" | "wall"; name: string | null };
+  | { kind: "dam" | "wall"; name: string | null }
+  | { kind: "locality"; name: string; place: PlaceKind };
 
 /** Layers a click can pick, in the order the map checks them. */
 export const PICKABLE_LAYER_IDS = [
+  LOCALITY_LAYER_ID,
   DAM_LAYER_ID,
   DAM_WALL_LAYER_ID,
   IGN_DETAIL_LAYER_ID,
@@ -57,6 +64,10 @@ export function toPicked(
 ): Picked | null {
   const name = text(props.name);
   switch (layerId) {
+    case LOCALITY_LAYER_ID: {
+      const place = PLACE_KINDS.find((k) => k === props.place);
+      return name && place ? { kind: "locality", name, place } : null;
+    }
     case DAM_LAYER_ID:
       return { kind: "dam", name };
     case DAM_WALL_LAYER_ID:
