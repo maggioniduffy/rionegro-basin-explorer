@@ -49,6 +49,17 @@
       "artificialLakes": "Reservoirs and regulated lakes"
     }
   },
+  "sheet": {
+    "label": "Map panels",
+    "expand": "Expand panel",
+    "collapse": "Collapse panel",
+    "tabs": {
+      "map": "Map",
+      "info": "Details",
+      "display": "Display"
+    },
+    "empty": "Tap a river, a lake or a dam to see its details. In the sub-basin view, tap the land."
+  },
   "legend": {
     "title": "Flow regime",
     "perennial": "Perennial",

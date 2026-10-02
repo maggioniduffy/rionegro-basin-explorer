@@ -56,6 +56,7 @@ import {
 import { initMaplibre } from "@/lib/map/init";
 import { setMainMap } from "@/lib/map/main-map";
 import { SnapshotButton } from "./SnapshotButton";
+import { SHEET_PEEK_PX, sheetHeights } from "@/lib/sheet";
 import { useMapStore } from "@/lib/store";
 import type { Selection } from "@/lib/url-state";
 
@@ -74,18 +75,30 @@ function webglSupported(): boolean {
   }
 }
 
-/** Keep the initial basin view clear of the header and, on wide screens, the controls panel. */
+/**
+ * Keep the initial basin view clear of the header and, on wide screens, the controls
+ * panel; on phones, of the closed bottom sheet.
+ */
 function fitPadding() {
   const wide = window.innerWidth >= 768;
-  return { top: 64, bottom: 32, right: 64, left: wide ? 312 : 16 };
+  return wide
+    ? { top: 64, bottom: 32, right: 64, left: 312 }
+    : { top: 64, bottom: 32 + SHEET_PEEK_PX, right: 64, left: 16 };
 }
 
-/** Fitting to a selection also keeps clear of the info panel on the right. */
+/**
+ * Fitting to a selection also keeps clear of the info panel on the right; on phones,
+ * of the bottom sheet, which a selection opens to half height.
+ */
 function selectionPadding() {
   const wide = window.innerWidth >= 768;
-  return wide
-    ? { top: 80, bottom: 48, right: 400, left: 312 }
-    : { top: 80, bottom: 48, right: 32, left: 32 };
+  if (wide) return { top: 80, bottom: 48, right: 400, left: 312 };
+  const sheet = sheetHeights({
+    viewport: window.innerHeight,
+    top: 0,
+    attribution: 0,
+  }).half;
+  return { top: 80, bottom: sheet + 16, right: 32, left: 32 };
 }
 
 /** Clicks within this many px of a line hit it; river lines are thin. */

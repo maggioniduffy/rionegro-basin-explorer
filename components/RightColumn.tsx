@@ -15,7 +15,7 @@ export function RightColumn() {
   return (
     <div
       data-split={optionsOpen}
-      className="group pointer-events-none absolute top-(--panel-top) right-14 bottom-(--panel-bottom) left-3 flex flex-col gap-3 md:left-auto md:w-88"
+      className="group pointer-events-none absolute top-(--panel-top) right-14 bottom-(--panel-bottom) flex w-88 flex-col gap-3"
     >
       <InfoPanel />
       <OptionsPanel />

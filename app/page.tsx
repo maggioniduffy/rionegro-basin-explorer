@@ -1,9 +1,8 @@
 import { useTranslations } from "next-intl";
-import { Controls } from "@/components/Controls";
 import { Logomark } from "@/components/Icon";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { BasinMap } from "@/components/map/BasinMap";
-import { RightColumn } from "@/components/RightColumn";
+import { Panels } from "@/components/Panels";
 import { SearchBox } from "@/components/SearchBox";
 import { UrlSync } from "@/components/UrlSync";
 
@@ -27,8 +26,7 @@ export default function HomePage() {
           <LocaleSwitcher />
         </div>
       </header>
-      <Controls />
-      <RightColumn />
+      <Panels />
       <UrlSync />
     </main>
   );

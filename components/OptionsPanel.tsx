@@ -9,7 +9,7 @@ import { UnitsToggle } from "./UnitsToggle";
 
 /**
  * Display options (units, layer visibility, …), bottom right. Closed, only the header
- * shows. Hidden below `md` until the mobile bottom sheet takes over (PLAN.md Phase 7).
+ * shows. Desktop only: phones get the same options in the bottom sheet.
  */
 export function OptionsPanel() {
   const t = useTranslations("options");
@@ -19,7 +19,7 @@ export function OptionsPanel() {
   return (
     <section
       aria-label={t("label")}
-      className="pointer-events-auto mt-auto hidden max-h-[calc(50%-0.375rem)] min-h-0 shrink-0 flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur md:flex"
+      className="pointer-events-auto mt-auto flex max-h-[calc(50%-0.375rem)] min-h-0 shrink-0 flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur"
     >
       <button
         type="button"
@@ -46,10 +46,19 @@ export function OptionsPanel() {
         hidden={!open}
         className="flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-1 pb-4"
       >
-        {open && <MinimapSection />}
-        <UnitsToggle />
-        <LayerToggles />
+        <DisplayOptionsContent minimap={open} />
       </div>
     </section>
+  );
+}
+
+/** Minimap (when asked), units and layer toggles. */
+export function DisplayOptionsContent({ minimap }: { minimap: boolean }) {
+  return (
+    <>
+      {minimap && <MinimapSection />}
+      <UnitsToggle />
+      <LayerToggles />
+    </>
   );
 }

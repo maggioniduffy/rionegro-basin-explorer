@@ -49,6 +49,17 @@
       "artificialLakes": "Embalses y lagos regulados"
     }
   },
+  "sheet": {
+    "label": "Paneles del mapa",
+    "expand": "Expandir panel",
+    "collapse": "Contraer panel",
+    "tabs": {
+      "map": "Mapa",
+      "info": "Detalles",
+      "display": "Visualización"
+    },
+    "empty": "Un toque sobre un río, un lago o una presa muestra sus detalles. En la vista de subcuencas, también sobre el terreno."
+  },
   "legend": {
     "title": "Régimen de flujo",
     "perennial": "Permanente",
