@@ -53,27 +53,46 @@ export const THEME_COLORS: Record<
 export const SUBBASIN_COLOR = "#ffffff";
 export const SUBBASIN_FILL_LAYER_ID = "subbasins-fill";
 export const SUBBASIN_LINE_LAYER_ID = "subbasins-outline";
+/** The selected node's whole border, from the `outlines` layer (no inner borders). */
+export const SUBBASIN_SELECTED_LAYER_ID = "subbasins-selected";
 /** Covers every sub-basin but the isolated ones, rivers included, in the mask colour. */
 export const SUBBASIN_HIDE_LAYER_ID = "subbasins-hidden";
+
+/**
+ * Own-area features in the subtree of any of `ids`: each feature's `path` property is
+ * ",negro,limay,collon-cura," (pipeline:subbasins), so one substring test per id.
+ */
+export function inSubtrees(ids: readonly string[]): ExpressionSpecification {
+  return [
+    "any",
+    ...ids.map((id): ExpressionSpecification => [
+      "in",
+      `,${id},`,
+      ["get", "path"],
+    ]),
+  ];
+}
 
 export function hiddenSubbasinsFilter(
   isolatedIds: string[] | null,
 ): FilterSpecification {
-  return isolatedIds
-    ? ["!", ["in", ["get", "id"], ["literal", isolatedIds]]]
-    : ["boolean", false];
+  return isolatedIds ? ["!", inSubtrees(isolatedIds)] : ["boolean", false];
 }
 
 const selectedSubbasin = (sel: Selection | null) =>
   sel?.kind === "subbasin" ? sel.id : "";
 
-/** Only the selected sub-basin is tinted; the others show by their borders. */
+/**
+ * The selected sub-basin is tinted with all its descendants (they are its land too);
+ * the others show by their borders.
+ */
 export function subbasinFillOpacity(
   mode: ViewMode,
   sel: Selection | null,
 ): ExpressionSpecification | number {
-  if (mode === "basin") return 0;
-  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 0.12, 0];
+  const id = selectedSubbasin(sel);
+  if (mode === "basin" || !id) return 0;
+  return ["case", inSubtrees([id]), 0.12, 0];
 }
 
 /**
@@ -88,7 +107,7 @@ export function subbasinFilter(
   return [
     "all",
     hideEndorheic ? ["!=", ["get", "kind"], "endorheic"] : true,
-    isolatedIds ? ["in", ["get", "id"], ["literal", isolatedIds]] : true,
+    isolatedIds ? inSubtrees(isolatedIds) : true,
   ];
 }
 
@@ -100,10 +119,11 @@ export function subbasinLineOpacity(mode: ViewMode): number {
   return mode === "basin" ? 0 : 0.9;
 }
 
-export function subbasinLineWidth(
+/** Only the selected node's whole outline; nothing when no sub-basin is selected. */
+export function selectedOutlineFilter(
   sel: Selection | null,
-): ExpressionSpecification {
-  return ["case", ["==", ["get", "id"], selectedSubbasin(sel)], 3, 1.5];
+): FilterSpecification {
+  return ["==", ["get", "id"], selectedSubbasin(sel)];
 }
 
 export const maskLayerId = (level: number) => `mask-${level}`;
@@ -374,7 +394,20 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     paint: {
       "line-color": SUBBASIN_COLOR,
       "line-opacity": subbasinLineOpacity(o.viewMode),
-      "line-width": subbasinLineWidth(o.selection),
+      "line-width": 1.5,
+    },
+  });
+  layers.push({
+    id: SUBBASIN_SELECTED_LAYER_ID,
+    type: "line",
+    source: "subbasins",
+    "source-layer": "outlines",
+    filter: selectedOutlineFilter(o.selection),
+    layout: { "line-join": "round" },
+    paint: {
+      "line-color": SUBBASIN_COLOR,
+      "line-opacity": subbasinLineOpacity(o.viewMode),
+      "line-width": 3,
     },
   });
   layers.push({

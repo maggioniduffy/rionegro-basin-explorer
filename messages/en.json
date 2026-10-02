@@ -35,9 +35,11 @@
     "modeledNote": "Modeled, not observed: GIRES v1.0 predictions (Messager et al., 2021). Local conditions may differ.",
     "subbasins": {
       "title": "Sub-basins",
-      "own": "{name}, direct drainage",
-      "hint": "Click the land to see a sub-basin's data. The selected one is tinted on the visible land; borders always show.",
-      "endorheic": "Endorheic areas (drain to no river)"
+      "hint": "Pick a sub-basin here or click the land. Its land includes everything nested under it, so the whole subtree is tinted; borders always show.",
+      "endorheic": "Endorheic areas (drain to no river)",
+      "expand": "Show the sub-basins of {name}",
+      "collapse": "Hide the sub-basins of {name}",
+      "error": "The sub-basin list could not be loaded."
     },
     "ignDetail": "IGN stream not in HydroRIVERS"
   },
@@ -102,7 +104,7 @@
       "outletHint": "Measured where the {river} ends, so it includes everything upstream.",
       "rivers": "Named rivers",
       "landHintWhole": "All of its land, including endorheic areas, which drain inland and reach no river.",
-      "landHintRiver": "Only the land that drains to the {river}. Endorheic areas are shown apart."
+      "landHintRiver": "Only the land that drains to the {river}, its own sub-basins included. Endorheic areas are shown apart."
     },
     "fields": {
       "length": "Length",
@@ -147,12 +149,12 @@
       "label": "Basin details",
       "title": "{name} basin",
       "wholeBasin": "The whole basin.",
-      "partOf": "Part of the <link>{parent}</link> basin.",
       "children": "Sub-basins:",
       "endorheicTitle": "Endorheic areas",
       "endorheicNote": "Land that drains to closed depressions and reaches no river. HydroBASINS links some of it to the river network virtually; here it is kept apart.",
       "hideOthers": "Hide the rest of the basin",
-      "showOthers": "Show the whole basin"
+      "showOthers": "Show the whole basin",
+      "breadcrumb": "Sub-basin hierarchy"
     },
     "feature": {
       "label": "Map feature details",

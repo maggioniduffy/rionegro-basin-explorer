@@ -50,7 +50,8 @@ import {
   SUBBASIN_HIDE_LAYER_ID,
   hiddenSubbasinsFilter,
   subbasinLineOpacity,
-  subbasinLineWidth,
+  selectedOutlineFilter,
+  SUBBASIN_SELECTED_LAYER_ID,
   THEME_COLORS,
 } from "@/lib/map/style";
 import { setupMaplibreWorker } from "@/lib/map/worker";
@@ -272,10 +273,9 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
   }
   if (!prev || s.selection !== prev.selection) {
     map.setFilter(SELECTED_LAYER_ID, selectionFilter(s.selection));
-    map.setPaintProperty(
-      SUBBASIN_LINE_LAYER_ID,
-      "line-width",
-      subbasinLineWidth(s.selection),
+    map.setFilter(
+      SUBBASIN_SELECTED_LAYER_ID,
+      selectedOutlineFilter(s.selection),
     );
   }
   if (!prev || s.isolatedIds !== prev.isolatedIds) {
@@ -287,11 +287,8 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
       "fill-opacity",
       subbasinFillOpacity(s.viewMode, s.selection),
     );
-    map.setPaintProperty(
-      SUBBASIN_LINE_LAYER_ID,
-      "line-opacity",
-      subbasinLineOpacity(s.viewMode),
-    );
+    for (const id of [SUBBASIN_LINE_LAYER_ID, SUBBASIN_SELECTED_LAYER_ID])
+      map.setPaintProperty(id, "line-opacity", subbasinLineOpacity(s.viewMode));
   }
   if (!prev || s.theme !== prev.theme) {
     const { mask, outline, lake } = THEME_COLORS[s.theme];
