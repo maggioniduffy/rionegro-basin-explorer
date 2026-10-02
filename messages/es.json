@@ -41,7 +41,7 @@
       "rivers": "Ríos",
       "flowHint": "Régimen de flujo modelado por GIRES v1.0, no observado.",
       "naturalLakes": "Lagos naturales",
-      "artificialLakes": "Embalses (lagos artificiales)"
+      "artificialLakes": "Embalses y lagos regulados"
     }
   },
   "legend": {
