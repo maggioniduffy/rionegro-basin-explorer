@@ -2,7 +2,8 @@
 
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
-Amazon Basin Explorer. See `PLAN.md` for phases and status.
+Amazon Basin Explorer. See `PLAN.md` for phases and status, and `DECISSIONS.md` for the dated
+decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `PLAN.md`).
 
 ## Stack
 
@@ -41,7 +42,7 @@ Amazon Basin Explorer. See `PLAN.md` for phases and status.
 7. **Pipeline steps must be idempotent** and write a `report.json` (counts, total km, orphan segments, area checks). Read the report to verify results instead of judging by eye.
 8. **Cost-conscious:** prefer free tiers (Atlas M0, Vercel hobby, PMTiles over tile servers). Flag anything that could add recurring cost.
 9. **Licenses and attribution:** keep `/pipeline/SOURCES.md` updated (source, URL, license, required citation, download date). Check the license before adding any new data source or imagery provider.
-10. **Workflow:** work one phase at a time from `PLAN.md`, in plan mode first. Small commits. Update the checklist when a phase's "Done when" criteria are met.
+10. **Workflow:** work one phase at a time from `PLAN.md`, in plan mode first. Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `DECISSIONS.md`.
 11. Dismiss visual tests unless called for
 
 ## Sub-agents, skills and background work
