@@ -93,9 +93,7 @@ export function SubbasinTree() {
       {state.status === "error" && (
         <p className="text-muted text-xs">{t("error")}</p>
       )}
-      {root && (
-        <ul className="max-h-64 overflow-y-auto pr-1">{renderNode(root)}</ul>
-      )}
+      {root && <ul>{renderNode(root)}</ul>}
       <p className="text-muted text-xs">{t("hint")}</p>
     </nav>
   );

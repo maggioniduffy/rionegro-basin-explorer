@@ -60,3 +60,5 @@ next-env.d.ts
 /public/maplibre/
 
 atlas-credentials.env
+# personal to-do list for the project owner
+PENDING.md

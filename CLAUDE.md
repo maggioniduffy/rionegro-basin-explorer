@@ -43,7 +43,8 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 8. **Cost-conscious:** prefer free tiers (Atlas M0, Vercel hobby, PMTiles over tile servers). Flag anything that could add recurring cost.
 9. **Licenses and attribution:** keep `/pipeline/SOURCES.md` updated (source, URL, license, required citation, download date). Check the license before adding any new data source or imagery provider.
 10. **Workflow:** work one phase at a time from `PLAN.md`, in plan mode first. Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `DECISSIONS.md`.
-11. Dismiss visual tests unless called for
+11. Dismiss visual and chromium tests unless called for
+12. Execute plan's steps one at a time.
 
 ## Sub-agents, skills and background work
 

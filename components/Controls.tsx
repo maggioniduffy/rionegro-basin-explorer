@@ -25,7 +25,7 @@ export function Controls() {
   return (
     <section
       aria-label={t("label")}
-      className={`absolute bottom-10 left-3 flex max-w-[calc(100vw-1.5rem)] flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur ${
+      className={`absolute bottom-10 left-3 flex max-h-[calc(100dvh_-_var(--panel-top)_-_2.5rem)] max-w-[calc(100vw-1.5rem)] flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur ${
         open ? "w-72" : "w-auto"
       }`}
     >
@@ -36,7 +36,7 @@ export function Controls() {
         aria-expanded={open}
         aria-controls="map-controls-body"
         title={open ? t("minimize") : t("expand")}
-        className="flex items-center justify-between gap-3 rounded-lg px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
+        className="flex shrink-0 items-center justify-between gap-3 rounded-lg px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
       >
         <span className="flex items-center gap-2">
           <Icon name="layers" />
@@ -48,11 +48,13 @@ export function Controls() {
         />
       </button>
 
-      {/* Hidden rather than unmounted, so slider and checkbox keep their state. */}
+      {/* Hidden rather than unmounted, so slider and checkbox keep their state. It scrolls
+          on its own when the sub-basin tree makes it taller than the screen allows; the
+          header stays put. */}
       <div
         id="map-controls-body"
         hidden={!open}
-        className="flex flex-col gap-4 px-4 pt-1 pb-4"
+        className="flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-1 pb-4"
       >
         <ViewModeToggle />
 
