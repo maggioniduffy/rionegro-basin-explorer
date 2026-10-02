@@ -201,7 +201,7 @@ with each level, and that the last level is the whole basin.
 ### `npm run pipeline:subbasins`
 
 Builds the sub-basin hierarchy listed in `pipeline/subbasins.config.json` from HydroBASINS level 12.
-The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorheic`; levels 2–3 are
+The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorheic`; levels 2–4 are
 the other approved rivers of `pipeline/names.json`, nested by where they flow (`collon-cura` and its
 four tributaries under `limay`, and so on). A parent is listed before its children; the config's
 structure (levels, parents, no cycles) is checked before anything runs.

@@ -59,7 +59,12 @@ const SLIVER_KM2 = 1;
 const MIN_OWN_KM2 = 1;
 /** Catchment aggregates vs upstream values at the mouth (unit cross-check). */
 const POPULATION_PCT = 1;
-const PERCENT_POINTS = 0.5;
+/**
+ * RiverATLAS stores inu_pc_cmn/cmx and inu_pc_umn/umx as whole percentages (SMALLINT), so
+ * the weighted catchment mean and the upstream value can each be off by up to 0.5 points
+ * from rounding: 1 point is the worst case between them (Quillén, 0.53, in Phase 6).
+ */
+const PERCENT_POINTS = 1;
 
 const r1 = (x: number) => Math.round(x * 10) / 10;
 const num = (v: unknown) => Number(v);

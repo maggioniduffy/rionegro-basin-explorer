@@ -124,12 +124,13 @@ describe("subbasinSchema", () => {
       "neuquen",
       "endorheic",
     ]);
-    expect(docs.length).toBe(16);
+    expect(docs.length).toBe(25);
     expect(docs.find((d) => d._id === "alumine")).toMatchObject({
       level: 3,
       parentId: "collon-cura",
       path: ["negro", "limay", "collon-cura", "alumine"],
     });
+    expect(docs.find((d) => d._id === "malleo")?.level).toBe(4);
     const endo = docs.find((d) => d.kind === "endorheic");
     expect(endo).toMatchObject({ name: null, river: null, outlet: null });
     expect(docs[0]?.parentId).toBeNull();

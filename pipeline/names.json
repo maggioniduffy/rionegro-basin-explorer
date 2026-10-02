@@ -1,5 +1,5 @@
 {
-  "$comment": "Hand-approved river names (HydroRIVERS has none). Keyed by mouth reach (HYRIV_ID). Names use IGN spelling (FUENTE: Instituto Geográfico Nacional de la República Argentina), chosen by the owner on 2026-10-01 over the earlier OpenStreetMap spelling; pipeline:ign-match's stem vote (data/work/ign-match/report.json) confirms the IGN name along each river's main stem. `slug` is the river's id (URLs, Mongo _id) and never changes once published, even if the name does; `aliases` are former names that search still finds. shortName/type are the name split at its first word. Approved by the project owner on 2026-09-30, IGN names on 2026-10-01.",
+  "$comment": "Hand-approved river names (HydroRIVERS has none). Keyed by mouth reach (HYRIV_ID). Names use IGN spelling (FUENTE: Instituto Geográfico Nacional de la República Argentina), chosen by the owner on 2026-10-01 over the earlier OpenStreetMap spelling; pipeline:ign-match's stem vote (data/work/ign-match/report.json) confirms the IGN name along each river's main stem. `slug` is the river's id (URLs, Mongo _id) and never changes once published, even if the name does; `aliases` are former names that search still finds. shortName/type are the name split at its first word. Approved by the project owner on 2026-09-30, IGN names on 2026-10-01; nine AIC subcuencas added on 2026-10-02.",
   "rivers": [
     {
       "name": "Río Negro",
@@ -150,6 +150,96 @@
       "mouthReach": 61532634,
       "confidence": "strong",
       "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #33, 2026-09-30); IGN name 'Río Trocomán' on 70% of the 80 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+    },
+    {
+      "name": "Río Traful",
+      "shortName": "Traful",
+      "type": "Río",
+      "slug": "traful",
+      "aliases": [],
+      "mouthReach": 61558139,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Traful' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02; the Río Traful is the outflow of Lago Traful (the Río Pichi Traful is a separate inflow) and flows into the Limay (owner)"
+    },
+    {
+      "name": "Río Varvarco",
+      "shortName": "Varvarco",
+      "type": "Río",
+      "slug": "varvarco",
+      "aliases": [],
+      "mouthReach": 61528155,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Varvarco' on the next reach upstream (61528086, high confidence); IGN labels the mouth reach 61528155 'Río Neuquén', but the confluence with the Neuquén, at the town of Varvarco, is at its downstream end (owner, from imagery, 2026-10-02; pipeline/ign-overrides.json); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+    },
+    {
+      "name": "Río Nahueve",
+      "shortName": "Nahueve",
+      "type": "Río",
+      "slug": "nahueve",
+      "aliases": [],
+      "mouthReach": 61531633,
+      "confidence": "weak",
+      "evidence": "IGN name 'Río Nahueve' on the mouth reach, low confidence (coverage 49% vs 19% for 'Río Neuquén': the mouth sits at the confluence; pipeline:ign-match); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02 as weak"
+    },
+    {
+      "name": "Río Lileo",
+      "shortName": "Lileo",
+      "type": "Río",
+      "slug": "lileo",
+      "aliases": [],
+      "mouthReach": 61531631,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Lileo' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+    },
+    {
+      "name": "Río Reñileuvú",
+      "shortName": "Reñileuvú",
+      "type": "Río",
+      "slug": "renileuvu",
+      "aliases": [],
+      "mouthReach": 61532729,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Reñileuvú' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+    },
+    {
+      "name": "Río Malleo",
+      "shortName": "Malleo",
+      "type": "Río",
+      "slug": "malleo",
+      "aliases": [],
+      "mouthReach": 61551996,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Malleo' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+    },
+    {
+      "name": "Río Quillén",
+      "shortName": "Quillén",
+      "type": "Río",
+      "slug": "quillen",
+      "aliases": [],
+      "mouthReach": 61548783,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Quillén' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+    },
+    {
+      "name": "Río Pulmarí",
+      "shortName": "Pulmarí",
+      "type": "Río",
+      "slug": "pulmari",
+      "aliases": [],
+      "mouthReach": 61547114,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Pulmarí' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+    },
+    {
+      "name": "Río Litrán",
+      "shortName": "Litrán",
+      "type": "Río",
+      "slug": "litran",
+      "aliases": [],
+      "mouthReach": 61545872,
+      "confidence": "strong",
+      "evidence": "IGN name 'Río Litrán' on the mouth reach (pipeline:ign-match, medium confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
     }
   ]
 }

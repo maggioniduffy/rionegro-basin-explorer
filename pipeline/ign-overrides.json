@@ -900,6 +900,12 @@
       "id": 61547289,
       "action": "accept",
       "note": "same name on the downstream reach 61547505 (Río Catán Lil, coverage 1)"
+    },
+    {
+      "id": 61528155,
+      "action": "name",
+      "name": "Río Varvarco",
+      "note": "owner, 2026-10-02: IGN labels this reach Río Neuquén, but it is the last stretch of the Varvarco; the confluence is at its downstream end (town of Varvarco)"
     }
   ],
   "riverNames": []

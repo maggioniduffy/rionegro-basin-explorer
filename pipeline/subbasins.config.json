@@ -1,5 +1,5 @@
 {
-  "$comment": "Inputs for pipeline:subbasins. A river node is everything upstream (HydroBASINS level-12 NEXT_DOWN) of the polygon holding its river's mouthReach (data/out/rivers.ndjson); below the root, endorheic polygons (ENDO > 0) are left out because they drain to closed depressions, not to the river. An endorheic node holds every endorheic polygon of its parent. The root is the whole basin; a node's own area is its set minus its children's sets, and the own areas must partition the root. level 1 = main tributaries (Phase 4); levels 2-3 = the approved tributaries of pipeline/names.json (Phase 6). A parent is listed before its children. The endorheic node stays at level 1: river nodes below the root have no endorheic land.",
+  "$comment": "Inputs for pipeline:subbasins. A river node is everything upstream (HydroBASINS level-12 NEXT_DOWN) of the polygon holding its river's mouthReach (data/out/rivers.ndjson); below the root, endorheic polygons (ENDO > 0) are left out because they drain to closed depressions, not to the river. An endorheic node holds every endorheic polygon of its parent. The root is the whole basin; a node's own area is its set minus its children's sets, and the own areas must partition the root. level 1 = main tributaries (Phase 4); levels 2-4 = the approved tributaries of pipeline/names.json (Phase 6), nested by where they flow. A parent is listed before its children. The endorheic node stays at level 1: river nodes below the root have no endorheic land.",
   "subbasins": [
     {
       "id": "negro",
@@ -111,6 +111,69 @@
       "river": "caleufu",
       "parentId": "collon-cura",
       "level": 3
+    },
+    {
+      "id": "traful",
+      "kind": "river",
+      "river": "traful",
+      "parentId": "limay",
+      "level": 2
+    },
+    {
+      "id": "varvarco",
+      "kind": "river",
+      "river": "varvarco",
+      "parentId": "neuquen",
+      "level": 2
+    },
+    {
+      "id": "nahueve",
+      "kind": "river",
+      "river": "nahueve",
+      "parentId": "neuquen",
+      "level": 2
+    },
+    {
+      "id": "lileo",
+      "kind": "river",
+      "river": "lileo",
+      "parentId": "nahueve",
+      "level": 3
+    },
+    {
+      "id": "renileuvu",
+      "kind": "river",
+      "river": "renileuvu",
+      "parentId": "trocoman",
+      "level": 3
+    },
+    {
+      "id": "malleo",
+      "kind": "river",
+      "river": "malleo",
+      "parentId": "alumine",
+      "level": 4
+    },
+    {
+      "id": "quillen",
+      "kind": "river",
+      "river": "quillen",
+      "parentId": "alumine",
+      "level": 4
+    },
+    {
+      "id": "pulmari",
+      "kind": "river",
+      "river": "pulmari",
+      "parentId": "alumine",
+      "level": 4
+    },
+    {
+      "id": "litran",
+      "kind": "river",
+      "river": "litran",
+      "parentId": "alumine",
+      "level": 4
     }
   ]
 }

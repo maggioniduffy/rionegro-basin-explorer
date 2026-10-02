@@ -101,9 +101,9 @@ Decisions, figures and open points: [DECISSIONS.md](DECISSIONS.md#phase-5-2026-1
 
 ## Phase 6 — Finer sub-basins & hierarchy
 
-- [x] Levels 2 and 3 with `parentId` (12 approved tributaries, 16 nodes); breadcrumb navigation (Río Negro > Limay > Collón Curá)
+- [x] Levels 2–4 with `parentId` (21 approved tributaries, 25 nodes; level 4 added for the Aluminé's tributaries); breadcrumb navigation (Río Negro > Limay > Collón Curá)
 - [x] Metrics accumulate upward (report checks child ≤ parent); tree selector in Controls
-- [x] Node list checked against AIC/SSRH: the nesting is hydrological, not the AIC's flat list; missing AIC subcuencas are an open point
+- [x] Node list checked against AIC/SSRH: the nesting is hydrological (owner: kept, option A), not the AIC's flat list; the 9 missing AIC subcuencas were added
 - [x] `npm run seed` on Atlas (2026-10-02: 16 sub-basins, 12 added and 4 updated, all seed checks true)
 - **Done when:** any sub-basin can be selected from the map or the tree with consistent metrics.
 
@@ -124,7 +124,7 @@ Decisions, figures and the AIC comparison: [DECISSIONS.md](DECISSIONS.md#phase-6
 - Imagery provider and license
 - PMTiles hosting (`/public` vs object storage)
 - Official basin area figure for validation
-- Exact sub-basin list per level: AIC lists a flat set and more subcuencas than the approved names cover (see DECISSIONS.md Phase 6)
+- Exact sub-basin list per level: every AIC subcuenca is now a node, nested hydrologically rather than flat (see DECISSIONS.md Phase 6)
 
 ## Risks
 
