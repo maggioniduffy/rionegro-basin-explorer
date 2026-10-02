@@ -155,14 +155,15 @@ function Minimap() {
   }, []);
 
   return (
-    // MapLibre sets position: relative on its container, so size it from a wrapper.
-    <div className="relative h-44 shrink-0 overflow-hidden rounded-md border border-(--border)">
+    // MapLibre's CSS sets position: relative on its container and beats Tailwind's
+    // `absolute` (unlayered vs layered), leaving it 0 high: size it with h-full w-full.
+    <div className="h-44 shrink-0 overflow-hidden rounded-md border border-(--border)">
       <div
         ref={container}
         role="img"
         aria-label={t("label")}
         title={t("hint")}
-        className="absolute inset-0 cursor-crosshair touch-none"
+        className="h-full w-full cursor-crosshair touch-none"
         data-testid="minimap"
       />
     </div>
