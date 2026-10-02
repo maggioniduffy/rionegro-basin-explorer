@@ -373,6 +373,8 @@ export default function MapView() {
           "AttributionControl.MapFeedback": t("maplibre.mapFeedback"),
           "ScaleControl.Kilometers": t("maplibre.kilometers"),
           "ScaleControl.Meters": t("maplibre.meters"),
+          "ScaleControl.Miles": t("maplibre.miles"),
+          "ScaleControl.Feet": t("maplibre.feet"),
         },
       });
     } catch (err) {
@@ -385,7 +387,9 @@ export default function MapView() {
     map.addControl(new AttributionControl({ compact: false }), "bottom-right");
     // Bottom left, under the map controls: the right column reaches down to the
     // attribution, as the controls do.
-    map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
+    // The scale bar follows the km/mi toggle.
+    const scale = new ScaleControl({ unit: initial.units });
+    map.addControl(scale, "bottom-left");
     mapRef.current = map;
     // Test hook for e2e and scripts/perf-zoom.ts; inlined at build time, so production
     // builds without NEXT_PUBLIC_E2E carry no reference to it.
@@ -448,6 +452,7 @@ export default function MapView() {
     const unsubscribe = useMapStore.subscribe((s, prev) => {
       if (!loaded) return;
       if (s.focus && s.focus !== prev.focus) fitTo(s.focus.bbox);
+      if (s.units !== prev.units) scale.setUnit(s.units);
       // Only style state needs applying; other store fields don't touch the map.
       if (
         s.visibleLand === prev.visibleLand &&

@@ -30,7 +30,12 @@
   "options": {
     "label": "Visualización",
     "minimize": "Minimizar panel",
-    "expand": "Mostrar panel"
+    "expand": "Mostrar panel",
+    "units": {
+      "label": "Unidades",
+      "metric": "Kilómetros",
+      "imperial": "Millas"
+    }
   },
   "legend": {
     "title": "Régimen de flujo",
@@ -67,7 +72,9 @@
       "toggleAttribution": "Mostrar u ocultar créditos",
       "mapFeedback": "Comentarios sobre el mapa",
       "kilometers": "km",
-      "meters": "m"
+      "meters": "m",
+      "miles": "mi",
+      "feet": "ft"
     }
   },
   "search": {

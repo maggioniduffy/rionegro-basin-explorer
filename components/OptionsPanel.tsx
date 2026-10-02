@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
+import { UnitsToggle } from "./UnitsToggle";
 
 /**
  * Display options (units, layer visibility, …), bottom right. Closed, only the header
@@ -41,7 +42,9 @@ export function OptionsPanel() {
         id="display-options-body"
         hidden={!open}
         className="flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-1 pb-4"
-      />
+      >
+        <UnitsToggle />
+      </div>
     </section>
   );
 }

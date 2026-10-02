@@ -30,7 +30,12 @@
   "options": {
     "label": "Display",
     "minimize": "Minimize panel",
-    "expand": "Show panel"
+    "expand": "Show panel",
+    "units": {
+      "label": "Units",
+      "metric": "Kilometres",
+      "imperial": "Miles"
+    }
   },
   "legend": {
     "title": "Flow regime",
@@ -67,7 +72,9 @@
       "toggleAttribution": "Toggle attribution",
       "mapFeedback": "Map feedback",
       "kilometers": "km",
-      "meters": "m"
+      "meters": "m",
+      "miles": "mi",
+      "feet": "ft"
     }
   },
   "search": {

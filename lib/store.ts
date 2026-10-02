@@ -1,11 +1,33 @@
 import { create } from "zustand";
 import type { Bbox } from "./data/schemas";
 import type { Picked } from "./map/picked";
-import type { Theme } from "./map/style";
+import type { FlowClass, Theme } from "./map/style";
+import type { UnitSystem } from "./units";
 import type { Selection } from "./url-state";
 
 /** localStorage key; read before hydration by the inline script in the layout. */
 export const THEME_STORAGE_KEY = "theme";
+/** localStorage key for the km/mi choice; read on mount by UnitsToggle. */
+export const UNITS_STORAGE_KEY = "units";
+
+/**
+ * Display toggles for the map's water layers (Display panel). Rivers are the
+ * HydroRIVERS reaches, split by GIRES flow class; natural lakes are HydroLAKES lakes
+ * and controlled lakes plus IGN water bodies, artificial ones are reservoirs.
+ */
+export interface LayerVisibility {
+  rivers: boolean;
+  flow: Record<FlowClass, boolean>;
+  naturalLakes: boolean;
+  artificialLakes: boolean;
+}
+
+export const DEFAULT_LAYERS: LayerVisibility = {
+  rivers: true,
+  flow: { perennial: true, nonPerennial: true, unknown: true },
+  naturalLakes: true,
+  artificialLakes: true,
+};
 
 /** "basin" shows the basin as one; "subbasins" colours its sub-basins. */
 export type ViewMode = "basin" | "subbasins";
@@ -56,6 +78,11 @@ interface MapState {
    */
   optionsOpen: boolean;
   setOptionsOpen: (v: boolean) => void;
+  /** km/mi; panels and the scale bar follow it, independently of the locale. */
+  units: UnitSystem;
+  setUnits: (u: UnitSystem) => void;
+  layers: LayerVisibility;
+  setLayers: (patch: Partial<LayerVisibility>) => void;
 }
 
 export const useMapStore = create<MapState>()((set) => ({
@@ -97,4 +124,8 @@ export const useMapStore = create<MapState>()((set) => ({
   setIsolatedIds: (isolatedIds) => set({ isolatedIds }),
   optionsOpen: false,
   setOptionsOpen: (optionsOpen) => set({ optionsOpen }),
+  units: "metric",
+  setUnits: (units) => set({ units }),
+  layers: DEFAULT_LAYERS,
+  setLayers: (patch) => set((s) => ({ layers: { ...s.layers, ...patch } })),
 }));

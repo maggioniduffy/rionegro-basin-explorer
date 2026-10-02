@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useEffect } from "react";
+import { useMapStore } from "@/lib/store";
 import { formatQuantity, type Quantity } from "@/lib/units";
 import { Icon } from "../Icon";
 
@@ -11,7 +12,8 @@ export type Caveat =
 
 export function useFormat() {
   const locale = useLocale();
-  return (q: Quantity, v: number) => formatQuantity(locale, q, v);
+  const units = useMapStore((s) => s.units);
+  return (q: Quantity, v: number) => formatQuantity(locale, q, v, units);
 }
 
 export function Row({

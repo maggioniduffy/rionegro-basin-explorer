@@ -24,3 +24,25 @@ describe("formatQuantity", () => {
     expect(fmt("en", "m3s", 869.7)).toBe("869.7 m³/s");
   });
 });
+
+describe("formatQuantity, imperial", () => {
+  const imp = (locale: string, q: Parameters<typeof fmt>[1], v: number) =>
+    fmt(locale, q, v, "imperial");
+
+  it("converts lengths and areas", () => {
+    expect(imp("en", "km", 1.609344)).toBe("1 mi");
+    expect(imp("en", "km", 710.7)).toBe("441.6 mi");
+    expect(imp("es", "km", 710.7)).toBe("441,6 mi");
+    expect(imp("en", "m", 1000)).toBe("3,281 ft");
+    expect(imp("en", "km2", 2.589988110336)).toBe("1 mi²");
+    expect(imp("en", "km2", 112936.5)).toBe("43,605 mi²");
+  });
+  it("converts gradients to ft/mi", () => {
+    expect(imp("en", "mPerKm", 1)).toBe("5.28 ft/mi");
+  });
+  it("leaves discharge, percentages and counts alone", () => {
+    expect(imp("en", "m3s", 869.7)).toBe("869.7 m³/s");
+    expect(imp("en", "pct", 2.5)).toBe("2.5%");
+    expect(imp("en", "count", 600371)).toBe("600,371");
+  });
+});
