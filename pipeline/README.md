@@ -201,7 +201,10 @@ with each level, and that the last level is the whole basin.
 ### `npm run pipeline:subbasins`
 
 Builds the sub-basin hierarchy listed in `pipeline/subbasins.config.json` from HydroBASINS level 12.
-The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorheic`.
+The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorheic`; levels 2–3 are
+the other approved rivers of `pipeline/names.json`, nested by where they flow (`collon-cura` and its
+four tributaries under `limay`, and so on). A parent is listed before its children; the config's
+structure (levels, parents, no cycles) is checked before anything runs.
 
 1. **Sets.** A river node is the level-12 polygon holding its river's `mouthReach` plus
    everything upstream via `NEXT_DOWN`. Below the root, endorheic polygons (`ENDO > 0`) are left
@@ -215,9 +218,14 @@ The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorh
 4. **Metrics.** Summed or `CATCH_SKM`-weighted over RiverATLAS catchment attributes (`pop_ct_csu`,
    `lka_pc_cse`, `inu_pc_cmn/cmx`, `ele_mt_cmn/cmx`), endorheic catchments included. Over the
    connected reaches they must reproduce the upstream values at the mouth, which confirms the units.
+   Metrics cover the node's whole set, so a parent includes its children; the report checks that
+   no child exceeds its parent, that every node keeps some own area (so it can be clicked), and
+   that each river node's connected area matches HydroRIVERS `UPLAND_SKM` at its mouth within 1%.
 
-Outputs: `data/out/subbasins.ndjson` (committed, seed input) and `data/work/tiles/subbasins.geojson`
-(own areas, one feature per sub-basin, for tiles).
+Outputs: `data/out/subbasins.ndjson` (committed, seed input; each node carries its `path` from the
+root), `data/work/tiles/subbasins.geojson` (own areas, one feature per sub-basin, with the path as a
+`,negro,limay,…,` string so the map can match a subtree) and `subbasin_outlines.geojson` (each node's
+whole area, for the selected border).
 
 ### `npm run pipeline:ign-gate`
 
@@ -307,8 +315,8 @@ Runs tippecanoe with the feature and tile-size limits off, except for the mask (
   doesn't fit. This keeps the worst tile near 75k vertices instead of ~274k (z6), which MapLibre
   would otherwise triangulate on every tile load while zooming. `tile-join` must be on PATH next to
   tippecanoe.
-- `public/tiles/subbasins.pmtiles`: layer `subbasins`, the own areas from `pipeline:subbasins`,
-  built with `--detect-shared-borders` so simplification leaves no slivers between neighbours.
+- `public/tiles/subbasins.pmtiles`: layers `subbasins` (the own areas from `pipeline:subbasins`) and
+  `outlines` (each node's whole area), built with `--detect-shared-borders` so simplification leaves no slivers between neighbours.
 - `public/tiles/ign.pmtiles`: layers `detail` (IGN streams HydroRIVERS lacks), `lakes_extra`, `dams` and
   `dam_walls`, each feature with a minzoom from `map.config.json` (`ign`: by length, by area, dams from
   z6). The report checks every feature is present at maxzoom and none before its first zoom.

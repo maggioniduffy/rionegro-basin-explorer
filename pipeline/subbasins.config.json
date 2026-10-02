@@ -1,5 +1,5 @@
 {
-  "$comment": "Inputs for pipeline:subbasins. A river node is everything upstream (HydroBASINS level-12 NEXT_DOWN) of the polygon holding its river's mouthReach (data/out/rivers.ndjson); below the root, endorheic polygons (ENDO > 0) are left out because they drain to closed depressions, not to the river. An endorheic node holds every endorheic polygon of its parent. The root is the whole basin; a node's own area is its set minus its children's sets, and the own areas must partition the root. level 1 = main tributaries (Phase 4); levels 2-3 come in Phase 6.",
+  "$comment": "Inputs for pipeline:subbasins. A river node is everything upstream (HydroBASINS level-12 NEXT_DOWN) of the polygon holding its river's mouthReach (data/out/rivers.ndjson); below the root, endorheic polygons (ENDO > 0) are left out because they drain to closed depressions, not to the river. An endorheic node holds every endorheic polygon of its parent. The root is the whole basin; a node's own area is its set minus its children's sets, and the own areas must partition the root. level 1 = main tributaries (Phase 4); levels 2-3 = the approved tributaries of pipeline/names.json (Phase 6). A parent is listed before its children. The endorheic node stays at level 1: river nodes below the root have no endorheic land.",
   "subbasins": [
     {
       "id": "negro",
@@ -22,6 +22,95 @@
       "parentId": "negro",
       "level": 1
     },
-    { "id": "endorheic", "kind": "endorheic", "parentId": "negro", "level": 1 }
+    {
+      "id": "endorheic",
+      "kind": "endorheic",
+      "parentId": "negro",
+      "level": 1
+    },
+    {
+      "id": "collon-cura",
+      "kind": "river",
+      "river": "collon-cura",
+      "parentId": "limay",
+      "level": 2
+    },
+    {
+      "id": "comallo",
+      "kind": "river",
+      "river": "comallo",
+      "parentId": "limay",
+      "level": 2
+    },
+    {
+      "id": "picun-leufu",
+      "kind": "river",
+      "river": "picun-leufu",
+      "parentId": "limay",
+      "level": 2
+    },
+    {
+      "id": "pichileufu",
+      "kind": "river",
+      "river": "pichileufu",
+      "parentId": "limay",
+      "level": 2
+    },
+    {
+      "id": "agrio",
+      "kind": "river",
+      "river": "agrio",
+      "parentId": "neuquen",
+      "level": 2
+    },
+    {
+      "id": "covunco",
+      "kind": "river",
+      "river": "covunco",
+      "parentId": "neuquen",
+      "level": 2
+    },
+    {
+      "id": "curi-leuvu",
+      "kind": "river",
+      "river": "curi-leuvu",
+      "parentId": "neuquen",
+      "level": 2
+    },
+    {
+      "id": "trocoman",
+      "kind": "river",
+      "river": "trocoman",
+      "parentId": "neuquen",
+      "level": 2
+    },
+    {
+      "id": "alumine",
+      "kind": "river",
+      "river": "alumine",
+      "parentId": "collon-cura",
+      "level": 3
+    },
+    {
+      "id": "chimehuin",
+      "kind": "river",
+      "river": "chimehuin",
+      "parentId": "collon-cura",
+      "level": 3
+    },
+    {
+      "id": "catan-lil",
+      "kind": "river",
+      "river": "catan-lil",
+      "parentId": "collon-cura",
+      "level": 3
+    },
+    {
+      "id": "caleufu",
+      "kind": "river",
+      "river": "caleufu",
+      "parentId": "collon-cura",
+      "level": 3
+    }
   ]
 }
