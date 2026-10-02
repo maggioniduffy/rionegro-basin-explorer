@@ -72,6 +72,8 @@
   "map": {
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
+    "snapshot": "Guardar el mapa como imagen",
+    "snapshotError": "No se pudo guardar la imagen.",
     "webglError": "El mapa necesita WebGL, que este navegador no admite o tiene desactivado.",
     "attribution": {
       "hydrosheds": "HydroSHEDS © WWF",
