@@ -124,8 +124,18 @@ CLAUDE.md  PLAN.md
 
 ## Gate — measure IGN data (before Phase 5)
 
-- [ ] Run the DuckDB comparison (IGN perennial streams vs HydroRIVERS in the basin bbox): total km, % with names
-- [ ] Decide what IGN contributes: real extra detail, or mostly names
+- [x] Run the DuckDB comparison (IGN perennial streams vs HydroRIVERS in the basin bbox): total km, % with names (`npm run pipeline:ign-gate`, `data/work/ign-gate/report.json`)
+- [x] Decide what IGN contributes: real extra detail, or mostly names
+
+**Gate decisions (2026-10-01):**
+
+- IGN line layers ("Corriente de agua perenne" and "intermitente", Shapefile) were downloaded on 2026-10-01 into `data/raw/ign/`. IGN's terms are custom, not CC BY (see `pipeline/SOURCES.md`): credit "FUENTE: Instituto Geográfico Nacional de la República Argentina", the date of the original data, and no endorsement claim.
+- Perennial lines in the basin: 10,556 features, 13,635 km (HydroRIVERS: 8,016 reaches, 35,083 km), 84% of the km named, 494 distinct names. Lengths agree on the main rivers (Río Negro 723.7 km IGN vs 710.7 km HydroRIVERS; Limay 548.1 vs 555.3).
+- Extra detail is marginal: IGN perennial km beyond 100 / 250 / 500 m of any HydroRIVERS reach is 56.5% / 26.2% / 16.8% of IGN km, adding 22% / 10.2% / 6.5% over HydroRIVERS. The rule (≥ 20% and ≥ 10%, at 250 m) passes only narrowly and fails at 500 m. HydroRIVERS comes from a coarse grid, so part of this is positional offset, not missing streams.
+- Names are the main gain: up to 5,815 km (18.4%) of the 31,572 km of HydroRIVERS with no river name lies within 250 m of a named perennial IGN line (6,511 km, 20.6%, at 500 m). This is a proximity upper bound; the real figure comes from the Phase 5 match.
+- Intermittent lines: 63,685 features, 77,682 km in the basin, 5.7% of the km named; 75% of the km is beyond 250 m of HydroRIVERS. Large, mostly unnamed geometry.
+- **Scope chosen (owner, 2026-10-01): names + perennial detail layer.** Phase 5 keeps the match with confidence scores, the names, and a detail layer of unmatched perennial lines. **The intermittent layer is out of scope** (tile size and the committed PMTiles in `/public`, and almost no names); revisit only with a size and cost check. Because of the positional offset, "unmatched" must be judged with a buffer of at least 250 m plus overlap, not by distance alone.
+- Caveats: distances are in Albers, so approximate; only exact duplicate lines were removed (overlap 0.1% for perennial, not measured for intermittent); no combined perennial + intermittent coverage was computed.
 
 ## Phase 5 — IGN integration
 

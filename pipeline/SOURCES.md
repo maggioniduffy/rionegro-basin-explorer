@@ -167,7 +167,7 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   - How clause 3 applies to vector tiles, and whether the same terms cover data taken from the WFS.
   - The quoted text came through a page-to-text tool (checked twice, sentences matched). Confirm once in
     a browser before release.
-- Local copy: `data/raw/ign/` (not downloaded by the pipeline; origin and download date unknown).
+- Local copy: `data/raw/ign/` (not downloaded by the pipeline).
   Six national layers in WGS84 (EPSG:4326) with attribute text in **ISO-8859-1** (per the `.cst`
   files; read with `open_options=['ENCODING=ISO-8859-1']`). Layer codes and `objeto` values:
   - BH140 `Corriente de agua` (river polygons)
@@ -177,8 +177,15 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   - BI020 `Muro de embalse` (dam wall lines)
   - BH051 `Dique` (dam points)
 
-  There is **no watercourse-line layer and no basin polygon** in this copy. The Phase 5 gate needs the
-  line layer downloaded.
+  The six layers above were already there, origin and date unknown. There is no basin polygon in this
+  copy. The two watercourse-line layers were downloaded by the project owner from the IGN layers page on
+  2026-10-01 (date from the zip timestamps), as Shapefile, in WGS84 with the same ISO-8859-1 encoding.
+  Columns: `gid`, `entidad`, `objeto` (`Corriente de agua`), `fna` (full name), `gna` (generic type),
+  `nam` (short name), `sag` (`IGN`). `fna` is empty for 22% of the perennial lines.
+  - `lineas_de_aguas_continentales_perenne/`: 50,093 lines nationally, 177,153 km
+  - `lineas_de_aguas_continentales_intermitente/` (file `..._intermitentes.shp`): 271,755 lines, 479,230 km
+    Their per-layer metadata PDFs (update date) were not downloaded, so clause 4's "date of the original
+    data" is still open.
 
 ## ALOS PALSAR RTC scene (ASF), local only
 
