@@ -6,9 +6,9 @@ import { useMapStore } from "@/lib/store";
 import { Group, PanelFrame, Row, useFormat } from "./parts";
 
 /**
- * A lake, dam or IGN detail line the user clicked. These features have no API document:
- * the panel shows what the tile carries (name, length or area) and says what is not
- * available, rather than inventing hydrology.
+ * A lake, dam, locality or IGN detail line the user clicked. These features have no API
+ * document: the panel shows what the tile carries (name, length or area) and says what
+ * is not available, rather than inventing hydrology.
  */
 export function FeaturePanel({ picked }: { picked: Picked }) {
   const t = useTranslations("panel");
@@ -31,6 +31,8 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
       case "dam":
       case "wall":
         return picked.name ?? t("feature.dam.unnamed");
+      case "locality":
+        return picked.name;
     }
   })();
   const subtitle =
@@ -40,13 +42,17 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
         ? t("feature.water.kind", { kind: waterKind })
         : picked.kind === "wall"
           ? t("feature.dam.wall")
-          : t("feature.dam.title");
+          : picked.kind === "locality"
+            ? t("feature.locality.place", { place: picked.place })
+            : t("feature.dam.title");
   const note =
     picked.kind === "detail"
       ? t("feature.detail.note")
       : picked.kind === "water"
         ? t("feature.water.note")
-        : t("feature.dam.note");
+        : picked.kind === "locality"
+          ? t("feature.locality.note")
+          : t("feature.dam.note");
 
   return (
     <PanelFrame label={t("feature.label")} onClose={() => pick(null)}>
@@ -75,7 +81,11 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
       )}
       <footer className="text-muted flex flex-col gap-1 border-t border-(--border) pt-3 text-xs">
         <p>{note}</p>
-        <p>{t("feature.source")}</p>
+        <p>
+          {picked.kind === "locality"
+            ? t("feature.locality.source")
+            : t("feature.source")}
+        </p>
       </footer>
     </PanelFrame>
   );

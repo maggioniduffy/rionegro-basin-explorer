@@ -5,6 +5,7 @@ import {
   AttributionControl,
   Map as MapLibreMap,
   type MapMouseEvent,
+  Popup,
   ScaleControl,
 } from "maplibre-gl";
 import { useTranslations } from "next-intl";
@@ -33,6 +34,8 @@ import {
   LAKE_HIT_LAYER_ID,
   LAKE_LAYER_ID,
   lakeFilter,
+  LOCALITY_LAYER_ID,
+  localityFilter,
   MASK_LAYER_IDS,
   OUTLINE_LAYER_ID,
   REACH_LAYER_IDS,
@@ -110,7 +113,7 @@ type Hit =
   | { type: "picked"; picked: Picked };
 
 /**
- * What a click at a point finds. Dams first (small, drawn on top), then the reach under
+ * What a click at a point finds. Localities and dams first (small, drawn on top), then the reach under
  * it, preferring the largest river; then IGN streams and lakes; otherwise, in the
  * sub-basin view, the sub-basin; otherwise null.
  */
@@ -121,6 +124,8 @@ function hitAt(map: MapLibreMap, x: number, y: number): Hit | null {
       .length > 0
   )
     return null;
+  const locality = hitFeature(map, x, y, [LOCALITY_LAYER_ID]);
+  if (locality) return { type: "picked", picked: locality };
   const dam = hitFeature(map, x, y, [DAM_LAYER_ID, DAM_WALL_LAYER_ID]);
   if (dam) return { type: "picked", picked: dam };
   const reach = hitReach(map, x, y);
@@ -261,6 +266,9 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     ])
       map.setFilter(id, waterFilter(s.hideEndorheic, s.layers));
   }
+  if (!prev || s.layers.localities !== prev.layers.localities) {
+    map.setFilter(LOCALITY_LAYER_ID, localityFilter(s.layers.localities));
+  }
   if (endoChanged) {
     for (const id of [DAM_LAYER_ID, DAM_WALL_LAYER_ID])
       map.setFilter(id, lakeFilter(s.hideEndorheic));
@@ -355,6 +363,10 @@ export default function MapView() {
               t("attribution.hydrolakes"),
             ),
             link("https://www.ign.gob.ar", t("attribution.ign")),
+            link(
+              "https://www.openstreetmap.org/copyright",
+              t("attribution.osm"),
+            ),
           ].join(" | "),
           theme: initial.theme,
           hideEndorheic: initial.hideEndorheic,
@@ -438,12 +450,27 @@ export default function MapView() {
       if (hit?.type === "picked") store.pick(hit.picked);
       else store.select(hit?.selection ?? null);
     });
+    // Hovering a locality also names it; the click opens its panel.
+    const nameTip = new Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 10,
+      className: "locality-tip",
+    });
     const onHover = (e: MapMouseEvent) => {
       if (!loaded) return;
-      map.getCanvas().style.cursor = hitAt(map, e.point.x, e.point.y)
-        ? "pointer"
-        : "";
+      const hit = hitAt(map, e.point.x, e.point.y);
+      map.getCanvas().style.cursor = hit ? "pointer" : "";
+      if (hit?.type === "picked" && hit.picked.kind === "locality") {
+        nameTip
+          .setLngLat(map.unproject(e.point))
+          .setText(hit.picked.name)
+          .addTo(map);
+      } else {
+        nameTip.remove();
+      }
     };
+    map.getCanvas().addEventListener("mouseleave", () => nameTip.remove());
     map.on("mousemove", onHover);
     if (process.env.NEXT_PUBLIC_E2E === "1") window.__mapHover = onHover;
 

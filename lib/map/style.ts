@@ -195,6 +195,15 @@ export const IGN_LAKE_FILL_LAYER_ID = "ign-lakes-extra-fill";
 export const IGN_LAKE_LINE_LAYER_ID = "ign-lakes-extra-outline";
 export const DAM_WALL_LAYER_ID = "dam-walls";
 export const DAM_LAYER_ID = "dams";
+/** OSM cities, towns and villages (pipeline:localities), drawn above the dams. */
+export const LOCALITY_LAYER_ID = "localities";
+export const LOCALITY_COLOR = "#fb923c";
+
+/** Localities: hidden by the Display toggle. */
+export function localityFilter(show: boolean): FilterSpecification {
+  return show ? ["literal", true] : ["boolean", false];
+}
+
 /** Colour of the IGN detail lines, also used by the legend. */
 export const IGN_DETAIL_COLOR = "#67e8f9";
 
@@ -499,6 +508,28 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       },
     },
   );
+  layers.push({
+    id: LOCALITY_LAYER_ID,
+    type: "circle",
+    source: "localities",
+    "source-layer": "localities",
+    filter: localityFilter(o.layers.localities),
+    paint: {
+      // Bigger for a bigger class: city, town, village.
+      "circle-radius": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        4,
+        ["match", ["get", "place"], "city", 3.5, 2.5],
+        12,
+        ["match", ["get", "place"], "city", 8, "town", 6.5, 5],
+      ],
+      "circle-color": LOCALITY_COLOR,
+      "circle-stroke-color": "#0f172a",
+      "circle-stroke-width": 1.25,
+    },
+  });
   // On top of everything, so the hidden sub-basins lose their rivers too.
   layers.push({
     id: SUBBASIN_HIDE_LAYER_ID,
@@ -535,6 +566,10 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
         url: `pmtiles://${o.origin}${TILE_PATHS.subbasins}`,
       },
       ign: { type: "vector", url: `pmtiles://${o.origin}${TILE_PATHS.ign}` },
+      localities: {
+        type: "vector",
+        url: `pmtiles://${o.origin}${TILE_PATHS.localities}`,
+      },
     },
     layers,
   };

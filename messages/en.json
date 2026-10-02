@@ -46,7 +46,8 @@
       "rivers": "Rivers",
       "flowHint": "Flow regime as modeled by GIRES v1.0, not observed.",
       "naturalLakes": "Natural lakes",
-      "artificialLakes": "Reservoirs and regulated lakes"
+      "artificialLakes": "Reservoirs and regulated lakes",
+      "localities": "Cities, towns and villages"
     }
   },
   "sheet": {
@@ -90,7 +91,8 @@
       "hydrosheds": "HydroSHEDS © WWF",
       "gires": "GIRES v1.0 (Messager et al., 2021)",
       "hydrolakes": "HydroLAKES (Messager et al., 2016)",
-      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina"
+      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina",
+      "osm": "© OpenStreetMap contributors"
     },
     "maplibre": {
       "title": "Map of the Río Negro basin",
@@ -212,6 +214,11 @@
         "unnamed": "Unnamed dam",
         "wall": "Dam wall",
         "note": "Position from IGN. No data on capacity or operation is available here."
+      },
+      "locality": {
+        "place": "{place, select, city {City} town {Town} village {Village} other {Locality}}",
+        "note": "Position and name from OpenStreetMap. No population or other data is shown here.",
+        "source": "Source: © OpenStreetMap contributors, ODbL 1.0."
       },
       "fields": {
         "kind": "Type",

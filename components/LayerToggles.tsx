@@ -36,7 +36,8 @@ export function Toggle({
 
 /**
  * Show or hide the water layers: HydroRIVERS reaches (all, or by GIRES flow class) and
- * lakes, natural or artificial. A hidden feature can't be clicked either.
+ * lakes, natural or artificial; and the OSM localities. A hidden feature can't be
+ * clicked either.
  */
 export function LayerToggles() {
   const t = useTranslations("options.layers");
@@ -84,6 +85,12 @@ export function LayerToggles() {
         onChange={(artificialLakes) => setLayers({ artificialLakes })}
       >
         {t("artificialLakes")}
+      </Toggle>
+      <Toggle
+        checked={layers.localities}
+        onChange={(localities) => setLayers({ localities })}
+      >
+        {t("localities")}
       </Toggle>
     </fieldset>
   );

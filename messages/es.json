@@ -46,7 +46,8 @@
       "rivers": "Ríos",
       "flowHint": "Régimen de flujo modelado por GIRES v1.0, no observado.",
       "naturalLakes": "Lagos naturales",
-      "artificialLakes": "Embalses y lagos regulados"
+      "artificialLakes": "Embalses y lagos regulados",
+      "localities": "Ciudades, pueblos y parajes"
     }
   },
   "sheet": {
@@ -90,7 +91,8 @@
       "hydrosheds": "HydroSHEDS © WWF",
       "gires": "GIRES v1.0 (Messager et al., 2021)",
       "hydrolakes": "HydroLAKES (Messager et al., 2016)",
-      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina"
+      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina",
+      "osm": "© colaboradores de OpenStreetMap"
     },
     "maplibre": {
       "title": "Mapa de la cuenca del Río Negro",
@@ -212,6 +214,11 @@
         "unnamed": "Presa sin nombre",
         "wall": "Muro de presa",
         "note": "Posición según el IGN. Aquí no hay datos de capacidad ni de operación."
+      },
+      "locality": {
+        "place": "{place, select, city {Ciudad} town {Pueblo} village {Paraje} other {Localidad}}",
+        "note": "Posición y nombre de OpenStreetMap. Aquí no se muestran población ni otros datos.",
+        "source": "Fuente: © colaboradores de OpenStreetMap, ODbL 1.0."
       },
       "fields": {
         "kind": "Tipo",

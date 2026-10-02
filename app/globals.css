@@ -60,3 +60,23 @@ body {
     bottom: var(--sheet-height, 0px);
   }
 }
+
+/* Name shown when hovering a locality dot. */
+.maplibregl-popup.locality-tip .maplibregl-popup-content {
+  background: var(--panel);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8125rem;
+  pointer-events: none;
+}
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-top
+  .maplibregl-popup-tip,
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-bottom
+  .maplibregl-popup-tip,
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-left
+  .maplibregl-popup-tip,
+.maplibregl-popup.locality-tip.maplibregl-popup-anchor-right
+  .maplibregl-popup-tip {
+  display: none;
+}

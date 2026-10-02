@@ -22,6 +22,8 @@ export interface LayerVisibility {
   flow: Record<FlowClass, boolean>;
   naturalLakes: boolean;
   artificialLakes: boolean;
+  /** OSM cities, towns and villages. */
+  localities: boolean;
 }
 
 export const DEFAULT_LAYERS: LayerVisibility = {
@@ -29,6 +31,7 @@ export const DEFAULT_LAYERS: LayerVisibility = {
   flow: { perennial: true, nonPerennial: true, unknown: true },
   naturalLakes: true,
   artificialLakes: true,
+  localities: true,
 };
 
 /** "basin" shows the basin as one; "subbasins" colours its sub-basins. */
@@ -62,7 +65,7 @@ interface MapState {
   focus: { bbox: Bbox; key: number } | null;
   select: (selection: Selection | null, opts?: { fit?: boolean }) => void;
   /**
-   * A lake, dam or IGN detail line the user clicked: shown in the panel, not in the URL.
+   * A lake, dam, locality or IGN detail line the user clicked: shown in the panel, not in the URL.
    * Any selection clears it, and picking one clears the selection.
    */
   picked: Picked | null;
