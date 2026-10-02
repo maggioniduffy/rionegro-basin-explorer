@@ -25,7 +25,7 @@ export function Controls() {
   return (
     <section
       aria-label={t("label")}
-      className={`absolute bottom-10 left-3 flex max-h-[calc(100dvh-8rem)] max-w-[calc(100vw-1.5rem)] flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur ${
+      className={`absolute bottom-10 left-3 flex max-h-[calc(100dvh_-_var(--panel-top)_-_2.5rem)] max-w-[calc(100vw-1.5rem)] flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur ${
         open ? "w-72" : "w-auto"
       }`}
     >
