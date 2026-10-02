@@ -81,3 +81,8 @@ The standing architecture decisions stay in PLAN.md; data licenses are in `pipel
 - **Dropped.** Provincial boundaries (owner, 2026-10-01): no local source and none verified.
 - **Open.** (1) The date of the original IGN data (clause 4) is not recorded, so no date is shown (owner: later). (2) The BH130 reservoir outlines list "Esri-World_Imagery_2010" in their source field; the effect on terms is unverified (`pipeline/SOURCES.md`). (3) The two river-name changes and the weak/strong confidence of `Río Caleufú` (still `weak`, from the OSM evidence, though IGN covers 62% of its stem) were not reviewed beyond the vote.
 - **Pipeline order** is now `… named`, `lakes`, `ign`, `ign-match`, `ign-layers`, `export`, `mask`, `subbasins`, `tiles`: `export` reads the IGN names and `tiles` reads the IGN layers.
+
+## Deploy (2026-10-01)
+
+- Vercel is live at https://rionegrobasinexplorer.vercel.app/, deploying `main` from GitHub, with Atlas as the database. Checked after the Phase 5 merge: the home page and `/api/health` answer 200, search and reach APIs return the seeded data, all four PMTiles files in `/public/tiles` are served with Range requests (206), and a page load shows no console errors or failed requests. This closes the Phase 0 open point on PMTiles Range requests on Vercel.
+- Not checked: the imagery tiles from EOX (CC BY-NC-SA, non-commercial; EOX asks to be contacted before a public launch), and the Atlas network access and read-only user (Phase 8).

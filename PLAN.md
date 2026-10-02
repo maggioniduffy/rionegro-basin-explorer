@@ -40,7 +40,7 @@ CLAUDE.md  PLAN.md  DECISSIONS.md
 
 - [x] `create-next-app` (TS strict, Tailwind, ESLint), Prettier, `npm run check`
 - [x] next-intl wired with `/en` and `/es`, locale switcher, one translated string as a smoke test
-- [~] Atlas M0 cluster, Vercel project, env vars (`MONGODB_URI`, imagery URL) — Atlas cluster live and seeded (2026-09-30); Vercel pending
+- [x] Atlas M0 cluster, Vercel project, env vars (`MONGODB_URI`, imagery URL) — Atlas cluster live and seeded (2026-09-30); Vercel live at https://rionegrobasinexplorer.vercel.app/ (2026-10-01)
 - [x] Decide: imagery provider, PMTiles hosting
 - [x] `pipeline/SOURCES.md` started (HydroSHEDS/HydroATLAS, IGN, OSM, imagery): license + citation for each
 - [x] Playwright set up with one smoke screenshot
