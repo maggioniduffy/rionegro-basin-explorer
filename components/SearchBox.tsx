@@ -10,10 +10,11 @@ import { Icon } from "./Icon";
 
 const DEBOUNCE_MS = 200;
 
-/** River search (combobox): type, pick with arrows + Enter or a click. */
+/** River and IGN-name search (combobox): type, pick with arrows + Enter or a click. */
 export function SearchBox() {
   const t = useTranslations("search");
   const select = useMapStore((s) => s.select);
+  const focusOn = useMapStore((s) => s.focusOn);
   const listId = useId();
   const [text, setText] = useState("");
   const [query, setQuery] = useState<string | null>(null);
@@ -32,7 +33,13 @@ export function SearchBox() {
   const showList = open && query !== null && state.status !== "loading";
 
   function choose(hit: SearchHit) {
-    select({ kind: "river", id: hit.id }, { fit: true });
+    if (hit.kind === "river")
+      select({ kind: "river", id: hit.id }, { fit: true });
+    else {
+      // An IGN name: open its longest reach and show every reach that carries the name.
+      select({ kind: "reach", id: Number(hit.id) });
+      focusOn(hit.bbox);
+    }
     setText("");
     setOpen(false);
   }
@@ -103,7 +110,7 @@ export function SearchBox() {
           )}
           {hits.map((hit, i) => (
             <li
-              key={hit.id}
+              key={`${hit.kind}:${hit.id}`}
               id={`${listId}-${i}`}
               role="option"
               aria-selected={i === active}

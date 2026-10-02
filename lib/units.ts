@@ -17,6 +17,10 @@ function options(q: Quantity, value: number): Intl.NumberFormatOptions {
     case "m":
       return { style: "unit", unit: "meter", maximumFractionDigits: 0 };
     case "km2":
+      // Ponds and small lakes are fractions of a square kilometre.
+      return Math.abs(value) < 10
+        ? { maximumSignificantDigits: 2 }
+        : { maximumFractionDigits: 0 };
     case "count":
       return { maximumFractionDigits: 0 };
     case "m3s":

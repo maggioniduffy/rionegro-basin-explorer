@@ -1,6 +1,6 @@
 import type { AnyBulkWriteOperation, Document, Filter } from "mongodb";
 import type { z } from "zod";
-import type { River, RiverDoc } from "../lib/data/schemas";
+import type { IgnName, IgnNameDoc, River, RiverDoc } from "../lib/data/schemas";
 import { searchTerms } from "../lib/data/search";
 
 /** Parse and validate NDJSON; errors name the line so the pipeline output can be fixed. */
@@ -19,7 +19,14 @@ export function parseNdjson<T>(text: string, schema: z.ZodType<T>): T[] {
 }
 
 export function toRiverDoc(river: River): RiverDoc {
-  return { ...river, searchTerms: searchTerms([river.name, river.shortName]) };
+  return {
+    ...river,
+    searchTerms: searchTerms([river.name, river.shortName, ...river.aliases]),
+  };
+}
+
+export function toIgnNameDoc(name: IgnName): IgnNameDoc {
+  return { ...name, searchTerms: searchTerms([name.name]) };
 }
 
 /**

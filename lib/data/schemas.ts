@@ -17,6 +17,8 @@ export const riverSchema = z.strictObject({
   name: z.string().min(1),
   shortName: z.string().min(1),
   type: z.string().min(1),
+  /** Former names that search still finds (pipeline/names.json). */
+  aliases: z.array(z.string().min(1)),
   nameConfidence: z.enum(["strong", "weak"]),
   /** Slug of the river it flows into, or "sea". */
   flowsInto: z.string().min(1),
@@ -86,6 +88,18 @@ export const reachSchema = z.strictObject({
   nonPerennial30d: z.union([z.literal(0), z.literal(1)]).nullable(),
   nonPerennialProb30d: num.nullable(),
   bbox: bboxSchema,
+  /**
+   * IGN name matched to the reach (pipeline:ign-match); null when none is shown.
+   * confidence: coverage of the reach by the IGN lines of that name; `reviewed` is true
+   * when a hand decision (pipeline/ign-overrides.json) applies.
+   */
+  ign: z
+    .strictObject({
+      name: z.string().min(1),
+      confidence: z.enum(["high", "medium", "low"]),
+      reviewed: z.boolean(),
+    })
+    .nullable(),
 });
 export type Reach = z.infer<typeof reachSchema>;
 
@@ -135,3 +149,22 @@ export const subbasinSchema = z.strictObject({
   provenance: z.record(z.string(), z.string()),
 });
 export type Subbasin = z.infer<typeof subbasinSchema>;
+
+/**
+ * data/out/ign-names.ndjson (pipeline:export): an IGN name shown on unnamed reaches, for
+ * search. Names of approved rivers are not here (they are rivers). A name can belong to
+ * many unrelated streams ("Arroyo Blanco"), so bbox is the union of all its reaches.
+ */
+export const ignNameSchema = z.strictObject({
+  _id: slug,
+  name: z.string().min(1),
+  reachCount: z.number().int().positive(),
+  lengthKm: num,
+  /** The longest reach with this name; search opens it. */
+  longestReach: z.number().int().positive(),
+  bbox: bboxSchema,
+});
+export type IgnName = z.infer<typeof ignNameSchema>;
+
+/** As stored in Mongo: the seed adds normalized names for search. */
+export type IgnNameDoc = IgnName & { searchTerms: string[] };

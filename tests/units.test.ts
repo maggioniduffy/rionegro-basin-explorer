@@ -11,6 +11,9 @@ describe("formatQuantity", () => {
     expect(fmt("es", "km", 710.7)).toBe("710,7 km");
     expect(fmt("en", "count", 600371)).toBe("600,371");
     expect(fmt("es", "km2", 112936.5)).toBe("112.937 km²");
+    expect(fmt("en", "km2", 0.595)).toBe("0.6 km²");
+    expect(fmt("es", "km2", 3.456)).toBe("3,5 km²");
+    expect(fmt("en", "km2", 36.07)).toBe("36 km²");
   });
   it("takes percentages as 0–100", () => {
     expect(fmt("en", "pct", 2.5)).toBe("2.5%");

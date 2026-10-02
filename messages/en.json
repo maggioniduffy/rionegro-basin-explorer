@@ -23,7 +23,9 @@
     "expand": "Show panel",
     "view": "View",
     "viewBasin": "Basin",
-    "viewSubbasins": "Sub-basins"
+    "viewSubbasins": "Sub-basins",
+    "showIgnDetail": "IGN stream detail",
+    "showIgnDetailHint": "Perennial streams from IGN that HydroRIVERS does not draw. Name and length only, no hydrology."
   },
   "legend": {
     "title": "Flow regime",
@@ -36,7 +38,8 @@
       "own": "{name}, direct drainage",
       "hint": "Click the land to see a sub-basin's data. The selected one is tinted on the visible land; borders always show.",
       "endorheic": "Endorheic areas (drain to no river)"
-    }
+    },
+    "ignDetail": "IGN stream not in HydroRIVERS"
   },
   "theme": {
     "toLight": "Light theme",
@@ -49,7 +52,8 @@
     "attribution": {
       "hydrosheds": "HydroSHEDS © WWF",
       "gires": "GIRES v1.0 (Messager et al., 2021)",
-      "hydrolakes": "HydroLAKES (Messager et al., 2016)"
+      "hydrolakes": "HydroLAKES (Messager et al., 2016)",
+      "ign": "FUENTE: Instituto Geográfico Nacional de la República Argentina"
     },
     "maplibre": {
       "title": "Map of the Río Negro basin",
@@ -60,9 +64,9 @@
     }
   },
   "search": {
-    "label": "Search rivers",
-    "placeholder": "Search a river",
-    "noResults": "No river found",
+    "label": "Search rivers and streams",
+    "placeholder": "Search a river or stream",
+    "noResults": "No river or stream found",
     "error": "Search is not available right now."
   },
   "panel": {
@@ -83,7 +87,9 @@
       "titleOf": "Section of the {river}",
       "id": "HydroRIVERS reach {id}",
       "showRiver": "Show the whole {river}",
-      "endorheic": "Endorheic: drains inland and does not reach the sea."
+      "endorheic": "Endorheic: drains inland and does not reach the sea.",
+      "ignName": "Name from IGN. Match confidence: {confidence, select, high {high} medium {medium} other {low}}.",
+      "ignNameReviewed": "Name from IGN, confirmed by hand."
     },
     "groups": {
       "course": "Course",
@@ -147,6 +153,33 @@
       "endorheicNote": "Land that drains to closed depressions and reaches no river. HydroBASINS links some of it to the river network virtually; here it is kept apart.",
       "hideOthers": "Hide the rest of the basin",
       "showOthers": "Show the whole basin"
+    },
+    "feature": {
+      "label": "Map feature details",
+      "detail": {
+        "title": "IGN stream",
+        "unnamed": "Unnamed IGN stream",
+        "note": "A perennial stream drawn by IGN that HydroRIVERS does not include. It has a name and a length but no hydrology: discharge, gradient and watershed are not available for it."
+      },
+      "water": {
+        "unnamed": "{kind, select, lake {Unnamed lake} reservoir {Unnamed reservoir} controlledLake {Unnamed regulated lake} other {Unnamed water body}}",
+        "kind": "{kind, select, lake {Lake} reservoir {Reservoir} controlledLake {Regulated lake} other {Water body}}",
+        "areaHydrolakes": "Area (HydroLAKES, approximate)",
+        "areaIgn": "Area (IGN polygon, approximate)",
+        "note": "Outline from HydroLAKES (Messager et al., 2016) or from IGN; the name is IGN's where it has one."
+      },
+      "dam": {
+        "title": "Dam",
+        "unnamed": "Unnamed dam",
+        "wall": "Dam wall",
+        "note": "Position from IGN. No data on capacity or operation is available here."
+      },
+      "fields": {
+        "kind": "Type",
+        "length": "Length"
+      },
+      "source": "Source: FUENTE: Instituto Geográfico Nacional de la República Argentina. IGN does not endorse or sponsor this application.",
+      "group": "Details"
     }
   }
 }

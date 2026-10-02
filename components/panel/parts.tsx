@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { formatQuantity, type Quantity } from "@/lib/units";
 import { Icon } from "../Icon";
 
@@ -79,5 +79,50 @@ export function Caveats({ caveats }: { caveats: Caveat[] }) {
       )}
       <p>{t("source")}</p>
     </footer>
+  );
+}
+
+/**
+ * The panel on the right of the map: close button, Escape to close (unless something
+ * else, like the search box, already handled the key), and a busy state while loading.
+ */
+export function PanelFrame({
+  label,
+  busy = false,
+  onClose,
+  children,
+}: {
+  label: string;
+  busy?: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const t = useTranslations("panel");
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !e.defaultPrevented) onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <aside
+      aria-label={label}
+      aria-busy={busy}
+      data-testid="info-panel"
+      className="absolute top-16 right-14 left-3 flex max-h-[calc(100dvh-9rem)] flex-col gap-4 overflow-y-auto rounded-lg border border-(--border) bg-(--panel) p-4 text-sm shadow-lg backdrop-blur md:left-auto md:w-88"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={t("close")}
+        title={t("close")}
+        className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-md hover:bg-(--panel-hover)"
+      >
+        <Icon name="close" />
+      </button>
+      {children}
+    </aside>
   );
 }

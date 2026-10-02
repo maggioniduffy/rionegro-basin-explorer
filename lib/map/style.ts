@@ -140,6 +140,27 @@ export function lakeFilter(hideEndorheic: boolean): FilterSpecification {
 export const REACH_LAYER_IDS = FLOW_CLASSES.map(reachLayerId);
 export const OUTLINE_LAYER_ID = "basin-outline";
 export const LAKE_LAYER_ID = "lake-outline";
+/** Invisible fill over every lake, so a click inside a lake finds it. */
+export const LAKE_HIT_LAYER_ID = "lake-hit";
+/** IGN layers (pipeline:ign-layers). Detail lines and extra lakes sit below the mask. */
+export const IGN_DETAIL_LAYER_ID = "ign-detail";
+export const IGN_LAKE_FILL_LAYER_ID = "ign-lakes-extra-fill";
+export const IGN_LAKE_LINE_LAYER_ID = "ign-lakes-extra-outline";
+export const DAM_WALL_LAYER_ID = "dam-walls";
+export const DAM_LAYER_ID = "dams";
+/** Colour of the IGN detail lines, also used by the legend. */
+export const IGN_DETAIL_COLOR = "#67e8f9";
+
+/** IGN detail lines: hidden by the toggle, and with the endorheic streams when asked. */
+export function ignDetailFilter(
+  show: boolean,
+  hideEndorheic: boolean,
+): FilterSpecification {
+  if (!show) return ["boolean", false];
+  return hideEndorheic
+    ? ["!=", ["get", "network"], "endorheic"]
+    : ["literal", true];
+}
 export const IMAGERY_LAYER_ID = "imagery";
 export const BACKGROUND_LAYER_ID = "background";
 /** Halo under the selected river or reach, drawn below the flow-class lines. */
@@ -199,6 +220,7 @@ export interface StyleOptions {
   selection: Selection | null;
   viewMode: ViewMode;
   isolatedIds: string[] | null;
+  showIgnDetail: boolean;
 }
 
 export function buildStyle(o: StyleOptions): StyleSpecification {
@@ -238,6 +260,42 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       "fill-opacity": subbasinFillOpacity(o.viewMode, o.selection),
     },
   });
+  // Below the mask like the sub-basin tint: IGN water bodies and streams that
+  // HydroLAKES / HydroRIVERS lack show only on the visible land.
+  layers.push(
+    {
+      id: IGN_LAKE_FILL_LAYER_ID,
+      type: "fill",
+      source: "ign",
+      "source-layer": "lakes_extra",
+      filter: lakeFilter(o.hideEndorheic),
+      paint: { "fill-color": IGN_DETAIL_COLOR, "fill-opacity": 0.25 },
+    },
+    {
+      id: IGN_LAKE_LINE_LAYER_ID,
+      type: "line",
+      source: "ign",
+      "source-layer": "lakes_extra",
+      filter: lakeFilter(o.hideEndorheic),
+      paint: {
+        "line-color": lake,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.4, 12, 1],
+      },
+    },
+    {
+      id: IGN_DETAIL_LAYER_ID,
+      type: "line",
+      source: "ign",
+      "source-layer": "detail",
+      filter: ignDetailFilter(o.showIgnDetail, o.hideEndorheic),
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": IGN_DETAIL_COLOR,
+        "line-opacity": 0.85,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.6, 12, 1.4],
+      },
+    },
+  );
   for (let k = 0; k < MASK_LEVEL_COUNT; k++) {
     const opacity = opacities[k] ?? 0;
     layers.push({
@@ -285,6 +343,14 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       "line-color": lake,
       "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 12, 1.2],
     },
+  });
+  layers.push({
+    id: LAKE_HIT_LAYER_ID,
+    type: "fill",
+    source: "rivers",
+    "source-layer": "lakes",
+    filter: lakeFilter(o.hideEndorheic),
+    paint: { "fill-opacity": 0 },
   });
   layers.push({
     id: OUTLINE_LAYER_ID,
@@ -342,6 +408,33 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       },
     });
   }
+  // Dams stand at reservoirs, which are visible at every Visible Land level.
+  layers.push(
+    {
+      id: DAM_WALL_LAYER_ID,
+      type: "line",
+      source: "ign",
+      "source-layer": "dam_walls",
+      filter: lakeFilter(o.hideEndorheic),
+      paint: {
+        "line-color": "#f1f5f9",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 12, 3],
+      },
+    },
+    {
+      id: DAM_LAYER_ID,
+      type: "circle",
+      source: "ign",
+      "source-layer": "dams",
+      filter: lakeFilter(o.hideEndorheic),
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 3, 12, 6],
+        "circle-color": "#f1f5f9",
+        "circle-stroke-color": "#0f172a",
+        "circle-stroke-width": 1.5,
+      },
+    },
+  );
   // On top of everything, so the hidden sub-basins lose their rivers too.
   layers.push({
     id: SUBBASIN_HIDE_LAYER_ID,
@@ -377,6 +470,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
         type: "vector",
         url: `pmtiles://${o.origin}${TILE_PATHS.subbasins}`,
       },
+      ign: { type: "vector", url: `pmtiles://${o.origin}${TILE_PATHS.ign}` },
     },
     layers,
   };

@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { MASK_LEVEL_COUNT } from "../lib/map/config";
 import { maskOpacities } from "../lib/map/mask";
+import { validateStyleMin } from "@maplibre/maplibre-gl-style-spec";
 import {
+  buildStyle,
+  DAM_LAYER_ID,
+  DAM_WALL_LAYER_ID,
   endoMaskOpacities,
+  IGN_DETAIL_LAYER_ID,
+  IGN_LAKE_FILL_LAYER_ID,
+  LAKE_LAYER_ID,
   lakeFilter,
+  maskLayerId,
+  reachLayerId,
   selectionFilter,
 } from "../lib/map/style";
 
@@ -58,5 +67,46 @@ describe("selectionFilter", () => {
       7,
     ]);
     expect(selectionFilter(null)).toEqual(["boolean", false]);
+  });
+});
+
+describe("buildStyle with the IGN layers", () => {
+  const style = buildStyle({
+    origin: "http://localhost",
+    dataAttribution: "",
+    theme: "dark",
+    hideEndorheic: false,
+    visibleLand: 3,
+    selection: null,
+    viewMode: "basin",
+    isolatedIds: null,
+    showIgnDetail: true,
+  });
+  const index = (id: string) => style.layers.findIndex((l) => l.id === id);
+
+  it("is a valid style", () => {
+    expect(validateStyleMin(style)).toEqual([]);
+  });
+
+  it("draws IGN streams and extra lakes below the mask, dams above the rivers", () => {
+    const firstMask = index(maskLayerId(0));
+    expect(index(IGN_DETAIL_LAYER_ID)).toBeGreaterThan(-1);
+    expect(index(IGN_DETAIL_LAYER_ID)).toBeLessThan(firstMask);
+    expect(index(IGN_LAKE_FILL_LAYER_ID)).toBeLessThan(firstMask);
+    expect(index(DAM_LAYER_ID)).toBeGreaterThan(
+      index(reachLayerId("perennial")),
+    );
+    expect(index(DAM_WALL_LAYER_ID)).toBeGreaterThan(index(LAKE_LAYER_ID));
+  });
+
+  it("reads every IGN layer from the ign source", () => {
+    expect(style.sources.ign).toMatchObject({ type: "vector" });
+    for (const id of [
+      IGN_DETAIL_LAYER_ID,
+      IGN_LAKE_FILL_LAYER_ID,
+      DAM_LAYER_ID,
+      DAM_WALL_LAYER_ID,
+    ])
+      expect(style.layers[index(id)]).toMatchObject({ source: "ign" });
   });
 });
