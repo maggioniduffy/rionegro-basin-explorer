@@ -22,7 +22,7 @@
     "total": 8016,
     "connected": 6949,
     "endorheic": 1067,
-    "inNamedRivers": 986,
+    "inNamedRivers": 1164,
     "withIgnName": 2393,
     "notDrawnInsideLakes": 295,
     "orphans": 0
@@ -31,7 +31,7 @@
     "total": 35082.8,
     "connected": 29439.3,
     "endorheic": 5643.5,
-    "namedRivers": 3510.5
+    "namedRivers": 4094.3
   },
   "namedRivers": [
     {
@@ -213,13 +213,121 @@
       "nonPerennialPct": 0,
       "regulationPct": 0,
       "population": 1901
+    },
+    {
+      "id": "traful",
+      "flowsInto": "limay",
+      "lengthKm": 74.1,
+      "reaches": 27,
+      "mouthElevationM": 703,
+      "sourceElevationM": 1054,
+      "dischargeM3s": 45.9,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 4609
+    },
+    {
+      "id": "varvarco",
+      "flowsInto": "neuquen",
+      "lengthKm": 84.2,
+      "reaches": 25,
+      "mouthElevationM": 1228,
+      "sourceElevationM": 2277,
+      "dischargeM3s": 35,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 2182
+    },
+    {
+      "id": "nahueve",
+      "flowsInto": "neuquen",
+      "lengthKm": 86.4,
+      "reaches": 31,
+      "mouthElevationM": 1000,
+      "sourceElevationM": 1812,
+      "dischargeM3s": 41.1,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 2151
+    },
+    {
+      "id": "lileo",
+      "flowsInto": "nahueve",
+      "lengthKm": 49.5,
+      "reaches": 9,
+      "mouthElevationM": 1003,
+      "sourceElevationM": 1932,
+      "dischargeM3s": 8.4,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 436
+    },
+    {
+      "id": "renileuvu",
+      "flowsInto": "trocoman",
+      "lengthKm": 59.9,
+      "reaches": 24,
+      "mouthElevationM": 976,
+      "sourceElevationM": 1834,
+      "dischargeM3s": 17.3,
+      "nonPerennialPct": 3.8,
+      "regulationPct": 0,
+      "population": 751
+    },
+    {
+      "id": "malleo",
+      "flowsInto": "alumine",
+      "lengthKm": 77.2,
+      "reaches": 25,
+      "mouthElevationM": 688,
+      "sourceElevationM": 1067,
+      "dischargeM3s": 21.6,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 3454
+    },
+    {
+      "id": "quillen",
+      "flowsInto": "alumine",
+      "lengthKm": 61.2,
+      "reaches": 17,
+      "mouthElevationM": 838,
+      "sourceElevationM": 1175,
+      "dischargeM3s": 10.2,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 1246
+    },
+    {
+      "id": "pulmari",
+      "flowsInto": "alumine",
+      "lengthKm": 53.5,
+      "reaches": 11,
+      "mouthElevationM": 969,
+      "sourceElevationM": 1372,
+      "dischargeM3s": 7.7,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 929
+    },
+    {
+      "id": "litran",
+      "flowsInto": "alumine",
+      "lengthKm": 37.8,
+      "reaches": 9,
+      "mouthElevationM": 1153,
+      "sourceElevationM": 1843,
+      "dischargeM3s": 8.9,
+      "nonPerennialPct": 0,
+      "regulationPct": 0,
+      "population": 718
     }
   ],
   "ignNames": {
-    "names": 412,
+    "names": 403,
     "uniqueSlugs": true,
     "keysWithoutSlug": 0,
-    "excludedApprovedRivers": 15
+    "excludedApprovedRivers": 24
   },
   "intermittence": [
     {

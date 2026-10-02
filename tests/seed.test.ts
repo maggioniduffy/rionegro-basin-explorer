@@ -118,12 +118,19 @@ describe("subbasinSchema", () => {
     const { readFile } = await import("node:fs/promises");
     const text = await readFile("data/out/subbasins.ndjson", "utf8");
     const docs = parseNdjson(text, subbasinSchema);
-    expect(docs.map((d) => d._id)).toEqual([
+    expect(docs.map((d) => d._id).slice(0, 4)).toEqual([
       "negro",
       "limay",
       "neuquen",
       "endorheic",
     ]);
+    expect(docs.length).toBe(25);
+    expect(docs.find((d) => d._id === "alumine")).toMatchObject({
+      level: 3,
+      parentId: "collon-cura",
+      path: ["negro", "limay", "collon-cura", "alumine"],
+    });
+    expect(docs.find((d) => d._id === "malleo")?.level).toBe(4);
     const endo = docs.find((d) => d.kind === "endorheic");
     expect(endo).toMatchObject({ name: null, river: null, outlet: null });
     expect(docs[0]?.parentId).toBeNull();

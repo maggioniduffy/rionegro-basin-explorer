@@ -42,7 +42,6 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
   const label = useSubbasinLabel();
   const isRoot = b.parentId === null;
   const modeled = (path: string) => b.modeled.includes(path);
-  const parentId = b.parent?.id;
   const isolatedIds = useMapStore((s) => s.isolatedIds);
   const setIsolatedIds = useMapStore((s) => s.setIsolatedIds);
   const isolated = isolatedIds !== null;
@@ -54,18 +53,23 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
     <>
       <header className="flex flex-col gap-1 pr-8">
         <h2 className="text-lg leading-tight font-semibold">{label(b)}</h2>
-        <p className="text-muted text-sm">
-          {b.parent && parentId
-            ? t.rich("subbasin.partOf", {
-                parent: b.parent.name ?? label(b.parent),
-                link: (chunks) => (
-                  <LinkButton to={{ kind: "subbasin", id: parentId }}>
-                    {chunks}
+        {b.ancestors.length > 0 ? (
+          <nav aria-label={t("subbasin.breadcrumb")}>
+            <ol className="text-muted flex flex-wrap items-center gap-x-1 text-sm">
+              {b.ancestors.map((a) => (
+                <li key={a.id} className="flex items-center gap-1">
+                  <LinkButton to={{ kind: "subbasin", id: a.id }}>
+                    {a.name ?? label(a)}
                   </LinkButton>
-                ),
-              })
-            : t("subbasin.wholeBasin")}
-        </p>
+                  <span aria-hidden>›</span>
+                </li>
+              ))}
+              <li aria-current="location">{b.name ?? label(b)}</li>
+            </ol>
+          </nav>
+        ) : (
+          <p className="text-muted text-sm">{t("subbasin.wholeBasin")}</p>
+        )}
         {b.kind === "endorheic" && (
           <p className="text-xs text-amber-300">
             {t("subbasin.endorheicNote")}
@@ -90,7 +94,8 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
             type="button"
             aria-pressed={isolated}
             onClick={() =>
-              setIsolatedIds(isolated ? null : [b._id, ...b.childIds])
+              // The map isolates the whole subtree (lib/map/style.ts inSubtrees).
+              setIsolatedIds(isolated ? null : [b._id])
             }
             className="mt-1 flex items-center gap-2 self-start rounded-md border border-(--border) px-2.5 py-1 hover:bg-(--panel-hover)"
           >

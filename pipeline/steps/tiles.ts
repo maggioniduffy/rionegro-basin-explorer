@@ -7,8 +7,9 @@
  *   public/tiles/mask.pmtiles    layers `mask` (Visible Land levels) and `endorheic` (land
  *                                visible only because of endorheic drainage, per level),
  *                                both from pipeline:mask
- *   public/tiles/subbasins.pmtiles layer `subbasins` (own areas from pipeline:subbasins);
- *                                --detect-shared-borders keeps neighbours gap-free
+ *   public/tiles/subbasins.pmtiles layers `subbasins` (own areas from pipeline:subbasins)
+ *                                and `outlines` (each node's whole area, for the selected
+ *                                border); --detect-shared-borders keeps neighbours gap-free
  *   public/tiles/ign.pmtiles     IGN layers from pipeline:ign-layers: `detail` (perennial
  *                                lines HydroRIVERS lacks), `lakes_extra` (water bodies
  *                                HydroLAKES lacks), `dams` (points), `dam_walls` (lines);
@@ -173,6 +174,7 @@ async function main() {
   // HydroLAKES polygons with IGN names (pipeline:ign-layers).
   const lakesIn = requireInput(workPath("tiles/ign_lakes.geojson"));
   const subbasinsIn = requireInput(workPath("tiles/subbasins.geojson"));
+  const outlinesIn = requireInput(workPath("tiles/subbasin_outlines.geojson"));
   const reachesZ = workPath("tiles/reaches.minzoom.geojson");
   const riversOut = `${TILES_DIR}/rivers.pmtiles`;
   const maskOut = `${TILES_DIR}/mask.pmtiles`;
@@ -267,6 +269,7 @@ async function main() {
     `--output=${subbasinsOut}`,
     "--detect-shared-borders",
     `--named-layer=subbasins:${subbasinsIn}`,
+    `--named-layer=outlines:${outlinesIn}`,
   ]);
   // IGN layers: every feature gets a minzoom (map.config.json, ign) as tippecanoe's
   // `tippecanoe` member, like the reaches.
@@ -379,11 +382,18 @@ async function main() {
       z,
       "id",
     );
+    const outlines = await decodeDistinctString(
+      subbasinsOut,
+      "outlines",
+      z,
+      "id",
+    );
     maskLevelsByZoom.push({
       zoom: z,
       levels: [...got].map(Number).sort(),
       endorheicLevels: [...endo].map(Number).sort(),
       subbasins: [...subbasins].sort(),
+      outlines: [...outlines].sort(),
     });
   }
 
@@ -412,6 +422,11 @@ async function main() {
       (m) =>
         m.subbasins.length === subbasinIds.size &&
         m.subbasins.every((id) => subbasinIds.has(id)),
+    ),
+    everySubbasinOutlineAtEveryCheckedZoom: maskLevelsByZoom.every(
+      (m) =>
+        m.outlines.length === subbasinIds.size &&
+        m.outlines.every((id) => subbasinIds.has(id)),
     ),
   };
   await writeReport("tiles", {

@@ -6,7 +6,7 @@ import { MASK_LEVEL_COUNT } from "@/lib/map/config";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
 import { Legend } from "./Legend";
-import { SubbasinLegend } from "./SubbasinLegend";
+import { SubbasinTree } from "./SubbasinTree";
 import { ThemeToggle } from "./ThemeToggle";
 import { ViewModeToggle } from "./ViewModeToggle";
 
@@ -114,7 +114,7 @@ export function Controls() {
           </span>
         </label>
 
-        {viewMode === "subbasins" && <SubbasinLegend />}
+        {viewMode === "subbasins" && <SubbasinTree />}
         <Legend />
         <ThemeToggle />
       </div>

@@ -1,5 +1,57 @@
 import { describe, expect, it } from "vitest";
-import { partition } from "../../pipeline/lib/subbasins";
+import {
+  ancestorPath,
+  hierarchyProblems,
+  partition,
+} from "../../pipeline/lib/subbasins";
+
+describe("ancestorPath", () => {
+  const tree = [
+    { id: "negro", parentId: null },
+    { id: "limay", parentId: "negro" },
+    { id: "collon-cura", parentId: "limay" },
+  ];
+  it("runs from the root down to the node", () => {
+    expect(ancestorPath(tree, "collon-cura")).toEqual([
+      "negro",
+      "limay",
+      "collon-cura",
+    ]);
+    expect(ancestorPath(tree, "negro")).toEqual(["negro"]);
+  });
+  it("throws on a cycle or an unknown node", () => {
+    const loop = [
+      { id: "a", parentId: "b" },
+      { id: "b", parentId: "a" },
+    ];
+    expect(() => ancestorPath(loop, "a")).toThrow(/cycle/);
+    expect(() => ancestorPath(tree, "x")).toThrow(/unknown/);
+  });
+});
+
+describe("hierarchyProblems", () => {
+  it("accepts a well-formed tree", () => {
+    expect(
+      hierarchyProblems([
+        { id: "r", parentId: null, level: 0 },
+        { id: "a", parentId: "r", level: 1 },
+        { id: "b", parentId: "a", level: 2 },
+      ]),
+    ).toEqual([]);
+  });
+  it("reports wrong levels, order and duplicates", () => {
+    const problems = hierarchyProblems([
+      { id: "r", parentId: null, level: 1 },
+      { id: "b", parentId: "a", level: 2 },
+      { id: "a", parentId: "r", level: 3 },
+      { id: "a", parentId: "r", level: 2 },
+    ]);
+    expect(problems).toContain("r: root must be level 0");
+    expect(problems).toContain("b: parent a not listed before it");
+    expect(problems).toContain("a: level 3, parent r is level 1");
+    expect(problems).toContain("a: duplicate id");
+  });
+});
 
 const nodes = [
   { id: "root", parentId: null },

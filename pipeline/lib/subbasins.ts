@@ -8,6 +8,66 @@ export interface SubbasinNode {
   parentId: string | null;
 }
 
+export interface LeveledNode extends SubbasinNode {
+  level: number;
+}
+
+/**
+ * Ids from the root down to `id` (inclusive). Throws on an unknown id or a cycle, so a
+ * broken hierarchy never reaches the outputs.
+ */
+export function ancestorPath(
+  nodes: readonly SubbasinNode[],
+  id: string,
+): string[] {
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const path: string[] = [];
+  let current: string | null = id;
+  while (current !== null) {
+    if (path.includes(current)) throw new Error(`cycle at ${current}`);
+    const node = byId.get(current);
+    if (!node) throw new Error(`unknown node ${current}`);
+    path.unshift(current);
+    current = node.parentId;
+  }
+  return path;
+}
+
+/**
+ * Structural checks on the config: unique ids, a known acyclic parent for every node,
+ * the root at level 0, each child one level below its parent, and parents listed
+ * before their children.
+ */
+export function hierarchyProblems(nodes: readonly LeveledNode[]): string[] {
+  const problems: string[] = [];
+  const seen = new Map<string, LeveledNode>();
+  for (const node of nodes) {
+    if (seen.has(node.id)) problems.push(`${node.id}: duplicate id`);
+    if (node.parentId === null) {
+      if (node.level !== 0) problems.push(`${node.id}: root must be level 0`);
+    } else {
+      const parent = seen.get(node.parentId);
+      if (!parent)
+        problems.push(
+          `${node.id}: parent ${node.parentId} not listed before it`,
+        );
+      else if (node.level !== parent.level + 1)
+        problems.push(
+          `${node.id}: level ${node.level}, parent ${parent.id} is level ${parent.level}`,
+        );
+    }
+    seen.set(node.id, node);
+  }
+  for (const node of nodes) {
+    try {
+      ancestorPath(nodes, node.id);
+    } catch (err) {
+      problems.push(`${node.id}: ${(err as Error).message}`);
+    }
+  }
+  return problems;
+}
+
 export interface Partition<Id> {
   /** Polygons of each node that belong to none of its children. */
   own: Map<string, Set<Id>>;

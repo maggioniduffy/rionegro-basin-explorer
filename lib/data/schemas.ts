@@ -106,7 +106,8 @@ export type Reach = z.infer<typeof reachSchema>;
 const slug = z.string().regex(/^[a-z0-9-]+$/);
 
 /**
- * data/out/subbasins.ndjson (pipeline:subbasins). The root (level 0) is the whole basin.
+ * data/out/subbasins.ndjson (pipeline:subbasins). The root (level 0) is the whole basin;
+ * levels 1-3 nest inside it. Metrics cover the node's whole set (its children included).
  * A "river" node drains to its river's mouth; the "endorheic" node is the land that
  * drains to closed depressions, so it has no river, name or outlet.
  */
@@ -117,6 +118,8 @@ export const subbasinSchema = z.strictObject({
   name: z.string().min(1).nullable(),
   level: z.number().int().nonnegative(),
   parentId: slug.nullable(),
+  /** Ids from the root down to this node (inclusive), for the breadcrumb. */
+  path: z.array(slug).min(1),
   childIds: z.array(slug),
   /** Slug of the river whose mouth closes the sub-basin. */
   river: slug.nullable(),

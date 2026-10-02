@@ -1,10 +1,7 @@
 {"_id":"arroyo-nireco","name":"Arroyo Ñireco","reachCount":26,"lengthKm":136.7,"longestReach":61533765,"bbox":[-71.36875,-41.25,-70.36458,-36.72292]}
-{"_id":"rio-malleo","name":"Río Malleo","reachCount":23,"lengthKm":74.4,"longestReach":61551996,"bbox":[-71.41875,-39.83958,-70.87292,-39.56458]}
 {"_id":"arroyo-blanco","name":"Arroyo Blanco","reachCount":15,"lengthKm":72.8,"longestReach":61537003,"bbox":[-71.74167,-41.02292,-70.1,-37.14375]}
-{"_id":"rio-nahueve","name":"Río Nahueve","reachCount":33,"lengthKm":72.1,"longestReach":61530766,"bbox":[-71.02708,-37.22708,-70.69792,-36.84375]}
 {"_id":"arroyo-manzano","name":"Arroyo Manzano","reachCount":11,"lengthKm":63.1,"longestReach":61544454,"bbox":[-70.8,-38.73125,-70.45833,-38.12292]}
 {"_id":"rio-nirihuau","name":"Río Ñirihuau","reachCount":18,"lengthKm":62.6,"longestReach":61561475,"bbox":[-71.425,-41.34375,-71.09375,-41.08542]}
-{"_id":"rio-varvarco","name":"Río Varvarco","reachCount":19,"lengthKm":59.6,"longestReach":61527691,"bbox":[-70.69792,-36.81875,-70.56875,-36.38958]}
 {"_id":"arroyo-quemquemtreu","name":"Arroyo Quemquemtreu","reachCount":10,"lengthKm":58.7,"longestReach":61554546,"bbox":[-71.23333,-40.22708,-70.66042,-40.17292]}
 {"_id":"arroyo-hualcupen","name":"Arroyo Hualcupén","reachCount":9,"lengthKm":54.1,"longestReach":61538431,"bbox":[-71.09167,-38.01042,-70.59375,-37.92083]}
 {"_id":"arroyo-haichol","name":"Arroyo Haichol","reachCount":11,"lengthKm":51.5,"longestReach":61543795,"bbox":[-70.85833,-38.7125,-70.49792,-38.47292]}
@@ -23,16 +20,12 @@
 {"_id":"arroyo-romero","name":"Arroyo Romero","reachCount":6,"lengthKm":39.7,"longestReach":61541196,"bbox":[-70.975,-38.43542,-70.64375,-38.30208]}
 {"_id":"arroyo-colorado","name":"Arroyo Colorado","reachCount":12,"lengthKm":39.1,"longestReach":61526317,"bbox":[-71.7875,-40.95417,-70.95625,-36.49167]}
 {"_id":"arroyo-sanquilco","name":"Arroyo Sanquilco","reachCount":2,"lengthKm":39,"longestReach":61544262,"bbox":[-70.8125,-38.70625,-70.51042,-38.53958]}
-{"_id":"rio-renileuvu","name":"Río Reñileuvú","reachCount":15,"lengthKm":36.9,"longestReach":61532789,"bbox":[-71.05625,-37.36875,-70.71042,-37.33125]}
 {"_id":"arroyo-el-pino","name":"Arroyo El Pino","reachCount":5,"lengthKm":36.4,"longestReach":61537488,"bbox":[-70.92083,-37.92292,-70.58542,-37.8625]}
 {"_id":"arroyo-china-muerta","name":"Arroyo China Muerta","reachCount":7,"lengthKm":36.2,"longestReach":61549723,"bbox":[-71.12083,-39.54375,-70.21458,-39.04792]}
 {"_id":"arroyo-nahuel-mapi","name":"Arroyo Nahuel Mapi","reachCount":12,"lengthKm":36.1,"longestReach":61550266,"bbox":[-71.2875,-39.59792,-70.95208,-39.5375]}
 {"_id":"arroyo-chacayco","name":"Arroyo Chacayco","reachCount":7,"lengthKm":35.8,"longestReach":61532458,"bbox":[-70.10625,-37.49792,-70.02292,-37.25625]}
 {"_id":"arroyo-codihue","name":"Arroyo Codihue","reachCount":10,"lengthKm":35.6,"longestReach":61542186,"bbox":[-70.84792,-38.47708,-70.48542,-38.43125]}
-{"_id":"rio-pulmari","name":"Río Pulmarí","reachCount":8,"lengthKm":35.2,"longestReach":61547286,"bbox":[-71.25208,-39.14792,-70.96042,-39.09375]}
 {"_id":"rio-guanacos","name":"Río Guañacos","reachCount":6,"lengthKm":35,"longestReach":61532222,"bbox":[-71.02917,-37.29375,-70.68958,-37.26042]}
-{"_id":"rio-quillen","name":"Río Quillén","reachCount":11,"lengthKm":34.7,"longestReach":61548781,"bbox":[-71.24792,-39.39375,-70.93125,-39.36042]}
-{"_id":"rio-litran","name":"Río Litrán","reachCount":9,"lengthKm":34.7,"longestReach":61545038,"bbox":[-71.08958,-38.92708,-70.87708,-38.7375]}
 {"_id":"rio-buraleo","name":"Río Buraleo","reachCount":10,"lengthKm":34.7,"longestReach":61529592,"bbox":[-71.19167,-37.02708,-70.87708,-36.97708]}
 {"_id":"arroyo-yumu-yumu","name":"Arroyo Yumu - Yumu","reachCount":7,"lengthKm":34.6,"longestReach":61540066,"bbox":[-70.92708,-38.21458,-70.60625,-38.15625]}
 {"_id":"arroyo-pichaihue","name":"Arroyo Pichaihue","reachCount":12,"lengthKm":34.4,"longestReach":61536963,"bbox":[-70.4,-37.89375,-70.19792,-37.73542]}
@@ -45,7 +38,6 @@
 {"_id":"arroyo-carreri","name":"Arroyo Carreri","reachCount":6,"lengthKm":29.5,"longestReach":61545677,"bbox":[-70.6,-38.97083,-70.38958,-38.85625]}
 {"_id":"rio-cuyin-manzano","name":"Río Cuyín Manzano","reachCount":10,"lengthKm":29.4,"longestReach":61558913,"bbox":[-71.31875,-40.82708,-71.13125,-40.71458]}
 {"_id":"arroyo-liuco","name":"Arroyo Liuco","reachCount":7,"lengthKm":29,"longestReach":61529880,"bbox":[-70.38958,-37.06875,-70.21667,-36.89583]}
-{"_id":"rio-lileo","name":"Río Lileo","reachCount":7,"lengthKm":28.9,"longestReach":61531605,"bbox":[-70.96458,-37.23333,-70.70625,-37.19375]}
 {"_id":"arroyo-curamileu","name":"Arroyo Curamileu","reachCount":5,"lengthKm":28.9,"longestReach":61527969,"bbox":[-70.97292,-36.80625,-70.72708,-36.73125]}
 {"_id":"rio-minero","name":"Río Minero","reachCount":10,"lengthKm":28.8,"longestReach":61558470,"bbox":[-71.47292,-40.76875,-71.27292,-40.66875]}
 {"_id":"arroyo-casa-de-piedra","name":"Arroyo Casa de Piedra","reachCount":7,"lengthKm":28.7,"longestReach":61547889,"bbox":[-71.56667,-41.1875,-70.43542,-39.21042]}
@@ -65,7 +57,6 @@
 {"_id":"rio-picunleo","name":"Río Picunleo","reachCount":8,"lengthKm":25.9,"longestReach":61534872,"bbox":[-71.09792,-37.58125,-70.84792,-37.53958]}
 {"_id":"rio-del-machete","name":"Río del Machete","reachCount":11,"lengthKm":25.4,"longestReach":61558845,"bbox":[-71.90833,-40.83958,-71.73542,-40.78958]}
 {"_id":"arroyo-pilunchaya","name":"Arroyo Pilunchaya","reachCount":10,"lengthKm":25.4,"longestReach":61535813,"bbox":[-71.17083,-37.70208,-71.00208,-37.63542]}
-{"_id":"rio-traful","name":"Río Traful","reachCount":13,"lengthKm":25.2,"longestReach":61557804,"bbox":[-71.28958,-40.72292,-71.08958,-40.66042]}
 {"_id":"arroyo-collun-co","name":"Arroyo Collún - Co","reachCount":6,"lengthKm":25,"longestReach":61553056,"bbox":[-71.40833,-40,-71.18542,-39.93958]}
 {"_id":"arroyo-ranquilco","name":"Arroyo Ranquilco","reachCount":6,"lengthKm":24.9,"longestReach":61540328,"bbox":[-70.87083,-38.24792,-70.48125,-37.34167]}
 {"_id":"arroyo-coihueco","name":"Arroyo Coihueco","reachCount":7,"lengthKm":24.9,"longestReach":61538772,"bbox":[-70.27292,-38.10625,-70.10625,-37.99375]}

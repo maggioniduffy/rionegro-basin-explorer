@@ -1,5 +1,5 @@
 /**
- * pipeline:subbasins — sub-basin hierarchy from HydroBASINS level 12 (Phase 4: level 1).
+ * pipeline:subbasins — sub-basin hierarchy from HydroBASINS level 12 (levels 0-3).
  *
  * 1. Sets. Two kinds of node in subbasins.config.json:
  *    - river: the level-12 polygon holding its river's mouthReach (data/out/rivers.ndjson)
@@ -22,7 +22,8 @@
  *    from the catalog (see export.ts).
  *
  * Outputs: data/out/subbasins.ndjson (seed input, committed),
- * data/work/tiles/subbasins.geojson (own areas, tippecanoe input), report.json.
+ * data/work/tiles/subbasins.geojson (own areas, with each node's ancestor path) and
+ * subbasin_outlines.geojson (whole areas), both tippecanoe inputs; report.json.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb, type Row } from "../lib/duckdb";
@@ -31,11 +32,15 @@ import { difference, upstreamIndex, upstreamSet } from "../lib/graph";
 import { requireInput } from "../lib/inputs";
 import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
-import { partition, type SubbasinNode } from "../lib/subbasins";
+import {
+  ancestorPath,
+  hierarchyProblems,
+  partition,
+  type LeveledNode,
+} from "../lib/subbasins";
 
-type ConfigNode = SubbasinNode & { level: number } & (
-    { kind: "river"; river: string } | { kind: "endorheic" }
-  );
+type ConfigNode = LeveledNode &
+  ({ kind: "river"; river: string } | { kind: "endorheic" });
 type RiverNode = Extract<ConfigNode, { kind: "river" }>;
 interface RiverDoc {
   _id: string;
@@ -50,9 +55,16 @@ const AREA_AGREEMENT_PCT = 1;
 const PARTITION_AREA_PCT = 0.1;
 /** Largest tolerated overlap or gap, in km² (slivers from dissolving). */
 const SLIVER_KM2 = 1;
+/** Smallest own area, km², for a node to be clickable on the map. */
+const MIN_OWN_KM2 = 1;
 /** Catchment aggregates vs upstream values at the mouth (unit cross-check). */
 const POPULATION_PCT = 1;
-const PERCENT_POINTS = 0.5;
+/**
+ * RiverATLAS stores inu_pc_cmn/cmx and inu_pc_umn/umx as whole percentages (SMALLINT), so
+ * the weighted catchment mean and the upstream value can each be off by up to 0.5 points
+ * from rounding: 1 point is the worst case between them (Quillén, 0.53, in Phase 6).
+ */
+const PERCENT_POINTS = 1;
 
 const r1 = (x: number) => Math.round(x * 10) / 10;
 const num = (v: unknown) => Number(v);
@@ -101,6 +113,9 @@ async function main() {
   const { subbasins: nodes } = JSON.parse(
     await readFile(`${ROOT}/pipeline/subbasins.config.json`, "utf8"),
   ) as { subbasins: ConfigNode[] };
+  const structure = hierarchyProblems(nodes);
+  if (structure.length > 0)
+    throw new Error(`subbasins.config.json: ${structure.join("; ")}`);
   const riverNodes = nodes.filter((n): n is RiverNode => n.kind === "river");
   const lev12File = requireInput(workPath("basin/hybas_l12.parquet"));
   const basinFile = requireInput(workPath("basin/basin.geojson"));
@@ -237,6 +252,7 @@ async function main() {
     const ownAreas = await db.all(`
       SELECT node, ${areaSpheroidKm2("geom")} AS km2, ST_NumGeometries(geom) AS parts
       FROM own_geom ORDER BY node`);
+    const ownById = new Map(ownAreas.map((o) => [String(o.node), o]));
 
     // 3. Reaches.
     const [assigned] = await db.all(`
@@ -316,7 +332,15 @@ async function main() {
       ).map((r) => [num(r.HYRIV_ID), r]),
     );
 
-    const docs = [];
+    const docs: {
+      _id: string;
+      parentId: string | null;
+      areaKm2: number;
+      reachCount: number;
+      lengthKm: number;
+      population: number;
+      [key: string]: unknown;
+    }[] = [];
     const crossChecks = [];
     const areaChecks = [];
     for (const node of nodes) {
@@ -328,6 +352,7 @@ async function main() {
       const river = node.kind === "river" ? riverOf(node) : null;
       const m = river ? (mouths.get(river.mouthReach) as Row) : null;
       const mouthUpArea = upAreaOf.get(mouthPolygon.get(node.id) ?? "");
+      const own = ownById.get(node.id);
       areaChecks.push({
         node: node.id,
         polygons: g.polygons,
@@ -336,12 +361,19 @@ async function main() {
         sumSubArea: r1(num(g.sum_sub_area)),
         connectedSubArea: r1(num(g.connected_sub_area)),
         mouthPolygonUpArea: mouthUpArea ?? null,
+        mouthReachUplandKm2: river?.mouth.uplandKm2 ?? null,
+        ownAreaKm2: own ? r1(num(own.km2)) : 0,
         diffPct: {
           areaVsSumSubArea: pctDiff(num(g.area), num(g.sum_sub_area)),
           connectedVsUpArea:
             mouthUpArea === undefined
               ? null
               : pctDiff(num(g.connected_sub_area), mouthUpArea),
+          // HydroRIVERS UPLAND_SKM at the mouth reach vs the polygon set: far apart when
+          // the mouth polygon is a main-stem interbasin (it would take in the parent).
+          connectedVsMouthUpland: river
+            ? pctDiff(num(g.connected_sub_area), river.mouth.uplandKm2)
+            : null,
         },
       });
       if (m)
@@ -372,6 +404,7 @@ async function main() {
         name: river?.name ?? null,
         level: node.level,
         parentId: node.parentId,
+        path: ancestorPath(nodes, node.id),
         childIds: nodes.filter((n) => n.parentId === node.id).map((n) => n.id),
         river: river?._id ?? null,
         areaKm2: Math.round(num(g.area)),
@@ -429,10 +462,35 @@ async function main() {
           const node = byId.get(String(f.node));
           return {
             type: "Feature",
-            properties: { id: f.node, kind: node?.kind, level: node?.level },
+            properties: {
+              id: f.node,
+              kind: node?.kind,
+              level: node?.level,
+              // ",negro,limay,collon-cura," — the map matches a whole subtree with one
+              // substring test (vector tiles cannot hold arrays).
+              path: `,${ancestorPath(nodes, String(f.node)).join(",")},`,
+            },
             geometry: JSON.parse(String(f.g)),
           };
         }),
+      }),
+    );
+
+    // Whole (cumulative) outline of every node, so the map can draw the selected
+    // node's border without the borders between its descendants.
+    const outlines = `${tilesDir}/subbasin_outlines.geojson`;
+    const outlineRows = await db.all(
+      `SELECT node, ST_AsGeoJSON(geom) AS g FROM node_geom ORDER BY node`,
+    );
+    await writeFile(
+      outlines,
+      JSON.stringify({
+        type: "FeatureCollection",
+        features: outlineRows.map((f) => ({
+          type: "Feature",
+          properties: { id: f.node, level: byId.get(String(f.node))?.level },
+          geometry: JSON.parse(String(f.g)),
+        })),
       }),
     );
 
@@ -454,6 +512,23 @@ async function main() {
           a.diffPct.connectedVsUpArea === null ||
           Math.abs(a.diffPct.connectedVsUpArea) <= AREA_AGREEMENT_PCT,
       ),
+      // Every node needs land of its own, or it could not be picked on the map.
+      everyNodeHasOwnArea: areaChecks.every((a) => a.ownAreaKm2 >= MIN_OWN_KM2),
+      connectedAreaMatchesMouthUpland: areaChecks.every(
+        (a) =>
+          a.diffPct.connectedVsMouthUpland === null ||
+          Math.abs(a.diffPct.connectedVsMouthUpland) <= AREA_AGREEMENT_PCT,
+      ),
+      childMetricsWithinParent: docs.every((d) => {
+        const parent = docs.find((p) => p._id === d.parentId);
+        return (
+          !parent ||
+          (d.areaKm2 <= parent.areaKm2 &&
+            d.reachCount <= parent.reachCount &&
+            d.lengthKm <= parent.lengthKm &&
+            d.population <= parent.population)
+        );
+      }),
       everyReachAssignedOnce:
         assigned?.n === assigned?.total &&
         assigned?.with_owner === assigned?.total,
@@ -494,7 +569,7 @@ async function main() {
         midpointOutsideOwner: pip,
       },
       catchmentVsUpstream: crossChecks,
-      outputs: [rel(ndjson), rel(geojson)],
+      outputs: [rel(ndjson), rel(geojson), rel(outlines)],
     });
     if (!ok)
       throw new Error(`subbasins checks failed: ${JSON.stringify(checks)}`);

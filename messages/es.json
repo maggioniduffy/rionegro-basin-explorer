@@ -35,9 +35,11 @@
     "modeledNote": "Modelado, no observado: predicciones de GIRES v1.0 (Messager et al., 2021). Las condiciones locales pueden diferir.",
     "subbasins": {
       "title": "Subcuencas",
-      "own": "{name}, drenaje directo",
-      "hint": "Un clic sobre el terreno muestra los datos de la subcuenca. La seleccionada se resalta sobre la tierra visible; los límites se ven siempre.",
-      "endorheic": "Áreas endorreicas (no drenan a ningún río)"
+      "hint": "Una subcuenca se elige en esta lista o con un clic sobre el terreno. Su superficie incluye todo lo anidado debajo, por eso se resalta el subárbol completo; los límites se ven siempre.",
+      "endorheic": "Áreas endorreicas (no drenan a ningún río)",
+      "expand": "Mostrar las subcuencas del {name}",
+      "collapse": "Ocultar las subcuencas del {name}",
+      "error": "No se pudo cargar la lista de subcuencas."
     },
     "ignDetail": "Curso del IGN que no está en HydroRIVERS"
   },
@@ -102,7 +104,7 @@
       "outletHint": "Medido donde termina el {river}, así que incluye todo lo que está aguas arriba.",
       "rivers": "Ríos con nombre",
       "landHintWhole": "Todo su territorio, incluidas las áreas endorreicas, que drenan hacia el interior y no llegan a ningún río.",
-      "landHintRiver": "Solo la tierra que drena al {river}. Las áreas endorreicas se muestran aparte."
+      "landHintRiver": "Solo la tierra que drena al {river}, incluidas sus propias subcuencas. Las áreas endorreicas se muestran aparte."
     },
     "fields": {
       "length": "Longitud",
@@ -147,12 +149,12 @@
       "label": "Detalles de la cuenca",
       "title": "Cuenca del {name}",
       "wholeBasin": "La cuenca completa.",
-      "partOf": "Parte de la cuenca del <link>{parent}</link>.",
       "children": "Subcuencas:",
       "endorheicTitle": "Áreas endorreicas",
       "endorheicNote": "Tierras que drenan hacia depresiones cerradas y no llegan a ningún río. HydroBASINS vincula parte de ellas a la red de ríos de forma virtual; aquí se muestran aparte.",
       "hideOthers": "Ocultar el resto de la cuenca",
-      "showOthers": "Mostrar toda la cuenca"
+      "showOthers": "Mostrar toda la cuenca",
+      "breadcrumb": "Jerarquía de subcuencas"
     },
     "feature": {
       "label": "Detalles del elemento del mapa",
