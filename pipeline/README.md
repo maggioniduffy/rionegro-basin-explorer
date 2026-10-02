@@ -216,6 +216,30 @@ The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorh
 Outputs: `data/out/subbasins.ndjson` (committed, seed input) and `data/work/tiles/subbasins.geojson`
 (own areas, one feature per sub-basin, for tiles).
 
+### `npm run pipeline:ign-gate`
+
+Read-only measurement for the gate before Phase 5: what do IGN's watercourse lines add over
+HydroRIVERS? Nothing it writes feeds the app. Needs the IGN line layers unzipped in
+`data/raw/ign/lineas_de_aguas_continentales_perenne/` (required) and `..._intermitente/`
+(optional; skipped if missing), plus `basin`, `rivers` and `named`. Layer origin and terms:
+[SOURCES.md](./SOURCES.md). It runs in about 2 minutes; set `IGN_GATE_PROXIMITY=perennial` to skip
+the intermittent class in the proximity part.
+
+1. **Clip.** IGN lines touching the basin, exact duplicates dropped, clipped to the basin polygon
+   (`ign_basin.parquet`). Km are spheroid km; the bbox figure is reported too.
+2. **Names.** Share of features and km with `fna`; IGN km under each approved river name against
+   that river's HydroRIVERS km (a cross-check on lengths).
+3. **Proximity** (Albers, so distances are approximate), at 100, 250 and 500 m: IGN km farther
+   than the buffer from every HydroRIVERS reach; HydroRIVERS km (by Strahler order) farther than
+   it from every IGN line of a class; and HydroRIVERS km with no river name today that lie within
+   it of a named IGN line. This is a proximity bound, not the Phase 5 matcher.
+4. **Verdict.** The PLAN.md rule at 250 m (IGN km beyond the buffer is at least 20% of IGN perennial
+   km and at least 10% of HydroRIVERS km), with the same figures at the other buffers.
+
+Output: `data/work/ign-gate/report.json`. Checks: IGN present, HydroRIVERS km equals the `rivers`
+report, clipped km within bbox km, deduplication never adds features. The overlap figure (unioned vs
+summed length) is computed for the perennial class only.
+
 ### `npm run pipeline:tiles`
 
 Runs tippecanoe with the feature and tile-size limits off, except for the mask (below):

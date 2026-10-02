@@ -29,6 +29,7 @@
     "pipeline:lakes": "tsx pipeline/steps/lakes.ts",
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
     "pipeline:subbasins": "tsx pipeline/steps/subbasins.ts",
+    "pipeline:ign-gate": "tsx pipeline/steps/ign-gate.ts",
     "perf:zoom": "tsx scripts/perf-zoom.ts",
     "inspect:tiles": "tsx pipeline/tools/tile-stats.ts"
   },
