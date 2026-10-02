@@ -1,125 +1,155 @@
 {
-  "$comment": "Hand-approved river names (HydroRIVERS has none). Keyed by mouth reach (HYRIV_ID). Names use OpenStreetMap spelling (© OpenStreetMap contributors, ODbL); shortName/type are the name split at its first word. Approved by the project owner on 2026-09-30.",
+  "$comment": "Hand-approved river names (HydroRIVERS has none). Keyed by mouth reach (HYRIV_ID). Names use IGN spelling (FUENTE: Instituto Geográfico Nacional de la República Argentina), chosen by the owner on 2026-10-01 over the earlier OpenStreetMap spelling; pipeline:ign-match's stem vote (data/work/ign-match/report.json) confirms the IGN name along each river's main stem. `slug` is the river's id (URLs, Mongo _id) and never changes once published, even if the name does; `aliases` are former names that search still finds. shortName/type are the name split at its first word. Approved by the project owner on 2026-09-30, IGN names on 2026-10-01.",
   "rivers": [
     {
       "name": "Río Negro",
       "shortName": "Negro",
       "type": "Río",
+      "slug": "negro",
+      "aliases": [],
       "mouthReach": 61560077,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #1, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #1, 2026-09-30); IGN name 'Río Negro' on 100% of the 711 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Limay",
       "shortName": "Limay",
       "type": "Río",
+      "slug": "limay",
+      "aliases": [],
       "mouthReach": 61546258,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #3, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #3, 2026-09-30); IGN name 'Río Limay' on 95% of the 555 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Neuquén",
       "shortName": "Neuquén",
       "type": "Río",
+      "slug": "neuquen",
+      "aliases": [],
       "mouthReach": 61546228,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #7, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #7, 2026-09-30); IGN name 'Río Neuquén' on 96% of the 598 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Collón Curá",
       "shortName": "Collón Curá",
       "type": "Río",
+      "slug": "collon-cura",
+      "aliases": [],
       "mouthReach": 61556572,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #12, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #12, 2026-09-30); IGN name 'Río Collón Curá' on 63% of the 93 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Agrio",
       "shortName": "Agrio",
       "type": "Río",
+      "slug": "agrio",
+      "aliases": [],
       "mouthReach": 61541396,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #15, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #15, 2026-09-30); IGN name 'Río Agrio' on 100% of the 245 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Aluminé",
       "shortName": "Aluminé",
       "type": "Río",
+      "slug": "alumine",
+      "aliases": [],
       "mouthReach": 61552346,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #19, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #19, 2026-09-30); IGN name 'Río Aluminé' on 93% of the 185 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Catán Lil",
       "shortName": "Catán Lil",
       "type": "Río",
+      "slug": "catan-lil",
+      "aliases": [],
       "mouthReach": 61552347,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #29, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #29, 2026-09-30); IGN name 'Río Catán Lil' on 94% of the 128 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
-      "name": "Río Chimehuin",
-      "shortName": "Chimehuin",
+      "name": "Río Chimehuín",
+      "shortName": "Chimehuín",
       "type": "Río",
+      "slug": "chimehuin",
+      "aliases": ["Río Chimehuin"],
       "mouthReach": 61553597,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #26, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #26, 2026-09-30); IGN name 'Río Chimehuín' on 76% of the 127 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01); name changed from 'Río Chimehuin' (owner, 2026-10-01)"
     },
     {
       "name": "Río Caleufú",
       "shortName": "Caleufú",
       "type": "Río",
+      "slug": "caleufu",
+      "aliases": [],
       "mouthReach": 61555946,
       "confidence": "weak",
-      "evidence": "OpenStreetMap waterway name at 2/5 sample points along the mouth segment (pipeline:osm-names, candidate #30, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 2/5 sample points along the mouth segment (pipeline:osm-names, candidate #30, 2026-09-30); IGN name 'Río Caleufú' on 62% of the 120 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
-      "name": "Arroyo Pichileufú",
-      "shortName": "Pichileufú",
-      "type": "Arroyo",
+      "name": "Río Pichi Leufú",
+      "shortName": "Pichi Leufú",
+      "type": "Río",
+      "slug": "pichileufu",
+      "aliases": ["Arroyo Pichileufú"],
       "mouthReach": 61557589,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #27, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #27, 2026-09-30); IGN name 'Río Pichi Leufú' on 100% of the 138 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01); name changed from 'Arroyo Pichileufú' (owner, 2026-10-01)"
     },
     {
       "name": "Arroyo Comallo",
       "shortName": "Comallo",
       "type": "Arroyo",
+      "slug": "comallo",
+      "aliases": [],
       "mouthReach": 61556491,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #21, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #21, 2026-09-30); IGN name 'Arroyo Comallo' on 100% of the 128 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Arroyo Picún Leufú",
       "shortName": "Picún Leufú",
       "type": "Arroyo",
+      "slug": "picun-leufu",
+      "aliases": [],
       "mouthReach": 61550099,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #22, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #22, 2026-09-30); IGN name 'Arroyo Picún Leufú' on 92% of the 175 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Arroyo Covunco",
       "shortName": "Covunco",
       "type": "Arroyo",
+      "slug": "covunco",
+      "aliases": [],
       "mouthReach": 61542572,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #23, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #23, 2026-09-30); IGN name 'Arroyo Covunco' on 78% of the 133 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Curi Leuvú",
       "shortName": "Curi Leuvú",
       "type": "Río",
+      "slug": "curi-leuvu",
+      "aliases": [],
       "mouthReach": 61533036,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #31, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #31, 2026-09-30); IGN name 'Río Curi Leuvú' on 83% of the 93 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     },
     {
       "name": "Río Trocomán",
       "shortName": "Trocomán",
       "type": "Río",
+      "slug": "trocoman",
+      "aliases": [],
       "mouthReach": 61532634,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #33, 2026-09-30)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #33, 2026-09-30); IGN name 'Río Trocomán' on 70% of the 80 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
     }
   ]
 }

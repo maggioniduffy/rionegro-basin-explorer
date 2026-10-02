@@ -9,6 +9,10 @@
  *                                both from pipeline:mask
  *   public/tiles/subbasins.pmtiles layer `subbasins` (own areas from pipeline:subbasins);
  *                                --detect-shared-borders keeps neighbours gap-free
+ *   public/tiles/ign.pmtiles     IGN layers from pipeline:ign-layers: `detail` (perennial
+ *                                lines HydroRIVERS lacks), `lakes_extra` (water bodies
+ *                                HydroLAKES lacks), `dams` (points), `dam_walls` (lines);
+ *                                per-feature minzoom from map.config.json (ign)
  *
  * The files are committed: Vercel serves them from /public and tippecanoe does not run
  * there. Feature and tile-size limits are off, so no reach is dropped; the report
@@ -20,7 +24,7 @@ import { spawn } from "node:child_process";
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { requireInput } from "../lib/inputs";
-import { mapConfig, reachMinzoom } from "../lib/map-config";
+import { mapConfig, reachMinzoom, stepMinzoom } from "../lib/map-config";
 import { ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
@@ -166,12 +170,14 @@ async function main() {
   const basinIn = requireInput(workPath("tiles/basin.geojson"));
   const maskIn = requireInput(workPath("tiles/mask.geojson"));
   const endoIn = requireInput(workPath("tiles/mask_endorheic.geojson"));
-  const lakesIn = requireInput(workPath("lakes/lakes.geojson"));
+  // HydroLAKES polygons with IGN names (pipeline:ign-layers).
+  const lakesIn = requireInput(workPath("tiles/ign_lakes.geojson"));
   const subbasinsIn = requireInput(workPath("tiles/subbasins.geojson"));
   const reachesZ = workPath("tiles/reaches.minzoom.geojson");
   const riversOut = `${TILES_DIR}/rivers.pmtiles`;
   const maskOut = `${TILES_DIR}/mask.pmtiles`;
   const subbasinsOut = `${TILES_DIR}/subbasins.pmtiles`;
+  const ignOut = `${TILES_DIR}/ign.pmtiles`;
   await mkdir(TILES_DIR, { recursive: true });
   const maxzoom = mapConfig.maxzoom;
   const version = (await run(TIPPECANOE, ["--version"])).trim();
@@ -262,6 +268,71 @@ async function main() {
     "--detect-shared-borders",
     `--named-layer=subbasins:${subbasinsIn}`,
   ]);
+  // IGN layers: every feature gets a minzoom (map.config.json, ign) as tippecanoe's
+  // `tippecanoe` member, like the reaches.
+  const ignCfg = mapConfig.ign;
+  const ignLayers = [
+    {
+      layer: "detail",
+      file: "ign_detail",
+      minzoom: (f: Feature) =>
+        stepMinzoom(ignCfg.detailMinzoomByKm, Number(f.properties.km)),
+    },
+    {
+      layer: "lakes_extra",
+      file: "ign_lakes_extra",
+      minzoom: (f: Feature) =>
+        stepMinzoom(ignCfg.extraLakeMinzoomByKm2, Number(f.properties.areaKm2)),
+    },
+    { layer: "dams", file: "ign_dams", minzoom: () => ignCfg.damsMinzoom },
+    {
+      layer: "dam_walls",
+      file: "ign_dam_walls",
+      minzoom: () => ignCfg.damsMinzoom,
+    },
+  ];
+  const ignArgs: string[] = [];
+  const ignExpected = new Map<string, { ids: Set<string>; minzoom: number }>();
+  for (const l of ignLayers) {
+    const input = requireInput(workPath(`tiles/${l.file}.geojson`));
+    const collection = JSON.parse(await readFile(input, "utf8")) as {
+      features: Feature[];
+    };
+    const ids = new Set<string>();
+    const out = collection.features.map((f): Feature => {
+      ids.add(String(f.properties.id));
+      return { ...f, tippecanoe: { minzoom: l.minzoom(f) } };
+    });
+    const withZoom = workPath(`tiles/${l.file}.minzoom.geojson`);
+    await writeFile(
+      withZoom,
+      JSON.stringify({ type: "FeatureCollection", features: out }),
+    );
+    ignExpected.set(l.layer, {
+      ids,
+      minzoom: Math.min(...out.map((f) => f.tippecanoe?.minzoom ?? 0)),
+    });
+    ignArgs.push(`--named-layer=${l.layer}:${withZoom}`);
+  }
+  await rm(ignOut, { force: true });
+  await run(TIPPECANOE, [...common, `--output=${ignOut}`, ...ignArgs]);
+  const ignByLayer = [];
+  for (const [layer, { ids, minzoom }] of ignExpected) {
+    const atMax = await decodeDistinct(ignOut, layer, maxzoom, "id");
+    const before =
+      minzoom > 0
+        ? await decodeDistinct(ignOut, layer, minzoom - 1, "id")
+        : new Set<string>();
+    ignByLayer.push({
+      layer,
+      features: ids.size,
+      foundAtMaxzoom: atMax.size,
+      missingAtMaxzoom: [...ids].filter((id) => !atMax.has(id)).length,
+      firstZoom: minzoom,
+      presentBeforeFirstZoom: before.size,
+    });
+  }
+
   const subbasinIds = new Set(
     (
       JSON.parse(await readFile(subbasinsIn, "utf8")) as { features: Feature[] }
@@ -317,6 +388,10 @@ async function main() {
   }
 
   const checks = {
+    ignAllFeaturesAtMaxzoom: ignByLayer.every((l) => l.missingAtMaxzoom === 0),
+    ignNothingBeforeItsMinzoom: ignByLayer.every(
+      (l) => l.presentBeforeFirstZoom === 0,
+    ),
     // Reaches shorter than one tile unit may be dropped (see spanUnitsZ0).
     everyReachFromItsMinzoom: reachesByZoom.every(
       (r) => r.missingVisible === 0,
@@ -348,12 +423,14 @@ async function main() {
     reaches: features.length,
     reachesByZoom,
     maskLevelsByZoom,
+    ignByLayer,
     sizesKb: {
       [rel(riversOut)]: await sizeKb(riversOut),
       [rel(maskOut)]: await sizeKb(maskOut),
       [rel(subbasinsOut)]: await sizeKb(subbasinsOut),
+      [rel(ignOut)]: await sizeKb(ignOut),
     },
-    outputs: [rel(riversOut), rel(maskOut), rel(subbasinsOut)],
+    outputs: [rel(riversOut), rel(maskOut), rel(subbasinsOut), rel(ignOut)],
   });
   if (!Object.values(checks).every(Boolean))
     throw new Error(`tiles checks failed: ${JSON.stringify(checks)}`);

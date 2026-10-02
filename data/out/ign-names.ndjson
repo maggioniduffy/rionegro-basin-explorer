@@ -1,0 +1,412 @@
+{"_id":"arroyo-nireco","name":"Arroyo Ñireco","reachCount":26,"lengthKm":136.7,"longestReach":61533765,"bbox":[-71.36875,-41.25,-70.36458,-36.72292]}
+{"_id":"rio-malleo","name":"Río Malleo","reachCount":23,"lengthKm":74.4,"longestReach":61551996,"bbox":[-71.41875,-39.83958,-70.87292,-39.56458]}
+{"_id":"arroyo-blanco","name":"Arroyo Blanco","reachCount":15,"lengthKm":72.8,"longestReach":61537003,"bbox":[-71.74167,-41.02292,-70.1,-37.14375]}
+{"_id":"rio-nahueve","name":"Río Nahueve","reachCount":33,"lengthKm":72.1,"longestReach":61530766,"bbox":[-71.02708,-37.22708,-70.69792,-36.84375]}
+{"_id":"arroyo-manzano","name":"Arroyo Manzano","reachCount":11,"lengthKm":63.1,"longestReach":61544454,"bbox":[-70.8,-38.73125,-70.45833,-38.12292]}
+{"_id":"rio-nirihuau","name":"Río Ñirihuau","reachCount":18,"lengthKm":62.6,"longestReach":61561475,"bbox":[-71.425,-41.34375,-71.09375,-41.08542]}
+{"_id":"rio-varvarco","name":"Río Varvarco","reachCount":19,"lengthKm":59.6,"longestReach":61527691,"bbox":[-70.69792,-36.81875,-70.56875,-36.38958]}
+{"_id":"arroyo-quemquemtreu","name":"Arroyo Quemquemtreu","reachCount":10,"lengthKm":58.7,"longestReach":61554546,"bbox":[-71.23333,-40.22708,-70.66042,-40.17292]}
+{"_id":"arroyo-hualcupen","name":"Arroyo Hualcupén","reachCount":9,"lengthKm":54.1,"longestReach":61538431,"bbox":[-71.09167,-38.01042,-70.59375,-37.92083]}
+{"_id":"arroyo-haichol","name":"Arroyo Haichol","reachCount":11,"lengthKm":51.5,"longestReach":61543795,"bbox":[-70.85833,-38.7125,-70.49792,-38.47292]}
+{"_id":"arroyo-butalon","name":"Arroyo Butalón","reachCount":10,"lengthKm":51.2,"longestReach":61529218,"bbox":[-70.925,-37.5,-70.51458,-36.8375]}
+{"_id":"arroyo-pilahue","name":"Arroyo Pilahué","reachCount":11,"lengthKm":49.2,"longestReach":61555841,"bbox":[-70.04375,-40.56667,-69.75,-40.31458]}
+{"_id":"arroyo-las-lajitas","name":"Arroyo Las Lajitas","reachCount":7,"lengthKm":48.6,"longestReach":61544955,"bbox":[-70.65208,-38.8125,-70.39792,-38.51875]}
+{"_id":"arroyo-liu-cullin","name":"Arroyo Liu Cullín","reachCount":7,"lengthKm":45.6,"longestReach":61544455,"bbox":[-70.74167,-38.7625,-70.44375,-38.50208]}
+{"_id":"arroyo-piuquenes","name":"Arroyo Piuquenes","reachCount":18,"lengthKm":45.5,"longestReach":61526397,"bbox":[-71.175,-37.36875,-70.86042,-36.5125]}
+{"_id":"arroyo-pichi-neuquen","name":"Arroyo Pichi Neuquén","reachCount":14,"lengthKm":45.4,"longestReach":61537344,"bbox":[-70.19792,-37.91042,-69.85625,-37.72917]}
+{"_id":"rio-currhue","name":"Río Currhué","reachCount":13,"lengthKm":44.2,"longestReach":61553023,"bbox":[-71.41458,-40.00208,-71.07292,-39.88125]}
+{"_id":"arroyo-buta-mallin","name":"Arroyo Buta Mallín","reachCount":5,"lengthKm":44.2,"longestReach":61538808,"bbox":[-71.06042,-38.05625,-70.67292,-37.19375]}
+{"_id":"arroyo-pichi-picun-leufu","name":"Arroyo Pichi Picún Leufú","reachCount":4,"lengthKm":42.9,"longestReach":61552933,"bbox":[-70.5625,-39.97292,-69.96042,-39.10208]}
+{"_id":"rio-salado","name":"Río Salado","reachCount":15,"lengthKm":42.4,"longestReach":61541424,"bbox":[-70.11875,-39.23958,-65.74167,-38.09792]}
+{"_id":"arroyo-anecon-grande","name":"Arroyo Anecón Grande","reachCount":7,"lengthKm":42.3,"longestReach":61562712,"bbox":[-70.38958,-41.4,-70.18125,-41.13542]}
+{"_id":"arroyo-malalco","name":"Arroyo Malalco","reachCount":12,"lengthKm":41.3,"longestReach":61548719,"bbox":[-71.5625,-40.69583,-71.20208,-39.225]}
+{"_id":"arroyo-romero","name":"Arroyo Romero","reachCount":6,"lengthKm":39.7,"longestReach":61541196,"bbox":[-70.975,-38.43542,-70.64375,-38.30208]}
+{"_id":"arroyo-colorado","name":"Arroyo Colorado","reachCount":12,"lengthKm":39.1,"longestReach":61526317,"bbox":[-71.7875,-40.95417,-70.95625,-36.49167]}
+{"_id":"arroyo-sanquilco","name":"Arroyo Sanquilco","reachCount":2,"lengthKm":39,"longestReach":61544262,"bbox":[-70.8125,-38.70625,-70.51042,-38.53958]}
+{"_id":"rio-renileuvu","name":"Río Reñileuvú","reachCount":15,"lengthKm":36.9,"longestReach":61532789,"bbox":[-71.05625,-37.36875,-70.71042,-37.33125]}
+{"_id":"arroyo-el-pino","name":"Arroyo El Pino","reachCount":5,"lengthKm":36.4,"longestReach":61537488,"bbox":[-70.92083,-37.92292,-70.58542,-37.8625]}
+{"_id":"arroyo-china-muerta","name":"Arroyo China Muerta","reachCount":7,"lengthKm":36.2,"longestReach":61549723,"bbox":[-71.12083,-39.54375,-70.21458,-39.04792]}
+{"_id":"arroyo-nahuel-mapi","name":"Arroyo Nahuel Mapi","reachCount":12,"lengthKm":36.1,"longestReach":61550266,"bbox":[-71.2875,-39.59792,-70.95208,-39.5375]}
+{"_id":"arroyo-chacayco","name":"Arroyo Chacayco","reachCount":7,"lengthKm":35.8,"longestReach":61532458,"bbox":[-70.10625,-37.49792,-70.02292,-37.25625]}
+{"_id":"arroyo-codihue","name":"Arroyo Codihue","reachCount":10,"lengthKm":35.6,"longestReach":61542186,"bbox":[-70.84792,-38.47708,-70.48542,-38.43125]}
+{"_id":"rio-pulmari","name":"Río Pulmarí","reachCount":8,"lengthKm":35.2,"longestReach":61547286,"bbox":[-71.25208,-39.14792,-70.96042,-39.09375]}
+{"_id":"rio-guanacos","name":"Río Guañacos","reachCount":6,"lengthKm":35,"longestReach":61532222,"bbox":[-71.02917,-37.29375,-70.68958,-37.26042]}
+{"_id":"rio-quillen","name":"Río Quillén","reachCount":11,"lengthKm":34.7,"longestReach":61548781,"bbox":[-71.24792,-39.39375,-70.93125,-39.36042]}
+{"_id":"rio-litran","name":"Río Litrán","reachCount":9,"lengthKm":34.7,"longestReach":61545038,"bbox":[-71.08958,-38.92708,-70.87708,-38.7375]}
+{"_id":"rio-buraleo","name":"Río Buraleo","reachCount":10,"lengthKm":34.7,"longestReach":61529592,"bbox":[-71.19167,-37.02708,-70.87708,-36.97708]}
+{"_id":"arroyo-yumu-yumu","name":"Arroyo Yumu - Yumu","reachCount":7,"lengthKm":34.6,"longestReach":61540066,"bbox":[-70.92708,-38.21458,-70.60625,-38.15625]}
+{"_id":"arroyo-pichaihue","name":"Arroyo Pichaihue","reachCount":12,"lengthKm":34.4,"longestReach":61536963,"bbox":[-70.4,-37.89375,-70.19792,-37.73542]}
+{"_id":"arroyo-taquimilan","name":"Arroyo Taquimilán","reachCount":8,"lengthKm":33.4,"longestReach":61535083,"bbox":[-70.41458,-37.60625,-70.19375,-37.46042]}
+{"_id":"rio-kilca","name":"Río Kilca","reachCount":10,"lengthKm":32.1,"longestReach":61546588,"bbox":[-70.93542,-39.14375,-70.81458,-38.90208]}
+{"_id":"arroyo-chichahuay","name":"Arroyo Chichahuay","reachCount":5,"lengthKm":32,"longestReach":61555377,"bbox":[-71.04167,-40.40208,-70.80208,-40.28125]}
+{"_id":"arroyo-huarenchenque","name":"Arroyo Huarenchenque","reachCount":7,"lengthKm":31.5,"longestReach":61541197,"bbox":[-70.90833,-38.33125,-70.61042,-38.26458]}
+{"_id":"arroyo-pilcaniyeu","name":"Arroyo Pilcaniyeu","reachCount":5,"lengthKm":30.5,"longestReach":61556547,"bbox":[-70.12292,-40.58542,-69.91458,-40.40625]}
+{"_id":"arroyo-hueyeltue","name":"Arroyo Hueyeltué","reachCount":9,"lengthKm":29.9,"longestReach":61551438,"bbox":[-71.45,-39.76458,-71.29375,-39.6625]}
+{"_id":"arroyo-carreri","name":"Arroyo Carreri","reachCount":6,"lengthKm":29.5,"longestReach":61545677,"bbox":[-70.6,-38.97083,-70.38958,-38.85625]}
+{"_id":"rio-cuyin-manzano","name":"Río Cuyín Manzano","reachCount":10,"lengthKm":29.4,"longestReach":61558913,"bbox":[-71.31875,-40.82708,-71.13125,-40.71458]}
+{"_id":"arroyo-liuco","name":"Arroyo Liuco","reachCount":7,"lengthKm":29,"longestReach":61529880,"bbox":[-70.38958,-37.06875,-70.21667,-36.89583]}
+{"_id":"rio-lileo","name":"Río Lileo","reachCount":7,"lengthKm":28.9,"longestReach":61531605,"bbox":[-70.96458,-37.23333,-70.70625,-37.19375]}
+{"_id":"arroyo-curamileu","name":"Arroyo Curamileu","reachCount":5,"lengthKm":28.9,"longestReach":61527969,"bbox":[-70.97292,-36.80625,-70.72708,-36.73125]}
+{"_id":"rio-minero","name":"Río Minero","reachCount":10,"lengthKm":28.8,"longestReach":61558470,"bbox":[-71.47292,-40.76875,-71.27292,-40.66875]}
+{"_id":"arroyo-casa-de-piedra","name":"Arroyo Casa de Piedra","reachCount":7,"lengthKm":28.7,"longestReach":61547889,"bbox":[-71.56667,-41.1875,-70.43542,-39.21042]}
+{"_id":"arroyo-quintuco","name":"Arroyo Quintuco","reachCount":12,"lengthKm":28.5,"longestReach":61540035,"bbox":[-70.34792,-38.19375,-70.11042,-38.13542]}
+{"_id":"arroyo-el-cholar","name":"Arroyo El Cholar","reachCount":5,"lengthKm":28.4,"longestReach":61534400,"bbox":[-70.71667,-37.53125,-70.63125,-37.36042]}
+{"_id":"rio-quilquihue","name":"Río Quilquihue","reachCount":10,"lengthKm":28.4,"longestReach":61553765,"bbox":[-71.31875,-40.09792,-71.06875,-40.05625]}
+{"_id":"arroyo-casheu-malle-hue","name":"Arroyo Casheu Malle-Hue","reachCount":11,"lengthKm":28.3,"longestReach":61545991,"bbox":[-70.84792,-39.04167,-70.64167,-38.93958]}
+{"_id":"arroyo-relem","name":"Arroyo Relem","reachCount":8,"lengthKm":27.9,"longestReach":61546343,"bbox":[-71.2625,-39.03333,-71.03958,-38.98958]}
+{"_id":"arroyo-lonco-luan","name":"Arroyo Lonco Luan","reachCount":3,"lengthKm":27.6,"longestReach":61546169,"bbox":[-71.04375,-38.97292,-70.85208,-38.8375]}
+{"_id":"arroyo-chapua","name":"Arroyo Chapúa","reachCount":6,"lengthKm":27.4,"longestReach":61531178,"bbox":[-70.32292,-37.26042,-70.15625,-37.13125]}
+{"_id":"arroyo-coquelen","name":"Arroyo Coquelén","reachCount":7,"lengthKm":27.3,"longestReach":61558070,"bbox":[-70.45208,-40.79792,-70.21875,-40.71042]}
+{"_id":"rio-rucachoroi","name":"Río Rucachoroi","reachCount":6,"lengthKm":27,"longestReach":61547771,"bbox":[-71.16458,-39.22292,-70.92708,-39.1875]}
+{"_id":"arroyo-la-fragua","name":"Arroyo La Fragua","reachCount":8,"lengthKm":27,"longestReach":61560509,"bbox":[-71.03542,-41.13542,-70.92292,-40.95625]}
+{"_id":"arroyo-feo","name":"Arroyo Feo","reachCount":4,"lengthKm":26.9,"longestReach":61539090,"bbox":[-70.94792,-38.08958,-70.67708,-38.05625]}
+{"_id":"arroyo-los-menucos","name":"Arroyo Los Menucos","reachCount":3,"lengthKm":26.5,"longestReach":61531123,"bbox":[-70.50833,-37.17292,-70.25208,-36.91875]}
+{"_id":"arroyo-trailathue","name":"Arroyo Trailathué","reachCount":2,"lengthKm":25.9,"longestReach":61535706,"bbox":[-70.43542,-37.68125,-70.23125,-37.61875]}
+{"_id":"rio-picunleo","name":"Río Picunleo","reachCount":8,"lengthKm":25.9,"longestReach":61534872,"bbox":[-71.09792,-37.58125,-70.84792,-37.53958]}
+{"_id":"rio-del-machete","name":"Río del Machete","reachCount":11,"lengthKm":25.4,"longestReach":61558845,"bbox":[-71.90833,-40.83958,-71.73542,-40.78958]}
+{"_id":"arroyo-pilunchaya","name":"Arroyo Pilunchaya","reachCount":10,"lengthKm":25.4,"longestReach":61535813,"bbox":[-71.17083,-37.70208,-71.00208,-37.63542]}
+{"_id":"rio-traful","name":"Río Traful","reachCount":13,"lengthKm":25.2,"longestReach":61557804,"bbox":[-71.28958,-40.72292,-71.08958,-40.66042]}
+{"_id":"arroyo-collun-co","name":"Arroyo Collún - Co","reachCount":6,"lengthKm":25,"longestReach":61553056,"bbox":[-71.40833,-40,-71.18542,-39.93958]}
+{"_id":"arroyo-ranquilco","name":"Arroyo Ranquilco","reachCount":6,"lengthKm":24.9,"longestReach":61540328,"bbox":[-70.87083,-38.24792,-70.48125,-37.34167]}
+{"_id":"arroyo-coihueco","name":"Arroyo Coihueco","reachCount":7,"lengthKm":24.9,"longestReach":61538772,"bbox":[-70.27292,-38.10625,-70.10625,-37.99375]}
+{"_id":"rio-blanco","name":"Río Blanco","reachCount":11,"lengthKm":24.4,"longestReach":61550556,"bbox":[-71.90417,-40.78333,-71.64375,-39.5875]}
+{"_id":"arroyo-los-molles","name":"Arroyo Los Molles","reachCount":7,"lengthKm":24.2,"longestReach":61547994,"bbox":[-70.43542,-39.2625,-70.25208,-39.19375]}
+{"_id":"arroyo-turbio","name":"Arroyo Turbio","reachCount":8,"lengthKm":24.1,"longestReach":61526286,"bbox":[-70.57292,-36.60417,-70.44375,-36.48125]}
+{"_id":"arroyo-atreuco","name":"Arroyo Atreuco","reachCount":4,"lengthKm":23.3,"longestReach":61527406,"bbox":[-70.66458,-36.80417,-70.51042,-36.71458]}
+{"_id":"arroyo-chacabuco","name":"Arroyo Chacabuco","reachCount":3,"lengthKm":23.1,"longestReach":61560313,"bbox":[-71.26042,-41.03125,-71.12292,-40.94583]}
+{"_id":"arroyo-trolope","name":"Arroyo Trolope","reachCount":4,"lengthKm":23,"longestReach":61536625,"bbox":[-71.14583,-37.81042,-70.93542,-37.77292]}
+{"_id":"arroyo-cuerno","name":"Arroyo Cuerno","reachCount":10,"lengthKm":22.8,"longestReach":61556709,"bbox":[-71.81458,-40.56458,-71.77292,-40.42083]}
+{"_id":"rio-pichi-traful","name":"Río Pichi Traful","reachCount":5,"lengthKm":22.8,"longestReach":61556810,"bbox":[-71.70833,-40.53958,-71.55625,-40.47292]}
+{"_id":"arroyo-millaqueo","name":"Arroyo Millaqueo","reachCount":3,"lengthKm":22.8,"longestReach":61560309,"bbox":[-71.68125,-41.02708,-70.63542,-36.49167]}
+{"_id":"arroyo-mulichinco","name":"Arroyo Mulichincó","reachCount":3,"lengthKm":22.7,"longestReach":61538526,"bbox":[-70.59375,-38.08333,-70.43125,-38.00208]}
+{"_id":"arroyo-huanuco","name":"Arroyo Huanuco","reachCount":4,"lengthKm":22.7,"longestReach":61537196,"bbox":[-70.8875,-37.86875,-70.65625,-37.84167]}
+{"_id":"arroyo-los-chenques","name":"Arroyo Los Chenques","reachCount":8,"lengthKm":21.6,"longestReach":61525276,"bbox":[-70.80208,-36.47708,-70.65625,-36.42292]}
+{"_id":"arroyo-corral","name":"Arroyo Corral","reachCount":7,"lengthKm":21.4,"longestReach":61559672,"bbox":[-71.2125,-40.96042,-71.03958,-40.91875]}
+{"_id":"arroyo-la-llamada","name":"Arroyo La Llamada","reachCount":6,"lengthKm":21.4,"longestReach":61535156,"bbox":[-70.66458,-37.61667,-70.59792,-37.47292]}
+{"_id":"arroyo-chacay-melehue","name":"Arroyo Chacay Melehué","reachCount":7,"lengthKm":21.3,"longestReach":61532049,"bbox":[-70.55833,-37.275,-70.35625,-37.23125]}
+{"_id":"arroyo-sanico","name":"Arroyo Sañico","reachCount":6,"lengthKm":21.3,"longestReach":61552957,"bbox":[-70.54583,-40.00208,-70.35208,-39.96042]}
+{"_id":"canada-mallin-grande","name":"Cañada Mallín Grande","reachCount":2,"lengthKm":21.1,"longestReach":61554173,"bbox":[-70.95417,-40.16042,-70.74375,-40.14375]}
+{"_id":"arroyo-huaraco","name":"Arroyo Huaraco","reachCount":3,"lengthKm":21.1,"longestReach":61530715,"bbox":[-70.91042,-37.19792,-70.59167,-37.09583]}
+{"_id":"arroyo-mollucura","name":"Arroyo Mollucura","reachCount":3,"lengthKm":20.8,"longestReach":61541794,"bbox":[-70.84167,-38.42292,-70.65208,-38.36875]}
+{"_id":"arroyo-rahueco","name":"Arroyo Rahueco","reachCount":7,"lengthKm":20.6,"longestReach":61533691,"bbox":[-70.61875,-37.48333,-70.39792,-37.14792]}
+{"_id":"arroyo-el-huecu","name":"Arroyo El Huecú","reachCount":6,"lengthKm":20.4,"longestReach":61535631,"bbox":[-70.625,-37.71042,-70.38125,-37.49792]}
+{"_id":"arroyo-tilhue","name":"Arroyo Tilhué","reachCount":1,"lengthKm":20.2,"longestReach":61533548,"bbox":[-70.17917,-37.43542,-70.10625,-37.28333]}
+{"_id":"arroyo-truqui-co","name":"Arroyo Truqui-Có","reachCount":3,"lengthKm":20.1,"longestReach":61533615,"bbox":[-70.38125,-37.49792,-70.21458,-37.41875]}
+{"_id":"arroyo-de-el-arco","name":"Arroyo de El Arco","reachCount":4,"lengthKm":20.1,"longestReach":61544954,"bbox":[-71.14167,-38.86875,-71.03125,-38.78125]}
+{"_id":"arroyo-molulco","name":"Arroyo Molulco","reachCount":4,"lengthKm":19.8,"longestReach":61529286,"bbox":[-70.48333,-37.00208,-70.40625,-36.85833]}
+{"_id":"arroyo-pilmatue","name":"Arroyo Pilmatué","reachCount":4,"lengthKm":19.7,"longestReach":61542571,"bbox":[-70.27083,-38.51042,-70.10208,-38.20625]}
+{"_id":"arroyo-llamuco","name":"Arroyo Llamuco","reachCount":4,"lengthKm":19.7,"longestReach":61547740,"bbox":[-70.91042,-39.21458,-70.75417,-39.14375]}
+{"_id":"arroyo-huayilon","name":"Arroyo Huayilón","reachCount":3,"lengthKm":19.6,"longestReach":61541500,"bbox":[-70.51458,-38.38542,-70.4125,-38.25833]}
+{"_id":"arroyo-quetruco","name":"Arroyo Quetruco","reachCount":4,"lengthKm":19.4,"longestReach":61535497,"bbox":[-70.84792,-37.65833,-70.73958,-37.58958]}
+{"_id":"rio-auquinco","name":"Río Auquinco","reachCount":5,"lengthKm":18.9,"longestReach":61553054,"bbox":[-71.53542,-40.02292,-71.41458,-39.91875]}
+{"_id":"arroyo-general-liborio-bernal-o-del-medio","name":"Arroyo General Liborio Bernal o del Medio","reachCount":3,"lengthKm":18.6,"longestReach":61561504,"bbox":[-71.24792,-41.20625,-71.13958,-41.11042]}
+{"_id":"arroyo-cajon-nuevo","name":"Arroyo Cajón Nuevo","reachCount":2,"lengthKm":18.6,"longestReach":61530545,"bbox":[-71.06667,-37.11042,-70.96042,-37.01042]}
+{"_id":"arroyo-quebrada-honda","name":"Arroyo Quebrada Honda","reachCount":5,"lengthKm":18.6,"longestReach":61542432,"bbox":[-71.26667,-39.31875,-70.5375,-36.77292]}
+{"_id":"arroyo-el-manzano","name":"Arroyo El Manzano","reachCount":3,"lengthKm":18.6,"longestReach":61530630,"bbox":[-70.62708,-37.61458,-70.41458,-37.09167]}
+{"_id":"rio-paimun","name":"Río Paimún","reachCount":7,"lengthKm":18.5,"longestReach":61551079,"bbox":[-71.65417,-39.71458,-71.58542,-39.60625]}
+{"_id":"rio-san-isidro","name":"Río San Isidro","reachCount":5,"lengthKm":18.4,"longestReach":61556486,"bbox":[-71.40833,-40.49375,-71.27292,-40.41458]}
+{"_id":"arroyo-chacaico","name":"Arroyo Chacaico","reachCount":4,"lengthKm":18.3,"longestReach":61525043,"bbox":[-70.54792,-36.48125,-70.46875,-36.38125]}
+{"_id":"arroyo-ailinco","name":"Arroyo Ailinco","reachCount":8,"lengthKm":18.1,"longestReach":61526035,"bbox":[-70.63958,-36.63958,-70.55833,-36.5375]}
+{"_id":"arroyo-los-barros","name":"Arroyo Los Barros","reachCount":7,"lengthKm":18.1,"longestReach":61540630,"bbox":[-71.03958,-38.275,-70.92708,-37.96042]}
+{"_id":"arroyo-de-los-toldos","name":"Arroyo de los Toldos","reachCount":5,"lengthKm":18.1,"longestReach":61546440,"bbox":[-70.59167,-39.02083,-70.49375,-38.92292]}
+{"_id":"arroyo-cordoba","name":"Arroyo Córdoba","reachCount":6,"lengthKm":18,"longestReach":61557240,"bbox":[-71.2375,-40.69375,-71.14792,-40.59792]}
+{"_id":"arroyo-ranquileo","name":"Arroyo Ranquileo","reachCount":6,"lengthKm":17.9,"longestReach":61528114,"bbox":[-70.78542,-36.88542,-70.69792,-36.81458]}
+{"_id":"arroyo-hui-hui","name":"Arroyo Hui - Hui","reachCount":4,"lengthKm":17.9,"longestReach":61549015,"bbox":[-71.38125,-39.41042,-71.30625,-39.3125]}
+{"_id":"arroyo-tricao-malal","name":"Arroyo Tricao Malal","reachCount":2,"lengthKm":17.7,"longestReach":61529881,"bbox":[-70.32708,-37.04792,-70.19792,-36.98333]}
+{"_id":"arroyo-copulhue","name":"Arroyo Copulhue","reachCount":6,"lengthKm":17.6,"longestReach":61535494,"bbox":[-71.1375,-37.66458,-71.00208,-37.60417]}
+{"_id":"arroyo-remeco","name":"Arroyo Remeco","reachCount":3,"lengthKm":17.5,"longestReach":61547200,"bbox":[-71.38958,-39.12708,-71.31875,-39.0125]}
+{"_id":"arroyo-cordoba-grande","name":"Arroyo Córdoba Grande","reachCount":4,"lengthKm":17.5,"longestReach":61556933,"bbox":[-71.3125,-40.56042,-71.17292,-40.49792]}
+{"_id":"arroyo-lumabia","name":"Arroyo Lumabia","reachCount":1,"lengthKm":17.3,"longestReach":61528380,"bbox":[-71.03542,-36.85625,-70.99792,-36.71667]}
+{"_id":"arroyo-limen-co","name":"Arroyo Limen Có","reachCount":3,"lengthKm":17.3,"longestReach":61546589,"bbox":[-70.89375,-39.03542,-70.73542,-39.00417]}
+{"_id":"arroyo-de-los-postes","name":"Arroyo de los Postes","reachCount":2,"lengthKm":17.3,"longestReach":61540818,"bbox":[-70.84167,-38.28542,-70.67292,-38.27292]}
+{"_id":"arroyo-vutalelvun","name":"Arroyo Vutalelvún","reachCount":3,"lengthKm":17.2,"longestReach":61534196,"bbox":[-70.63542,-37.51042,-70.5125,-37.42292]}
+{"_id":"arroyo-pincheira","name":"Arroyo Pincheira","reachCount":2,"lengthKm":17.2,"longestReach":61527685,"bbox":[-71.09583,-36.83542,-71.05208,-36.7]}
+{"_id":"rio-pichi-neuquen","name":"Río Pichi Neuquén","reachCount":7,"lengthKm":17,"longestReach":61526396,"bbox":[-70.95625,-36.62708,-70.80625,-36.60625]}
+{"_id":"arroyo-manchana-covunco","name":"Arroyo Manchana Covunco","reachCount":4,"lengthKm":16.9,"longestReach":61526816,"bbox":[-70.62708,-36.66458,-70.51667,-36.6]}
+{"_id":"arroyo-butahuao","name":"Arroyo Butahuao","reachCount":8,"lengthKm":16.9,"longestReach":61539621,"bbox":[-71.0125,-38.20625,-70.91458,-38.11875]}
+{"_id":"arroyo-guayapa","name":"Arroyo Guayapa","reachCount":2,"lengthKm":16.8,"longestReach":61545654,"bbox":[-70.61458,-38.89375,-70.46042,-38.85208]}
+{"_id":"arroyo-las-toscas","name":"Arroyo Las Toscas","reachCount":3,"lengthKm":16.8,"longestReach":61540330,"bbox":[-70.35208,-38.26667,-70.29375,-38.14375]}
+{"_id":"arroyo-los-pajaritos","name":"Arroyo Los Pajaritos","reachCount":2,"lengthKm":16.7,"longestReach":61529004,"bbox":[-71.06667,-36.93542,-70.91875,-36.90208]}
+{"_id":"arroyo-chuchiuma","name":"Arroyo Chuchiuma","reachCount":3,"lengthKm":16.7,"longestReach":61555779,"bbox":[-71.10625,-40.39375,-70.97708,-40.31458]}
+{"_id":"arroyo-domuyo-s","name":"Arroyo Domuyo (S)","reachCount":6,"lengthKm":16.6,"longestReach":61527653,"bbox":[-70.42292,-36.81042,-70.39167,-36.6875]}
+{"_id":"arroyo-manzano-quemado","name":"Arroyo Manzano Quemado","reachCount":3,"lengthKm":16.4,"longestReach":61538299,"bbox":[-70.8875,-37.99375,-70.73125,-37.96875]}
+{"_id":"arroyo-pichi-currhue","name":"Arroyo Pichi Currhué","reachCount":3,"lengthKm":16.2,"longestReach":61552554,"bbox":[-71.36875,-39.91875,-71.26042,-39.83125]}
+{"_id":"rio-filuco","name":"Río Filuco","reachCount":3,"lengthKm":16.1,"longestReach":61555905,"bbox":[-71.58333,-40.44375,-71.50625,-40.375]}
+{"_id":"arroyo-vaca-lauquen","name":"Arroyo Vaca Lauquen","reachCount":4,"lengthKm":16.1,"longestReach":61528631,"bbox":[-71.09167,-36.88542,-70.96042,-36.85417]}
+{"_id":"arroyo-ranquilon","name":"Arroyo Ranquilón","reachCount":5,"lengthKm":16,"longestReach":61536923,"bbox":[-70.58958,-37.87292,-70.51042,-37.775]}
+{"_id":"arroyo-alinco","name":"Arroyo Alincó","reachCount":1,"lengthKm":16,"longestReach":61553270,"bbox":[-70.99583,-40.02708,-70.83542,-39.99375]}
+{"_id":"arroyo-quirinco","name":"Arroyo Quirinco","reachCount":3,"lengthKm":15.9,"longestReach":61545190,"bbox":[-71.01042,-38.86042,-70.86667,-38.81042]}
+{"_id":"arroyo-del-leon","name":"Arroyo del León","reachCount":3,"lengthKm":15.7,"longestReach":61553022,"bbox":[-71.6,-39.99375,-71.48542,-39.9375]}
+{"_id":"arroyo-aquihueco","name":"Arroyo Aquihuecó","reachCount":1,"lengthKm":15.4,"longestReach":61530326,"bbox":[-70.52083,-37.08542,-70.38125,-37.04583]}
+{"_id":"arroyo-huaca-mamuil","name":"Arroyo Huaca Mamuil","reachCount":4,"lengthKm":15.4,"longestReach":61550298,"bbox":[-71.36458,-39.63125,-71.28958,-39.51875]}
+{"_id":"arroyo-machico","name":"Arroyo Machico","reachCount":3,"lengthKm":15.4,"longestReach":61557308,"bbox":[-71.63125,-40.61875,-71.53542,-40.55833]}
+{"_id":"arroyo-juan-esteban","name":"Arroyo Juan Esteban","reachCount":4,"lengthKm":15.4,"longestReach":61532862,"bbox":[-71.09167,-37.36458,-71.05625,-37.25833]}
+{"_id":"arroyo-de-la-estacada","name":"Arroyo de la Estacada","reachCount":6,"lengthKm":15.3,"longestReach":61558785,"bbox":[-71.54792,-40.84792,-71.5125,-40.74167]}
+{"_id":"arroyo-aucapan","name":"Arroyo Aucapán","reachCount":3,"lengthKm":15.1,"longestReach":61550636,"bbox":[-71.14167,-39.65208,-71.00208,-39.61667]}
+{"_id":"arroyo-los-molinos","name":"Arroyo Los Molinos","reachCount":2,"lengthKm":15,"longestReach":61526067,"bbox":[-70.99583,-36.60625,-70.90625,-36.50833]}
+{"_id":"arroyo-trohunco","name":"Arroyo Trohunco","reachCount":2,"lengthKm":14.9,"longestReach":61531175,"bbox":[-70.88333,-37.17708,-70.74375,-37.15833]}
+{"_id":"arroyo-norquin","name":"Arroyo Ñorquín","reachCount":5,"lengthKm":14.6,"longestReach":61536354,"bbox":[-70.65625,-37.75625,-70.55208,-37.67708]}
+{"_id":"arroyo-quilachanquil","name":"Arroyo Quilachanquil","reachCount":3,"lengthKm":14.6,"longestReach":61547116,"bbox":[-70.88125,-39.11458,-70.75,-39.08125]}
+{"_id":"arroyo-pichinco","name":"Arroyo Pichincó","reachCount":3,"lengthKm":14.5,"longestReach":61538810,"bbox":[-70.73125,-38.05208,-70.60625,-37.99375]}
+{"_id":"arroyo-trolon","name":"Arroyo Trolón","reachCount":3,"lengthKm":14.4,"longestReach":61536428,"bbox":[-70.9375,-37.78542,-70.79792,-37.74583]}
+{"_id":"arroyo-neuquenco","name":"Arroyo Neuquenco","reachCount":2,"lengthKm":14.4,"longestReach":61557340,"bbox":[-71.6875,-40.63958,-71.64792,-40.54792]}
+{"_id":"arroyo-varvarco","name":"Arroyo Varvarco","reachCount":4,"lengthKm":14.1,"longestReach":61523538,"bbox":[-70.62292,-36.29792,-70.57083,-36.2]}
+{"_id":"arroyo-lapa","name":"Arroyo Lapa","reachCount":4,"lengthKm":14,"longestReach":61548947,"bbox":[-70.51042,-39.39792,-70.38958,-39.33542]}
+{"_id":"arroyo-cajon-negro","name":"Arroyo Cajón Negro","reachCount":4,"lengthKm":14,"longestReach":61526814,"bbox":[-71.67917,-40.43542,-70.95625,-36.61458]}
+{"_id":"arroyo-carrin-cura","name":"Arroyo Carrín Curá","reachCount":1,"lengthKm":13.9,"longestReach":61553619,"bbox":[-70.54167,-40.07708,-70.42708,-40.03125]}
+{"_id":"arroyo-huncal","name":"Arroyo Huncal","reachCount":2,"lengthKm":13.9,"longestReach":61538357,"bbox":[-70.3875,-38.00208,-70.27292,-37.94375]}
+{"_id":"arroyo-la-lechera","name":"Arroyo La Lechera","reachCount":2,"lengthKm":13.7,"longestReach":61545426,"bbox":[-70.62083,-38.86042,-70.48958,-38.83333]}
+{"_id":"arroyo-de-las-caballadas","name":"Arroyo de las Caballadas","reachCount":6,"lengthKm":13.7,"longestReach":61549989,"bbox":[-71.25,-39.55625,-71.21042,-39.47083]}
+{"_id":"arroyo-yao-yao","name":"Arroyo Yao Yao","reachCount":6,"lengthKm":13.6,"longestReach":61548141,"bbox":[-70.61875,-39.30208,-70.56042,-39.2125]}
+{"_id":"rio-huemul","name":"Río Huemul","reachCount":3,"lengthKm":13.5,"longestReach":61559553,"bbox":[-71.48125,-40.91875,-71.42917,-40.8125]}
+{"_id":"arroyo-de-la-laguna","name":"Arroyo de la Laguna","reachCount":2,"lengthKm":13.5,"longestReach":61534509,"bbox":[-71.03125,-37.54375,-70.95625,-37.45625]}
+{"_id":"arroyo-cochico-grande","name":"Arroyo Cochicó Grande","reachCount":4,"lengthKm":13.4,"longestReach":61545698,"bbox":[-70.82708,-38.90208,-70.77708,-38.8125]}
+{"_id":"arroyo-vinagre","name":"Arroyo Vinagre","reachCount":2,"lengthKm":13.4,"longestReach":61559766,"bbox":[-71.7,-40.95208,-71.58958,-40.92708]}
+{"_id":"rio-bonito","name":"Río Bonito","reachCount":7,"lengthKm":13.3,"longestReach":61558710,"bbox":[-71.61875,-40.80625,-71.55625,-40.72708]}
+{"_id":"arroyo-el-membrillo","name":"Arroyo El Membrillo","reachCount":1,"lengthKm":13.2,"longestReach":61533336,"bbox":[-70.85833,-37.4125,-70.77292,-37.34375]}
+{"_id":"arroyo-motronco","name":"Arroyo Motronco","reachCount":5,"lengthKm":13.2,"longestReach":61530547,"bbox":[-70.25625,-37.12708,-70.20833,-37.07083]}
+{"_id":"arroyo-mapio","name":"Arroyo Mapio","reachCount":4,"lengthKm":13.2,"longestReach":61547203,"bbox":[-71.25417,-39.12708,-71.18542,-39.08333]}
+{"_id":"arroyo-tricahueras","name":"Arroyo Tricahueras","reachCount":3,"lengthKm":13,"longestReach":61538568,"bbox":[-70.35417,-38.05625,-70.27292,-38.00208]}
+{"_id":"arroyo-torrentoso","name":"Arroyo Torrentoso","reachCount":4,"lengthKm":13,"longestReach":61535851,"bbox":[-71.03333,-37.74167,-70.96042,-37.65625]}
+{"_id":"arroyo-donaire","name":"Arroyo Donaire","reachCount":2,"lengthKm":13,"longestReach":61531559,"bbox":[-71.11875,-37.22292,-71.06042,-37.14167]}
+{"_id":"rio-meliquina","name":"Río Meliquina","reachCount":8,"lengthKm":13,"longestReach":61556078,"bbox":[-71.25625,-40.48125,-71.23125,-40.38542]}
+{"_id":"arroyo-guaraco-norte","name":"Arroyo Guaraco Norte","reachCount":2,"lengthKm":12.9,"longestReach":61528559,"bbox":[-70.67292,-36.87708,-70.5625,-36.8375]}
+{"_id":"arroyo-mallin-florido","name":"Arroyo Mallín Florido","reachCount":1,"lengthKm":12.8,"longestReach":61542813,"bbox":[-70.75833,-38.53125,-70.64375,-38.49583]}
+{"_id":"arroyo-cajon-de-la-burra","name":"Arroyo Cajón de la Burra","reachCount":3,"lengthKm":12.8,"longestReach":61524181,"bbox":[-70.63125,-36.33125,-70.5375,-36.27917]}
+{"_id":"rio-pireco","name":"Río Pireco","reachCount":4,"lengthKm":12.7,"longestReach":61558278,"bbox":[-71.88542,-40.74583,-71.77292,-40.71875]}
+{"_id":"arroyo-palao","name":"Arroyo Palao","reachCount":3,"lengthKm":12.6,"longestReach":61531090,"bbox":[-70.96875,-37.19375,-70.93958,-37.10417]}
+{"_id":"arroyo-cajon-almaza","name":"Arroyo Cajón Almaza","reachCount":1,"lengthKm":12.6,"longestReach":61539750,"bbox":[-70.58958,-38.16042,-70.46667,-38.13958]}
+{"_id":"arroyo-trocoquen","name":"Arroyo Trocoquen","reachCount":2,"lengthKm":12.5,"longestReach":61545899,"bbox":[-70.81042,-38.93958,-70.6875,-38.89167]}
+{"_id":"arroyo-quillahue","name":"Arroyo Quillahue","reachCount":5,"lengthKm":12.5,"longestReach":61546247,"bbox":[-71.40625,-38.98542,-71.30625,-38.93958]}
+{"_id":"arroyo-bravo","name":"Arroyo Bravo","reachCount":3,"lengthKm":12.3,"longestReach":61560270,"bbox":[-71.83958,-41.02292,-71.77292,-40.94167]}
+{"_id":"rio-filo-hua-hum-oeste","name":"Río Filo Hua Hum Oeste","reachCount":4,"lengthKm":12,"longestReach":61556446,"bbox":[-71.43958,-40.49375,-71.32708,-40.47708]}
+{"_id":"arroyo-tocuyo","name":"Arroyo Tocuyo","reachCount":2,"lengthKm":12,"longestReach":61529783,"bbox":[-70.52083,-37.01875,-70.41042,-36.99792]}
+{"_id":"arroyo-cajon-de-flores","name":"Arroyo Cajón de Flores","reachCount":1,"lengthKm":12,"longestReach":61527244,"bbox":[-70.76042,-36.71458,-70.72292,-36.62917]}
+{"_id":"arroyo-del-boquete","name":"Arroyo del Boquete","reachCount":2,"lengthKm":11.9,"longestReach":61553333,"bbox":[-71.6625,-40.03542,-71.54375,-40.01042]}
+{"_id":"arroyo-rucu-leufu","name":"Arroyo Rucu Leufú","reachCount":3,"lengthKm":11.9,"longestReach":61551315,"bbox":[-71.50625,-39.75208,-71.47292,-39.67917]}
+{"_id":"arroyo-verde","name":"Arroyo Verde","reachCount":5,"lengthKm":11.8,"longestReach":61557517,"bbox":[-71.31458,-40.66875,-71.25625,-40.6125]}
+{"_id":"arroyo-pichi-leufu","name":"Arroyo Pichi Leufú","reachCount":4,"lengthKm":11.8,"longestReach":61549431,"bbox":[-71.04375,-39.46875,-70.95625,-39.43542]}
+{"_id":"arroyo-de-la-totora","name":"Arroyo de la Totora","reachCount":1,"lengthKm":11.7,"longestReach":61545338,"bbox":[-70.57083,-38.85208,-70.46042,-38.82917]}
+{"_id":"arroyo-santo-tomas","name":"Arroyo Santo Tomás","reachCount":5,"lengthKm":11.7,"longestReach":61552200,"bbox":[-70.07292,-39.86875,-69.93958,-39.80208]}
+{"_id":"arroyo-tristeza","name":"Arroyo Tristeza","reachCount":2,"lengthKm":11.7,"longestReach":61562124,"bbox":[-71.35208,-41.30208,-71.25625,-41.275]}
+{"_id":"arroyo-comodon","name":"Arroyo Comodón","reachCount":3,"lengthKm":11.5,"longestReach":61555473,"bbox":[-71.65417,-40.35208,-71.53958,-40.33125]}
+{"_id":"arroyo-tabanos","name":"Arroyo Tábanos","reachCount":3,"lengthKm":11.5,"longestReach":61532985,"bbox":[-71.1875,-37.38333,-71.10625,-37.34583]}
+{"_id":"arroyo-los-nires","name":"Arroyo Los Ñires","reachCount":1,"lengthKm":11.5,"longestReach":61538993,"bbox":[-70.88333,-38.07292,-70.76458,-38.06042]}
+{"_id":"arroyo-nompehuen-blanco","name":"Arroyo Nompehuen (Blanco)","reachCount":2,"lengthKm":11.4,"longestReach":61547202,"bbox":[-71.31875,-39.12708,-71.30625,-39.03333]}
+{"_id":"arroyo-colipilli","name":"Arroyo Colipilli","reachCount":1,"lengthKm":11.3,"longestReach":61536356,"bbox":[-70.31042,-37.75625,-70.21042,-37.73542]}
+{"_id":"arroyo-pino-solo","name":"Arroyo Pino Solo","reachCount":3,"lengthKm":11.2,"longestReach":61543187,"bbox":[-70.80417,-38.58333,-70.69375,-38.55625]}
+{"_id":"arroyo-chacayal","name":"Arroyo Chacayal","reachCount":2,"lengthKm":11.2,"longestReach":61553441,"bbox":[-70.99167,-40.07292,-70.89375,-40.02708]}
+{"_id":"arroyo-ayhuin","name":"Arroyo Ayhuin","reachCount":2,"lengthKm":11.1,"longestReach":61556599,"bbox":[-71.77292,-40.53958,-71.74167,-40.45417]}
+{"_id":"arroyo-del-nonial","name":"Arroyo del Nonial","reachCount":1,"lengthKm":11,"longestReach":61537629,"bbox":[-70.58125,-37.9125,-70.475,-37.88125]}
+{"_id":"arroyo-michihuao","name":"Arroyo Michihuao","reachCount":2,"lengthKm":10.9,"longestReach":61553902,"bbox":[-69.48125,-40.11875,-69.43125,-40.03542]}
+{"_id":"arroyo-manchana-co","name":"Arroyo Manchana Co","reachCount":2,"lengthKm":10.6,"longestReach":61528908,"bbox":[-70.80833,-37.1375,-70.61667,-36.89792]}
+{"_id":"arroyo-challhuaco","name":"Arroyo Challhuaco","reachCount":4,"lengthKm":10.6,"longestReach":61561822,"bbox":[-71.32917,-41.25833,-71.29792,-41.18958]}
+{"_id":"rio-turbio","name":"Río Turbio","reachCount":2,"lengthKm":10.6,"longestReach":61550380,"bbox":[-71.47083,-39.61667,-71.41875,-39.56458]}
+{"_id":"arroyo-la-lana","name":"Arroyo La Lana","reachCount":2,"lengthKm":10.6,"longestReach":61560961,"bbox":[-71.11458,-41.13125,-71.02708,-41.08958]}
+{"_id":"arroyo-trobunco","name":"Arroyo Trobunco","reachCount":1,"lengthKm":10.5,"longestReach":61532092,"bbox":[-70.95833,-37.27708,-70.86875,-37.24167]}
+{"_id":"arroyo-coloco","name":"Arroyo Coloco","reachCount":2,"lengthKm":10.2,"longestReach":61547472,"bbox":[-71.375,-39.18125,-71.29375,-39.13125]}
+{"_id":"arroyo-rezago","name":"Arroyo Rezago","reachCount":1,"lengthKm":10.2,"longestReach":61526399,"bbox":[-70.88333,-36.61458,-70.83958,-36.5375]}
+{"_id":"arroyo-minero-chico","name":"Arroyo Minero Chico","reachCount":3,"lengthKm":10.2,"longestReach":61558472,"bbox":[-71.42083,-40.78333,-71.36458,-40.72292]}
+{"_id":"arroyo-los-pinos","name":"Arroyo Los Pinos","reachCount":3,"lengthKm":10.1,"longestReach":61535960,"bbox":[-71.19167,-38.43542,-70.77292,-37.69375]}
+{"_id":"arroyo-la-greda","name":"Arroyo La Greda","reachCount":1,"lengthKm":10.1,"longestReach":61534669,"bbox":[-70.61458,-37.5625,-70.52917,-37.51458]}
+{"_id":"arroyo-del-medio-o-ragintuco","name":"Arroyo del Medio o Ragintuco","reachCount":2,"lengthKm":10.1,"longestReach":61559180,"bbox":[-71.51875,-40.86458,-71.45833,-40.79583]}
+{"_id":"arroyo-curu-pehuen","name":"Arroyo Curu Pehuén","reachCount":3,"lengthKm":10,"longestReach":61547148,"bbox":[-70.72083,-39.13958,-70.67292,-39.0625]}
+{"_id":"arroyo-matancilla","name":"Arroyo Matancilla","reachCount":4,"lengthKm":9.9,"longestReach":61527871,"bbox":[-70.68125,-36.81875,-70.63125,-36.75]}
+{"_id":"arroyo-colimamil","name":"Arroyo Colimamil","reachCount":2,"lengthKm":9.9,"longestReach":61528022,"bbox":[-70.39792,-36.81042,-70.33542,-36.75]}
+{"_id":"arroyo-patiruco","name":"Arroyo Patiruco","reachCount":5,"lengthKm":9.9,"longestReach":61560683,"bbox":[-71.7625,-41.0875,-71.74375,-41.02292]}
+{"_id":"arroyo-pitrunquen","name":"Arroyo Pitrunquen","reachCount":2,"lengthKm":9.9,"longestReach":61545653,"bbox":[-70.76875,-38.89375,-70.7,-38.85625]}
+{"_id":"arroyo-milla-michico","name":"Arroyo Milla Michico","reachCount":3,"lengthKm":9.8,"longestReach":61532255,"bbox":[-70.69375,-37.29792,-70.61875,-37.26042]}
+{"_id":"arroyo-goye","name":"Arroyo Goye","reachCount":2,"lengthKm":9.8,"longestReach":61561068,"bbox":[-71.56667,-41.14375,-71.50208,-41.08125]}
+{"_id":"arroyo-pichachen","name":"Arroyo Pichachén","reachCount":3,"lengthKm":9.8,"longestReach":61533507,"bbox":[-71.09792,-37.43125,-71.05625,-37.36875]}
+{"_id":"rio-frias","name":"Río Frías","reachCount":5,"lengthKm":9.8,"longestReach":61561121,"bbox":[-71.82917,-41.14375,-71.80208,-41.02292]}
+{"_id":"arroyo-aseret","name":"Arroyo Aseret","reachCount":1,"lengthKm":9.7,"longestReach":61552582,"bbox":[-71.46667,-39.92292,-71.36875,-39.89792]}
+{"_id":"arroyo-cochico-chico","name":"Arroyo Cochicó Chico","reachCount":2,"lengthKm":9.7,"longestReach":61545622,"bbox":[-70.81458,-38.90208,-70.73958,-38.85417]}
+{"_id":"arroyo-de-la-punta-alta","name":"Arroyo de la Punta Alta","reachCount":1,"lengthKm":9.6,"longestReach":61541093,"bbox":[-70.13333,-38.31875,-70.06458,-38.26042]}
+{"_id":"arroyo-colimichico","name":"Arroyo Colimichicó","reachCount":1,"lengthKm":9.6,"longestReach":61529137,"bbox":[-70.68542,-36.94375,-70.5875,-36.92708]}
+{"_id":"rio-hermoso","name":"Río Hermoso","reachCount":4,"lengthKm":9.5,"longestReach":61555373,"bbox":[-71.41458,-40.33958,-71.34375,-40.31042]}
+{"_id":"arroyo-nivinco","name":"Arroyo Ñivinco","reachCount":3,"lengthKm":9.4,"longestReach":61556304,"bbox":[-71.71042,-40.49375,-71.64792,-40.4375]}
+{"_id":"arroyo-las-islas","name":"Arroyo Las Islas","reachCount":1,"lengthKm":9.4,"longestReach":61530100,"bbox":[-70.91667,-37.0625,-70.84792,-37.01875]}
+{"_id":"arroyo-catrinao","name":"Arroyo Catrinao","reachCount":3,"lengthKm":9.4,"longestReach":61525805,"bbox":[-70.87292,-36.54792,-70.80208,-36.50625]}
+{"_id":"arroyo-coluco","name":"Arroyo Coluco","reachCount":1,"lengthKm":9.3,"longestReach":61559597,"bbox":[-71.68542,-40.92708,-71.61042,-40.89583]}
+{"_id":"arroyo-las-vacas","name":"Arroyo Las Vacas","reachCount":1,"lengthKm":9.3,"longestReach":61561902,"bbox":[-70.53958,-41.26875,-70.45625,-41.23542]}
+{"_id":"arroyo-bayo-overo","name":"Arroyo Bayo Overo","reachCount":2,"lengthKm":9.2,"longestReach":61529982,"bbox":[-70.66458,-37.04375,-70.58333,-37.01458]}
+{"_id":"arroyo-auque","name":"Arroyo Auque","reachCount":1,"lengthKm":9.1,"longestReach":61527928,"bbox":[-70.66458,-36.80417,-70.57917,-36.78958]}
+{"_id":"arroyo-quebrada-la-greda","name":"Arroyo Quebrada La Greda","reachCount":1,"lengthKm":9,"longestReach":61525733,"bbox":[-70.79792,-36.53125,-70.72083,-36.50417]}
+{"_id":"rio-filo-hua-hum","name":"Río Filo Hua Hum","reachCount":5,"lengthKm":9,"longestReach":61556602,"bbox":[-71.27708,-40.5125,-71.23125,-40.48125]}
+{"_id":"rio-ocon","name":"Río Ocón","reachCount":4,"lengthKm":9,"longestReach":61552023,"bbox":[-71.67917,-39.84583,-71.62292,-39.81458]}
+{"_id":"arroyo-rucaco","name":"Arroyo Rucaco","reachCount":2,"lengthKm":9,"longestReach":61561385,"bbox":[-71.52917,-41.18542,-71.16042,-39.22292]}
+{"_id":"arroyo-central","name":"Arroyo Central","reachCount":5,"lengthKm":9,"longestReach":61551000,"bbox":[-70.72708,-39.72708,-70.68125,-39.66042]}
+{"_id":"arroyo-la-totora","name":"Arroyo La Totora","reachCount":2,"lengthKm":8.9,"longestReach":61527318,"bbox":[-70.55625,-36.7375,-70.4875,-36.70625]}
+{"_id":"arroyo-correntoso","name":"Arroyo Correntoso","reachCount":4,"lengthKm":8.9,"longestReach":61551761,"bbox":[-71.29792,-39.81042,-70.07292,-39.5875]}
+{"_id":"arroyo-leuto-caballo","name":"Arroyo Leuto Caballo","reachCount":2,"lengthKm":8.9,"longestReach":61531246,"bbox":[-70.27292,-37.20208,-70.25625,-37.12708]}
+{"_id":"arroyo-nirequito","name":"Arroyo Ñirequito","reachCount":2,"lengthKm":8.8,"longestReach":61531860,"bbox":[-70.475,-37.25208,-70.42292,-37.19583]}
+{"_id":"arroyo-valle-alegre","name":"Arroyo Valle Alegre","reachCount":4,"lengthKm":8.8,"longestReach":61526420,"bbox":[-71.04167,-36.61875,-70.98125,-36.5875]}
+{"_id":"arroyo-del-fortin-1-de-mayo","name":"Arroyo del Fortín 1° de Mayo","reachCount":3,"lengthKm":8.7,"longestReach":61549178,"bbox":[-70.7375,-39.43125,-70.65208,-39.41875]}
+{"_id":"canada-del-cerro-la-grasa","name":"Cañada del Cerro La Grasa","reachCount":3,"lengthKm":8.7,"longestReach":61541765,"bbox":[-70.31042,-38.41042,-70.23542,-38.38125]}
+{"_id":"arroyo-bella-vista","name":"Arroyo Bella Vista","reachCount":3,"lengthKm":8.6,"longestReach":61550709,"bbox":[-70.75208,-39.66042,-70.72708,-39.59375]}
+{"_id":"arroyo-metrenco","name":"Arroyo Metrenco","reachCount":1,"lengthKm":8.6,"longestReach":61551729,"bbox":[-71.43542,-39.80833,-71.36458,-39.78125]}
+{"_id":"arroyo-nalca","name":"Arroyo Nalca","reachCount":2,"lengthKm":8.5,"longestReach":61553536,"bbox":[-71.6125,-40.06458,-71.54375,-40.03542]}
+{"_id":"arroyo-maitenal","name":"Arroyo Maitenal","reachCount":1,"lengthKm":8.3,"longestReach":61558848,"bbox":[-71.39583,-40.81875,-71.31042,-40.81042]}
+{"_id":"arroyo-ferrada","name":"Arroyo Ferrada","reachCount":2,"lengthKm":8.3,"longestReach":61543077,"bbox":[-70.825,-38.56875,-70.76042,-38.52708]}
+{"_id":"arroyo-la-meche","name":"Arroyo La Meche","reachCount":3,"lengthKm":8.2,"longestReach":61529913,"bbox":[-70.86667,-37.04583,-70.80208,-37.01875]}
+{"_id":"arroyo-del-gringo","name":"Arroyo del Gringo","reachCount":1,"lengthKm":8.2,"longestReach":61546116,"bbox":[-70.55833,-38.96667,-70.50208,-38.92292]}
+{"_id":"arroyo-pichunco","name":"Arroyo Pichunco","reachCount":3,"lengthKm":8.2,"longestReach":61557863,"bbox":[-71.65833,-40.68542,-71.57917,-40.67292]}
+{"_id":"arroyo-las-minas","name":"Arroyo Las Minas","reachCount":3,"lengthKm":8.1,"longestReach":61562083,"bbox":[-71.18542,-41.3125,-71.16875,-41.24792]}
+{"_id":"arroyo-la-crianza","name":"Arroyo La Crianza","reachCount":1,"lengthKm":8.1,"longestReach":61524991,"bbox":[-70.61042,-36.43958,-70.54792,-36.41042]}
+{"_id":"arroyo-torta-frita","name":"Arroyo Torta Frita","reachCount":2,"lengthKm":8,"longestReach":61550707,"bbox":[-70.88542,-39.66875,-70.87292,-39.60417]}
+{"_id":"arroyo-lluvuco","name":"Arroyo Lluvuco","reachCount":2,"lengthKm":7.9,"longestReach":61561126,"bbox":[-71.65625,-41.16667,-71.59792,-41.12708]}
+{"_id":"arroyo-los-aparejos-o-los-perros","name":"Arroyo Los Aparejos o Los Perros","reachCount":1,"lengthKm":7.9,"longestReach":61529449,"bbox":[-70.97083,-36.98125,-70.88958,-36.96875]}
+{"_id":"arroyo-calfiquitra","name":"Arroyo Calfiquitra","reachCount":2,"lengthKm":7.8,"longestReach":61547971,"bbox":[-71.28125,-39.25208,-71.21458,-39.21875]}
+{"_id":"arroyo-cajon-grande","name":"Arroyo Cajón Grande","reachCount":1,"lengthKm":7.8,"longestReach":61528156,"bbox":[-70.475,-36.82708,-70.39792,-36.81875]}
+{"_id":"arroyo-carbon","name":"Arroyo Carbón","reachCount":2,"lengthKm":7.8,"longestReach":61559107,"bbox":[-71.1625,-40.85833,-71.09375,-40.84375]}
+{"_id":"arroyo-cajon-chico","name":"Arroyo Cajón Chico","reachCount":2,"lengthKm":7.7,"longestReach":61536210,"bbox":[-71.10833,-37.74167,-71.06042,-37.68958]}
+{"_id":"arroyo-sin-destino","name":"Arroyo Sin Destino","reachCount":1,"lengthKm":7.7,"longestReach":61534466,"bbox":[-71.06875,-37.53958,-71.03542,-37.47917]}
+{"_id":"arroyo-las-maderas","name":"Arroyo Las Maderas","reachCount":1,"lengthKm":7.6,"longestReach":61541793,"bbox":[-70.75,-38.41458,-70.67708,-38.39792]}
+{"_id":"arroyo-soliman","name":"Arroyo Solimán","reachCount":3,"lengthKm":7.6,"longestReach":61529634,"bbox":[-71.07708,-37.00208,-71.05833,-36.95]}
+{"_id":"rio-nahuel-punanco","name":"Río Nahuel Puñanco","reachCount":1,"lengthKm":7.6,"longestReach":61558203,"bbox":[-71.27292,-40.73333,-71.23125,-40.68958]}
+{"_id":"arroyo-tranqueras","name":"Arroyo Tranqueras","reachCount":1,"lengthKm":7.5,"longestReach":61526524,"bbox":[-70.70833,-36.63125,-70.64375,-36.59792]}
+{"_id":"arroyo-pilo-lil","name":"Arroyo Pilo Lil","reachCount":1,"lengthKm":7.5,"longestReach":61550706,"bbox":[-71.00208,-39.66042,-70.93542,-39.64792]}
+{"_id":"arroyo-tralalhue","name":"Arroyo Tralalhue","reachCount":2,"lengthKm":7.5,"longestReach":61536091,"bbox":[-70.23125,-37.73542,-70.19792,-37.68125]}
+{"_id":"arroyo-mallohue","name":"Arroyo Mallohue","reachCount":1,"lengthKm":7.5,"longestReach":61549363,"bbox":[-71.12292,-39.45625,-71.04375,-39.45208]}
+{"_id":"arroyo-chonorquin","name":"Arroyo Choñorquín","reachCount":2,"lengthKm":7.4,"longestReach":61541956,"bbox":[-70.92292,-38.43958,-70.84792,-38.42708]}
+{"_id":"arroyo-del-palo","name":"Arroyo del Palo","reachCount":1,"lengthKm":7.4,"longestReach":61537919,"bbox":[-70.58542,-37.94792,-70.50833,-37.93958]}
+{"_id":"arroyo-gutierrez","name":"Arroyo Gutiérrez","reachCount":1,"lengthKm":7.4,"longestReach":61561230,"bbox":[-71.42292,-41.16042,-71.41042,-41.09792]}
+{"_id":"arroyo-panqueco","name":"Arroyo Panqueco","reachCount":1,"lengthKm":7.4,"longestReach":61534986,"bbox":[-70.76042,-37.59375,-70.69583,-37.57708]}
+{"_id":"arroyo-el-rodeo","name":"Arroyo El Rodeo","reachCount":1,"lengthKm":7.3,"longestReach":61561717,"bbox":[-70.52292,-41.23542,-70.45208,-41.21042]}
+{"_id":"arroyo-cajon-atravesado","name":"Arroyo Cajón Atravesado","reachCount":2,"lengthKm":7.3,"longestReach":61541913,"bbox":[-70.96458,-38.43125,-70.92292,-38.37917]}
+{"_id":"arroyo-azul","name":"Arroyo Azul","reachCount":2,"lengthKm":7.3,"longestReach":61530099,"bbox":[-71.08958,-37.06042,-71.03542,-37.02292]}
+{"_id":"arroyo-la-buitrera","name":"Arroyo La Buitrera","reachCount":1,"lengthKm":7.2,"longestReach":61543144,"bbox":[-70.39167,-38.56875,-70.31875,-38.55208]}
+{"_id":"arroyo-chico","name":"Arroyo Chico","reachCount":1,"lengthKm":7.2,"longestReach":61540356,"bbox":[-70.99167,-38.23125,-70.92708,-38.21042]}
+{"_id":"arroyo-pilhue","name":"Arroyo Pilhué","reachCount":1,"lengthKm":7.2,"longestReach":61547232,"bbox":[-71.38125,-39.13125,-71.31875,-39.11042]}
+{"_id":"arroyo-newbery","name":"Arroyo Newbery","reachCount":3,"lengthKm":7.2,"longestReach":61560113,"bbox":[-71.20417,-41.01042,-71.1625,-40.98333]}
+{"_id":"arroyo-pehuenche","name":"Arroyo Pehuenche","reachCount":3,"lengthKm":7.2,"longestReach":61525247,"bbox":[-70.82917,-36.47292,-70.80625,-36.42083]}
+{"_id":"arroyo-la-turbia","name":"Arroyo La Turbia","reachCount":1,"lengthKm":7.1,"longestReach":61528708,"bbox":[-70.38958,-36.89375,-70.33333,-36.86667]}
+{"_id":"arroyo-raquiduanco","name":"Arroyo Raquiduanco","reachCount":3,"lengthKm":7.1,"longestReach":61560808,"bbox":[-71.7,-41.10625,-71.64375,-41.06667]}
+{"_id":"arroyo-del-risco-negro","name":"Arroyo del Risco Negro","reachCount":1,"lengthKm":7,"longestReach":61531522,"bbox":[-70.49583,-37.21458,-70.43958,-37.18542]}
+{"_id":"arroyo-los-cornelios","name":"Arroyo Los Cornelios","reachCount":1,"lengthKm":6.9,"longestReach":61558914,"bbox":[-71.17083,-40.82708,-71.11042,-40.80625]}
+{"_id":"arroyo-loncopue","name":"Arroyo Loncopué","reachCount":1,"lengthKm":6.9,"longestReach":61539057,"bbox":[-70.67292,-38.08125,-70.61458,-38.05208]}
+{"_id":"arroyo-cacho","name":"Arroyo Cacho","reachCount":2,"lengthKm":6.9,"longestReach":61556631,"bbox":[-71.8375,-40.52708,-71.78542,-40.49375]}
+{"_id":"arroyo-enfermeria","name":"Arroyo Enfermería","reachCount":3,"lengthKm":6.9,"longestReach":61524569,"bbox":[-70.63125,-36.38958,-70.59583,-36.35417]}
+{"_id":"arroyo-chacay","name":"Arroyo Chacay","reachCount":1,"lengthKm":6.8,"longestReach":61528088,"bbox":[-70.66875,-36.82083,-70.60417,-36.80625]}
+{"_id":"arroyo-commonpulli","name":"Arroyo Commonpulli","reachCount":1,"lengthKm":6.8,"longestReach":61551188,"bbox":[-71.67917,-39.73125,-71.62292,-39.7]}
+{"_id":"arroyo-memanque","name":"Arroyo Memanque","reachCount":1,"lengthKm":6.7,"longestReach":61530143,"bbox":[-70.66042,-37.06458,-70.59583,-37.05417]}
+{"_id":"arroyo-gliunco-hue","name":"Arroyo Gliunco - Hue","reachCount":1,"lengthKm":6.7,"longestReach":61557195,"bbox":[-71.82917,-40.59792,-71.76875,-40.58125]}
+{"_id":"arroyo-piedra-grande","name":"Arroyo Piedra Grande","reachCount":3,"lengthKm":6.7,"longestReach":61534275,"bbox":[-71.10208,-37.54375,-71.08958,-37.49583]}
+{"_id":"arroyo-jones","name":"Arroyo Jones","reachCount":2,"lengthKm":6.6,"longestReach":61560069,"bbox":[-71.2875,-41.00417,-71.27292,-40.95]}
+{"_id":"arroyo-riyunco","name":"Arroyo Riyunco","reachCount":1,"lengthKm":6.6,"longestReach":61557309,"bbox":[-71.60625,-40.61458,-71.59375,-40.55833]}
+{"_id":"arroyo-los-choroyes","name":"Arroyo Los Choroyes","reachCount":1,"lengthKm":6.6,"longestReach":61527767,"bbox":[-70.41042,-36.78125,-70.375,-36.73958]}
+{"_id":"arroyo-poitavoco","name":"Arroyo Poitavoco","reachCount":1,"lengthKm":6.6,"longestReach":61558097,"bbox":[-71.88542,-40.71875,-71.85833,-40.66667]}
+{"_id":"arroyo-cajon-del-norte","name":"Arroyo Cajón del Norte","reachCount":2,"lengthKm":6.4,"longestReach":61538492,"bbox":[-70.45208,-38.01875,-70.43125,-37.96875]}
+{"_id":"arroyo-quebrada-de-la-zorra","name":"Arroyo Quebrada de la Zorra","reachCount":1,"lengthKm":6.3,"longestReach":61529810,"bbox":[-70.90833,-37.02292,-70.85208,-36.99792]}
+{"_id":"arroyo-las-pampitas","name":"Arroyo Las Pampitas","reachCount":3,"lengthKm":6.3,"longestReach":61556738,"bbox":[-71.60833,-40.53958,-71.55625,-40.51875]}
+{"_id":"arroyo-angosto","name":"Arroyo Angosto","reachCount":1,"lengthKm":6.3,"longestReach":61531517,"bbox":[-71.07708,-37.21458,-71.06042,-37.1625]}
+{"_id":"arroyo-romerito","name":"Arroyo Romerito","reachCount":1,"lengthKm":6.3,"longestReach":61541303,"bbox":[-70.87917,-38.34375,-70.81458,-38.33542]}
+{"_id":"arroyo-curruco","name":"Arroyo Curruco","reachCount":4,"lengthKm":6.3,"longestReach":61556016,"bbox":[-71.6375,-40.42708,-71.62083,-40.38333]}
+{"_id":"arroyo-del-escorial","name":"Arroyo del Escorial","reachCount":2,"lengthKm":6.3,"longestReach":61552197,"bbox":[-71.56042,-39.87083,-71.54792,-39.82292]}
+{"_id":"arroyo-cajon-del-medio","name":"Arroyo Cajón del Medio","reachCount":1,"lengthKm":6.3,"longestReach":61527898,"bbox":[-70.47083,-36.79792,-70.41042,-36.78958]}
+{"_id":"arroyo-charahuilla","name":"Arroyo Charahuilla","reachCount":3,"lengthKm":6.3,"longestReach":61549223,"bbox":[-70.40625,-39.43958,-70.38333,-39.39167]}
+{"_id":"arroyo-la-bodega","name":"Arroyo La Bodega","reachCount":3,"lengthKm":6.2,"longestReach":61529782,"bbox":[-70.76875,-37.01875,-70.73333,-36.975]}
+{"_id":"rio-puillio","name":"Río Puillío","reachCount":1,"lengthKm":6,"longestReach":61551614,"bbox":[-71.67083,-39.78958,-71.63542,-39.75625]}
+{"_id":"arroyo-calquin","name":"Arroyo Calquín","reachCount":1,"lengthKm":6,"longestReach":61559360,"bbox":[-71.87917,-40.88542,-71.82292,-40.8625]}
+{"_id":"arroyo-cajon-choroyes","name":"Arroyo Cajón Choroyes","reachCount":1,"lengthKm":6,"longestReach":61524283,"bbox":[-70.56875,-36.34375,-70.52083,-36.31875]}
+{"_id":"arroyo-conaco","name":"Arroyo Conaco","reachCount":1,"lengthKm":5.9,"longestReach":61557270,"bbox":[-71.55625,-40.61042,-71.53542,-40.5625]}
+{"_id":"arroyo-los-mogotillos","name":"Arroyo Los Mogotillos","reachCount":1,"lengthKm":5.9,"longestReach":61529287,"bbox":[-70.43958,-36.96042,-70.43542,-36.90833]}
+{"_id":"arroyo-el-saco","name":"Arroyo El Saco","reachCount":2,"lengthKm":5.8,"longestReach":61546342,"bbox":[-71.34792,-39,-71.30833,-38.96458]}
+{"_id":"arroyo-del-manzano","name":"Arroyo del Manzano","reachCount":2,"lengthKm":5.8,"longestReach":61560282,"bbox":[-71.28125,-41.02708,-71.23958,-40.99375]}
+{"_id":"arroyo-de-los-pinos","name":"Arroyo de los Pinos","reachCount":1,"lengthKm":5.7,"longestReach":61552342,"bbox":[-71.50417,-39.88958,-71.44792,-39.87292]}
+{"_id":"arroyo-raquitue","name":"Arroyo Raquitué","reachCount":1,"lengthKm":5.7,"longestReach":61551350,"bbox":[-71.47708,-39.75208,-71.46875,-39.70417]}
+{"_id":"arroyo-las-animas","name":"Arroyo Las Ánimas","reachCount":2,"lengthKm":5.6,"longestReach":61545957,"bbox":[-71.35833,-38.93958,-71.30625,-38.91875]}
+{"_id":"arroyo-pichi-nireco","name":"Arroyo Pichi Ñireco","reachCount":1,"lengthKm":5.5,"longestReach":61546621,"bbox":[-70.44167,-39.04375,-70.38542,-39.03125]}
+{"_id":"arroyo-la-romanza","name":"Arroyo La Romanza","reachCount":2,"lengthKm":5.5,"longestReach":61532724,"bbox":[-70.975,-37.35625,-70.94375,-37.31875]}
+{"_id":"arroyo-el-durazno","name":"Arroyo El Durazno","reachCount":1,"lengthKm":5.4,"longestReach":61535886,"bbox":[-70.55208,-37.70417,-70.5125,-37.67708]}
+{"_id":"arroyo-las-horquetas","name":"Arroyo Las Horquetas","reachCount":1,"lengthKm":5.4,"longestReach":61542245,"bbox":[-70.9,-38.46667,-70.85208,-38.44375]}
+{"_id":"arroyo-guaico","name":"Arroyo Guaico","reachCount":2,"lengthKm":5.4,"longestReach":61534510,"bbox":[-70.85,-37.54375,-70.81042,-37.51875]}
+{"_id":"arroyo-los-patos","name":"Arroyo Los Patos","reachCount":3,"lengthKm":5.4,"longestReach":61530251,"bbox":[-71.11667,-37.07917,-71.08958,-37.05417]}
+{"_id":"arroyo-gallardo","name":"Arroyo Gallardo","reachCount":2,"lengthKm":5.3,"longestReach":61559496,"bbox":[-71.83542,-40.91042,-71.81875,-40.86875]}
+{"_id":"arroyo-de-los-raulies","name":"Arroyo de los Raulies","reachCount":1,"lengthKm":5.3,"longestReach":61549289,"bbox":[-71.36667,-39.45,-71.35208,-39.41042]}
+{"_id":"arroyo-de-las-piedras-blancas","name":"Arroyo de las Piedras Blancas","reachCount":2,"lengthKm":5.3,"longestReach":61549492,"bbox":[-71.17083,-39.47708,-71.12292,-39.45625]}
+{"_id":"arroyo-calcuco","name":"Arroyo Calcuco","reachCount":4,"lengthKm":5.2,"longestReach":61557148,"bbox":[-71.71667,-40.59375,-71.6875,-40.57083]}
+{"_id":"arroyo-ujenco","name":"Arroyo Ujenco","reachCount":1,"lengthKm":5.2,"longestReach":61558348,"bbox":[-71.59792,-40.74792,-71.58542,-40.70417]}
+{"_id":"arroyo-los-quiques","name":"Arroyo Los Quiques","reachCount":1,"lengthKm":5.2,"longestReach":61529417,"bbox":[-70.48333,-36.97708,-70.43125,-36.97083]}
+{"_id":"arroyo-tracalen","name":"Arroyo Tracalén","reachCount":1,"lengthKm":5.1,"longestReach":61536562,"bbox":[-70.85417,-37.78125,-70.81458,-37.75625]}
+{"_id":"arroyo-el-catreo","name":"Arroyo El Catreo","reachCount":1,"lengthKm":5.1,"longestReach":61533391,"bbox":[-70.63542,-37.41875,-70.58333,-37.41042]}
+{"_id":"arroyo-coliqueo","name":"Arroyo Coliqueo","reachCount":1,"lengthKm":5,"longestReach":61538027,"bbox":[-71.08333,-37.96042,-71.03125,-37.95208]}
+{"_id":"arroyo-loma-angosta","name":"Arroyo Loma Angosta","reachCount":1,"lengthKm":5,"longestReach":61540543,"bbox":[-70.79583,-38.25208,-70.74375,-38.24792]}
+{"_id":"arroyo-de-los-tabanos","name":"Arroyo de los Tábanos","reachCount":3,"lengthKm":5,"longestReach":61527610,"bbox":[-70.43542,-36.77292,-70.42292,-36.74167]}
+{"_id":"arroyo-purumeco","name":"Arroyo Purumeco","reachCount":1,"lengthKm":5,"longestReach":61545578,"bbox":[-71.19792,-38.88125,-71.17708,-38.84583]}
+{"_id":"arroyo-clou-clouco","name":"Arroyo Clou - Clouco","reachCount":3,"lengthKm":5,"longestReach":61556964,"bbox":[-71.84167,-40.56458,-71.79375,-40.55208]}
+{"_id":"arroyo-conuco","name":"Arroyo Conuco","reachCount":1,"lengthKm":4.9,"longestReach":61556113,"bbox":[-71.58125,-40.43958,-71.56042,-40.40417]}
+{"_id":"arroyo-la-puntada","name":"Arroyo La Puntada","reachCount":1,"lengthKm":4.9,"longestReach":61558283,"bbox":[-71.29792,-40.74167,-71.29375,-40.70208]}
+{"_id":"arroyo-los-bueyes","name":"Arroyo Los Bueyes","reachCount":1,"lengthKm":4.9,"longestReach":61533547,"bbox":[-71.12708,-37.43542,-71.09792,-37.40833]}
+{"_id":"arroyo-chanas","name":"Arroyo Chañas","reachCount":1,"lengthKm":4.8,"longestReach":61525246,"bbox":[-70.84792,-36.47292,-70.80625,-36.45208]}
+{"_id":"arroyo-huinganco","name":"Arroyo Huinganco","reachCount":1,"lengthKm":4.8,"longestReach":61531242,"bbox":[-70.61458,-37.18542,-70.59583,-37.15625]}
+{"_id":"arroyo-piquillin","name":"Arroyo Piquillín","reachCount":1,"lengthKm":4.7,"longestReach":61545304,"bbox":[-71.07917,-38.84792,-71.03542,-38.83542]}
+{"_id":"arroyo-desecho","name":"Arroyo Desecho","reachCount":1,"lengthKm":4.7,"longestReach":61533764,"bbox":[-71.09792,-37.4625,-71.08125,-37.43125]}
+{"_id":"arroyo-las-olletas","name":"Arroyo Las Olletas","reachCount":1,"lengthKm":4.7,"longestReach":61528183,"bbox":[-70.38125,-36.83125,-70.3375,-36.81667]}
+{"_id":"arroyo-vircuco","name":"Arroyo Vircuco","reachCount":1,"lengthKm":4.6,"longestReach":61560777,"bbox":[-71.80208,-41.09792,-71.76875,-41.08333]}
+{"_id":"arroyo-raninco","name":"Arroyo Rañinco","reachCount":1,"lengthKm":4.5,"longestReach":61556406,"bbox":[-71.72083,-40.48542,-71.67708,-40.47708]}
+{"_id":"arroyo-lena-malal","name":"Arroyo Leña Malal","reachCount":1,"lengthKm":4.5,"longestReach":61532415,"bbox":[-71.19792,-37.31458,-71.16042,-37.3]}
+{"_id":"arroyo-de-la-quebrada-del-leon","name":"Arroyo de la Quebrada del León","reachCount":1,"lengthKm":4.5,"longestReach":61535495,"bbox":[-70.99375,-37.65625,-70.98125,-37.62083]}
+{"_id":"arroyo-colt","name":"Arroyo Colt","reachCount":1,"lengthKm":4.4,"longestReach":61559550,"bbox":[-71.82292,-40.92083,-71.80625,-40.88542]}
+{"_id":"arroyo-los-guiones","name":"Arroyo Los Guiones","reachCount":3,"lengthKm":4.4,"longestReach":61529979,"bbox":[-70.825,-37.04583,-70.80625,-37.02708]}
+{"_id":"arroyo-pino","name":"Arroyo Pino","reachCount":1,"lengthKm":4.4,"longestReach":61546216,"bbox":[-70.86042,-38.98125,-70.8125,-38.97708]}
+{"_id":"arroyo-pichi-quinquin","name":"Arroyo Pichi - Quinquín","reachCount":1,"lengthKm":4.3,"longestReach":61547918,"bbox":[-71.30833,-39.24583,-71.28125,-39.21875]}
+{"_id":"arroyo-quebrada-mala","name":"Arroyo Quebrada Mala","reachCount":1,"lengthKm":4.2,"longestReach":61528593,"bbox":[-70.4375,-36.88125,-70.39375,-36.875]}
+{"_id":"arroyo-manzano-norte","name":"Arroyo Manzano Norte","reachCount":1,"lengthKm":4.2,"longestReach":61528312,"bbox":[-70.67708,-36.84792,-70.6375,-36.83958]}
+{"_id":"arroyo-ecufue","name":"Arroyo Ecufué","reachCount":1,"lengthKm":4.2,"longestReach":61551347,"bbox":[-71.5625,-39.75208,-71.52708,-39.73542]}
+{"_id":"arroyo-michico","name":"Arroyo Michico","reachCount":1,"lengthKm":4.2,"longestReach":61533883,"bbox":[-70.58958,-37.47292,-70.55,-37.46458]}
+{"_id":"arroyo-niraico","name":"Arroyo Ñiraico","reachCount":1,"lengthKm":4.1,"longestReach":61530190,"bbox":[-70.43333,-37.06875,-70.38958,-37.06458]}
+{"_id":"arroyo-auquinco","name":"Arroyo Auquinco","reachCount":1,"lengthKm":4.1,"longestReach":61528517,"bbox":[-70.81875,-36.87292,-70.78542,-36.85208]}
+{"_id":"arroyo-cajon-el-huecu","name":"Arroyo Cajón El Huecú","reachCount":1,"lengthKm":4.1,"longestReach":61535198,"bbox":[-70.57708,-37.61875,-70.55833,-37.5875]}
+{"_id":"arroyo-la-chijetada","name":"Arroyo La Chijetada","reachCount":2,"lengthKm":4,"longestReach":61542324,"bbox":[-70.85208,-38.47292,-70.84792,-38.43958]}
+{"_id":"arroyo-rugico","name":"Arroyo Rugico","reachCount":3,"lengthKm":4,"longestReach":61557414,"bbox":[-71.60833,-40.64167,-71.59167,-40.61875]}
+{"_id":"arroyo-de-las-horquetas","name":"Arroyo de Las Horquetas","reachCount":1,"lengthKm":3.8,"longestReach":61558674,"bbox":[-71.15417,-40.8,-71.11875,-40.78542]}
+{"_id":"arroyo-caduco","name":"Arroyo Caduco","reachCount":1,"lengthKm":3.7,"longestReach":61559216,"bbox":[-71.84583,-40.86875,-71.81875,-40.84792]}
+{"_id":"rio-frey","name":"Río Frey","reachCount":3,"lengthKm":3.7,"longestReach":61561282,"bbox":[-71.7125,-41.16875,-71.69792,-41.14375]}
+{"_id":"arroyo-el-aguila","name":"Arroyo El Águila","reachCount":1,"lengthKm":3.6,"longestReach":61529811,"bbox":[-70.84792,-37.02292,-70.81458,-37.01042]}
+{"_id":"arroyo-caquituco","name":"Arroyo Caquituco","reachCount":1,"lengthKm":3.5,"longestReach":61551163,"bbox":[-71.64167,-39.72708,-71.62292,-39.70625]}
+{"_id":"arroyo-chenque-malal","name":"Arroyo Chenque Malal","reachCount":1,"lengthKm":3.4,"longestReach":61530430,"bbox":[-70.63125,-37.09792,-70.6,-37.08542]}
+{"_id":"arroyo-blest","name":"Arroyo Blest","reachCount":1,"lengthKm":3.4,"longestReach":61560303,"bbox":[-71.85,-41.02708,-71.81875,-41.01667]}
+{"_id":"arroyo-malo-o-feo","name":"Arroyo Malo o Feo","reachCount":1,"lengthKm":3.3,"longestReach":61531857,"bbox":[-70.48958,-37.25208,-70.48542,-37.225]}
+{"_id":"arroyo-del-mallin-del-chancho","name":"Arroyo del Mallín del Chancho","reachCount":1,"lengthKm":3.2,"longestReach":61549362,"bbox":[-71.15,-39.45625,-71.12292,-39.43958]}
+{"_id":"arroyo-lonco-vaca","name":"Arroyo Lonco - Vaca","reachCount":1,"lengthKm":3.2,"longestReach":61546341,"bbox":[-71.34583,-39,-71.33958,-38.97292]}
+{"_id":"arroyo-panteon-de-los-indios","name":"Arroyo Panteón de los Indios","reachCount":1,"lengthKm":3,"longestReach":61530356,"bbox":[-70.80417,-37.08958,-70.77292,-37.08542]}
+{"_id":"arroyo-del-candil","name":"Arroyo del Candil","reachCount":1,"lengthKm":3,"longestReach":61556408,"bbox":[-71.52083,-40.4875,-71.50625,-40.46458]}
+{"_id":"arroyo-futaco","name":"Arroyo Futaco","reachCount":1,"lengthKm":2.9,"longestReach":61556907,"bbox":[-71.51042,-40.55625,-71.5,-40.53333]}
+{"_id":"arroyo-uhueco","name":"Arroyo Uhueco","reachCount":1,"lengthKm":2.8,"longestReach":61561229,"bbox":[-71.67292,-41.1625,-71.65417,-41.14375]}
+{"_id":"arroyo-chacayes","name":"Arroyo Chacayes","reachCount":1,"lengthKm":2.8,"longestReach":61540357,"bbox":[-70.75833,-38.23125,-70.73125,-38.22708]}
+{"_id":"arroyo-de-los-burros","name":"Arroyo de los Burros","reachCount":1,"lengthKm":2.8,"longestReach":61540003,"bbox":[-70.975,-38.18958,-70.94792,-38.18542]}
+{"_id":"arroyo-cajon-de-gomez","name":"Arroyo Cajón de Gómez","reachCount":1,"lengthKm":2.8,"longestReach":61532829,"bbox":[-70.99375,-37.36042,-70.98958,-37.3375]}
+{"_id":"arroyo-primeros-pinos","name":"Arroyo Primeros Pinos","reachCount":1,"lengthKm":2.8,"longestReach":61545469,"bbox":[-70.57917,-38.86667,-70.55625,-38.85208]}
+{"_id":"arroyo-manzana","name":"Arroyo Manzana","reachCount":1,"lengthKm":2.7,"longestReach":61558554,"bbox":[-71.11875,-40.78125,-71.09167,-40.77292]}
+{"_id":"arroyo-maitenco","name":"Arroyo Maitenco","reachCount":1,"lengthKm":2.7,"longestReach":61533226,"bbox":[-70.43542,-37.4,-70.42292,-37.38125]}
+{"_id":"arroyo-achupallas","name":"Arroyo Achupallas","reachCount":1,"lengthKm":2.5,"longestReach":61534036,"bbox":[-70.4875,-37.49167,-70.47292,-37.47292]}
+{"_id":"arroyo-salto-de-agua","name":"Arroyo Salto de Agua","reachCount":1,"lengthKm":2.5,"longestReach":61558577,"bbox":[-71.11875,-40.78542,-71.09167,-40.78125]}
+{"_id":"arroyo-de-mendez","name":"Arroyo de Méndez","reachCount":1,"lengthKm":2.5,"longestReach":61525520,"bbox":[-70.87708,-36.50625,-70.86875,-36.4875]}
+{"_id":"arroyo-los-huemules","name":"Arroyo Los Huemules","reachCount":1,"lengthKm":2.5,"longestReach":61531044,"bbox":[-70.60208,-37.16458,-70.57917,-37.15625]}
+{"_id":"arroyo-banos","name":"Arroyo Baños","reachCount":1,"lengthKm":2.4,"longestReach":61535535,"bbox":[-71.17917,-37.66042,-71.15208,-37.66042]}
+{"_id":"arroyo-raja-vado","name":"Arroyo Raja Vado","reachCount":1,"lengthKm":2.3,"longestReach":61531982,"bbox":[-70.61875,-37.26458,-70.59583,-37.26042]}
+{"_id":"arroyo-epu-anca","name":"Arroyo Epu Anca","reachCount":1,"lengthKm":2.2,"longestReach":61535199,"bbox":[-70.57708,-37.61875,-70.55417,-37.61458]}
+{"_id":"arroyo-los-tabanos","name":"Arroyo Los Tábanos","reachCount":1,"lengthKm":2.2,"longestReach":61539623,"bbox":[-70.96875,-38.14375,-70.96458,-38.125]}
+{"_id":"arroyo-millanco-o-pedregoso","name":"Arroyo Millanco o Pedregoso","reachCount":1,"lengthKm":2.2,"longestReach":61558244,"bbox":[-71.41667,-40.73542,-71.40208,-40.72292]}
+{"_id":"arroyo-coaco","name":"Arroyo Coaco","reachCount":1,"lengthKm":2.1,"longestReach":61557694,"bbox":[-71.39792,-40.66667,-71.39792,-40.64792]}
+{"_id":"arroyo-chenque","name":"Arroyo Chenque","reachCount":1,"lengthKm":1.9,"longestReach":61559406,"bbox":[-71.0625,-40.89375,-71.03958,-40.89375]}
+{"_id":"arroyo-pichingo","name":"Arroyo Pichingo","reachCount":1,"lengthKm":1.9,"longestReach":61556740,"bbox":[-71.53958,-40.53125,-71.52917,-40.51667]}
+{"_id":"arroyo-el-pelan","name":"Arroyo El Pelán","reachCount":1,"lengthKm":1.9,"longestReach":61528286,"bbox":[-70.38125,-36.84375,-70.3625,-36.83958]}
+{"_id":"arroyo-acequia","name":"Arroyo Acequia","reachCount":1,"lengthKm":1.8,"longestReach":61531858,"bbox":[-70.45,-37.25208,-70.44375,-37.2375]}
+{"_id":"arroyo-manzano-escondido","name":"Arroyo Manzano Escondido","reachCount":1,"lengthKm":1.8,"longestReach":61534873,"bbox":[-70.41875,-37.58125,-70.41458,-37.56667]}
+{"_id":"arroyo-piedra-blanca","name":"Arroyo Piedra Blanca","reachCount":1,"lengthKm":1.8,"longestReach":61531943,"bbox":[-70.63125,-37.26042,-70.62708,-37.24583]}
+{"_id":"arroyo-los-cardos","name":"Arroyo Los Cardos","reachCount":1,"lengthKm":1.6,"longestReach":61531474,"bbox":[-70.84167,-37.21042,-70.82708,-37.20417]}
+{"_id":"arroyo-la-primavera","name":"Arroyo La Primavera","reachCount":1,"lengthKm":1.6,"longestReach":61531945,"bbox":[-70.61875,-37.26042,-70.60833,-37.25208]}
+{"_id":"arroyo-del-coironal","name":"Arroyo del Coironal","reachCount":1,"lengthKm":1.3,"longestReach":61534550,"bbox":[-71.11042,-37.54792,-71.09792,-37.54375]}
+{"_id":"arroyo-rimeco","name":"Arroyo Rimeco","reachCount":1,"lengthKm":1.3,"longestReach":61551190,"bbox":[-71.60625,-39.73125,-71.59375,-39.72708]}
+{"_id":"arroyo-urrutia","name":"Arroyo Urrutia","reachCount":1,"lengthKm":1.3,"longestReach":61525177,"bbox":[-70.70208,-36.46458,-70.69792,-36.45417]}
+{"_id":"arroyo-huecu","name":"Arroyo Huecú","reachCount":1,"lengthKm":1.3,"longestReach":61549222,"bbox":[-70.42083,-39.43958,-70.40625,-39.43958]}
+{"_id":"arroyo-lopez","name":"Arroyo López","reachCount":1,"lengthKm":1.2,"longestReach":61560686,"bbox":[-71.54792,-41.0875,-71.54792,-41.07708]}
+{"_id":"arroyo-la-ramadita","name":"Arroyo La Ramadita","reachCount":1,"lengthKm":1,"longestReach":61529600,"bbox":[-70.43333,-36.99792,-70.42708,-36.99375]}
+{"_id":"arroyo-chacal-de-afuera","name":"Arroyo Chacal de Afuera","reachCount":1,"lengthKm":0.9,"longestReach":61540259,"bbox":[-70.725,-38.21875,-70.71875,-38.2125]}
+{"_id":"arroyo-laguna-verde","name":"Arroyo Laguna Verde","reachCount":1,"lengthKm":0.9,"longestReach":61541991,"bbox":[-70.92917,-38.4375,-70.92292,-38.43125]}
+{"_id":"arroyo-trole-trole","name":"Arroyo Trole - Trole","reachCount":1,"lengthKm":0.9,"longestReach":61545651,"bbox":[-71.15208,-38.89375,-71.14583,-38.8875]}
+{"_id":"arroyo-de-los-nancays","name":"Arroyo de los Ñancays","reachCount":1,"lengthKm":0.7,"longestReach":61541090,"bbox":[-70.75625,-38.31875,-70.75625,-38.3125]}
+{"_id":"canadon-quili-malal","name":"Cañadon Quili Malal","reachCount":1,"lengthKm":0.6,"longestReach":61553581,"bbox":[-69.48542,-40.06875,-69.48125,-40.06458]}
+{"_id":"arroyo-malon","name":"Arroyo Malón","reachCount":1,"lengthKm":0.5,"longestReach":61558285,"bbox":[-70.85208,-40.73958,-70.85208,-40.73542]}

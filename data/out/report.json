@@ -5,7 +5,8 @@
     "riversChecks": true,
     "namedChecks": true,
     "zeroOrphanReaches": true,
-    "everyReachExported": true
+    "everyReachExported": true,
+    "ignNamesUnique": true
   },
   "basin": {
     "areaKm2": 136204,
@@ -22,6 +23,7 @@
     "connected": 6949,
     "endorheic": 1067,
     "inNamedRivers": 986,
+    "withIgnName": 2393,
     "notDrawnInsideLakes": 295,
     "orphans": 0
   },
@@ -213,6 +215,12 @@
       "population": 1901
     }
   ],
+  "ignNames": {
+    "names": 412,
+    "uniqueSlugs": true,
+    "keysWithoutSlug": 0,
+    "excludedApprovedRivers": 15
+  },
   "intermittence": [
     {
       "network": "connected",

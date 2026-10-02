@@ -25,12 +25,12 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile } from "node:fs/promises";
 import { type Db, lit, openDb } from "../lib/duckdb";
 import { envelope, lengthSpheroidKm, pctDiff } from "../lib/geo";
-import { ROOT, rawPath, rel, workPath } from "../lib/paths";
+import { ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import { requireInput } from "../lib/inputs";
-import { slugify } from "../lib/names";
+import { riverSlug } from "../lib/names";
+import { ALBERS, IGN_LINE_LAYERS as LAYERS, buildPairs } from "../lib/ign";
 
-const ALBERS = "ESRI:102033";
 const BUFFERS_M = [100, 250, 500] as const;
 /** The distance the verdict uses (PLAN.md gate rule, agreed 2026-10-01). */
 const VERDICT_BUFFER_M = 250;
@@ -38,62 +38,9 @@ const VERDICT_BUFFER_M = 250;
 const MIN_EXTRA_PCT_OF_IGN = 20;
 const MIN_ADD_PCT_OF_HYDRORIVERS = 10;
 
-const LAYERS = [
-  {
-    cls: "perennial",
-    shp: rawPath(
-      "ign/lineas_de_aguas_continentales_perenne/lineas_de_aguas_continentales_perenneLine.shp",
-    ),
-    required: true,
-  },
-  {
-    cls: "intermittent",
-    shp: rawPath(
-      "ign/lineas_de_aguas_continentales_intermitente/lineas_de_aguas_continentales_intermitentes.shp",
-    ),
-    required: false,
-  },
-] as const;
-
 const num = (v: unknown) => Number(v ?? 0);
 const round = (v: number, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
 const pct = (a: number, b: number) => (b > 0 ? round((a / b) * 100) : null);
-
-/** Grid cell size (m) for the candidate-pair prefilter; any value >= the largest buffer works. */
-const CELL_M = 5000;
-
-/**
- * Candidate (IGN line, reach) pairs closer than the largest buffer. A grid prefilter
- * (bbox cells expanded by that buffer) keeps this from being a full cross join of
- * IGN lines and reaches; `pairs` holds the exact planar Albers distance.
- */
-async function buildPairs(db: Db, maxD: number) {
-  for (const [name, table, key] of [
-    ["ign", "ign_a", "id"],
-    ["reach", "reaches_a", "HYRIV_ID"],
-  ] as const) {
-    const cell = (v: string) => `CAST(floor((${v}) / ${CELL_M}) AS BIGINT)`;
-    await db.conn.run(`
-      CREATE TABLE ${name}_cx AS
-      SELECT ${key} AS k, ${cell(`ST_YMin(geom_a) - ${maxD}`)} AS y0,
-             ${cell(`ST_YMax(geom_a) + ${maxD}`)} AS y1,
-             unnest(range(${cell(`ST_XMin(geom_a) - ${maxD}`)},
-                          ${cell(`ST_XMax(geom_a) + ${maxD}`)} + 1)) AS cx
-      FROM ${table}`);
-    await db.conn.run(`
-      CREATE TABLE ${name}_cells AS
-      SELECT k, cx, unnest(range(y0, y1 + 1)) AS cy FROM ${name}_cx`);
-    await db.conn.run(`DROP TABLE ${name}_cx`);
-  }
-  await db.conn.run(`
-    CREATE TABLE pairs AS
-    SELECT c.iid, c.rid, ST_Distance(i.geom_a, r.geom_a) AS dist
-    FROM (SELECT DISTINCT i.k AS iid, r.k AS rid
-          FROM ign_cells i JOIN reach_cells r USING (cx, cy)) c
-    JOIN ign_a i ON i.id = c.iid JOIN reaches_a r ON r.HYRIV_ID = c.rid
-    WHERE ST_Distance(i.geom_a, r.geom_a) <= ${maxD}`);
-  await db.conn.run(`DROP TABLE ign_cells; DROP TABLE reach_cells`);
-}
 
 /** Buffered geometries for the pairs within `d`. */
 async function buildBuffers(db: Db, d: number) {
@@ -169,9 +116,9 @@ async function main() {
   ) as { lengthKm: { total: number; geodesicTotal: number } };
   const names = (
     JSON.parse(await readFile(`${ROOT}/pipeline/names.json`, "utf8")) as {
-      rivers: { name: string; shortName: string }[];
+      rivers: { name: string; shortName: string; slug?: string }[];
     }
-  ).rivers.map((r) => ({ name: r.name, slug: slugify(r.shortName) }));
+  ).rivers.map((r) => ({ name: r.name, slug: riverSlug(r) }));
   const layers = LAYERS.filter((l) => {
     if (existsSync(l.shp)) return true;
     if (l.required) requireInput(l.shp);

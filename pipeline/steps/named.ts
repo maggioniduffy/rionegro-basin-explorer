@@ -34,7 +34,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb, type Row } from "../lib/duckdb";
 import { traceNamedRiver, upstreamIndex } from "../lib/graph";
 import { requireInput } from "../lib/inputs";
-import { slugify } from "../lib/names";
+import { riverSlug } from "../lib/names";
 import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
@@ -45,6 +45,10 @@ interface NameEntry {
   name: string;
   shortName: string;
   type: string;
+  /** Fixed river id; defaults to the slug of shortName. */
+  slug?: string;
+  /** Former names that search still finds. */
+  aliases?: string[];
   mouthReach: number;
   confidence: "strong" | "weak";
   evidence: string;
@@ -78,7 +82,7 @@ const PROVENANCE = {
   "mouth.regulationPct":
     "RiverATLAS v1.0 dor_pc_pva / 10 at the mouth reach: degree of regulation, reservoir storage of GRanD v1.1 dams upstream as a percent of the modeled natural annual flow (capped at 1000 %)",
   bbox: "HydroRIVERS v1.0 geometry extent of the traced reaches",
-  name: "pipeline/names.json (hand-approved; OpenStreetMap spelling, ODbL)",
+  name: "pipeline/names.json (hand-approved; IGN spelling, FUENTE: Instituto Geográfico Nacional de la República Argentina)",
 };
 
 async function main() {
@@ -122,7 +126,7 @@ async function main() {
         `mouth reach not in the connected network: ${missingMouths.join(", ")}`,
       );
     }
-    const slugs = names.map((n) => slugify(n.shortName));
+    const slugs = names.map(riverSlug);
     const claimed = new Set(names.map((n) => n.mouthReach));
 
     const riverOf = new Map<number, string>();
@@ -183,6 +187,7 @@ async function main() {
         name: n.name,
         shortName: n.shortName,
         type: n.type,
+        aliases: n.aliases ?? [],
         nameConfidence: n.confidence,
         flowsInto,
         mouthReach: mouth,

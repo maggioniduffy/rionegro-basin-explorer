@@ -1,0 +1,906 @@
+{
+  "$comment": "Hand decisions on IGN name matches (pipeline:ign-match applies them; written while triaging data/work/ign-match/review.json). reaches: accept (show the best candidate although low confidence), reject (hide it) or name (show this IGN name instead); every entry needs a note. riverNames: force the display name of an approved river (slug) when the stem vote is wrong or split. Entries accepted in bulk on 2026-10-01 from the continuity proposal (same name on the next reach up or downstream); the owner will review them later.",
+  "reaches": [
+    {
+      "id": 61550637,
+      "action": "accept",
+      "note": "same name on the downstream reach 61550301 (Río Limay, coverage 0.221)"
+    },
+    {
+      "id": 61555841,
+      "action": "accept",
+      "note": "same name on the upstream reach 61555876 (Arroyo Pilahué, coverage 0.226)"
+    },
+    {
+      "id": 61546800,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546894 (Río Negro, coverage 0.208)"
+    },
+    {
+      "id": 61552201,
+      "action": "accept",
+      "note": "same name on the downstream reach 61551764 (Río Limay, coverage 0.232)"
+    },
+    {
+      "id": 61535631,
+      "action": "accept",
+      "note": "same name on the downstream reach 61535704 (Arroyo El Huecú, coverage 0.675)"
+    },
+    {
+      "id": 61546951,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546982 (Río Negro, coverage 0.22)"
+    },
+    {
+      "id": 61546826,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546844 (Río Limay, coverage 0.229)"
+    },
+    {
+      "id": 61546573,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546258 (Río Limay, coverage 0.236)"
+    },
+    {
+      "id": 61555285,
+      "action": "accept",
+      "note": "same name on the downstream reach 61555549 (Río Negro, coverage 0.273)"
+    },
+    {
+      "id": 61538525,
+      "action": "accept",
+      "note": "same name on the downstream reach 61538810 (Arroyo Pichincó, coverage 0.577)"
+    },
+    {
+      "id": 61530547,
+      "action": "accept",
+      "note": "same name on the downstream reach 61530672 (Arroyo Motronco, coverage 0.202)"
+    },
+    {
+      "id": 61548917,
+      "action": "accept",
+      "note": "same name on the downstream reach 61548751 (Río Quillén, coverage 0.266)"
+    },
+    {
+      "id": 61560189,
+      "action": "accept",
+      "note": "same name on the downstream reach 61560115 (Río Pichi Leufú, coverage 0.217)"
+    },
+    {
+      "id": 61557678,
+      "action": "accept",
+      "note": "same name on the downstream reach 61557845 (Río Negro, coverage 0.214)"
+    },
+    {
+      "id": 61560282,
+      "action": "accept",
+      "note": "same name on the downstream reach 61560312 (Arroyo del Manzano, coverage 0.566)"
+    },
+    {
+      "id": 61530546,
+      "action": "accept",
+      "note": "same name on the downstream reach 61530672 (Arroyo Motronco, coverage 0.24)"
+    },
+    {
+      "id": 61552393,
+      "action": "accept",
+      "note": "same name on the upstream reach 61552419 (Río Currhué, coverage 0.345)"
+    },
+    {
+      "id": 61536211,
+      "action": "accept",
+      "note": "same name on the downstream reach 61536006 (Arroyo Torrentoso, coverage 0.261)"
+    },
+    {
+      "id": 61556655,
+      "action": "accept",
+      "note": "same name on the upstream reach 61556442 (Río Pichi Traful, coverage 0.297)"
+    },
+    {
+      "id": 61532195,
+      "action": "accept",
+      "note": "same name on the downstream reach 61532291 (Arroyo Juan Esteban, coverage 0.438)"
+    },
+    {
+      "id": 61537309,
+      "action": "accept",
+      "note": "same name on the downstream reach 61537310 (Río Agrio, coverage 0.28)"
+    },
+    {
+      "id": 61558173,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558141 (Río Pichi Leufú, coverage 0.278)"
+    },
+    {
+      "id": 61552795,
+      "action": "accept",
+      "note": "same name on the downstream reach 61553023 (Río Currhué, coverage 0.227)"
+    },
+    {
+      "id": 61546414,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546525 (Río Negro, coverage 0.223)"
+    },
+    {
+      "id": 61551998,
+      "action": "accept",
+      "note": "same name on the downstream reach 61551765 (Río Limay, coverage 0.205)"
+    },
+    {
+      "id": 61548717,
+      "action": "accept",
+      "note": "same name on the downstream reach 61549015 (Arroyo Hui - Hui, coverage 0.225)"
+    },
+    {
+      "id": 61527577,
+      "action": "accept",
+      "note": "same name on the downstream reach 61527764 (Arroyo Curamileu, coverage 0.284)"
+    },
+    {
+      "id": 61550214,
+      "action": "accept",
+      "note": "same name on the upstream reach 61550380 (Río Turbio, coverage 0.217)"
+    },
+    {
+      "id": 61553599,
+      "action": "accept",
+      "note": "same name on the downstream reach 61553618 (Río Collón Curá, coverage 0.204)"
+    },
+    {
+      "id": 61546311,
+      "action": "accept",
+      "note": "same name on the upstream reach 61546228 (Río Neuquén, coverage 0.591)"
+    },
+    {
+      "id": 61547048,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547203 (Arroyo Mapio, coverage 0.26)"
+    },
+    {
+      "id": 61542955,
+      "action": "accept",
+      "note": "same name on the downstream reach 61543325 (Río Neuquén, coverage 0.226)"
+    },
+    {
+      "id": 61553734,
+      "action": "accept",
+      "note": "same name on the downstream reach 61553794 (Río Chimehuín, coverage 0.269)"
+    },
+    {
+      "id": 61559004,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558781 (Río del Machete, coverage 0.211)"
+    },
+    {
+      "id": 61541237,
+      "action": "accept",
+      "note": "same name on the upstream reach 61541061 (Arroyo Manzano, coverage 0.227)"
+    },
+    {
+      "id": 61547577,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547641 (Río Aluminé, coverage 0.214)"
+    },
+    {
+      "id": 61533131,
+      "action": "accept",
+      "note": "same name on the downstream reach 61532912 (Río Neuquén, coverage 0.206)"
+    },
+    {
+      "id": 61524990,
+      "action": "accept",
+      "note": "same name on the downstream reach 61525212 (Río Varvarco, coverage 0.29)"
+    },
+    {
+      "id": 61556587,
+      "action": "accept",
+      "note": "same name on the downstream reach 61556797 (Río Negro, coverage 0.246)"
+    },
+    {
+      "id": 61551762,
+      "action": "accept",
+      "note": "same name on the downstream reach 61551825 (Arroyo Santo Tomás, coverage 0.56)"
+    },
+    {
+      "id": 61539829,
+      "action": "accept",
+      "note": "same name on the downstream reach 61540223 (Río Neuquén, coverage 0.218)"
+    },
+    {
+      "id": 61551589,
+      "action": "accept",
+      "note": "same name on the downstream reach 61551559 (Río Malleo, coverage 0.203)"
+    },
+    {
+      "id": 61551349,
+      "action": "accept",
+      "note": "same name on the upstream reach 61551315 (Arroyo Rucu Leufú, coverage 0.201)"
+    },
+    {
+      "id": 61530254,
+      "action": "accept",
+      "note": "same name on the downstream reach 61530294 (Río Curi Leuvú, coverage 0.216)"
+    },
+    {
+      "id": 61559532,
+      "action": "accept",
+      "note": "same name on the downstream reach 61559533 (Río Pichi Leufú, coverage 0.207)"
+    },
+    {
+      "id": 61559794,
+      "action": "accept",
+      "note": "same name on the downstream reach 61559636 (Arroyo Colorado, coverage 0.278)"
+    },
+    {
+      "id": 61547858,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547859 (Arroyo Los Molles, coverage 0.275)"
+    },
+    {
+      "id": 61528214,
+      "action": "accept",
+      "note": "same name on the downstream reach 61528180 (Arroyo Ranquileo, coverage 0.3)"
+    },
+    {
+      "id": 61556441,
+      "action": "accept",
+      "note": "same name on the downstream reach 61556476 (Arroyo Cuerno, coverage 0.211)"
+    },
+    {
+      "id": 61555781,
+      "action": "accept",
+      "note": "same name on the upstream reach 61555874 (Río Caleufú, coverage 0.26)"
+    },
+    {
+      "id": 61539951,
+      "action": "accept",
+      "note": "same name on the downstream reach 61540035 (Arroyo Quintuco, coverage 0.215)"
+    },
+    {
+      "id": 61535703,
+      "action": "accept",
+      "note": "same name on the downstream reach 61535962 (Arroyo El Huecú, coverage 0.207)"
+    },
+    {
+      "id": 61547944,
+      "action": "accept",
+      "note": "same name on the downstream reach 61548252 (Río Catán Lil, coverage 0.23)"
+    },
+    {
+      "id": 61560114,
+      "action": "accept",
+      "note": "same name on the downstream reach 61560187 (Arroyo Newbery, coverage 0.257)"
+    },
+    {
+      "id": 61560721,
+      "action": "accept",
+      "note": "same name on the downstream reach 61560720 (Río Ñirihuau, coverage 0.231)"
+    },
+    {
+      "id": 61529981,
+      "action": "accept",
+      "note": "same name on the upstream reach 61529982 (Arroyo Bayo Overo, coverage 0.225)"
+    },
+    {
+      "id": 61544993,
+      "action": "accept",
+      "note": "same name on the downstream reach 61545391 (Río Neuquén, coverage 0.242)"
+    },
+    {
+      "id": 61535630,
+      "action": "accept",
+      "note": "same name on the downstream reach 61535704 (Arroyo El Huecú, coverage 0.256)"
+    },
+    {
+      "id": 61541505,
+      "action": "accept",
+      "note": "same name on the downstream reach 61541661 (Río Neuquén, coverage 0.231)"
+    },
+    {
+      "id": 61556602,
+      "action": "accept",
+      "note": "same name on the downstream reach 61556487 (Río Filo Hua Hum, coverage 0.217)"
+    },
+    {
+      "id": 61554201,
+      "action": "accept",
+      "note": "same name on the downstream reach 61554313 (Río Collón Curá, coverage 0.456)"
+    },
+    {
+      "id": 61547692,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547581 (Río Limay, coverage 0.205)"
+    },
+    {
+      "id": 61541536,
+      "action": "accept",
+      "note": "same name on the downstream reach 61541537 (Río Neuquén, coverage 0.294)"
+    },
+    {
+      "id": 61542150,
+      "action": "accept",
+      "note": "same name on the downstream reach 61542368 (Río Neuquén, coverage 0.225)"
+    },
+    {
+      "id": 61556888,
+      "action": "accept",
+      "note": "same name on the downstream reach 61557040 (Río Negro, coverage 0.261)"
+    },
+    {
+      "id": 61531744,
+      "action": "accept",
+      "note": "same name on the downstream reach 61531942 (Arroyo Piuquenes, coverage 0.23)"
+    },
+    {
+      "id": 61560315,
+      "action": "accept",
+      "note": "same name on the downstream reach 61560316 (Río Pichi Leufú, coverage 0.266)"
+    },
+    {
+      "id": 61535928,
+      "action": "accept",
+      "note": "same name on the upstream reach 61536210 (Arroyo Cajón Chico, coverage 0.264)"
+    },
+    {
+      "id": 61532194,
+      "action": "accept",
+      "note": "same name on the downstream reach 61532291 (Arroyo Juan Esteban, coverage 0.273)"
+    },
+    {
+      "id": 61538885,
+      "action": "accept",
+      "note": "same name on the downstream reach 61538994 (Arroyo Coihueco, coverage 0.214)"
+    },
+    {
+      "id": 61542035,
+      "action": "accept",
+      "note": "same name on the downstream reach 61542326 (Río Agrio, coverage 0.28)"
+    },
+    {
+      "id": 61542714,
+      "action": "accept",
+      "note": "same name on the downstream reach 61542715 (Río Neuquén, coverage 0.205)"
+    },
+    {
+      "id": 61546866,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546840 (Arroyo China Muerta, coverage 0.274)"
+    },
+    {
+      "id": 61524958,
+      "action": "accept",
+      "note": "same name on the downstream reach 61525247 (Arroyo Pehuenche, coverage 0.259)"
+    },
+    {
+      "id": 61556811,
+      "action": "accept",
+      "note": "same name on the downstream reach 61556738 (Arroyo Las Pampitas, coverage 0.213)"
+    },
+    {
+      "id": 61559979,
+      "action": "accept",
+      "note": "same name on the downstream reach 61559978 (Río Pichi Leufú, coverage 0.253)"
+    },
+    {
+      "id": 61529851,
+      "action": "accept",
+      "note": "same name on the downstream reach 61529877 (Río Nahueve, coverage 0.259)"
+    },
+    {
+      "id": 61550056,
+      "action": "accept",
+      "note": "same name on the downstream reach 61550142 (Río Aluminé, coverage 0.268)"
+    },
+    {
+      "id": 61545676,
+      "action": "accept",
+      "note": "same name on the downstream reach 61545677 (Arroyo Carreri, coverage 0.257)"
+    },
+    {
+      "id": 61547970,
+      "action": "accept",
+      "note": "same name on the downstream reach 61548106 (Arroyo Malalco, coverage 0.265)"
+    },
+    {
+      "id": 61536523,
+      "action": "accept",
+      "note": "same name on the downstream reach 61536743 (Arroyo Trolope, coverage 0.21)"
+    },
+    {
+      "id": 61534715,
+      "action": "accept",
+      "note": "same name on the downstream reach 61534598 (Arroyo La Llamada, coverage 0.255)"
+    },
+    {
+      "id": 61546601,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546549 (Arroyo Casheu Malle-Hue, coverage 0.247)"
+    },
+    {
+      "id": 61558204,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558205 (Río Cuyín Manzano, coverage 0.264)"
+    },
+    {
+      "id": 61551408,
+      "action": "accept",
+      "note": "same name on the downstream reach 61551441 (Río Malleo, coverage 0.276)"
+    },
+    {
+      "id": 61551974,
+      "action": "accept",
+      "note": "same name on the downstream reach 61551868 (Río Ocón, coverage 0.245)"
+    },
+    {
+      "id": 61529389,
+      "action": "accept",
+      "note": "same name on the downstream reach 61529514 (Arroyo Molulco, coverage 0.856)"
+    },
+    {
+      "id": 61524640,
+      "action": "accept",
+      "note": "same name on the downstream reach 61524568 (Arroyo Enfermería, coverage 0.254)"
+    },
+    {
+      "id": 61533166,
+      "action": "accept",
+      "note": "same name on the downstream reach 61533031 (Arroyo Ñireco, coverage 0.289)"
+    },
+    {
+      "id": 61556196,
+      "action": "accept",
+      "note": "same name on the downstream reach 61556244 (Río San Isidro, coverage 0.286)"
+    },
+    {
+      "id": 61528515,
+      "action": "accept",
+      "note": "same name on the downstream reach 61528516 (Arroyo Vaca Lauquen, coverage 0.291)"
+    },
+    {
+      "id": 61542000,
+      "action": "accept",
+      "note": "same name on the downstream reach 61542034 (Río Agrio, coverage 0.239)"
+    },
+    {
+      "id": 61558334,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558452 (Río Negro, coverage 0.274)"
+    },
+    {
+      "id": 61545388,
+      "action": "accept",
+      "note": "same name on the downstream reach 61545340 (Arroyo Covunco, coverage 0.687)"
+    },
+    {
+      "id": 61529478,
+      "action": "accept",
+      "note": "same name on the downstream reach 61529595 (Río Nahueve, coverage 0.211)"
+    },
+    {
+      "id": 61526487,
+      "action": "accept",
+      "note": "same name on the downstream reach 61526421 (Río Pichi Neuquén, coverage 0.306)"
+    },
+    {
+      "id": 61530096,
+      "action": "accept",
+      "note": "same name on the downstream reach 61530097 (Arroyo Los Patos, coverage 0.277)"
+    },
+    {
+      "id": 61531091,
+      "action": "accept",
+      "note": "same name on the downstream reach 61531326 (Arroyo Palao, coverage 0.233)"
+    },
+    {
+      "id": 61525176,
+      "action": "accept",
+      "note": "same name on the downstream reach 61525175 (Arroyo Los Chenques, coverage 0.248)"
+    },
+    {
+      "id": 61540719,
+      "action": "accept",
+      "note": "same name on the downstream reach 61540630 (Arroyo Los Barros, coverage 0.294)"
+    },
+    {
+      "id": 61547204,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547145 (Río Pulmarí, coverage 0.249)"
+    },
+    {
+      "id": 61560806,
+      "action": "accept",
+      "note": "same name on the upstream reach 61560891 (Río Frías, coverage 0.266)"
+    },
+    {
+      "id": 61553512,
+      "action": "accept",
+      "note": "same name on the downstream reach 61553536 (Arroyo Nalca, coverage 0.262)"
+    },
+    {
+      "id": 61533082,
+      "action": "accept",
+      "note": "same name on the downstream reach 61532990 (Río Neuquén, coverage 0.293)"
+    },
+    {
+      "id": 61551934,
+      "action": "accept",
+      "note": "same name on the upstream reach 61552197 (Arroyo del Escorial, coverage 0.22)"
+    },
+    {
+      "id": 61551949,
+      "action": "accept",
+      "note": "same name on the downstream reach 61551950 (Río Limay, coverage 0.203)"
+    },
+    {
+      "id": 61548968,
+      "action": "accept",
+      "note": "same name on the downstream reach 61549052 (Arroyo Picún Leufú, coverage 0.214)"
+    },
+    {
+      "id": 61557993,
+      "action": "accept",
+      "note": "same name on the downstream reach 61557952 (Arroyo Blanco, coverage 0.209)"
+    },
+    {
+      "id": 61529780,
+      "action": "accept",
+      "note": "same name on the downstream reach 61529781 (Río Nahueve, coverage 0.26)"
+    },
+    {
+      "id": 61538600,
+      "action": "accept",
+      "note": "same name on the downstream reach 61538601 (Río Neuquén, coverage 0.22)"
+    },
+    {
+      "id": 61546496,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546440 (Arroyo de los Toldos, coverage 0.27)"
+    },
+    {
+      "id": 61538358,
+      "action": "accept",
+      "note": "same name on the downstream reach 61538359 (Arroyo Coihueco, coverage 0.768)"
+    },
+    {
+      "id": 61553184,
+      "action": "accept",
+      "note": "same name on the downstream reach 61553213 (Río Negro, coverage 0.202)"
+    },
+    {
+      "id": 61556475,
+      "action": "accept",
+      "note": "same name on the downstream reach 61556709 (Arroyo Cuerno, coverage 0.236)"
+    },
+    {
+      "id": 61528440,
+      "action": "accept",
+      "note": "same name on the downstream reach 61528631 (Arroyo Vaca Lauquen, coverage 0.23)"
+    },
+    {
+      "id": 61539624,
+      "action": "accept",
+      "note": "same name on the downstream reach 61539534 (Arroyo Manzano, coverage 0.247)"
+    },
+    {
+      "id": 61546587,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547200 (Arroyo Remeco, coverage 0.254)"
+    },
+    {
+      "id": 61557334,
+      "action": "accept",
+      "note": "same name on the downstream reach 61557461 (Río Negro, coverage 0.295)"
+    },
+    {
+      "id": 61532911,
+      "action": "accept",
+      "note": "same name on the upstream reach 61532866 (Arroyo Butalón, coverage 0.568)"
+    },
+    {
+      "id": 61543042,
+      "action": "accept",
+      "note": "same name on the downstream reach 61542998 (Arroyo Haichol, coverage 1)"
+    },
+    {
+      "id": 61545990,
+      "action": "accept",
+      "note": "same name on the upstream reach 61546113 (Arroyo Quillahue, coverage 0.218)"
+    },
+    {
+      "id": 61546111,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546112 (Arroyo Quillahue, coverage 0.213)"
+    },
+    {
+      "id": 61531743,
+      "action": "accept",
+      "note": "same name on the downstream reach 61531942 (Arroyo Piuquenes, coverage 0.293)"
+    },
+    {
+      "id": 61561904,
+      "action": "accept",
+      "note": "same name on the downstream reach 61561883 (Arroyo Comallo, coverage 0.262)"
+    },
+    {
+      "id": 61525075,
+      "action": "accept",
+      "note": "same name on the downstream reach 61525178 (Arroyo Los Chenques, coverage 0.271)"
+    },
+    {
+      "id": 61547506,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547616 (Río Catán Lil, coverage 0.241)"
+    },
+    {
+      "id": 61557736,
+      "action": "accept",
+      "note": "same name on the downstream reach 61557923 (Río Traful, coverage 0.259)"
+    },
+    {
+      "id": 61558885,
+      "action": "accept",
+      "note": "same name on the downstream reach 61559062 (Arroyo de la Estacada, coverage 0.215)"
+    },
+    {
+      "id": 61537383,
+      "action": "accept",
+      "note": "same name on the downstream reach 61537721 (Río Agrio, coverage 0.832)"
+    },
+    {
+      "id": 61547060,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546978 (Río Limay, coverage 0.248)"
+    },
+    {
+      "id": 61550025,
+      "action": "accept",
+      "note": "same name on the upstream reach 61549989 (Arroyo de las Caballadas, coverage 0.98)"
+    },
+    {
+      "id": 61542713,
+      "action": "accept",
+      "note": "same name on the downstream reach 61542642 (Arroyo Covunco, coverage 0.29)"
+    },
+    {
+      "id": 61547063,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547094 (Río Negro, coverage 0.285)"
+    },
+    {
+      "id": 61548856,
+      "action": "accept",
+      "note": "same name on the downstream reach 61548783 (Río Quillén, coverage 0.285)"
+    },
+    {
+      "id": 61550092,
+      "action": "accept",
+      "note": "same name on the downstream reach 61550077 (Arroyo Nahuel Mapi, coverage 0.218)"
+    },
+    {
+      "id": 61557865,
+      "action": "accept",
+      "note": "same name on the downstream reach 61557804 (Río Traful, coverage 0.237)"
+    },
+    {
+      "id": 61558709,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558740 (Río Bonito, coverage 0.216)"
+    },
+    {
+      "id": 61531979,
+      "action": "accept",
+      "note": "same name on the downstream reach 61532047 (Arroyo Piuquenes, coverage 0.202)"
+    },
+    {
+      "id": 61557800,
+      "action": "accept",
+      "note": "same name on the downstream reach 61557801 (Arroyo Malalco, coverage 0.234)"
+    },
+    {
+      "id": 61561264,
+      "action": "accept",
+      "note": "same name on the downstream reach 61561265 (Arroyo Casa de Piedra, coverage 0.238)"
+    },
+    {
+      "id": 61539288,
+      "action": "accept",
+      "note": "same name on the downstream reach 61539511 (Río Salado, coverage 0.345)"
+    },
+    {
+      "id": 61544901,
+      "action": "accept",
+      "note": "same name on the downstream reach 61544902 (Arroyo Covunco, coverage 0.265)"
+    },
+    {
+      "id": 61531633,
+      "action": "accept",
+      "note": "same name on the upstream reach 61531632 (Río Nahueve, coverage 0.492)"
+    },
+    {
+      "id": 61537917,
+      "action": "accept",
+      "note": "same name on the downstream reach 61538097 (Río Agrio, coverage 0.214)"
+    },
+    {
+      "id": 61547556,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547614 (Arroyo Llamuco, coverage 0.213)"
+    },
+    {
+      "id": 61528089,
+      "action": "accept",
+      "note": "same name on the downstream reach 61528181 (Río Curi Leuvú, coverage 0.779)"
+    },
+    {
+      "id": 61539949,
+      "action": "accept",
+      "note": "same name on the downstream reach 61539985 (Arroyo Butahuao, coverage 0.24)"
+    },
+    {
+      "id": 61527247,
+      "action": "accept",
+      "note": "same name on the downstream reach 61527653 (Arroyo Domuyo (S), coverage 0.234)"
+    },
+    {
+      "id": 61531785,
+      "action": "accept",
+      "note": "same name on the downstream reach 61532124 (Río Neuquén, coverage 0.26)"
+    },
+    {
+      "id": 61537416,
+      "action": "accept",
+      "note": "same name on the downstream reach 61537449 (Arroyo El Pino, coverage 0.271)"
+    },
+    {
+      "id": 61549530,
+      "action": "accept",
+      "note": "same name on the downstream reach 61549678 (Río Catán Lil, coverage 0.248)"
+    },
+    {
+      "id": 61542570,
+      "action": "accept",
+      "note": "same name on the downstream reach 61542641 (Arroyo Pilmatué, coverage 0.253)"
+    },
+    {
+      "id": 61543794,
+      "action": "accept",
+      "note": "same name on the downstream reach 61543795 (Arroyo Haichol, coverage 0.201)"
+    },
+    {
+      "id": 61546438,
+      "action": "accept",
+      "note": "same name on the downstream reach 61546546 (Río Aluminé, coverage 0.247)"
+    },
+    {
+      "id": 61548948,
+      "action": "accept",
+      "note": "same name on the downstream reach 61548965 (Arroyo Charahuilla, coverage 0.279)"
+    },
+    {
+      "id": 61549564,
+      "action": "accept",
+      "note": "same name on the downstream reach 61549630 (Arroyo Picún Leufú, coverage 0.29)"
+    },
+    {
+      "id": 61555750,
+      "action": "accept",
+      "note": "same name on the downstream reach 61555836 (Arroyo Curruco, coverage 0.22)"
+    },
+    {
+      "id": 61558778,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558844 (Río del Machete, coverage 0.219)"
+    },
+    {
+      "id": 61530765,
+      "action": "accept",
+      "note": "same name on the upstream reach 61530715 (Arroyo Huaraco, coverage 0.971)"
+    },
+    {
+      "id": 61539622,
+      "action": "accept",
+      "note": "same name on the downstream reach 61539794 (Arroyo Butahuao, coverage 0.431)"
+    },
+    {
+      "id": 61552659,
+      "action": "accept",
+      "note": "same name on the downstream reach 61552759 (Río Currhué, coverage 0.253)"
+    },
+    {
+      "id": 61530389,
+      "action": "accept",
+      "note": "same name on the downstream reach 61530429 (Río Neuquén, coverage 0.271)"
+    },
+    {
+      "id": 61532697,
+      "action": "accept",
+      "note": "same name on the downstream reach 61532726 (Río Reñileuvú, coverage 0.286)"
+    },
+    {
+      "id": 61540155,
+      "action": "accept",
+      "note": "same name on the downstream reach 61540104 (Arroyo Yumu - Yumu, coverage 0.29)"
+    },
+    {
+      "id": 61547334,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547300 (Río Negro, coverage 0.227)"
+    },
+    {
+      "id": 61547455,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547426 (Río Negro, coverage 0.252)"
+    },
+    {
+      "id": 61525275,
+      "action": "accept",
+      "note": "same name on the downstream reach 61525497 (Río Neuquén, coverage 1)"
+    },
+    {
+      "id": 61533797,
+      "action": "accept",
+      "note": "same name on the downstream reach 61533919 (Río Neuquén, coverage 1)"
+    },
+    {
+      "id": 61533964,
+      "action": "accept",
+      "note": "same name on the downstream reach 61533918 (Río Trocomán, coverage 1)"
+    },
+    {
+      "id": 61537918,
+      "action": "accept",
+      "note": "same name on the downstream reach 61538097 (Río Agrio, coverage 1)"
+    },
+    {
+      "id": 61541396,
+      "action": "accept",
+      "note": "same name on the upstream reach 61541395 (Río Agrio, coverage 0.795)"
+    },
+    {
+      "id": 61541955,
+      "action": "accept",
+      "note": "same name on the upstream reach 61541913 (Arroyo Cajón Atravesado, coverage 1)"
+    },
+    {
+      "id": 61558072,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558030 (Arroyo Comallo, coverage 1)"
+    },
+    {
+      "id": 61532987,
+      "action": "accept",
+      "note": "same name on the downstream reach 61533032 (Río Neuquén, coverage 0.98)"
+    },
+    {
+      "id": 61550338,
+      "action": "accept",
+      "note": "same name on the downstream reach 61550673 (Río Aluminé, coverage 0.209)"
+    },
+    {
+      "id": 61558282,
+      "action": "accept",
+      "note": "same name on the downstream reach 61558349 (Río Bonito, coverage 0.213)"
+    },
+    {
+      "id": 61538432,
+      "action": "accept",
+      "note": "same name on the downstream reach 61538813 (Río Agrio, coverage 1)"
+    },
+    {
+      "id": 61547774,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547888 (Río Aluminé, coverage 1)"
+    },
+    {
+      "id": 61551168,
+      "action": "accept",
+      "note": "same name on the upstream reach 61551133 (Arroyo Central, coverage 1)"
+    },
+    {
+      "id": 61547289,
+      "action": "accept",
+      "note": "same name on the downstream reach 61547505 (Río Catán Lil, coverage 1)"
+    }
+  ],
+  "riverNames": []
+}

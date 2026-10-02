@@ -40,3 +40,30 @@ export function slugify(name: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
+
+/** An IGN name as stored: Unicode NFC, whitespace trimmed and collapsed; null if empty. */
+export function cleanName(raw: string | null | undefined): string | null {
+  const name = (raw ?? "").normalize("NFC").replace(/\s+/g, " ").trim();
+  return name === "" ? null : name;
+}
+
+/**
+ * Comparison key for a name: no accents, lower case, punctuation as spaces. "Río Negro
+ * (Brazo Norte)" and "Río Negro Brazo Norte" share a key; so do "Poñihue" and "Poñihué".
+ */
+export function nameKey(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9°]+/g, " ")
+    .trim();
+}
+
+/**
+ * A river's id: its `slug` in pipeline/names.json, which stays fixed once published even
+ * when the name changes; otherwise the slug of its short name.
+ */
+export function riverSlug(entry: { slug?: string; shortName: string }): string {
+  return entry.slug ?? slugify(entry.shortName);
+}
