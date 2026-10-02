@@ -111,7 +111,11 @@ Decisions, figures and the AIC comparison: [DECISSIONS.md](DECISSIONS.md#phase-6
 
 ## Phase 7 — Extras
 
-- [ ] km/mi toggle, minimap, snapshot export, localities layer, mobile bottom-sheet panel
+- [x] km/mi toggle (panels and scale bar)
+- [x] Minimap (top of the Display panel; desktop only)
+- [x] Snapshot export (PNG with the attribution strip)
+- [ ] Localities layer: deferred (owner, 2026-10-02), as the cloud session can't reach Overpass or HydroSHEDS. OSM city/town/village, dots, name on hover/click
+- [x] Mobile bottom-sheet panel (Map · Details · Display tabs); still needs a check on a real phone
 - [x] Hide/show: lakes (natural/artificial), rivers, and perennial vs non-perennial streams (GIRES `nonPerennial1d`); "arroyos" dropped (owner, 2026-10-02)
 - [x] Layout: the new Phase 7 panel (localities, km/mi, …) sits at the bottom right; while it is open, the right column splits in two vertical halves (river/basin panel on top, new panel below), each scrolling on its own. Both columns keep the shared top edge (`--panel-top`)
 
