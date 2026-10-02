@@ -138,7 +138,7 @@ const layersWith = (patch: Partial<LayerVisibility>): LayerVisibility => ({
 describe("waterFilter", () => {
   it("splits natural from artificial water bodies", () => {
     const natural = waterFilter(false, layersWith({ artificialLakes: false }));
-    for (const kind of ["lake", "controlled-lake", "waterbody"])
+    for (const kind of ["lake", "waterbody"])
       expect(keeps(natural, { kind, network: "connected" })).toBe(true);
     expect(keeps(natural, { kind: "reservoir", network: "connected" })).toBe(
       false,
@@ -146,6 +146,7 @@ describe("waterFilter", () => {
 
     const artificial = waterFilter(false, layersWith({ naturalLakes: false }));
     expect(keeps(artificial, { kind: "reservoir" })).toBe(true);
+    expect(keeps(artificial, { kind: "controlled-lake" })).toBe(true);
     expect(keeps(artificial, { kind: "lake" })).toBe(false);
   });
 

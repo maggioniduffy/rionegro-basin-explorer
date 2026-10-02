@@ -160,12 +160,13 @@ export function lakeFilter(hideEndorheic: boolean): FilterSpecification {
 
 /**
  * Water-body `kind`s per Display toggle (pipeline:ign-layers). A HydroLAKES controlled
- * lake (type 3) is a natural lake with a regulating structure, so it counts as natural;
- * IGN "espejo de agua perenne" (`waterbody`) is kept apart from its `Embalse` layer, so
- * it counts as natural too.
+ * lake (type 3) has a regulating structure, so it counts as artificial (owner). IGN
+ * water bodies follow IGN: "espejo de agua perenne" (`waterbody`) is natural, its
+ * `Embalse` layer (`reservoir`) artificial. The two never overlap: the IGN extra
+ * layer has the HydroLAKES part cut out.
  */
-export const NATURAL_WATER_KINDS = ["lake", "controlled-lake", "waterbody"];
-export const ARTIFICIAL_WATER_KINDS = ["reservoir"];
+export const NATURAL_WATER_KINDS = ["lake", "waterbody"];
+export const ARTIFICIAL_WATER_KINDS = ["reservoir", "controlled-lake"];
 
 /** Lake layers (not dams): the endorheic rule plus the natural/artificial toggles. */
 export function waterFilter(
