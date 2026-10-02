@@ -294,12 +294,14 @@ DECISSIONS.md (Phase 5) for how they were calibrated.
 IGN lakes, dams and the detail lines, as tippecanoe inputs: names for HydroLAKES lakes (an IGN polygon
 covering at least `water.lakeNameMinOverlap` of the lake), extra lakes (IGN water bodies HydroLAKES
 covers less than `water.extraLakeMaxCoverage`, minus what it covers, at least `water.minExtraLakeKm2`),
-detail lines cut out of every lake, and dam points and walls. Each feature gets `network` by the same
-rule as `pipeline:lakes`.
+detail lines cut out of every lake, and dam points and walls. Dam points listed under `dams` in
+`pipeline/ign-overrides.json` (by IGN `gid`, each with a note) are dropped: points checked against the
+imagery that mark no dam. Each feature gets `network` by the same rule as `pipeline:lakes`.
 
 Outputs: `data/work/tiles/ign_lakes.geojson`, `ign_lakes_extra.geojson`, `ign_detail.geojson`,
 `ign_dams.geojson`, `ign_dam_walls.geojson`; report in `data/work/ign-layers/`. Checks: one name per
-lake, valid extra lakes, extra lakes outside HydroLAKES, detail lines outside lakes, no lake lost.
+lake, valid extra lakes, extra lakes outside HydroLAKES, detail lines outside lakes, no lake lost,
+every rejected dam point found (a stale `gid` fails the step).
 
 ### `npm run pipeline:tiles`
 
