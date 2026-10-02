@@ -104,7 +104,7 @@ Decisions, figures and open points: [DECISSIONS.md](DECISSIONS.md#phase-5-2026-1
 - [x] Levels 2 and 3 with `parentId` (12 approved tributaries, 16 nodes); breadcrumb navigation (Río Negro > Limay > Collón Curá)
 - [x] Metrics accumulate upward (report checks child ≤ parent); tree selector in Controls
 - [x] Node list checked against AIC/SSRH: the nesting is hydrological, not the AIC's flat list; missing AIC subcuencas are an open point
-- [ ] `npm run seed` on Atlas (verified on a local MongoDB only)
+- [x] `npm run seed` on Atlas (2026-10-02: 16 sub-basins, 12 added and 4 updated, all seed checks true)
 - **Done when:** any sub-basin can be selected from the map or the tree with consistent metrics.
 
 Decisions, figures and the AIC comparison: [DECISSIONS.md](DECISSIONS.md#phase-6-2026-10-02).
