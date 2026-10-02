@@ -18,14 +18,11 @@
     "visibleLandMin": "Solo ríos",
     "visibleLandMax": "Toda la cuenca",
     "hideEndorheic": "Ocultar cursos endorreicos",
-    "hideEndorheicHint": "Drenaje interno dentro del contorno de la cuenca que no llega al mar.",
     "minimize": "Minimizar panel",
     "expand": "Mostrar panel",
     "view": "Vista",
     "viewBasin": "Cuenca",
-    "viewSubbasins": "Subcuencas",
-    "showIgnDetail": "Detalle de cursos del IGN",
-    "showIgnDetailHint": "Cursos permanentes del IGN que HydroRIVERS no dibuja. Solo nombre y longitud, sin datos hidrológicos."
+    "viewSubbasins": "Subcuencas"
   },
   "options": {
     "label": "Visualización",

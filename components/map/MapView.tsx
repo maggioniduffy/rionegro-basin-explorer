@@ -29,7 +29,6 @@ import {
   IGN_DETAIL_LAYER_ID,
   IGN_LAKE_FILL_LAYER_ID,
   IGN_LAKE_LINE_LAYER_ID,
-  ignDetailFilter,
   IMAGERY_LAYER_ID,
   LAKE_HIT_LAYER_ID,
   LAKE_LAYER_ID,
@@ -270,14 +269,9 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     map.setFilter(LOCALITY_LAYER_ID, localityFilter(s.layers.localities));
   }
   if (endoChanged) {
-    for (const id of [DAM_LAYER_ID, DAM_WALL_LAYER_ID])
+    // IGN detail lines always show; only the endorheic ones go with the option.
+    for (const id of [DAM_LAYER_ID, DAM_WALL_LAYER_ID, IGN_DETAIL_LAYER_ID])
       map.setFilter(id, lakeFilter(s.hideEndorheic));
-  }
-  if (endoChanged || !prev || s.showIgnDetail !== prev.showIgnDetail) {
-    map.setFilter(
-      IGN_DETAIL_LAYER_ID,
-      ignDetailFilter(s.showIgnDetail, s.hideEndorheic),
-    );
   }
   if (endoChanged || !prev || s.isolatedIds !== prev.isolatedIds) {
     for (const id of [SUBBASIN_FILL_LAYER_ID, SUBBASIN_LINE_LAYER_ID])
@@ -374,7 +368,6 @@ export default function MapView() {
           selection: initial.selection,
           viewMode: initial.viewMode,
           isolatedIds: initial.isolatedIds,
-          showIgnDetail: initial.showIgnDetail,
           layers: initial.layers,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
@@ -499,7 +492,6 @@ export default function MapView() {
         s.selection === prev.selection &&
         s.viewMode === prev.viewMode &&
         s.isolatedIds === prev.isolatedIds &&
-        s.showIgnDetail === prev.showIgnDetail &&
         s.layers === prev.layers
       )
         return;

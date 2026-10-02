@@ -7,8 +7,6 @@ import {
   IGN_LAKE_FILL_LAYER_ID,
   LAKE_HIT_LAYER_ID,
   LOCALITY_LAYER_ID,
-  ignDetailFilter,
-  lakeFilter,
   localityFilter,
 } from "../lib/map/style";
 
@@ -64,15 +62,6 @@ describe("toPicked", () => {
   it("rejects a water body of an unknown kind and any other layer", () => {
     expect(toPicked(LAKE_HIT_LAYER_ID, { kind: "swamp" })).toBeNull();
     expect(toPicked("reaches-perennial", { name: "x" })).toBeNull();
-  });
-});
-
-describe("IGN layer filters", () => {
-  it("hides the detail lines when toggled off, and endorheic ones when asked", () => {
-    expect(ignDetailFilter(false, false)).toEqual(["boolean", false]);
-    expect(ignDetailFilter(false, true)).toEqual(["boolean", false]);
-    expect(ignDetailFilter(true, false)).toEqual(["literal", true]);
-    expect(ignDetailFilter(true, true)).toEqual(lakeFilter(true));
   });
 });
 

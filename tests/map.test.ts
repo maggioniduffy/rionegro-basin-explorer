@@ -87,7 +87,6 @@ describe("buildStyle with the IGN layers", () => {
     selection: null,
     viewMode: "basin",
     isolatedIds: null,
-    showIgnDetail: true,
     layers: DEFAULT_LAYERS,
   });
   const index = (id: string) => style.layers.findIndex((l) => l.id === id);

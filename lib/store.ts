@@ -47,9 +47,6 @@ interface MapState {
   theme: Theme;
   setVisibleLand: (v: number) => void;
   setHideEndorheic: (v: boolean) => void;
-  /** IGN perennial streams that HydroRIVERS lacks (the detail layer). */
-  showIgnDetail: boolean;
-  setShowIgnDetail: (v: boolean) => void;
   setTheme: (t: Theme) => void;
   viewMode: ViewMode;
   /** Leaving the sub-basin view also clears a selected sub-basin. */
@@ -99,8 +96,6 @@ export const useMapStore = create<MapState>()((set) => ({
   theme: "dark",
   setVisibleLand: (visibleLand) => set({ visibleLand }),
   setHideEndorheic: (hideEndorheic) => set({ hideEndorheic }),
-  showIgnDetail: true,
-  setShowIgnDetail: (showIgnDetail) => set({ showIgnDetail }),
   setTheme: (theme) => set({ theme }),
   viewMode: "basin",
   setViewMode: (viewMode) =>

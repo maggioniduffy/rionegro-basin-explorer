@@ -207,16 +207,6 @@ export function localityFilter(show: boolean): FilterSpecification {
 /** Colour of the IGN detail lines, also used by the legend. */
 export const IGN_DETAIL_COLOR = "#67e8f9";
 
-/** IGN detail lines: hidden by the toggle, and with the endorheic streams when asked. */
-export function ignDetailFilter(
-  show: boolean,
-  hideEndorheic: boolean,
-): FilterSpecification {
-  if (!show) return ["boolean", false];
-  return hideEndorheic
-    ? ["!=", ["get", "network"], "endorheic"]
-    : ["literal", true];
-}
 export const IMAGERY_LAYER_ID = "imagery";
 export const BACKGROUND_LAYER_ID = "background";
 /** Halo under the selected river or reach, drawn below the flow-class lines. */
@@ -279,7 +269,6 @@ export interface StyleOptions {
   selection: Selection | null;
   viewMode: ViewMode;
   isolatedIds: string[] | null;
-  showIgnDetail: boolean;
   layers: LayerVisibility;
 }
 
@@ -347,7 +336,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       type: "line",
       source: "ign",
       "source-layer": "detail",
-      filter: ignDetailFilter(o.showIgnDetail, o.hideEndorheic),
+      filter: lakeFilter(o.hideEndorheic),
       layout: { "line-cap": "round", "line-join": "round" },
       paint: {
         "line-color": IGN_DETAIL_COLOR,

@@ -18,14 +18,11 @@
     "visibleLandMin": "Rivers only",
     "visibleLandMax": "Whole basin",
     "hideEndorheic": "Hide endorheic streams",
-    "hideEndorheicHint": "Inland drainage inside the basin outline that does not reach the sea.",
     "minimize": "Minimize panel",
     "expand": "Show panel",
     "view": "View",
     "viewBasin": "Basin",
-    "viewSubbasins": "Sub-basins",
-    "showIgnDetail": "IGN stream detail",
-    "showIgnDetailHint": "Perennial streams from IGN that HydroRIVERS does not draw. Name and length only, no hydrology."
+    "viewSubbasins": "Sub-basins"
   },
   "options": {
     "label": "Display",
