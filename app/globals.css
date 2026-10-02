@@ -9,8 +9,10 @@
   --panel-hover: rgba(255, 255, 255, 0.08);
   --border: rgba(255, 255, 255, 0.14);
   color-scheme: dark;
-  /* Floating panels share one top edge, just below the header (title and search). */
+  /* Floating panels share one top edge, just below the header (title and search), and
+     one bottom edge, above the attribution. */
   --panel-top: 4rem;
+  --panel-bottom: 2.5rem;
 }
 
 :root[data-theme="light"] {

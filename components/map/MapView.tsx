@@ -383,7 +383,9 @@ export default function MapView() {
     map.keyboard.disableRotation();
     // Attribution stays expanded: EOX requires it to be clearly visible.
     map.addControl(new AttributionControl({ compact: false }), "bottom-right");
-    map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
+    // Bottom left, under the map controls: the right column reaches down to the
+    // attribution, as the controls do.
+    map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
     mapRef.current = map;
     // Test hook for e2e and scripts/perf-zoom.ts; inlined at build time, so production
     // builds without NEXT_PUBLIC_E2E carry no reference to it.
