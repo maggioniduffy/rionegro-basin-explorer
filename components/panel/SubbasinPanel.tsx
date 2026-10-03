@@ -71,9 +71,7 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
           <p className="text-muted text-sm">{t("subbasin.wholeBasin")}</p>
         )}
         {b.kind === "endorheic" && (
-          <p className="text-xs text-amber-300">
-            {t("subbasin.endorheicNote")}
-          </p>
+          <p className="text-warning text-xs">{t("subbasin.endorheicNote")}</p>
         )}
         {b.children.length > 0 && (
           <p className="text-muted text-sm">
@@ -92,7 +90,6 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
         {!isRoot && (
           <button
             type="button"
-            aria-pressed={isolated}
             onClick={() =>
               // The map isolates the whole subtree (lib/map/style.ts inSubtrees).
               setIsolatedIds(isolated ? null : [b._id])

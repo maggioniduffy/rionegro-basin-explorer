@@ -44,7 +44,7 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
           )}
         </p>
         {river.nameConfidence === "weak" && (
-          <p className="text-xs text-amber-300">{t("river.weakName")}</p>
+          <p className="text-warning text-xs">{t("river.weakName")}</p>
         )}
       </header>
 

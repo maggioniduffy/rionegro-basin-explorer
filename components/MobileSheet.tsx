@@ -1,7 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { type PointerEvent, useEffect, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  type PointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { onMainMap } from "@/lib/map/main-map";
 import {
   atLeastHalf,
@@ -137,6 +143,25 @@ export function MobileSheet() {
     setSnap(atLeastHalf);
   }
 
+  // Tabs pattern (WAI-ARIA): one tab stop; arrows, Home and End move between tabs.
+  function onTabKeyDown(e: KeyboardEvent<HTMLButtonElement>) {
+    const i = TABS.indexOf(tab);
+    const next =
+      e.key === "ArrowRight"
+        ? TABS[(i + 1) % TABS.length]
+        : e.key === "ArrowLeft"
+          ? TABS[(i - 1 + TABS.length) % TABS.length]
+          : e.key === "Home"
+            ? TABS[0]
+            : e.key === "End"
+              ? TABS[TABS.length - 1]
+              : null;
+    if (!next) return;
+    e.preventDefault();
+    chooseTab(next);
+    document.getElementById(`sheet-tab-${next}`)?.focus();
+  }
+
   const expanded = snap !== "peek";
 
   return (
@@ -177,7 +202,9 @@ export function MobileSheet() {
             id={`sheet-tab-${id}`}
             aria-selected={tab === id}
             aria-controls="sheet-body"
+            tabIndex={tab === id ? 0 : -1}
             onClick={() => chooseTab(id)}
+            onKeyDown={onTabKeyDown}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 ${
               tab === id
                 ? "bg-(--panel-hover) font-medium"
