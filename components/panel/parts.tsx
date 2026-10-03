@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { useMapStore } from "@/lib/store";
 import { formatQuantity, type Quantity } from "@/lib/units";
@@ -80,6 +81,12 @@ export function Caveats({ caveats }: { caveats: Caveat[] }) {
         </>
       )}
       <p>{t("source")}</p>
+      <Link
+        href="/attributions#modeled"
+        className="w-fit underline decoration-(--border) underline-offset-2 hover:decoration-current"
+      >
+        {t("more")}
+      </Link>
     </footer>
   );
 }

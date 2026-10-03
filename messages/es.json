@@ -4,7 +4,8 @@
     "description": "Explorador satelital de la cuenca del Río Negro: los ríos Limay, Neuquén y Negro y sus afluentes."
   },
   "home": {
-    "title": "Explorador de la Cuenca del Río Negro"
+    "title": "Explorador de la Cuenca del Río Negro",
+    "sources": "Fuentes y licencias"
   },
   "localeSwitcher": {
     "label": "Idioma",
@@ -179,7 +180,8 @@
       "flooded": "Área inundada: mínimo y máximo anual medio a partir de datos satelitales, 1993–2004 (GIEMS-D15).",
       "population": "Población: estimación de 2010 (GPWv4).",
       "regulation": "Regulación por represas: almacenamiento de los embalses aguas arriba (GRanD v1.1) como proporción del caudal anual natural modelado. Por encima del 100 %, pueden retener más de un año de caudal. Tope de 1000 %.",
-      "source": "Datos: HydroRIVERS y RiverATLAS v1.0 (Linke et al., 2019)."
+      "source": "Datos: HydroRIVERS y RiverATLAS v1.0 (Linke et al., 2019).",
+      "more": "Sobre estos valores y sus fuentes"
     },
     "subbasin": {
       "label": "Detalles de la cuenca",
@@ -223,6 +225,55 @@
       },
       "source": "Fuente: FUENTE: Instituto Geográfico Nacional de la República Argentina. El IGN no avala ni patrocina esta aplicación.",
       "group": "Datos"
+    }
+  },
+  "attributions": {
+    "metaTitle": "Fuentes y licencias · Explorador de la Cuenca del Río Negro",
+    "back": "Volver al mapa",
+    "title": "Fuentes y licencias",
+    "intro": "De dónde vienen los datos del mapa, cómo citarlos y qué significan sus valores.",
+    "independent": "Un proyecto independiente y sin fines comerciales. Ninguno de los proveedores de datos listados participa en él, lo patrocina ni lo avala.",
+    "modeled": {
+      "title": "Valores modelados y estimados",
+      "intro": "Muchos valores de los paneles no son mediciones. Provienen de modelos y conjuntos de datos globales, cada uno de su propio período, y se marcan con * donde aparecen:",
+      "regulated": "Hoy grandes represas regulan el Limay y el Neuquén, así que el caudal de estos ríos puede diferir mucho de los promedios naturales que se muestran aquí.",
+      "derived": "El contorno de la cuenca, las subcuencas y los cursos de los ríos con nombre fueron derivados por este proyecto a partir de HydroBASINS e HydroRIVERS. La mayoría de los nombres provienen del IGN, asignados a la red de ríos de forma automática, con un nivel de confianza indicado en cada curso. Pueden contener errores."
+    },
+    "sources": {
+      "title": "Fuentes de datos",
+      "intro": "La geometría y los valores provienen de las fuentes siguientes. Cada una se usa bajo su propia licencia.",
+      "usedFor": "Uso",
+      "license": "Licencia",
+      "credit": "Crédito",
+      "citation": "Cita",
+      "notice": "Aviso exigido por la licencia (en el idioma original)",
+      "hydrosheds": {
+        "usedFor": "Red de ríos, contorno de la cuenca y subcuencas."
+      },
+      "hydroatlas": {
+        "usedFor": "Valores por curso y por cuenca: caudal, elevación, pendiente, área inundada, área de lagos, población y regulación por represas. Provienen de los conjuntos de datos citados abajo."
+      },
+      "gires": {
+        "usedFor": "Régimen de cada curso (permanente o no permanente): predicciones de un modelo."
+      },
+      "hydrolakes": {
+        "usedFor": "Contornos de lagos y embalses."
+      },
+      "ign": {
+        "usedFor": "Nombres de ríos, arroyos, lagos y represas; cursos permanentes que faltan en HydroRIVERS; lagos adicionales; ubicación de represas.",
+        "terms": "El IGN no participa en esta aplicación, ni la patrocina ni la avala. Los datos derivados de las capas del IGN se comparten de forma libre y gratuita."
+      },
+      "osm": {
+        "usedFor": "Ciudades, pueblos y localidades; evidencia para los nombres de ríos.",
+        "terms": "Los datos de OpenStreetMap están disponibles bajo la Open Database License."
+      },
+      "eox": {
+        "usedFor": "Imágenes satelitales.",
+        "terms": "Solo uso no comercial, bajo esta licencia."
+      }
+    },
+    "software": {
+      "title": "Software"
     }
   }
 }

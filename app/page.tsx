@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
-import { Logomark } from "@/components/Icon";
+import Link from "next/link";
+import { Icon, Logomark } from "@/components/Icon";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { BasinMap } from "@/components/map/BasinMap";
 import { Panels } from "@/components/Panels";
@@ -22,7 +23,15 @@ export default function HomePage() {
             <SearchBox />
           </div>
         </div>
-        <div className="pointer-events-auto rounded-md bg-(--panel) px-2 py-1 shadow backdrop-blur">
+        <div className="pointer-events-auto flex items-center gap-1 rounded-md bg-(--panel) px-2 py-1 shadow backdrop-blur">
+          <Link
+            href="/attributions"
+            aria-label={t("sources")}
+            title={t("sources")}
+            className="text-muted hover:text-foreground rounded-md p-1 hover:bg-(--panel-hover)"
+          >
+            <Icon name="info" />
+          </Link>
           <LocaleSwitcher />
         </div>
       </header>

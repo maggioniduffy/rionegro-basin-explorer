@@ -125,7 +125,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#phase-7-2026-10-02).
 
 ## Phase 8 — Release
 
-- [ ] Attributions page (EN/ES) and modeled-data warnings
+- [x] Attributions page (EN/ES) and modeled-data warnings (`/attributions`, linked from the header and the panel caveats)
 - [ ] OG image, performance pass, accessibility pass
 - [ ] Atlas: read-only user, network access review for Vercel
 
