@@ -42,7 +42,7 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
           </button>
         )}
         {reach.network === "endorheic" && (
-          <p className="text-xs text-amber-300">{t("reach.endorheic")}</p>
+          <p className="text-warning text-xs">{t("reach.endorheic")}</p>
         )}
       </header>
 

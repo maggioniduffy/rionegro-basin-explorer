@@ -1,6 +1,7 @@
 # Data sources, licenses and attribution
 
-Keep this file current (CLAUDE.md rule 9). A license counts as **verified** only when
+Keep this file current (CLAUDE.md rule 9). The public credits page (`/attributions`, data in
+`lib/attributions.ts`) mirrors it: change both together. A license counts as **verified** only when
 someone has read the provider's own license text; the date says when. "Downloaded" is
 taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 
@@ -62,7 +63,7 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   Beames, P., Burchard-Levine, V., Maxwell, S., Moidu, H., Tan, F., Thieme, M. (2019): Global
   hydro-environmental sub-basin and river reach characteristics at high spatial resolution.
   Scientific Data 6: 283. https://doi.org/10.1038/s41597-019-0300-6
-  (The authors and DOI are verified from the product page. The title and journal were written from memory; confirm them via the DOI.)
+  (Authors, title, journal and DOI verified against the DOI's citation metadata on 2026-10-03.)
 - Attributes used (Phase 3; units and sources from `RiverATLAS_Catalog_v10.pdf`, all listed there
   as CC BY 4.0). Each is shown with its own period in the app:
   - `ele_mt_cmn`, `sgr_dk_rav`: EarthEnv-DEM90 elevation and reach gradient.

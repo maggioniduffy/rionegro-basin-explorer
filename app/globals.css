@@ -4,7 +4,10 @@
 :root {
   --background: #050607;
   --foreground: #e6e8ea;
-  --muted: #8a9096;
+  /* --muted and --warning keep 4.5:1 on a panel even over white imagery (snow),
+     the worst case for the translucent dark panel. */
+  --muted: #a1a7ad;
+  --warning: #fcd34d;
   --panel: rgba(12, 14, 16, 0.82);
   --panel-hover: rgba(255, 255, 255, 0.08);
   --border: rgba(255, 255, 255, 0.14);
@@ -18,7 +21,9 @@
 :root[data-theme="light"] {
   --background: #f3f2ee;
   --foreground: #1f2328;
-  --muted: #5c636a;
+  /* 4.5:1 on a panel over black imagery. */
+  --muted: #555c63;
+  --warning: #92400e;
   --panel: rgba(255, 255, 255, 0.86);
   --panel-hover: rgba(0, 0, 0, 0.06);
   --border: rgba(0, 0, 0, 0.14);
@@ -29,6 +34,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-warning: var(--warning);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -36,6 +42,26 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* One focus ring for every control, visible on both themes and over the imagery. In the
+   base layer, so a component's own focus style (the search box's ring) still wins. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid #38bdf8;
+    outline-offset: 2px;
+  }
+}
+
+/* MapLibre already skips camera animations for reduced motion; this covers the CSS ones
+   (chevrons, the sheet's height). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
 }
 
 /* MapLibre controls follow the theme (scoped to .maplibregl-map to win over its CSS). */

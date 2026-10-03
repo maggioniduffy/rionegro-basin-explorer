@@ -12,7 +12,7 @@ import {
 } from "./config";
 import type { LayerVisibility, ViewMode } from "../store";
 import type { Selection } from "../url-state";
-import { maskOpacities } from "./mask";
+import { maskLayerOpacities, maskOpacities } from "./mask";
 
 export type Theme = "dark" | "light";
 
@@ -139,7 +139,7 @@ export const ENDO_MASK_LAYER_IDS = Array.from(
 
 /**
  * Opacity of each endorheic overlay level: the mask level's own opacity when endorheic
- * streams are hidden (so their land disappears with them), otherwise 0. The overlay of
+ * streams are hidden (so their land is masked with them), otherwise 0. The overlay of
  * level k is disjoint from mask level k (pipeline:mask), so the two never double up.
  */
 export function endoMaskOpacities(
@@ -276,7 +276,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
   const { mask, outline, lake } = THEME_COLORS[o.theme];
   // Everything outside the basin is always masked, so no imagery is needed there.
   const { xmin, ymin, xmax, ymax } = mapConfig.basinBbox;
-  const opacities = maskOpacities(o.visibleLand, MASK_LEVEL_COUNT);
+  const opacities = maskLayerOpacities(o.visibleLand, MASK_LEVEL_COUNT);
 
   const layers: LayerSpecification[] = [
     {

@@ -31,7 +31,6 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-pressed={theme === "light"}
       className="flex items-center gap-2 self-start rounded-md border border-(--border) px-2.5 py-1 hover:bg-(--panel-hover)"
     >
       <Icon name="theme" />

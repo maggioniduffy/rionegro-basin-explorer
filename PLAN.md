@@ -118,16 +118,16 @@ Decisions, figures and the AIC comparison: [DECISSIONS.md](DECISSIONS.md#phase-6
 - [x] Mobile bottom-sheet panel (Map · Details · Display tabs); still needs a check on a real phone
 - [x] Hide/show: lakes (natural/artificial), rivers, and perennial vs non-perennial streams (GIRES `nonPerennial1d`); "arroyos" dropped (owner, 2026-10-02)
 - [x] Layout: the new Phase 7 panel (localities, km/mi, …) sits at the bottom right; while it is open, the right column splits in two vertical halves (river/basin panel on top, new panel below), each scrolling on its own. Both columns keep the shared top edge (`--panel-top`)
-- [ ] Make minimap zoom when map is too closed or zoomed.
-- [ ] Dont disappear outside-rivers area, make it translucent
+- [x] Minimap follows the view: zooms in when the main map is close in, backs off when it is zoomed out past the basin
+- [x] Land hidden by the Visible Land mask shows dimmed (translucent mask) instead of disappearing; outside the basin stays opaque
 
 Decisions: [DECISSIONS.md](DECISSIONS.md#phase-7-2026-10-02).
 
 ## Phase 8 — Release
 
-- [ ] Attributions page (EN/ES) and modeled-data warnings
-- [ ] OG image, performance pass, accessibility pass
-- [ ] Atlas: read-only user, network access review for Vercel
+- [x] Attributions page (EN/ES) and modeled-data warnings (`/attributions`, linked from the header and the panel caveats)
+- [x] OG image, performance pass, accessibility pass (see DECISSIONS.md Phase 8; not checked in a browser)
+- [ ] Atlas: read-only user, network access review for Vercel (code and review done; the read-only user exists but fails to authenticate, see DECISSIONS.md Phase 8; left: fix its credentials, pass `npm run atlas:check`, set it on Vercel)
 
 ## Open decisions
 

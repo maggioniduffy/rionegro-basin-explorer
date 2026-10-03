@@ -10,9 +10,13 @@ import { Icon } from "./Icon";
 
 const DEBOUNCE_MS = 200;
 
-/** River and IGN-name search (combobox): type, pick with arrows + Enter or a click. */
+/**
+ * River, IGN-name and HYRIV_ID search (combobox): type, pick with arrows + Enter or a
+ * click.
+ */
 export function SearchBox() {
   const t = useTranslations("search");
+  const tReach = useTranslations("panel.reach");
   const select = useMapStore((s) => s.select);
   const listId = useId();
   const [text, setText] = useState("");
@@ -33,6 +37,7 @@ export function SearchBox() {
 
   function choose(hit: SearchHit) {
     // A river fits to the whole river; an IGN name opens its longest reach and fits to it.
+    // A typed HYRIV_ID opens that reach.
     select(
       hit.kind === "river"
         ? { kind: "river", id: hit.id }
@@ -121,7 +126,16 @@ export function SearchBox() {
               onMouseEnter={() => setActive(i)}
               className={`cursor-pointer px-3 py-2 ${i === active ? "bg-(--panel-hover)" : ""}`}
             >
-              {hit.name}
+              {hit.kind === "reachId" ? (
+                <>
+                  {tReach("id", { id: hit.id })}
+                  {hit.name && (
+                    <span className="text-muted"> · {hit.name}</span>
+                  )}
+                </>
+              ) : (
+                hit.name
+              )}
             </li>
           ))}
         </ul>

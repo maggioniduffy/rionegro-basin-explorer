@@ -1,6 +1,6 @@
 import "server-only";
 import { getDb } from "@/lib/mongo";
-import { searchPattern, SEARCH_LIMIT } from "./params";
+import { parseReachId, searchPattern, SEARCH_LIMIT } from "./params";
 import type {
   Bbox,
   IgnNameDoc,
@@ -43,7 +43,9 @@ export type SubbasinTreeNode = SubbasinRef &
 
 export type SearchHit =
   | { kind: "river"; id: string; name: string }
-  | { kind: "reach"; id: string; name: string; bbox: Bbox };
+  | { kind: "reach"; id: string; name: string; bbox: Bbox }
+  /** A typed HYRIV_ID; name is its IGN name or its river's, null for neither. */
+  | { kind: "reachId"; id: string; name: string | null; bbox: Bbox };
 
 const rivers = async () => (await getDb()).collection<RiverDoc>("rivers");
 const ignNames = async () =>
@@ -146,6 +148,11 @@ export async function getSubbasinTree(): Promise<SubbasinTreeNode[]> {
  * Both collections are asked for the limit, then merged by total length.
  */
 export async function searchNames(q: string): Promise<SearchHit[]> {
+  // A number is a HydroRIVERS HYRIV_ID: open that reach (names have no digits only).
+  if (/^\d+$/.test(q)) {
+    const id = parseReachId(q);
+    return id === null ? [] : reachIdHit(id);
+  }
   const filter = { searchTerms: { $regex: searchPattern(q) } };
   const [riverDocs, nameDocs] = await Promise.all([
     (await rivers())
@@ -177,4 +184,21 @@ export async function searchNames(q: string): Promise<SearchHit[]> {
     .sort((a, b) => b.lengthKm - a.lengthKm)
     .slice(0, SEARCH_LIMIT)
     .map((x) => x.hit);
+}
+
+async function reachIdHit(id: number): Promise<SearchHit[]> {
+  const doc = await (await reaches()).findOne(
+    { _id: id },
+    { projection: { river: 1, ign: 1, bbox: 1 } },
+  );
+  if (!doc) return [];
+  const [river] = doc.river ? await namedRivers([doc.river]) : [];
+  return [
+    {
+      kind: "reachId",
+      id: String(id),
+      name: doc.ign?.name ?? river?.name ?? null,
+      bbox: doc.bbox,
+    },
+  ];
 }

@@ -4,7 +4,8 @@
     "description": "Satellite explorer of the Río Negro basin: the Limay, Neuquén and Río Negro rivers and their tributaries."
   },
   "home": {
-    "title": "Río Negro Basin Explorer"
+    "title": "Río Negro Basin Explorer",
+    "sources": "Sources and licenses"
   },
   "localeSwitcher": {
     "label": "Language",
@@ -179,7 +180,8 @@
       "flooded": "Flooded area: mean annual minimum and maximum from satellite data, 1993–2004 (GIEMS-D15).",
       "population": "Population: 2010 estimate (GPWv4).",
       "regulation": "Dam regulation: storage of the reservoirs upstream (GRanD v1.1) as a share of the modeled natural annual flow. Above 100%, they can hold more than a year of flow. Capped at 1,000%.",
-      "source": "Data: HydroRIVERS and RiverATLAS v1.0 (Linke et al., 2019)."
+      "source": "Data: HydroRIVERS and RiverATLAS v1.0 (Linke et al., 2019).",
+      "more": "About these values and their sources"
     },
     "subbasin": {
       "label": "Basin details",
@@ -223,6 +225,55 @@
       },
       "source": "Source: FUENTE: Instituto Geográfico Nacional de la República Argentina. IGN does not endorse or sponsor this application.",
       "group": "Details"
+    }
+  },
+  "attributions": {
+    "metaTitle": "Sources and licenses · Río Negro Basin Explorer",
+    "back": "Back to the map",
+    "title": "Sources and licenses",
+    "intro": "Where the data on the map comes from, how to cite it, and what its values mean.",
+    "independent": "An independent, non-commercial project. None of the data providers listed here takes part in it, sponsors it or endorses it.",
+    "modeled": {
+      "title": "Modeled and estimated values",
+      "intro": "Many values in the panels are not measurements. They come from global models and datasets, each for its own period, and are marked with * where they appear:",
+      "regulated": "Large dams regulate the Limay and the Neuquén today, so the flow in these rivers can differ a lot from the natural averages shown here.",
+      "derived": "The basin outline, the sub-basins and the courses of the named rivers were derived by this project from HydroBASINS and HydroRIVERS. Most names come from IGN, matched to the river network automatically, with a confidence level shown on each stream. They may contain errors."
+    },
+    "sources": {
+      "title": "Data sources",
+      "intro": "Geometry and values come from the sources below. Each is used under its own license.",
+      "usedFor": "Used for",
+      "license": "License",
+      "credit": "Credit",
+      "citation": "Cite as",
+      "notice": "Notice required by the license",
+      "hydrosheds": {
+        "usedFor": "River network, basin outline and sub-basins."
+      },
+      "hydroatlas": {
+        "usedFor": "Values per stream and per basin: discharge, elevation, gradient, flooded area, lake area, population and dam regulation. They come from the datasets cited below."
+      },
+      "gires": {
+        "usedFor": "Flow regime of each stream (perennial or non-perennial): model predictions."
+      },
+      "hydrolakes": {
+        "usedFor": "Lake and reservoir outlines."
+      },
+      "ign": {
+        "usedFor": "Names of rivers, streams, lakes and dams; perennial streams that HydroRIVERS lacks; extra lakes; dam positions.",
+        "terms": "IGN does not take part in, sponsor or endorse this application. Data derived from IGN layers is shared free of charge."
+      },
+      "osm": {
+        "usedFor": "Cities, towns and villages; evidence for river names.",
+        "terms": "OpenStreetMap data is available under the Open Database License."
+      },
+      "eox": {
+        "usedFor": "Satellite imagery.",
+        "terms": "Non-commercial use only, under this license."
+      }
+    },
+    "software": {
+      "title": "Software"
     }
   }
 }
