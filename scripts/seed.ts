@@ -4,8 +4,10 @@
  *
  * Idempotent: whole-document upserts keyed on _id, documents no longer in the files
  * are deleted, indexes are created only if missing. Re-run after the pipeline changes
- * data/out/. Needs MONGODB_URI (a user with write access) and MONGODB_DB, read from
- * .env.local. Writes data/work/seed/report.json.
+ * data/out/. Needs a user with write access and MONGODB_DB, read from .env.local:
+ * MONGODB_SEED_URI, or MONGODB_URI when it is not set. The deployed app's MONGODB_URI
+ * is a read-only user (Phase 8), so the seed has its own. Writes
+ * data/work/seed/report.json.
  *
  * Indexes:
  *   rivers   _id is the slug (unique by definition); text index on name/shortName;
@@ -42,10 +44,16 @@ const BATCH = 1000;
 
 const env = z
   .object({
-    MONGODB_URI: z.string().startsWith("mongodb"),
+    MONGODB_SEED_URI: z.string().startsWith("mongodb").optional(),
+    MONGODB_URI: z.string().startsWith("mongodb").optional(),
     MONGODB_DB: z.string().min(1),
   })
   .parse(process.env);
+const seedUri = (() => {
+  const uri = env.MONGODB_SEED_URI ?? env.MONGODB_URI;
+  if (!uri) throw new Error("set MONGODB_SEED_URI (or MONGODB_URI)");
+  return uri;
+})();
 
 async function sync<T extends Document & { _id: string | number }>(
   coll: Collection<T>,
@@ -85,7 +93,7 @@ async function main() {
     ignNameSchema,
   ).map(toIgnNameDoc);
 
-  const client = new MongoClient(env.MONGODB_URI, {
+  const client = new MongoClient(seedUri, {
     serverSelectionTimeoutMS: 10_000,
   });
   try {
