@@ -21,9 +21,17 @@ const themeScript = `try{if(localStorage.getItem(${JSON.stringify(THEME_STORAGE_
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
+  // The image comes from app/opengraph-image.tsx. Its absolute URL uses Vercel's
+  // production domain (VERCEL_PROJECT_PRODUCTION_URL), so no metadataBase is set here.
   return {
     title: t("title"),
     description: t("description"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      type: "website",
+    },
+    twitter: { card: "summary_large_image" },
   };
 }
 
