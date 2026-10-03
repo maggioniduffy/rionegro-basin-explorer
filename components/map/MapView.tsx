@@ -16,7 +16,7 @@ import {
   mapConfig,
   toLngLatBounds,
 } from "@/lib/map/config";
-import { maskOpacities } from "@/lib/map/mask";
+import { maskLayerOpacities } from "@/lib/map/mask";
 import { type Picked, toPicked } from "@/lib/map/picked";
 import {
   BACKGROUND_LAYER_ID,
@@ -152,10 +152,12 @@ const BELOW_MASK_LAYER_IDS: string[] = [
 function maskedAt(map: MapLibreMap, x: number, y: number): boolean {
   const s = useMapStore.getState();
   const layers = [
-    ...maskOpacities(s.visibleLand, MASK_LEVEL_COUNT).map((opacity, k) => ({
-      id: MASK_LAYER_IDS[k],
-      opacity,
-    })),
+    ...maskLayerOpacities(s.visibleLand, MASK_LEVEL_COUNT).map(
+      (opacity, k) => ({
+        id: MASK_LAYER_IDS[k],
+        opacity,
+      }),
+    ),
     ...endoMaskOpacities(s.visibleLand, s.hideEndorheic).map((opacity, k) => ({
       id: ENDO_MASK_LAYER_IDS[k],
       opacity,
@@ -242,10 +244,12 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
   const landChanged = !prev || s.visibleLand !== prev.visibleLand;
   const endoChanged = !prev || s.hideEndorheic !== prev.hideEndorheic;
   if (landChanged) {
-    maskOpacities(s.visibleLand, MASK_LEVEL_COUNT).forEach((opacity, k) => {
-      const id = MASK_LAYER_IDS[k];
-      if (id) map.setPaintProperty(id, "fill-opacity", opacity);
-    });
+    maskLayerOpacities(s.visibleLand, MASK_LEVEL_COUNT).forEach(
+      (opacity, k) => {
+        const id = MASK_LAYER_IDS[k];
+        if (id) map.setPaintProperty(id, "fill-opacity", opacity);
+      },
+    );
   }
   if (landChanged || endoChanged) {
     endoMaskOpacities(s.visibleLand, s.hideEndorheic).forEach((opacity, k) => {

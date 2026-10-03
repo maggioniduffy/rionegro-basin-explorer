@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { MASK_LEVEL_COUNT } from "../lib/map/config";
-import { maskOpacities } from "../lib/map/mask";
+import {
+  MASKED_LAND_OPACITY,
+  maskLayerOpacities,
+  maskOpacities,
+} from "../lib/map/mask";
 import {
   featureFilter,
   type FilterSpecification,
@@ -24,22 +28,49 @@ import {
 } from "../lib/map/style";
 
 describe("maskOpacities", () => {
-  it("shows exactly one level, opaque, on a level stop", () => {
-    expect(maskOpacities(2, 6)).toEqual([0, 0, 1, 1, 0, 0]);
-    expect(maskOpacities(0, 6)).toEqual([1, 1, 0, 0, 0, 0]);
-    expect(maskOpacities(5, 6)).toEqual([0, 0, 0, 0, 0, 1]);
+  it("shows exactly one level, opaque, on a level stop (opaque land)", () => {
+    expect(maskOpacities(2, 6, 1)).toEqual([0, 0, 1, 1, 0, 0]);
+    expect(maskOpacities(0, 6, 1)).toEqual([1, 1, 0, 0, 0, 0]);
+    expect(maskOpacities(5, 6, 1)).toEqual([0, 0, 0, 0, 0, 1]);
   });
 
-  it("fades the smaller hole out between stops", () => {
-    const o = maskOpacities(2.25, 6);
+  it("fades the smaller hole out between stops (opaque land)", () => {
+    const o = maskOpacities(2.25, 6, 1);
     expect(o[2]).toBeCloseTo(0.75);
     expect(o[3]).toBe(1);
     expect(o.filter((x) => x > 0)).toHaveLength(2);
   });
 
+  it("keeps masked land translucent, at the same opacity across a drag", () => {
+    expect(MASKED_LAND_OPACITY).toBeGreaterThan(0.5);
+    expect(MASKED_LAND_OPACITY).toBeLessThan(1);
+    const d = MASKED_LAND_OPACITY;
+    for (const v of [0, 0.4, 1, 2.25, 3.9, 4.5]) {
+      const o = maskOpacities(v, 6);
+      const i = Math.floor(v);
+      const a = o[i + 1] ?? 0;
+      const b = o[i] ?? 0;
+      // Land outside hole i + 1 is under levels i and i + 1.
+      expect(1 - (1 - a) * (1 - b)).toBeCloseTo(d);
+      // The band between holes i and i + 1 fades from d to clear.
+      expect(b).toBeCloseTo(d * (1 - (v - i)));
+    }
+    expect(maskOpacities(5, 6)).toEqual([0, 0, 0, 0, 0, d]);
+  });
+
   it("clamps out-of-range values", () => {
     expect(maskOpacities(-1, 6)).toEqual(maskOpacities(0, 6));
     expect(maskOpacities(9, 6)).toEqual(maskOpacities(5, 6));
+  });
+});
+
+describe("maskLayerOpacities", () => {
+  it("keeps the whole-basin level, i.e. outside the basin, opaque", () => {
+    for (const v of [0, 2.5, 5]) {
+      const o = maskLayerOpacities(v, 6);
+      expect(o[5]).toBe(1);
+      expect(o.slice(0, 5)).toEqual(maskOpacities(v, 6).slice(0, 5));
+    }
   });
 });
 

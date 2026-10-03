@@ -9,8 +9,10 @@ import { onMainMap } from "@/lib/map/main-map";
 import {
   buildMinimapStyle,
   MINIMAP_BACKGROUND_LAYER_ID,
+  MINIMAP_PADDING,
   MINIMAP_OUTLINE_LAYER_ID,
   MINIMAP_VIEW_SOURCE,
+  minimapCamera,
   viewPolygon,
 } from "@/lib/map/minimap";
 import { THEME_COLORS } from "@/lib/map/style";
@@ -52,8 +54,9 @@ export function MinimapSection() {
 }
 
 /**
- * Overview of the whole basin with a box for the main map's view. Click or drag on it
- * to move the main map there. Pointer only: the main map has its own keyboard controls.
+ * Overview of the basin with a box for the main map's view; it zooms in to follow the
+ * view when the main map is close in (minimapCamera). Click or drag on it to move the
+ * main map there. Pointer only: the main map has its own keyboard controls.
  */
 function Minimap() {
   const t = useTranslations("options.minimap");
@@ -72,7 +75,7 @@ function Minimap() {
           theme: useMapStore.getState().theme,
         }),
         bounds: toLngLatBounds(mapConfig.basinBbox),
-        fitBoundsOptions: { padding: 8 },
+        fitBoundsOptions: { padding: MINIMAP_PADDING },
         interactive: false,
         attributionControl: false,
         renderWorldCopies: false,
@@ -84,18 +87,31 @@ function Minimap() {
     }
     mini.getCanvas().setAttribute("aria-hidden", "true");
 
+    const { xmin, ymin, xmax, ymax } = mapConfig.basinBbox;
     let main: MapLibreMap | null = null;
+    // While the pointer drags the view, the minimap holds still under it.
+    let dragging = false;
     const showView = () => {
       const b = main?.getBounds();
+      const view: [number, number, number, number] | null = b
+        ? [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
+        : null;
       void mini
         .getSource<GeoJSONSource>(MINIMAP_VIEW_SOURCE)
-        ?.setData(
-          viewPolygon(
-            b ? [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] : null,
-          ),
-        );
+        ?.setData(viewPolygon(view));
+      const canvas = mini.getCanvas();
+      if (!view || dragging || !canvas.clientWidth || !canvas.clientHeight)
+        return;
+      mini.jumpTo(
+        minimapCamera({
+          view,
+          basin: [xmin, ymin, xmax, ymax],
+          size: [canvas.clientWidth, canvas.clientHeight],
+        }),
+      );
     };
     mini.on("load", showView);
+    mini.on("resize", showView);
     const stopMain = onMainMap((m) => {
       main?.off("move", showView);
       main = m;
@@ -115,7 +131,6 @@ function Minimap() {
     });
 
     // Click or drag: centre the main map on the pointer.
-    let dragging = false;
     const panTo = (e: PointerEvent) => {
       if (!main) return;
       const r = el.getBoundingClientRect();
@@ -133,9 +148,11 @@ function Minimap() {
       if (dragging) panTo(e);
     };
     const up = (e: PointerEvent) => {
+      if (!dragging) return;
       dragging = false;
       if (el.hasPointerCapture(e.pointerId))
         el.releasePointerCapture(e.pointerId);
+      showView();
     };
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointermove", move);
