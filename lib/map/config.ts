@@ -14,13 +14,19 @@ export const toLngLatBounds = (
 /** Visible Land levels: one per buffer width, plus the whole basin. */
 export const MASK_LEVEL_COUNT = config.mask.baseHalfWidthKm.length + 1;
 
+/**
+ * Content hash of public/tiles, set at build time (next.config.ts). The versioned path
+ * is rewritten to the file and cached for good, so a tile rebuild changes the URL.
+ */
+const TILES_VERSION = process.env.NEXT_PUBLIC_TILES_VERSION ?? "dev";
+
 /** Tiles written by pipeline:tiles into /public/tiles. */
 export const TILE_PATHS = {
-  rivers: "/tiles/rivers.pmtiles",
-  mask: "/tiles/mask.pmtiles",
-  subbasins: "/tiles/subbasins.pmtiles",
-  ign: "/tiles/ign.pmtiles",
-  localities: "/tiles/localities.pmtiles",
+  rivers: `/tiles/${TILES_VERSION}/rivers.pmtiles`,
+  mask: `/tiles/${TILES_VERSION}/mask.pmtiles`,
+  subbasins: `/tiles/${TILES_VERSION}/subbasins.pmtiles`,
+  ign: `/tiles/${TILES_VERSION}/ign.pmtiles`,
+  localities: `/tiles/${TILES_VERSION}/localities.pmtiles`,
 } as const;
 
 /** EOX Sentinel-2 tiles are ~10 m imagery; above this MapLibre overzooms. */
