@@ -79,10 +79,11 @@ body {
 
 /* Phones: the bottom sheet covers the map's bottom edge, so the attribution (which the
    imagery licence wants visible) and the scale bar ride above it. MobileSheet sets
-   --sheet-height. */
+   --sheet-height. Scoped to .maplibregl-map so it wins over MapLibre's own
+   `bottom: 0`, whose stylesheet loads later with the lazily loaded map. */
 @media (width < 48rem) {
-  .maplibregl-ctrl-bottom-left,
-  .maplibregl-ctrl-bottom-right {
+  .maplibregl-map .maplibregl-ctrl-bottom-left,
+  .maplibregl-map .maplibregl-ctrl-bottom-right {
     bottom: var(--sheet-height, 0px);
   }
 }
