@@ -28,10 +28,6 @@
   --panel-glass: rgba(15, 19, 24, 0.94);
   --chip-glass: rgba(10, 14, 19, 0.86);
   --image-fade: rgba(11, 15, 20, 0.9);
-  /* Sub-basin legend dots on the landing card (the map keeps one white tint). */
-  --cat-1: #22b8ff;
-  --cat-2: #ff8a2a;
-  --cat-3: #8f7bff;
   --card-shadow: 0 20px 60px -30px rgba(0, 0, 0, 0.8);
   --card-shadow-hover: 0 20px 60px -20px rgba(34, 184, 255, 0.35);
   --warning: #fcd34d;
@@ -99,9 +95,6 @@
   --color-stage: var(--stage);
   --color-panel-glass: var(--panel-glass);
   --color-chip-glass: var(--chip-glass);
-  --color-cat-1: var(--cat-1);
-  --color-cat-2: var(--cat-2);
-  --color-cat-3: var(--cat-3);
   /* rgba(fg) border steps from the design: cards .09, controls .10–.14, pills .16. */
   --color-line-faint: rgba(var(--fg-rgb), 0.07);
   --color-line-card: rgba(var(--fg-rgb), 0.09);

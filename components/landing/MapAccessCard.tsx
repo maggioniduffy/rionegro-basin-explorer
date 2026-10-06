@@ -22,7 +22,6 @@ const QUICK = [
 export async function MapAccessCard() {
   const t = await getTranslations("landing.card");
   const fields = await getTranslations("panel.fields");
-  const controls = await getTranslations("controls");
   const { river } = sample;
 
   return (
@@ -61,17 +60,6 @@ export async function MapAccessCard() {
               <span>{fields("strahler")}</span>
               <span className="text-text font-mono">{river.strahler}</span>
             </div>
-          </div>
-          <div
-            aria-hidden
-            className="bg-chip-glass border-line text-strong-muted absolute top-3.5 right-3.5 flex items-center gap-1.5 rounded-full border px-2.5 py-[7px] text-xs"
-          >
-            <i className="bg-cat-1 size-[9px] rounded-full" />
-            <i className="bg-cat-2 size-[9px] rounded-full" />
-            <i className="bg-cat-3 size-[9px] rounded-full" />
-            <span className="ml-1 max-sm:hidden">
-              {controls("viewSubbasins")}
-            </span>
           </div>
           <div className="text-secondary absolute bottom-3 left-3.5 font-mono text-[11px]">
             {t("credit")}
