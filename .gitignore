@@ -62,3 +62,5 @@ next-env.d.ts
 atlas-credentials.env
 # personal to-do list for the project owner
 PENDING.md
+
+landing-handoff.*
