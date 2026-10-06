@@ -305,7 +305,6 @@
       "text": "Satellite imagery of the basin with rivers, tributaries and sub-basins, in one map.",
       "btn": "Open map",
       "quick": "Jump to",
-      "aria": "Open the explorer: interactive satellite map of the Río Negro basin",
       "alt": "Satellite image of the Río Negro basin with its rivers highlighted in cyan",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
     }

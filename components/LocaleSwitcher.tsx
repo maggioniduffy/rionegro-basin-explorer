@@ -54,7 +54,6 @@ export function LocaleSwitcher() {
               type="button"
               lang={l}
               aria-pressed={active}
-              aria-label={t("locale", { locale: l })}
               title={t("locale", { locale: l })}
               disabled={isPending}
               onClick={() => !active && onChange(l)}
@@ -65,6 +64,7 @@ export function LocaleSwitcher() {
               }`}
             >
               {t("short", { locale: l })}
+              <span className="sr-only"> ({t("locale", { locale: l })})</span>
             </button>
           );
         })}

@@ -29,10 +29,10 @@ export async function SiteFooter({ path }: { path: string }) {
             href={`/${l}${path === "/" ? "" : path}`}
             lang={l}
             hrefLang={l}
-            aria-label={ls("locale", { locale: l })}
             className="text-secondary hover:text-text inline-flex min-h-11 items-center"
           >
             {ls("short", { locale: l })}
+            <span className="sr-only"> ({ls("locale", { locale: l })})</span>
           </a>
         ))}
         <Link

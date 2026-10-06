@@ -28,7 +28,6 @@ export async function LocaleLinks({ path }: { path: string }) {
               href={`/${l}${path === "/" ? "" : path}`}
               lang={l}
               hrefLang={l}
-              aria-label={t("locale", { locale: l })}
               aria-current={active ? "true" : undefined}
               className={`inline-flex min-h-9 items-center px-3 ${
                 active
@@ -37,6 +36,7 @@ export async function LocaleLinks({ path }: { path: string }) {
               }`}
             >
               {t("short", { locale: l })}
+              <span className="sr-only"> ({t("locale", { locale: l })})</span>
             </a>
           );
         })}

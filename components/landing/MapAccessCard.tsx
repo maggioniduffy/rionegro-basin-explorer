@@ -15,7 +15,8 @@ const QUICK = [
 ] as const;
 
 /**
- * The hero card: one link to the map. Hover zooms and brightens the image and nudges
+ * The hero card: one link to the map, named by its own text (title, description, CTA)
+ * and the image's alt. Hover zooms and brightens the image and nudges
  * the arrow; focus draws a 3px accent ring. CSS only (group-hover), no client state.
  */
 export async function MapAccessCard() {
@@ -28,7 +29,6 @@ export async function MapAccessCard() {
     <div>
       <Link
         href={MAP_PATH}
-        aria-label={t("aria")}
         className="group bg-surface border-line shadow-card hover:border-accent hover:shadow-card-hover focus-visible:border-accent block overflow-hidden rounded-[14px] border text-inherit transition-[border-color,box-shadow] duration-250 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-(--accent)"
       >
         <div className="relative aspect-video min-h-[220px] overflow-hidden bg-black">
@@ -36,7 +36,8 @@ export async function MapAccessCard() {
           <Image
             src={basin}
             alt={t("alt")}
-            priority
+            loading="eager"
+            fetchPriority="high"
             fill
             sizes="(max-width: 912px) calc(100vw - 32px), 880px"
             className="object-cover object-[45%_50%] transition-[transform,filter] duration-[800ms,400ms] ease-[cubic-bezier(.2,.7,.2,1)] group-hover:scale-105 group-hover:brightness-[1.18]"

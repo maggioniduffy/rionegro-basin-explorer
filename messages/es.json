@@ -305,7 +305,6 @@
       "text": "Imágenes satelitales de la cuenca, con ríos, afluentes y subcuencas. Todo en un mapa.",
       "btn": "Abrir mapa",
       "quick": "Ir directo a",
-      "aria": "Abrir el explorador: mapa satelital interactivo de la cuenca del Río Negro",
       "alt": "Imagen satelital de la cuenca del Río Negro con sus ríos resaltados en celeste",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
     }
