@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  legacyMapPath,
   parseSelection,
   sameSelection,
   selectionSearch,
@@ -67,5 +68,19 @@ describe("sub-basin selection", () => {
     const qs = selectionSearch(params("r=negro&foo=1"), sel);
     expect(qs).toBe("?foo=1&s=neuquen");
     expect(parseSelection(params(qs))).toEqual(sel);
+  });
+});
+
+describe("legacyMapPath", () => {
+  it.each([
+    ["/", "r=limay", "/map"],
+    ["/", "reach=61560077", "/map"],
+    ["/", "s=neuquen", "/map"],
+    ["/", "", null],
+    ["/", "utm_source=x", null],
+    ["/map", "r=limay", null],
+    ["/attributions", "r=limay", null],
+  ])("%s?%s → %s", (path, qs, expected) => {
+    expect(legacyMapPath(path, new URLSearchParams(qs))).toBe(expected);
   });
 });

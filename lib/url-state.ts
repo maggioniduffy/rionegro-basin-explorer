@@ -10,6 +10,24 @@ export const RIVER_PARAM = "r";
 export const REACH_PARAM = "reach";
 export const SUBBASIN_PARAM = "s";
 
+/** The map's route. The landing is at /. */
+export const MAP_PATH = "/map";
+
+/**
+ * Where a link from before the map moved to /map should go: "/" with a selection
+ * (?r=, ?reach=, ?s=) opens the map; anything else stays put (null).
+ */
+export function legacyMapPath(
+  pathname: string,
+  params: URLSearchParams,
+): string | null {
+  if (pathname !== "/") return null;
+  const hasSelection = [RIVER_PARAM, REACH_PARAM, SUBBASIN_PARAM].some((p) =>
+    params.has(p),
+  );
+  return hasSelection ? MAP_PATH : null;
+}
+
 /**
  * Selection from the URL; invalid values are ignored. A river wins over a reach, and
  * both over a sub-basin.

@@ -6,7 +6,7 @@ import { openMap, setVisibleLand, waitForMapIdle } from "./map-helpers";
 test.describe("map (en)", () => {
   test.use({ locale: "en-US" });
   test.beforeEach(async ({ page }) => {
-    await openMap(page, "/");
+    await openMap(page, "/map");
   });
 
   test("rivers only: narrowest Visible Land level", async ({ page }) => {
@@ -58,7 +58,7 @@ test.describe("map (en)", () => {
 test.describe("map (es)", () => {
   test.use({ locale: "es-AR" });
   test("map controls are translated", async ({ page }) => {
-    await openMap(page, "/");
+    await openMap(page, "/map");
     await expect(
       page.getByRole("button", { name: es.map.zoomIn }),
     ).toBeVisible();

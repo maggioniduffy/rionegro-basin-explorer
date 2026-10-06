@@ -21,11 +21,19 @@ for (const [browserLocale, expected] of [
   });
 }
 
-test("legacy /en links redirect to / and keep English", async ({ page }) => {
+test("legacy /en links redirect to the map and keep English", async ({
+  page,
+}) => {
   await stubImagery(page);
   await page.goto("/en?r=test");
-  await expect(page).toHaveURL(/\/\?r=test$/);
+  await expect(page).toHaveURL(/\/map\?r=test$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
+});
+
+test("links from before /map open the map", async ({ page }) => {
+  await stubImagery(page);
+  await page.goto("/?r=limay");
+  await expect(page).toHaveURL(/\/map\?r=limay$/);
 });
 
 for (const [locale, other] of [
@@ -37,7 +45,7 @@ for (const [locale, other] of [
 
     test("renders translated content", async ({ page }) => {
       await stubImagery(page);
-      await page.goto("/");
+      await page.goto("/map");
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(
         messages[locale].home.title,
       );
@@ -46,7 +54,7 @@ for (const [locale, other] of [
     test("locale switcher changes language without navigating", async ({
       page,
     }) => {
-      await openMap(page, "/?r=test");
+      await openMap(page, "/map?r=test");
       // Button names are the language names (localeSwitcher.locale), same in both locales.
       await page
         .getByRole("group", { name: messages[locale].localeSwitcher.label })
@@ -56,11 +64,11 @@ for (const [locale, other] of [
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(
         messages[other].home.title,
       );
-      await expect(page).toHaveURL(/\/\?r=test$/);
+      await expect(page).toHaveURL(/\/map\?r=test$/);
     });
 
     test("screenshot", async ({ page }) => {
-      await openMap(page, "/");
+      await openMap(page, "/map");
       await expect(page).toHaveScreenshot(`home-${locale}.png`);
     });
   });

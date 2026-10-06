@@ -152,7 +152,7 @@ export default async function AttributionsPage() {
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-4 py-8 sm:py-12">
       <header className="flex flex-col gap-4">
         <Link
-          href="/"
+          href="/map"
           className="text-muted hover:text-foreground flex w-fit items-center gap-1.5 text-sm"
         >
           <Icon name="chevron" size={16} className="rotate-180" />
