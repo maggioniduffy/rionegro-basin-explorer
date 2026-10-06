@@ -5,8 +5,6 @@ import type { FlowClass, Theme } from "./map/style";
 import type { UnitSystem } from "./units";
 import type { Selection } from "./url-state";
 
-/** localStorage key; read before hydration by the inline script in the layout. */
-export const THEME_STORAGE_KEY = "theme";
 /** localStorage key for the km/mi choice; read on mount by UnitsToggle. */
 export const UNITS_STORAGE_KEY = "units";
 /** localStorage key for the overview map's show/hide; read on mount by OptionsPanel. */

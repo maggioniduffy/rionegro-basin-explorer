@@ -13,8 +13,9 @@ import {
 import type { LayerVisibility, ViewMode } from "../store";
 import type { Selection } from "../url-state";
 import { maskLayerOpacities, maskOpacities } from "./mask";
+import { THEME_TOKENS, type Theme } from "../theme-tokens";
 
-export type Theme = "dark" | "light";
+export type { Theme };
 
 /** Flow-regime classes from GIRES `predcat1` (exported as `nonPerennial1d`). */
 export const FLOW_CLASSES = ["perennial", "nonPerennial", "unknown"] as const;
@@ -30,19 +31,20 @@ export const FLOW_STYLE: Record<
   unknown: { color: "#9aa3ab", widthScale: 0.6 },
 };
 
+/** The mask is the page background, so the basin sits on the page (lib/theme-tokens.ts). */
 export const THEME_COLORS: Record<
   Theme,
   { mask: string; outline: string; lake: string }
 > = {
   dark: {
-    mask: "#050607",
-    outline: "rgba(230, 232, 234, 0.55)",
-    lake: "rgba(230, 232, 234, 0.35)",
+    mask: THEME_TOKENS.dark.bg,
+    outline: `rgba(${THEME_TOKENS.dark.textRgb}, 0.55)`,
+    lake: `rgba(${THEME_TOKENS.dark.textRgb}, 0.35)`,
   },
   light: {
-    mask: "#f3f2ee",
-    outline: "rgba(31, 35, 40, 0.55)",
-    lake: "rgba(31, 35, 40, 0.35)",
+    mask: THEME_TOKENS.light.bg,
+    outline: `rgba(${THEME_TOKENS.light.textRgb}, 0.55)`,
+    lake: `rgba(${THEME_TOKENS.light.textRgb}, 0.35)`,
   },
 };
 

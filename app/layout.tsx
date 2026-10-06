@@ -1,23 +1,40 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Geist, Geist_Mono } from "next/font/google";
-import { THEME_STORAGE_KEY } from "@/lib/store";
+import { Figtree, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { cookies } from "next/headers";
+import {
+  isTheme,
+  THEME_COOKIE,
+  THEME_COOKIE_MAX_AGE,
+} from "@/lib/theme-tokens";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// UI and body.
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Eyebrows, numbers and attribution lines.
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
-// Dark is the default. A saved light choice is applied before first paint, so the page
-// never flashes dark; ThemeToggle adopts it after hydration.
-const themeScript = `try{if(localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)})==="light")document.documentElement.dataset.theme="light"}catch(e){}`;
+// The wordmark only.
+const figtree = Figtree({
+  variable: "--font-figtree",
+  subsets: ["latin"],
+  weight: ["500"],
+});
+
+// Runs only when no theme cookie is set: follow the system preference (dark is the
+// default), or a light choice saved in localStorage before the theme moved to a cookie.
+// Either way it writes the cookie, so later requests render the right theme on the server.
+const themeScript = `try{var d=document.documentElement,t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";if(t==="light")d.dataset.theme="light";document.cookie="${THEME_COOKIE}="+t+"; path=/; max-age=${THEME_COOKIE_MAX_AGE}; samesite=lax"}catch(e){}`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
@@ -38,16 +55,21 @@ export async function generateMetadata(): Promise<Metadata> {
 // The locale comes from a cookie (i18n/request.ts), so this layout renders per request.
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
+  const savedTheme = (await cookies()).get(THEME_COOKIE)?.value;
+  const theme = isTheme(savedTheme) ? savedTheme : null;
 
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      // The theme script may set data-theme before React hydrates.
+      className={`${instrumentSans.variable} ${jetbrainsMono.variable} ${figtree.variable} h-full antialiased`}
+      data-theme={theme === "light" ? "light" : undefined}
+      // Without a cookie, the theme script may set data-theme before React hydrates.
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {theme === null && (
+          <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        )}
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>

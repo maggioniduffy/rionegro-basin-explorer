@@ -77,7 +77,8 @@
   },
   "theme": {
     "toLight": "Tema claro",
-    "toDark": "Tema oscuro"
+    "toDark": "Tema oscuro",
+    "toggle": "Cambiar tema"
   },
   "map": {
     "zoomIn": "Acercar",
