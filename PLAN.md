@@ -127,7 +127,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#phase-7-2026-10-02).
 
 - [x] Attributions page (EN/ES) and modeled-data warnings (`/attributions`, linked from the header and the panel caveats)
 - [x] OG image, performance pass, accessibility pass (see DECISSIONS.md Phase 8; not checked in a browser)
-- [ ] Atlas: read-only user, network access review for Vercel (code and review done; the read-only user exists but fails to authenticate, see DECISSIONS.md Phase 8; left: fix its credentials, pass `npm run atlas:check`, set it on Vercel)
+- [ ] Atlas: read-only user, network access review for Vercel (code and review done; the read-only user authenticates and `npm run atlas:check` passes locally (2026-10-06); left: set it on Vercel)
 
 ## Design v3 — Landing and restyle (DESIGN.md)
 
@@ -137,7 +137,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#phase-7-2026-10-02).
 - [x] Map app restyled: header, glass panels, rows, breadcrumb and child chips, view toggle, Visible Land slider; attributions page
 - [x] Lighthouse a11y 1.0 and performance ≥ 0.9 on the landing (local build)
 - [ ] Regenerate `basin.png` from the real map before release
-- [ ] Check the restyled panels with live data (blocked by the Atlas read-only user, Phase 8)
+- [x] Restyled panels checked with live data (2026-10-06, after the read-only user was fixed)
 
 Decisions: [DECISSIONS.md](DECISSIONS.md#design-v3-landing-and-app-restyle-2026-10-06).
 
