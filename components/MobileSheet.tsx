@@ -169,7 +169,7 @@ export function MobileSheet() {
       aria-label={t("label")}
       data-testid="mobile-sheet"
       style={{ height }}
-      className={`fixed inset-x-0 bottom-0 flex flex-col rounded-t-xl border-t border-(--border) bg-(--panel) text-sm shadow-[0_-4px_16px_rgba(0,0,0,0.25)] backdrop-blur ${
+      className={`bg-panel-glass fixed inset-x-0 bottom-0 flex flex-col rounded-t-xl border-t border-(--border) text-sm shadow-[0_-4px_16px_rgba(0,0,0,0.25)] backdrop-blur-[6px] ${
         dragHeight === null ? "transition-[height] duration-200" : ""
       }`}
     >
@@ -216,7 +216,7 @@ export function MobileSheet() {
             {id === "info" && hasDetails && tab !== "info" && (
               <span
                 aria-hidden
-                className="h-1.5 w-1.5 rounded-full bg-sky-400"
+                className="bg-accent h-1.5 w-1.5 rounded-full"
               />
             )}
           </button>

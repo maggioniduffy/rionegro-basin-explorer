@@ -22,7 +22,7 @@ export function ViewModeToggle() {
       <div
         role="group"
         aria-labelledby="view-mode-label"
-        className="flex overflow-hidden rounded-md border border-(--border)"
+        className="border-line flex overflow-hidden rounded-lg border"
       >
         {MODES.map(({ mode, key }) => (
           <button
@@ -30,10 +30,10 @@ export function ViewModeToggle() {
             type="button"
             aria-pressed={viewMode === mode}
             onClick={() => setViewMode(mode)}
-            className={`flex-1 px-2.5 py-1 not-first:border-l not-first:border-(--border) ${
+            className={`not-first:border-line min-h-9 flex-1 px-2.5 not-first:border-l ${
               viewMode === mode
-                ? "bg-(--panel-hover) font-medium"
-                : "text-muted hover:bg-(--panel-hover)"
+                ? "bg-surface-active text-text font-semibold"
+                : "text-secondary hover:text-text hover:bg-(--panel-hover)"
             }`}
           >
             {t(key)}

@@ -33,7 +33,7 @@ export function LocaleSwitcher() {
 
   return (
     <div
-      className="text-muted flex items-center gap-2 text-sm"
+      className="text-secondary flex items-center gap-2 text-[13px]"
       title={t("label")}
     >
       <Icon name="language" />
@@ -44,7 +44,7 @@ export function LocaleSwitcher() {
       <div
         role="group"
         aria-labelledby="locale-switcher-label"
-        className="flex overflow-hidden rounded-md border border-(--border)"
+        className="border-line flex overflow-hidden rounded-md border"
       >
         {LOCALES.map((l) => {
           const active = l === locale;
@@ -58,10 +58,10 @@ export function LocaleSwitcher() {
               title={t("locale", { locale: l })}
               disabled={isPending}
               onClick={() => !active && onChange(l)}
-              className={`px-2.5 py-1 font-medium transition-colors ${
+              className={`min-h-9 px-3 font-semibold transition-colors ${
                 active
-                  ? "bg-sky-400 text-black"
-                  : "text-foreground hover:bg-(--panel-hover)"
+                  ? "bg-accent text-on-accent"
+                  : "text-strong-muted hover:text-text"
               }`}
             >
               {t("short", { locale: l })}

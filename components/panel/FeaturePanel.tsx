@@ -57,7 +57,7 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
   return (
     <PanelFrame label={t("feature.label")} onClose={() => pick(null)}>
       <header className="flex flex-col gap-1 pr-8">
-        <h2 className="text-lg leading-tight font-semibold">{title}</h2>
+        <h2 className="text-base leading-tight font-semibold">{title}</h2>
         <p className="text-muted text-sm">{subtitle}</p>
       </header>
       {(picked.kind === "detail" ||

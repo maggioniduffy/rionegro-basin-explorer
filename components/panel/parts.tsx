@@ -28,8 +28,8 @@ export function Row({
 }) {
   const t = useTranslations("panel");
   return (
-    <div className="flex items-baseline justify-between gap-3 py-1">
-      <dt className="text-muted">
+    <div className="flex items-baseline justify-between gap-3 py-1.5">
+      <dt className="text-secondary">
         {label}
         {modeled && (
           <abbr title={t("modeledMark")} className="ml-0.5 no-underline">
@@ -37,7 +37,9 @@ export function Row({
           </abbr>
         )}
       </dt>
-      <dd className="text-right font-medium tabular-nums">{children}</dd>
+      <dd className="text-text text-right font-semibold tabular-nums">
+        {children}
+      </dd>
     </div>
   );
 }
@@ -57,7 +59,7 @@ export function Group({
         {title}
       </h3>
       {hint && <p className="text-muted text-xs">{hint}</p>}
-      <dl className="divide-y divide-(--border)">{children}</dl>
+      <dl className="divide-line-faint divide-y">{children}</dl>
     </section>
   );
 }
@@ -130,7 +132,7 @@ export function PanelFrame({
       className={
         variant === "sheet"
           ? "relative flex flex-col gap-4 text-sm"
-          : "pointer-events-auto relative flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain rounded-lg border border-(--border) bg-(--panel) p-4 text-sm shadow-lg backdrop-blur group-data-[split=true]:max-h-[calc(50%-0.375rem)]"
+          : "border-line bg-panel-glass shadow-card pointer-events-auto relative flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain rounded-[10px] border p-4 text-sm backdrop-blur-[6px] group-data-[split=true]:max-h-[calc(50%-0.375rem)]"
       }
     >
       <button
@@ -138,7 +140,7 @@ export function PanelFrame({
         onClick={onClose}
         aria-label={t("close")}
         title={t("close")}
-        className={`absolute flex h-7 w-7 ${variant === "sheet" ? "-top-1.5 right-0" : "top-2.5 right-2.5"} items-center justify-center rounded-md hover:bg-(--panel-hover)`}
+        className={`absolute flex h-9 w-9 ${variant === "sheet" ? "-top-2 -right-1" : "top-1.5 right-1.5"} items-center justify-center rounded-md hover:bg-(--panel-hover)`}
       >
         <Icon name="close" />
       </button>

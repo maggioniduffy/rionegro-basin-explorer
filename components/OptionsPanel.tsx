@@ -19,7 +19,7 @@ export function OptionsPanel() {
   return (
     <section
       aria-label={t("label")}
-      className="pointer-events-auto mt-auto flex max-h-[calc(50%-0.375rem)] min-h-0 shrink-0 flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur"
+      className="border-line bg-panel-glass shadow-card pointer-events-auto mt-auto flex max-h-[calc(50%-0.375rem)] min-h-0 shrink-0 flex-col rounded-[10px] border text-sm backdrop-blur-[6px]"
     >
       <button
         type="button"
@@ -27,7 +27,7 @@ export function OptionsPanel() {
         aria-expanded={open}
         aria-controls="display-options-body"
         title={open ? t("minimize") : t("expand")}
-        className="flex shrink-0 items-center justify-between gap-3 rounded-lg px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
+        className="flex shrink-0 items-center justify-between gap-3 rounded-[10px] px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
       >
         <span className="flex items-center gap-2">
           <Icon name="units" />

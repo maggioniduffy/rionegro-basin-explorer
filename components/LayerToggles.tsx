@@ -24,7 +24,7 @@ export function Toggle({
     >
       <input
         type="checkbox"
-        className="accent-sky-400"
+        className="accent-(--accent)"
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}

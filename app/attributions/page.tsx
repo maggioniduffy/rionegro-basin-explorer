@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
+import { SiteFooter } from "@/components/landing/SiteFooter";
+import { SiteHeader } from "@/components/landing/SiteHeader";
 import {
   SOFTWARE,
   SOURCES,
@@ -89,7 +91,7 @@ async function SourceCard({ source }: { source: Source }) {
   return (
     <article
       aria-labelledby={`source-${source.id}`}
-      className="flex flex-col gap-3 rounded-lg border border-(--border) bg-(--panel) p-4"
+      className="bg-surface border-line-card flex flex-col gap-3 rounded-[14px] border p-4"
     >
       <h3 id={`source-${source.id}`} className="font-semibold">
         <ExternalLink href={source.url}>{source.name}</ExternalLink>
@@ -149,49 +151,55 @@ export default async function AttributionsPage() {
   const caveat = await getTranslations("panel.caveat");
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-4 py-8 sm:py-12">
-      <header className="flex flex-col gap-4">
-        <Link
-          href="/map"
-          className="text-muted hover:text-foreground flex w-fit items-center gap-1.5 text-sm"
-        >
-          <Icon name="chevron" size={16} className="rotate-180" />
-          {t("back")}
-        </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-        <p>{t("intro")}</p>
-        <p className="text-muted text-sm">{t("independent")}</p>
-      </header>
+    <div className="bg-bg text-text flex min-h-full w-full flex-col">
+      <SiteHeader path="/attributions" />
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 py-8 sm:py-12">
+        <header className="flex flex-col gap-4">
+          <Link
+            href="/map"
+            className="text-muted hover:text-foreground flex w-fit items-center gap-1.5 text-sm"
+          >
+            <Icon name="chevron" size={16} className="rotate-180" />
+            {t("back")}
+          </Link>
+          <h1 className="text-[clamp(28px,4vw,44px)] font-medium tracking-[-0.025em]">
+            {t("title")}
+          </h1>
+          <p>{t("intro")}</p>
+          <p className="text-muted text-sm">{t("independent")}</p>
+        </header>
 
-      <Section id="modeled" title={t("modeled.title")}>
-        <p>{t("modeled.intro")}</p>
-        <ul className="flex list-disc flex-col gap-2 pl-5">
-          {CAVEATS.map((c) => (
-            <li key={c}>{caveat(c)}</li>
-          ))}
-        </ul>
-        <p>{t("modeled.regulated")}</p>
-        <p>{t("modeled.derived")}</p>
-      </Section>
+        <Section id="modeled" title={t("modeled.title")}>
+          <p>{t("modeled.intro")}</p>
+          <ul className="flex list-disc flex-col gap-2 pl-5">
+            {CAVEATS.map((c) => (
+              <li key={c}>{caveat(c)}</li>
+            ))}
+          </ul>
+          <p>{t("modeled.regulated")}</p>
+          <p>{t("modeled.derived")}</p>
+        </Section>
 
-      <Section id="sources" title={t("sources.title")}>
-        <p>{t("sources.intro")}</p>
-        <div className="flex flex-col gap-4">
-          {SOURCES.map((s) => (
-            <SourceCard key={s.id} source={s} />
-          ))}
-        </div>
-      </Section>
+        <Section id="sources" title={t("sources.title")}>
+          <p>{t("sources.intro")}</p>
+          <div className="flex flex-col gap-4">
+            {SOURCES.map((s) => (
+              <SourceCard key={s.id} source={s} />
+            ))}
+          </div>
+        </Section>
 
-      <Section id="software" title={t("software.title")}>
-        <ul className="flex list-disc flex-col gap-1 pl-5">
-          {SOFTWARE.map((s) => (
-            <li key={s.name}>
-              <ExternalLink href={s.url}>{s.name}</ExternalLink> ({s.license})
-            </li>
-          ))}
-        </ul>
-      </Section>
-    </main>
+        <Section id="software" title={t("software.title")}>
+          <ul className="flex list-disc flex-col gap-1 pl-5">
+            {SOFTWARE.map((s) => (
+              <li key={s.name}>
+                <ExternalLink href={s.url}>{s.name}</ExternalLink> ({s.license})
+              </li>
+            ))}
+          </ul>
+        </Section>
+      </main>
+      <SiteFooter path="/attributions" />
+    </div>
   );
 }

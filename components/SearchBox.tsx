@@ -97,14 +97,14 @@ export function SearchBox() {
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
-        className="w-full rounded-md border border-(--border) bg-(--panel) py-1.5 pr-3 pl-8 text-sm shadow backdrop-blur placeholder:text-(--muted) focus:ring-2 focus:ring-sky-400/60 focus:outline-none"
+        className="bg-panel-glass min-h-9 w-full rounded-md border border-(--border) py-1.5 pr-3 pl-8 text-sm shadow backdrop-blur-[6px] placeholder:text-(--muted) focus:ring-2 focus:ring-(--accent) focus:outline-none"
       />
       {showList && (
         <ul
           id={listId}
           role="listbox"
           aria-label={t("label")}
-          className="absolute inset-x-0 top-full mt-1 overflow-hidden rounded-md border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur"
+          className="shadow-card absolute inset-x-0 top-full mt-1 overflow-hidden rounded-md border border-(--border) bg-(--panel) text-sm backdrop-blur-[6px]"
         >
           {state.status === "error" && (
             <li className="text-muted px-3 py-2">{t("error")}</li>

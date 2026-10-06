@@ -33,7 +33,7 @@ export function UnitsToggle() {
         {UNIT_SYSTEMS.map((u) => (
           <label
             key={u}
-            className={`flex-1 cursor-pointer rounded px-2 py-1 text-center has-focus-visible:outline-2 has-focus-visible:outline-sky-400 ${
+            className={`flex-1 cursor-pointer rounded px-2 py-1 text-center has-focus-visible:outline-2 has-focus-visible:outline-(--accent) ${
               units === u ? "bg-(--panel-hover) font-medium" : "text-muted"
             }`}
           >

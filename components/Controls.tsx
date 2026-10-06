@@ -1,13 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import { MASK_LEVEL_COUNT } from "@/lib/map/config";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
 import { Legend } from "./Legend";
 import { SubbasinTree } from "./SubbasinTree";
-import { ThemeToggle } from "./ThemeToggle";
 import { ViewModeToggle } from "./ViewModeToggle";
 
 /** The map controls panel, bottom left (desktop; phones get them in the bottom sheet). */
@@ -18,7 +17,7 @@ export function Controls() {
   return (
     <section
       aria-label={t("label")}
-      className={`absolute bottom-(--panel-bottom) left-3 flex max-h-[calc(100dvh_-_var(--panel-top)_-_var(--panel-bottom))] max-w-[calc(100vw-1.5rem)] flex-col rounded-lg border border-(--border) bg-(--panel) text-sm shadow-lg backdrop-blur ${
+      className={`border-line bg-panel-glass shadow-card absolute bottom-(--panel-bottom) left-3 flex max-h-[calc(100dvh_-_var(--panel-top)_-_var(--panel-bottom))] max-w-[calc(100vw-1.5rem)] flex-col rounded-[10px] border text-sm backdrop-blur-[6px] ${
         open ? "w-72" : "w-auto"
       }`}
     >
@@ -29,7 +28,7 @@ export function Controls() {
         aria-expanded={open}
         aria-controls="map-controls-body"
         title={open ? t("minimize") : t("expand")}
-        className="flex shrink-0 items-center justify-between gap-3 rounded-lg px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
+        className="flex shrink-0 items-center justify-between gap-3 rounded-[10px] px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
       >
         <span className="flex items-center gap-2">
           <Icon name="layers" />
@@ -55,7 +54,7 @@ export function Controls() {
   );
 }
 
-/** View mode, Visible Land, stream toggles, sub-basin tree, legend and theme. */
+/** View mode, Visible Land, stream toggles, sub-basin tree and legend. */
 export function MapControlsContent() {
   const t = useTranslations("controls");
   const visibleLand = useMapStore((s) => s.visibleLand);
@@ -89,9 +88,11 @@ export function MapControlsContent() {
             count: max + 1,
           })}
           onChange={(e) => setVisibleLand(Number(e.target.value))}
-          className="w-full accent-sky-400"
+          // The filled part of the rail (globals.css .range-slider).
+          style={{ "--fill": `${(visibleLand / max) * 100}%` } as CSSProperties}
+          className="range-slider"
         />
-        <div className="text-muted flex justify-between text-xs">
+        <div className="text-secondary flex justify-between text-xs">
           <span>{t("visibleLandMin")}</span>
           <span>{t("visibleLandMax")}</span>
         </div>
@@ -100,7 +101,7 @@ export function MapControlsContent() {
       <label className="flex items-center gap-2">
         <input
           type="checkbox"
-          className="accent-sky-400"
+          className="accent-(--accent)"
           checked={hideEndorheic}
           onChange={(e) => setHideEndorheic(e.target.checked)}
         />
@@ -109,7 +110,6 @@ export function MapControlsContent() {
 
       {viewMode === "subbasins" && <SubbasinTree />}
       <Legend />
-      <ThemeToggle />
     </>
   );
 }

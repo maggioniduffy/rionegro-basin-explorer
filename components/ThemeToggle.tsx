@@ -12,7 +12,14 @@ import { Icon } from "./Icon";
  * it from the theme cookie (app/layout.tsx), and the map follows the store, which
  * adopts it on mount. No aria-pressed: the label names the action (DECISSIONS Phase 8).
  */
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({
+  compact = false,
+  className = "",
+}: {
+  /** Below 640px, the icon only (the label stays for screen readers). */
+  compact?: boolean;
+  className?: string;
+}) {
   const t = useTranslations("theme");
   const theme = useMapStore((s) => s.theme);
   const setTheme = useMapStore((s) => s.setTheme);
@@ -39,7 +46,9 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       className={`border-line text-strong-muted hover:border-accent inline-flex min-h-9 shrink-0 cursor-pointer items-center gap-2 rounded-md border px-3 text-[13px] transition-colors ${className}`}
     >
       <Icon name="theme" />
-      {theme === "dark" ? t("toLight") : t("toDark")}
+      <span className={compact ? "max-sm:sr-only" : undefined}>
+        {theme === "dark" ? t("toLight") : t("toDark")}
+      </span>
     </button>
   );
 }

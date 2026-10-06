@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import type { SubbasinResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
 import type { Selection } from "@/lib/url-state";
@@ -28,11 +29,63 @@ function LinkButton({
   return (
     <button
       type="button"
-      className="underline decoration-dotted underline-offset-2 hover:text-(--foreground)"
+      className="hover:text-text underline underline-offset-2"
       onClick={() => select(to, { fit: true })}
     >
       {children}
     </button>
+  );
+}
+
+/** Child sub-basins shown before the "+N" button. */
+const CHIPS = 4;
+
+/** The child sub-basins as outlined pills; past CHIPS, a "+N" button shows the rest. */
+function ChildChips({ subbasin: b }: { subbasin: SubbasinResponse }) {
+  const t = useTranslations("panel.subbasin");
+  const label = useSubbasinLabel();
+  const select = useMapStore((s) => s.select);
+  const [all, setAll] = useState(false);
+  const shown = all ? b.children : b.children.slice(0, CHIPS);
+  const hidden = b.children.length - shown.length;
+
+  return (
+    <div className="mt-2 flex flex-col gap-1.5">
+      <p id={`children-${b._id}`} className="text-secondary text-sm">
+        {t("children")}
+      </p>
+      <ul
+        aria-labelledby={`children-${b._id}`}
+        className="flex flex-wrap gap-1.5 text-[13px]"
+      >
+        {shown.map((c) => (
+          <li key={c.id}>
+            <button
+              type="button"
+              onClick={() =>
+                select({ kind: "subbasin", id: c.id }, { fit: true })
+              }
+              className="border-line text-strong-muted hover:border-accent hover:text-text min-h-8 rounded-full border px-2.5 transition-colors"
+            >
+              {c.name ?? label(c)}
+            </button>
+          </li>
+        ))}
+        {hidden > 0 && (
+          <li>
+            <button
+              type="button"
+              onClick={() => setAll(true)}
+              aria-label={t("more", { count: hidden })}
+              title={t("more", { count: hidden })}
+              className="text-secondary hover:text-text min-h-8 rounded-full px-2.5"
+            >
+              +{hidden}
+            </button>
+          </li>
+        )}
+      </ul>
+    </div>
   );
 }
 
@@ -52,19 +105,23 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
   return (
     <>
       <header className="flex flex-col gap-1 pr-8">
-        <h2 className="text-lg leading-tight font-semibold">{label(b)}</h2>
+        <h2 className="text-base leading-tight font-semibold">{label(b)}</h2>
         {b.ancestors.length > 0 ? (
           <nav aria-label={t("subbasin.breadcrumb")}>
-            <ol className="text-muted flex flex-wrap items-center gap-x-1 text-sm">
+            <ol className="text-secondary flex flex-wrap items-center gap-x-1 text-sm">
               {b.ancestors.map((a) => (
                 <li key={a.id} className="flex items-center gap-1">
                   <LinkButton to={{ kind: "subbasin", id: a.id }}>
                     {a.name ?? label(a)}
                   </LinkButton>
-                  <span aria-hidden>›</span>
+                  <span aria-hidden className="text-icon-muted px-0.5">
+                    ›
+                  </span>
                 </li>
               ))}
-              <li aria-current="location">{b.name ?? label(b)}</li>
+              <li aria-current="location" className="text-strong-muted">
+                {b.name ?? label(b)}
+              </li>
             </ol>
           </nav>
         ) : (
@@ -73,19 +130,7 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
         {b.kind === "endorheic" && (
           <p className="text-warning text-xs">{t("subbasin.endorheicNote")}</p>
         )}
-        {b.children.length > 0 && (
-          <p className="text-muted text-sm">
-            {t("subbasin.children")}{" "}
-            {b.children.map((c, i) => (
-              <span key={c.id}>
-                {i > 0 && ", "}
-                <LinkButton to={{ kind: "subbasin", id: c.id }}>
-                  {label(c)}
-                </LinkButton>
-              </span>
-            ))}
-          </p>
-        )}
+        {b.children.length > 0 && <ChildChips key={b._id} subbasin={b} />}
         {/* The whole basin has nothing else to hide. */}
         {!isRoot && (
           <button
@@ -94,7 +139,7 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
               // The map isolates the whole subtree (lib/map/style.ts inSubtrees).
               setIsolatedIds(isolated ? null : [b._id])
             }
-            className="mt-1 flex items-center gap-2 self-start rounded-md border border-(--border) px-2.5 py-1 hover:bg-(--panel-hover)"
+            className="border-line hover:border-accent mt-1 flex min-h-9 items-center gap-2 self-start rounded-md border px-3 transition-colors"
           >
             <Icon name="mask" />
             {isolated ? t("subbasin.showOthers") : t("subbasin.hideOthers")}

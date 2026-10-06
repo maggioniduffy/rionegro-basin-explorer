@@ -19,7 +19,7 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
   return (
     <>
       <header className="flex flex-col gap-1 pr-8">
-        <h2 className="text-lg leading-tight font-semibold">
+        <h2 className="text-base leading-tight font-semibold">
           {river && reach.riverName
             ? t("reach.titleOf", { river: reach.riverName })
             : (reach.ign?.name ?? t("reach.title"))}
