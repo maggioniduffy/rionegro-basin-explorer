@@ -292,7 +292,7 @@
     "f2p": "Pasá de la cuenca completa al Limay, al Neuquén y al Río Negro, y bajá a niveles más finos con migas de pan.",
     "f3h": "Tierra visible",
     "f3p": "Deslizá desde solo los ríos hasta toda la cuenca y descubrí la imagen satelital alrededor del agua.",
-    "sample": "Valores tomados de los datos del mapa. * Modelado: caudal medio natural de 1971–2000, que no refleja la regulación actual de las represas.",
+    "sample": "* Modelado: caudal medio natural de 1971–2000, que no refleja la regulación actual de las represas.",
     "dTag": "Datos y transparencia",
     "dH": "Modelado, no medido.",
     "d1": "Construido sobre HydroRIVERS, HydroATLAS y HydroBASINS, con datos del IGN para los cursos de agua argentinos.",

@@ -292,7 +292,7 @@
     "f2p": "Switch from the whole basin to Limay, Neuquén and Río Negro, then drill into finer levels with breadcrumb navigation.",
     "f3h": "Visible land",
     "f3p": "Slide from rivers only to the whole basin, revealing the satellite imagery around the water.",
-    "sample": "Values from the map's data. * Modeled: natural mean discharge for 1971–2000, which does not reflect today's dam regulation.",
+    "sample": "* Modeled: natural mean discharge for 1971–2000, which does not reflect today's dam regulation.",
     "dTag": "Data & transparency",
     "dH": "Modeled, not measured.",
     "d1": "Built on HydroRIVERS, HydroATLAS and HydroBASINS, with IGN data for Argentine watercourses.",
