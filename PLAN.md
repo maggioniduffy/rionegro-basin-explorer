@@ -129,9 +129,20 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#phase-7-2026-10-02).
 - [x] OG image, performance pass, accessibility pass (see DECISSIONS.md Phase 8; not checked in a browser)
 - [ ] Atlas: read-only user, network access review for Vercel (code and review done; the read-only user exists but fails to authenticate, see DECISSIONS.md Phase 8; left: fix its credentials, pass `npm run atlas:check`, set it on Vercel)
 
+## Design v3 — Landing and restyle (DESIGN.md)
+
+- [x] Tokens, fonts and the theme cookie; WCAG AA checked by a test
+- [x] Landing at `/` (header, hero, map card, feature cards, data note, footer); map moved to `/map`, old links redirect
+- [x] Sample values sourced from `data/out` (`npm run landing:sample`)
+- [x] Map app restyled: header, glass panels, rows, breadcrumb and child chips, view toggle, Visible Land slider; attributions page
+- [x] Lighthouse a11y 1.0 and performance ≥ 0.9 on the landing (local build)
+- [ ] Regenerate `basin.png` from the real map before release
+- [ ] Check the restyled panels with live data (blocked by the Atlas read-only user, Phase 8)
+
+Decisions: [DECISSIONS.md](DECISSIONS.md#design-v3-landing-and-app-restyle-2026-10-06).
+
 ## Open decisions
 
-- Imagery provider and license
 - PMTiles hosting (`/public` vs object storage)
 - Official basin area figure for validation
 - Exact sub-basin list per level: every AIC subcuenca is now a node, nested hydrologically rather than flat (see DECISSIONS.md Phase 6)
