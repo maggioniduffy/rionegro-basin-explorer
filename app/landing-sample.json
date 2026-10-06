@@ -1,0 +1,29 @@
+{
+  "river": {
+    "id": "limay",
+    "name": "Río Limay",
+    "lengthKm": 555.3,
+    "strahler": 6,
+    "dischargeM3s": 762.2,
+    "flowsInto": {
+      "id": "negro",
+      "name": "Río Negro"
+    }
+  },
+  "subbasin": {
+    "id": "neuquen",
+    "name": "Río Neuquén",
+    "parent": {
+      "id": "negro",
+      "name": "Río Negro"
+    },
+    "children": [
+      "Río Agrio",
+      "Arroyo Covunco",
+      "Río Curi Leuvú",
+      "Río Trocomán",
+      "Río Varvarco",
+      "Río Nahueve"
+    ]
+  }
+}

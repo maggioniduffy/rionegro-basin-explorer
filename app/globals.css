@@ -186,3 +186,21 @@ body {
   .maplibregl-popup-tip {
   display: none;
 }
+
+/* Landing hero: water flowing along the river strokes (components/landing/HeroRivers). */
+@keyframes rn-flow {
+  to {
+    stroke-dashoffset: -240;
+  }
+}
+.rn-flow {
+  stroke-dasharray: 60 180;
+  animation: rn-flow 14s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rn-flow {
+    animation: none;
+    stroke-dasharray: none;
+    opacity: 0.5;
+  }
+}

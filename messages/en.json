@@ -193,7 +193,8 @@
       "endorheicNote": "Land that drains to closed depressions and reaches no river. HydroBASINS links some of it to the river network virtually; here it is kept apart.",
       "hideOthers": "Hide the rest of the basin",
       "showOthers": "Show the whole basin",
-      "breadcrumb": "Sub-basin hierarchy"
+      "breadcrumb": "Sub-basin hierarchy",
+      "more": "{count, plural, one {Show # more} other {Show # more}}"
     },
     "feature": {
       "label": "Map feature details",
@@ -275,6 +276,38 @@
     },
     "software": {
       "title": "Software"
+    }
+  },
+  "landing": {
+    "attr": "Attributions",
+    "nav": "Site",
+    "eyebrow": "Río Negro basin · Patagonia, Argentina",
+    "h1": "Follow the water from the Andes to the Atlantic.",
+    "sub": "Explore the Limay, Neuquén and Negro rivers, their tributaries and sub-basins on satellite imagery.",
+    "exTag": "What you can explore",
+    "exH": "One basin, three ways in.",
+    "f1h": "Rivers & tributaries",
+    "f1p": "Select any stream for its length, source and mouth elevation, Strahler order, discharge and more.",
+    "f2h": "Sub-basins",
+    "f2p": "Switch from the whole basin to Limay, Neuquén and Río Negro, then drill into finer levels with breadcrumb navigation.",
+    "f3h": "Visible land",
+    "f3p": "Slide from rivers only to the whole basin, revealing the satellite imagery around the water.",
+    "sample": "Values from the map's data. * Modeled: natural mean discharge for 1971–2000, which does not reflect today's dam regulation.",
+    "dTag": "Data & transparency",
+    "dH": "Modeled, not measured.",
+    "d1": "Built on HydroRIVERS, HydroATLAS and HydroBASINS, with IGN data for Argentine watercourses.",
+    "d2": "Discharge is a modeled natural average for 1971–2000 and does not reflect current dam regulation at El Chocón, Piedra del Águila, Alicurá and others. Population is a 2010 estimate.",
+    "credit": "Imagery: EOxCloudless · Data: HydroSHEDS, GIRES, IGN, OSM",
+    "open": "Open map",
+    "home": "Río Negro Basin Explorer, home",
+    "card": {
+      "title": "Open the explorer",
+      "text": "Satellite imagery of the basin with rivers, tributaries and sub-basins, in one map.",
+      "btn": "Open map",
+      "quick": "Jump to",
+      "aria": "Open the explorer: interactive satellite map of the Río Negro basin",
+      "alt": "Satellite image of the Río Negro basin with its rivers highlighted in cyan",
+      "credit": "EOxCloudless · HydroSHEDS · IGN"
     }
   }
 }

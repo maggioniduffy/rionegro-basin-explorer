@@ -193,7 +193,8 @@
       "endorheicNote": "Tierras que drenan hacia depresiones cerradas y no llegan a ningún río. HydroBASINS vincula parte de ellas a la red de ríos de forma virtual; aquí se muestran aparte.",
       "hideOthers": "Ocultar el resto de la cuenca",
       "showOthers": "Mostrar toda la cuenca",
-      "breadcrumb": "Jerarquía de subcuencas"
+      "breadcrumb": "Jerarquía de subcuencas",
+      "more": "{count, plural, one {Mostrar # más} other {Mostrar # más}}"
     },
     "feature": {
       "label": "Detalles del elemento del mapa",
@@ -275,6 +276,38 @@
     },
     "software": {
       "title": "Software"
+    }
+  },
+  "landing": {
+    "attr": "Atribuciones",
+    "nav": "Sitio",
+    "eyebrow": "Cuenca del Río Negro · Patagonia, Argentina",
+    "h1": "Seguí el agua desde los Andes hasta el Atlántico.",
+    "sub": "Explorá los ríos Limay, Neuquén y Negro, sus afluentes y subcuencas sobre imágenes satelitales.",
+    "exTag": "Qué podés explorar",
+    "exH": "Una cuenca, tres formas de entrar.",
+    "f1h": "Ríos y afluentes",
+    "f1p": "Elegí cualquier curso y mirá su longitud, altitud de nacimiento y desembocadura, orden de Strahler, caudal y más.",
+    "f2h": "Subcuencas",
+    "f2p": "Pasá de la cuenca completa al Limay, al Neuquén y al Río Negro, y bajá a niveles más finos con migas de pan.",
+    "f3h": "Tierra visible",
+    "f3p": "Deslizá desde solo los ríos hasta toda la cuenca y descubrí la imagen satelital alrededor del agua.",
+    "sample": "Valores tomados de los datos del mapa. * Modelado: caudal medio natural de 1971–2000, que no refleja la regulación actual de las represas.",
+    "dTag": "Datos y transparencia",
+    "dH": "Modelado, no medido.",
+    "d1": "Construido sobre HydroRIVERS, HydroATLAS y HydroBASINS, con datos del IGN para los cursos de agua argentinos.",
+    "d2": "El caudal es un promedio natural modelado para 1971–2000 y no refleja la regulación actual de las represas de El Chocón, Piedra del Águila, Alicurá y otras. La población es una estimación de 2010.",
+    "credit": "Imágenes: EOxCloudless · Datos: HydroSHEDS, GIRES, IGN, OSM",
+    "open": "Abrir mapa",
+    "home": "Río Negro Basin Explorer, inicio",
+    "card": {
+      "title": "Abrir el explorador",
+      "text": "Imágenes satelitales de la cuenca, con ríos, afluentes y subcuencas. Todo en un mapa.",
+      "btn": "Abrir mapa",
+      "quick": "Ir directo a",
+      "aria": "Abrir el explorador: mapa satelital interactivo de la cuenca del Río Negro",
+      "alt": "Imagen satelital de la cuenca del Río Negro con sus ríos resaltados en celeste",
+      "credit": "EOxCloudless · HydroSHEDS · IGN"
     }
   }
 }

@@ -36,7 +36,8 @@
     "pipeline:localities": "tsx pipeline/steps/localities.ts",
     "perf:zoom": "tsx scripts/perf-zoom.ts",
     "inspect:tiles": "tsx pipeline/tools/tile-stats.ts",
-    "atlas:check": "tsx --env-file=.env.local scripts/atlas-check.ts"
+    "atlas:check": "tsx --env-file=.env.local scripts/atlas-check.ts",
+    "landing:sample": "tsx scripts/landing-sample.ts"
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",

@@ -1,13 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect } from "react";
 import { UNITS_STORAGE_KEY, useMapStore } from "@/lib/store";
 import { UNIT_SYSTEMS, type UnitSystem } from "@/lib/units";
+import { useAdoptSavedUnits } from "@/lib/use-saved-units";
 import { Icon } from "./Icon";
-
-const isUnitSystem = (v: unknown): v is UnitSystem =>
-  UNIT_SYSTEMS.some((u) => u === v);
 
 /** km/mi for the panels and the scale bar; remembered in localStorage. */
 export function UnitsToggle() {
@@ -15,15 +12,7 @@ export function UnitsToggle() {
   const units = useMapStore((s) => s.units);
   const setUnits = useMapStore((s) => s.setUnits);
 
-  // Nothing renders in units before a panel opens, so adopting it after mount is enough.
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(UNITS_STORAGE_KEY);
-      if (isUnitSystem(saved)) setUnits(saved);
-    } catch {
-      // Storage blocked (private mode): metric for this page.
-    }
-  }, [setUnits]);
+  useAdoptSavedUnits();
 
   function choose(next: UnitSystem) {
     setUnits(next);

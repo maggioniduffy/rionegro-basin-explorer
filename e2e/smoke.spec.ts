@@ -51,6 +51,13 @@ for (const [locale, other] of [
       );
     });
 
+    test("landing renders translated content", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+        messages[locale].landing.h1,
+      );
+    });
+
     test("locale switcher changes language without navigating", async ({
       page,
     }) => {
