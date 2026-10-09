@@ -2,6 +2,60 @@
   "$comment": "Hand decisions on IGN name matches (pipeline:ign-match applies them; written while triaging data/work/ign-match/review.json). reaches: accept (show the best candidate although low confidence), reject (hide it) or name (show this IGN name instead); every entry needs a note. riverNames: force the display name of an approved river (slug) when the stem vote is wrong or split. Entries accepted in bulk on 2026-10-01 from the continuity proposal (same name on the next reach up or downstream); the owner will review them later. dams: IGN dam points (BH051 'Dique', keyed by gid) that pipeline:ign-layers drops after a check against the imagery; every entry needs a note. lines: IGN watercourse lines (keyed by IGN gid) whose name pipeline:ign-match drops before matching (action unname), for owner facts that contradict an IGN name; every entry needs a note.",
   "reaches": [
     {
+      "id": 61552423,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61552517,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61552557,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61552697,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61552838,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61552998,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61553116,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61553228,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
+      "id": 61553514,
+      "action": "name",
+      "name": "Río Collón Curá",
+      "note": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá (IGN labels them Río Aluminé)"
+    },
+    {
       "id": 61550637,
       "action": "accept",
       "note": "same name on the downstream reach 61550301 (Río Limay, coverage 0.221)"

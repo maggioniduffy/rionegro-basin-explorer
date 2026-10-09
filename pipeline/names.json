@@ -11,7 +11,7 @@
       "confidence": "strong",
       "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #1, 2026-09-30); IGN name 'Río Negro' on 100% of the 711 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
       "sourceReach": 61546311,
-      "sourceEvidence": "IGN 'Río Negro' covers the stem up to the Limay–Neuquén confluence (the area trace's source, 61546311). The IGN line rule stops at 61552568 because two runs of three reaches (61552469–61552437 and 61547097–61547064) have no IGN line within the 250 m buffer: IGN's Río Negro line runs 290–970 m from them across the braided valley (measured 2026-10-09, Albers). Override by the coding agent, 2026-10-09; flagged for the owner."
+      "sourceEvidence": "IGN 'Río Negro' covers the stem up to the Limay–Neuquén confluence (the area trace's source, 61546311). The IGN line rule stops at 61552568 because two runs of three reaches (61552469–61552437 and 61547097–61547064) have no IGN line within the 250 m buffer: IGN's Río Negro line runs 290–970 m from them across the braided valley (measured 2026-10-09, Albers). Approved by owner, 2026-10-09."
     },
     {
       "name": "Río Limay",
@@ -49,7 +49,9 @@
       "aliases": [],
       "mouthReach": 61556572,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #12, 2026-09-30); IGN name 'Río Collón Curá' on 63% of the 93 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #12, 2026-09-30); IGN name 'Río Collón Curá' on 63% of the 93 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
+      "sourceReach": 61552423,
+      "sourceEvidence": "owner, 2026-10-09: the reaches below the Aluminé–Catán Lil junction are the Collón Curá. The 9 reaches from 61552423 (just below the junction) down to 61553514 (22 km) carry IGN's 'Río Aluminé'; the owner overrides that label (pipeline/ign-overrides.json, action name)."
     },
     {
       "name": "Río Agrio",
@@ -249,7 +251,7 @@
       "confidence": "strong",
       "evidence": "IGN name 'Río Malleo' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02",
       "sourceReach": 61550450,
-      "sourceEvidence": "IGN 'Río Malleo' covers 86% of 61550450, whose upstream reach 61550075 lies mostly inside HydroLAKES 10575 (the owner's source lake). Between 61550450 and 61550632 three reaches (61550607, 61550606, 61550476) have IGN's Río Malleo line 51–1,062 m away, beyond the 250 m buffer, so the rule instead takes the 61550608 branch (Río Malleo 0.94; the reach above it, 61550507, 0.32). Override by the coding agent, 2026-10-09; flagged for the owner.",
+      "sourceEvidence": "IGN 'Río Malleo' covers 86% of 61550450, whose upstream reach 61550075 lies mostly inside HydroLAKES 10575 (the owner's source lake). Between 61550450 and 61550632 three reaches (61550607, 61550606, 61550476) have IGN's Río Malleo line 51–1,062 m away, beyond the 250 m buffer, so the rule instead takes the 61550608 branch (Río Malleo 0.94; the reach above it, 61550507, 0.32). Approved by owner, 2026-10-09.",
       "sourceCheck": {
         "lakeOutlet": [10575],
         "evidence": "owner, 2026-10-09: starts at the outlet of HydroLAKES 10575"
