@@ -12,9 +12,9 @@ Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
 Status: Phase 1 is complete (`download` … `export`). Phase 2 adds `mask` and `tiles`; Phase 4 adds
 `subbasins` (run it after `export` and before `tiles`). Phase 5 adds `ign`, `ign-match` and `ign-layers`
-(`ign-gate` is the measurement that preceded it). Order: … `named`, `lakes`, `ign`, `ign-match`,
-`ign-layers`, `export`, `mask`, `subbasins`, `tiles`: `export` reads the IGN names from `ign-match`, and
-`tiles` reads the IGN layers from `ign-layers`.
+(`ign-gate` is the measurement that preceded it), and `ign-streams` (after `ign-match`, before `export`).
+Order: … `named`, `lakes`, `ign`, `ign-match`, `ign-streams`, `ign-layers`, `export`, `mask`, `subbasins`,
+`tiles`: `export` reads the IGN names from `ign-match`, and `tiles` reads the IGN layers from `ign-layers`.
 
 ## Prerequisites
 
@@ -300,6 +300,27 @@ Outputs in `data/work/ign-match/`: `reach_ign.parquet`, `detail.parquet`, `revie
 equal the IGN total, pieces not shorter than the minimum. The thresholds are provisional; see
 DECISSIONS.md (Phase 5) for how they were calibrated.
 
+### `npm run pipeline:ign-streams`
+
+Splits each shown IGN name into real streams (detection only; nothing in `data/out` changes yet). Inputs:
+`rivers/reaches.parquet` (`HYRIV_ID`, `NEXT_DOWN`, `LENGTH_KM`, geometry for the bbox),
+`named/river_reaches.parquet` (`river`), `ign-match/reach_ign.parquet` (`name`, `name_key`, `display`)
+and `pipeline/names.json`. A reach carries an IGN name when `display` is true; approved river names and
+their aliases are left out, as in `export`.
+
+Two reaches with the same name key are one stream when one lies downstream of the other (`NEXT_DOWN`) and
+the path between them crosses at most `MAX_GAP` (2) reaches with no IGN name and no approved river. Those
+reaches are absorbed into the stream. A reach with another IGN name, or on an approved river, breaks the
+path. Each connected group per name is a stream, with id `<slug of the name key>-<mouth HYRIV_ID>`
+(mouth: the most downstream reach). The logic is `detectStreams` in `pipeline/lib/streams.ts`.
+
+Outputs in `data/work/ign-streams/`: `streams.json` (id, name, nameKey, mouthReach, reachIds,
+absorbedReachIds, lengthKm, bbox) and `report.json`: names considered and split, streams, reaches and km
+(named vs absorbed), the same counts for a gap tolerance of 0, 1 and 2, and review lists (a gap reach
+claimed by two names, same-name streams draining to the same receiving water, single-reach streams under
+1 km). Checks: every named reach in exactly one stream, no reach in two streams, no approved-river reach
+absorbed, unique ids.
+
 ### `npm run pipeline:ign-layers`
 
 IGN lakes, dams and the detail lines, as tippecanoe inputs: names for HydroLAKES lakes (an IGN polygon
@@ -340,7 +361,7 @@ a pixel), which tippecanoe drops because it collapses to a point. It also checks
 level and every sub-basin is present at each checked zoom, and records file sizes and the tippecanoe version.
 
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
-`lakes` → `ign` → `ign-match` → `ign-layers` → `localities` → `export` → `mask` → `subbasins` → `tiles`.
+`lakes` → `ign` → `ign-match` → `ign-streams` → `ign-layers` → `localities` → `export` → `mask` → `subbasins` → `tiles`.
 
 ## Tools
 

@@ -32,6 +32,7 @@
     "pipeline:ign-gate": "tsx pipeline/steps/ign-gate.ts",
     "pipeline:ign": "tsx pipeline/steps/ign.ts",
     "pipeline:ign-match": "tsx pipeline/steps/ign-match.ts",
+    "pipeline:ign-streams": "tsx pipeline/steps/ign-streams.ts",
     "pipeline:ign-layers": "tsx pipeline/steps/ign-layers.ts",
     "pipeline:localities": "tsx pipeline/steps/localities.ts",
     "perf:zoom": "tsx scripts/perf-zoom.ts",
