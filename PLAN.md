@@ -147,6 +147,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#design-v3-landing-and-app-restyle-2026-
 - [x] Export, tiles, seed, API, search, panel and URL use streams instead of `ign-names`; a click on a stream reach opens the whole stream
 - [x] Run `pipeline:ign-streams` → `export` → `tiles` → `seed` on the real data and read the reports (2026-10-09, locally: 467 streams, all checks true, Atlas seeded)
 - [x] **Owner:** review the 15 same-name sibling-branch cases listed in `data/work/ign-streams/report.json` (2026-10-09: kept as separate streams; repeated names are common)
+- [x] Rivers and streams end where their IGN name ends (owner: IGN wins any dispute): approved rivers start at their lake outlet, streams keep only reaches the IGN line runs along (coverage ≥ 0.5); Currhué, Negro, Malleo and Collón Curá overrides; pipeline order now `ign-match` → `named`; Atlas re-seeded
 
 Decisions: [DECISSIONS.md](DECISSIONS.md#ign-streams-2026-10-09).
 
