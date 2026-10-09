@@ -2,6 +2,43 @@
   "$comment": "Hand decisions on IGN name matches (pipeline:ign-match applies them; written while triaging data/work/ign-match/review.json). reaches: accept (show the best candidate although low confidence), reject (hide it) or name (show this IGN name instead); every entry needs a note. riverNames: force the display name of an approved river (slug) when the stem vote is wrong or split. Entries accepted in bulk on 2026-10-01 from the continuity proposal (same name on the next reach up or downstream); the owner will review them later. dams: IGN dam points (BH051 'Dique', keyed by gid) that pipeline:ign-layers drops after a check against the imagery; every entry needs a note. lines: IGN watercourse lines (keyed by IGN gid) whose name pipeline:ign-match drops before matching (action unname), for owner facts that contradict an IGN name; every entry needs a note.",
   "reaches": [
     {
+      "id": 61550608,
+      "action": "reject",
+      "note": "owner, 2026-10-09: not the Río Malleo; the Malleo runs further south (via 61550450 to lake 10575). IGN's Malleo line passes between the two branches"
+    },
+    {
+      "id": 61550507,
+      "action": "reject",
+      "note": "owner, 2026-10-09: not the Río Malleo (upstream of 61550608, off the river)"
+    },
+    {
+      "id": 61550891,
+      "action": "reject",
+      "note": "owner, 2026-10-09: off the Río Malleo; a side reach labelled Malleo by the buffer match"
+    },
+    {
+      "id": 61551408,
+      "action": "reject",
+      "note": "owner, 2026-10-09: off the Río Malleo; a side reach labelled Malleo by the buffer match"
+    },
+    {
+      "id": 61551589,
+      "action": "reject",
+      "note": "owner, 2026-10-09: off the Río Malleo; a side reach labelled Malleo by the buffer match"
+    },
+    {
+      "id": 61550380,
+      "action": "name",
+      "name": "Río Turbio",
+      "note": "owner, 2026-10-09: this reach and 61550214 are the Río Turbio, which joins the Malleo at its source (IGN gid 834272 'Río Turbio' runs along it; coverage 0.43 fell under the stream threshold)"
+    },
+    {
+      "id": 61550214,
+      "action": "name",
+      "name": "Río Turbio",
+      "note": "owner, 2026-10-09: Río Turbio, downstream of 61550380 and joining the Malleo at 61550450 (IGN coverage 0.22, ambiguous with Río Malleo)"
+    },
+    {
       "id": 61552423,
       "action": "name",
       "name": "Río Collón Curá",
@@ -186,11 +223,6 @@
       "note": "same name on the downstream reach 61527764 (Arroyo Curamileu, coverage 0.284)"
     },
     {
-      "id": 61550214,
-      "action": "accept",
-      "note": "same name on the upstream reach 61550380 (Río Turbio, coverage 0.217)"
-    },
-    {
       "id": 61553599,
       "action": "accept",
       "note": "same name on the downstream reach 61553618 (Río Collón Curá, coverage 0.204)"
@@ -254,11 +286,6 @@
       "id": 61539829,
       "action": "accept",
       "note": "same name on the downstream reach 61540223 (Río Neuquén, coverage 0.218)"
-    },
-    {
-      "id": 61551589,
-      "action": "accept",
-      "note": "same name on the downstream reach 61551559 (Río Malleo, coverage 0.203)"
     },
     {
       "id": 61551349,
@@ -469,11 +496,6 @@
       "id": 61558204,
       "action": "accept",
       "note": "same name on the downstream reach 61558205 (Río Cuyín Manzano, coverage 0.264)"
-    },
-    {
-      "id": 61551408,
-      "action": "accept",
-      "note": "same name on the downstream reach 61551441 (Río Malleo, coverage 0.276)"
     },
     {
       "id": 61551974,

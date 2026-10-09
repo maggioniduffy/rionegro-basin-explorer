@@ -9,6 +9,8 @@
  *   data/work/ign-match/cover.parquet      HYRIV_ID, name_key → coverage
  *   pipeline/names.json                    approved river names and aliases (left out)
  *   pipeline/ign.config.json               line.minCoverage, line.maxGap
+ *   pipeline/ign-overrides.json            reaches named by the owner ("name") count as on
+ *                                          the line whatever their coverage
  * A reach carries an IGN name when `display` is true (export's `ign IS NOT NULL`).
  *
  * 1. Same-name reaches joined along NEXT_DOWN through at most maxGap unnamed reaches form
@@ -55,7 +57,7 @@ interface Reach {
   river: string | null;
   name: string | null;
   key: string | null;
-  /** Coverage of the shown name on this reach (0 when none, or for a "name" override). */
+  /** Coverage of the shown name on this reach (0 when none; 1 for a reach the owner named). */
   coverage: number;
 }
 
@@ -74,6 +76,17 @@ async function main() {
         rivers: { name: string; aliases?: string[] }[];
       }
     ).rivers.flatMap((r) => [r.name, ...(r.aliases ?? [])].map(nameKey)),
+  );
+  // A reach the owner named by hand is on the line: the owner's fact wins over the
+  // buffer coverage (owner, 2026-10-09: Río Turbio, coverage 0.43 and 0.22).
+  const ownerNamed = new Set(
+    (
+      JSON.parse(
+        await readFile(`${ROOT}/pipeline/ign-overrides.json`, "utf8"),
+      ) as { reaches: { id: number; action: string }[] }
+    ).reaches
+      .filter((o) => o.action === "name")
+      .map((o) => o.id),
   );
   const outDir = workPath("ign-streams");
   await mkdir(outDir, { recursive: true });
@@ -106,7 +119,12 @@ async function main() {
     river: r.river == null ? null : String(r.river),
     name: r.name == null ? null : String(r.name),
     key: r.name_key == null ? null : String(r.name_key),
-    coverage: r.coverage == null ? 0 : Number(r.coverage),
+    coverage:
+      r.name != null && ownerNamed.has(Number(r.id))
+        ? 1
+        : r.coverage == null
+          ? 0
+          : Number(r.coverage),
   }));
   const byId = new Map(reaches.map((r) => [r.id, r]));
   const input: StreamReach[] = reaches.map((r) => ({

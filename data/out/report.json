@@ -26,8 +26,8 @@
     "connected": 6949,
     "endorheic": 1067,
     "inNamedRivers": 990,
-    "withIgnName": 2211,
-    "ignNameHiddenOffLine": 181,
+    "withIgnName": 2208,
+    "ignNameHiddenOffLine": 179,
     "notDrawnInsideLakes": 295,
     "orphans": 0
   },
@@ -328,8 +328,8 @@
     }
   ],
   "streams": {
-    "streams": 451,
-    "reachesInStreams": 1191,
+    "streams": 452,
+    "reachesInStreams": 1193,
     "reachesOnStreamsAndRivers": 3,
     "uniqueValidIds": true,
     "everyReachExported": true,
@@ -360,7 +360,7 @@
       "pulmari": 5,
       "litran": 3,
       "quillen": 4,
-      "malleo": 1,
+      "malleo": 2,
       "endorheic": 1,
       "negro": 1
     }
