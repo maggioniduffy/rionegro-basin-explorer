@@ -2,9 +2,11 @@
  * pipeline:ign-match — match IGN names to HydroRIVERS reaches, and keep the IGN lines that
  * HydroRIVERS does not draw (Phase 5).
  *
- * Inputs: data/work/ign/lines.parquet (pipeline:ign), the reaches (pipeline:rivers), the
- * named-river mapping (pipeline:named), pipeline/names.json, pipeline/ign.config.json and
- * the hand decisions in pipeline/ign-overrides.json.
+ * Inputs: data/work/ign/lines.parquet (pipeline:ign), the reaches (pipeline:rivers),
+ * pipeline/names.json, pipeline/ign.config.json and the hand decisions in
+ * pipeline/ign-overrides.json. It does not read pipeline:named: named runs after this step
+ * and trims each river to its IGN name, so the stem vote here uses the candidate stem, the
+ * area trace from the mouth (traceNamedRiver, as named traces before trimming).
  *
  * Matching, in South America Albers (distances approximate to a few percent):
  *  - for each reach and each IGN name, `coverage` is the fraction of the reach within
@@ -18,12 +20,14 @@
  * pieces of at least minDetailPieceM. Nothing is invented: pieces carry IGN's name and
  * the length, no hydrology.
  *
- * Outputs in data/work/ign-match/: reach_ign.parquet (one row per reach), detail.parquet,
- * review.json (low-confidence and ambiguous reaches, longest first), report.json.
+ * Outputs in data/work/ign-match/: reach_ign.parquet (one row per reach), cover.parquet
+ * (every (reach, name key, coverage) pair, read by pipeline:named and pipeline:ign-streams
+ * to follow an IGN line), detail.parquet, review.json (low-confidence and ambiguous reaches, longest first), report.json.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { lengthSpheroidKm } from "../lib/geo";
+import { traceNamedRiver, upstreamIndex } from "../lib/graph";
 import { ALBERS, buildPairs } from "../lib/ign";
 import {
   type Candidate,
@@ -53,11 +57,14 @@ const TOP_N = 3;
 interface Overrides {
   reaches: ReachOverride[];
   riverNames: { river: string; name: string; note: string }[];
+  /** IGN lines (keyed by IGN gid) whose name is dropped before matching (owner decisions). */
+  lines?: { gid: number; action: "unname"; note: string }[];
 }
 interface ApprovedRiver {
   name: string;
   shortName: string;
   slug?: string;
+  mouthReach: number;
 }
 
 interface ReachRow {
@@ -84,7 +91,6 @@ async function main() {
   ).rivers.map((r) => ({ ...r, slug: riverSlug(r) }));
   const linesFile = requireInput(workPath("ign/lines.parquet"));
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
-  const mappingFile = requireInput(workPath("named/river_reaches.parquet"));
 
   const outDir = workPath("ign-match");
   await mkdir(outDir, { recursive: true });
@@ -97,6 +103,29 @@ async function main() {
     console.log(`[${Math.round((Date.now() - t0) / 1000)}s] ${msg}`);
 
   try {
+    // 0. Candidate stems: the area trace of each approved river from its mouth, over the
+    //    connected network (the trace pipeline:named starts from, before the IGN trim).
+    const net = await db.all(`
+      SELECT HYRIV_ID AS id, NEXT_DOWN AS next_down, UPLAND_SKM AS upland
+      FROM read_parquet(${lit(reachesFile)}) WHERE network = 'connected'`);
+    const upland = new Map(net.map((r) => [num(r.id), num(r.upland)]));
+    const index = upstreamIndex(
+      net.map((r) => ({ id: num(r.id), nextDown: num(r.next_down) })),
+    );
+    const claimed = new Set(approved.map((a) => a.mouthReach));
+    const stemRows: string[] = [];
+    for (const a of approved)
+      for (const id of traceNamedRiver(
+        index,
+        (x) => upland.get(x) ?? 0,
+        a.mouthReach,
+        claimed,
+      ))
+        stemRows.push(`(${id}, ${lit(a.slug)})`);
+    await db.conn.run(`
+      CREATE TABLE stem_map AS
+      SELECT * FROM (VALUES ${stemRows.join(",")}) AS t(HYRIV_ID, river)`);
+
     // 1. Inputs in Albers.
     await db.conn.run(`
       CREATE TABLE ign_a AS
@@ -105,6 +134,24 @@ async function main() {
       FROM read_parquet(${lit(linesFile)})`);
     await db.conn.run(`ALTER TABLE ign_a ADD COLUMN len_a DOUBLE`);
     await db.conn.run(`UPDATE ign_a SET len_a = ST_Length(geom_a)`);
+    // Line overrides: drop the IGN name of the listed lines (coverage, review and the detail
+    // layer then see them as unnamed). A gid that is not in the data fails the checks.
+    const lineOverrides = overrides.lines ?? [];
+    const badLines = lineOverrides
+      .filter((o) => o.action !== "unname" || !o.note?.trim())
+      .map((o) => `line ${o.gid}: needs action "unname" and a note`);
+    if (lineOverrides.length > 0) {
+      const gids = lineOverrides.map((o) => o.gid).join(",");
+      const found = await db.all(
+        `SELECT DISTINCT gid FROM read_parquet(${lit(linesFile)}) WHERE gid IN (${gids})`,
+      );
+      const foundSet = new Set(found.map((r) => num(r.gid)));
+      for (const o of lineOverrides)
+        if (!foundSet.has(o.gid)) badLines.push(`unknown line gid ${o.gid}`);
+      await db.conn.run(`
+        UPDATE ign_a SET name = NULL, name_key = NULL
+        WHERE id IN (SELECT id FROM read_parquet(${lit(linesFile)}) WHERE gid IN (${gids}))`);
+    }
     await db.conn.run(`
       CREATE TABLE reaches_a AS
       SELECT r.HYRIV_ID, r.NEXT_DOWN AS next_down, r.ORD_STRA, r.LENGTH_KM AS km, r.network, m.river,
@@ -112,7 +159,7 @@ async function main() {
              ST_X(ST_LineInterpolatePoint(r.geom, 0.5)) AS lon,
              ST_Transform(r.geom, 'EPSG:4326', ${lit(ALBERS)}, always_xy := true) AS geom_a
       FROM read_parquet(${lit(reachesFile)}) r
-      LEFT JOIN read_parquet(${lit(mappingFile)}) m USING (HYRIV_ID)`);
+      LEFT JOIN stem_map m USING (HYRIV_ID)`);
     await db.conn.run(`ALTER TABLE reaches_a ADD COLUMN len_a DOUBLE`);
     await db.conn.run(`UPDATE reaches_a SET len_a = ST_Length(geom_a)`);
 
@@ -147,6 +194,10 @@ async function main() {
              least(1.0, ST_Length(ST_Intersection(r.geom_a, u.buf)) / r.len_a) AS coverage
       FROM u JOIN reaches_a r ON r.HYRIV_ID = u.rid
       WHERE r.len_a > 0`);
+
+    await db.conn.run(`
+      COPY (SELECT rid AS HYRIV_ID, name_key, coverage FROM cover ORDER BY rid, name_key)
+      TO ${lit(`${outDir}/cover.parquet`)} (FORMAT parquet)`);
 
     const reachRows = await db.all(`
       SELECT HYRIV_ID AS id, next_down, river, network, ORD_STRA AS strahler, km, lat, lon
@@ -459,6 +510,7 @@ async function main() {
     const accKm = num(acc?.near_km) + num(acc?.far_km);
     const checks = {
       overridesValid: badOverrides.length === 0,
+      lineOverridesValid: badLines.length === 0,
       everyReachOnce:
         out.length === reachRows.length && byId.size === out.length,
       coverageInRange: out.every(
@@ -485,7 +537,8 @@ async function main() {
       overrides: {
         reaches: overrides.reaches.length,
         riverNames: overrides.riverNames.length,
-        problems: badOverrides,
+        lines: lineOverrides.length,
+        problems: [...badOverrides, ...badLines],
       },
       reaches: {
         total: reaches.length,
@@ -540,6 +593,7 @@ async function main() {
       },
       outputs: [
         "reach_ign.parquet",
+        "cover.parquet",
         "detail.parquet",
         "review.json",
         "proposed-overrides.json",

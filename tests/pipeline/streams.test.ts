@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  type LineReach,
   type StreamReach,
   detectStreams,
+  followIgnLines,
   resolveGapClaims,
   streamDrainage,
   streamId,
@@ -239,5 +241,103 @@ describe("streamDrainage", () => {
       subbasin: null,
       receivingRiver: null,
     });
+  });
+});
+
+describe("followIgnLines", () => {
+  const C = "rio currhue";
+  /** Detect with gap 2, then keep the reaches on the IGN line (coverage ≥ 0.5). */
+  const lines = (reaches: (StreamReach & { coverage?: number })[]) => {
+    const groups = detectStreams(reaches, { maxGap: 2 }).streams;
+    const byId = new Map<number, LineReach>(
+      reaches.map((x) => [
+        x.id,
+        { id: x.id, nextDown: x.nextDown, coverage: x.coverage ?? 0 },
+      ]),
+    );
+    return followIgnLines(groups, byId, { minCoverage: 0.5 });
+  };
+  const rc = (
+    id: number,
+    nextDown: number,
+    key: string | null,
+    coverage: number,
+  ) => ({ ...r(id, nextDown, key), coverage });
+
+  it("drops low spurs and an off-line upper reach (Río Currhué)", () => {
+    // Line 1 ← 2 ← 3 ← 4 (coverage ≥ 0.5). Spurs 5 → 2 (0.25) and 6 → 3 (0.23);
+    // 7 → 4 climbs away from the line (0.37).
+    const { streams, droppedReachIds } = lines([
+      rc(1, 0, C, 0.54),
+      rc(2, 1, C, 0.89),
+      rc(3, 2, C, 0.94),
+      rc(4, 3, C, 0.98),
+      rc(5, 2, C, 0.25),
+      rc(6, 3, C, 0.23),
+      rc(7, 4, C, 0.37),
+    ]);
+    expect(streams).toHaveLength(1);
+    expect(streams[0]!.id).toBe("rio-currhue-1");
+    expect(streams[0]!.reachIds).toEqual([1, 2, 3, 4]);
+    expect(droppedReachIds).toEqual([5, 6, 7]);
+  });
+
+  it("keeps low and unnamed reaches between two reaches on the line", () => {
+    // 1 (0.9) ← 2 (0.3) ← 3 (unnamed) ← 4 (0.8)
+    const { streams } = lines([
+      rc(1, 0, A, 0.9),
+      rc(2, 1, A, 0.3),
+      rc(3, 2, null, 0),
+      rc(4, 3, A, 0.8),
+    ]);
+    expect(streams).toHaveLength(1);
+    expect(streams[0]!.reachIds).toEqual([1, 2, 3, 4]);
+    expect(streams[0]!.absorbedReachIds).toEqual([3]);
+  });
+
+  it("prunes a low mouth, and the stream starts at the first reach on the line", () => {
+    const { streams, droppedReachIds } = lines([
+      rc(1, 0, A, 0.2),
+      rc(2, 1, A, 0.4),
+      rc(3, 2, A, 0.9),
+    ]);
+    expect(streams.map((s) => s.id)).toEqual(["arroyo-blanco-3"]);
+    expect(droppedReachIds).toEqual([1, 2]);
+  });
+
+  it("keeps both branches at a fork when the line runs along both", () => {
+    const { streams } = lines([
+      rc(1, 0, A, 0.9),
+      rc(2, 1, A, 0.9),
+      rc(3, 1, A, 0.7),
+    ]);
+    expect(streams).toHaveLength(1);
+    expect(streams[0]!.reachIds).toEqual([1, 2, 3]);
+  });
+
+  it("splits into two streams when a low mouth joined two branches on the line", () => {
+    const { streams } = lines([
+      rc(1, 0, A, 0.3),
+      rc(2, 1, A, 0.9),
+      rc(3, 1, A, 0.7),
+    ]);
+    expect(streams.map((s) => s.id)).toEqual([
+      "arroyo-blanco-2",
+      "arroyo-blanco-3",
+    ]);
+  });
+
+  it("drops a group with no reach on the line", () => {
+    const { streams, droppedReachIds } = lines([
+      rc(1, 0, A, 0.45),
+      rc(2, 1, A, 0.4),
+    ]);
+    expect(streams).toEqual([]);
+    expect(droppedReachIds).toEqual([1, 2]);
+  });
+
+  it("leaves other names alone", () => {
+    const { streams } = lines([rc(1, 0, A, 0.9), rc(2, 1, B, 0.3)]);
+    expect(streams.map((s) => s.id)).toEqual(["arroyo-blanco-1"]);
   });
 });

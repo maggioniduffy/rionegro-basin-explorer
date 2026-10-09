@@ -24,8 +24,9 @@
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
-import { envelope, lengthSpheroidKm } from "../lib/geo";
-import { INPUTS, requireInput } from "../lib/inputs";
+import { lengthSpheroidKm } from "../lib/geo";
+import { hydroLakesBbox } from "../lib/hydrolakes";
+import { requireInput } from "../lib/inputs";
 import { ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
@@ -43,7 +44,6 @@ const MIN_PIECE_M = 50;
 const KEEP_TOLERANCE_PCT = 0.5;
 
 async function main() {
-  const lakesShp = lit(requireInput(INPUTS.hydroLakes));
   const basinFile = lit(requireInput(workPath("basin/basin.geojson")));
   const hybasFile = lit(requireInput(workPath("basin/hybas_l12.parquet")));
   const reachesFile = lit(requireInput(workPath("rivers/reaches.parquet")));
@@ -66,25 +66,8 @@ async function main() {
     await db.conn.run(
       `CREATE TABLE basin AS SELECT geom FROM ST_Read(${basinFile})`,
     );
-    const [bb] = await db.all(`
-      SELECT ST_XMin(geom) AS x0, ST_YMin(geom) AS y0, ST_XMax(geom) AS x1, ST_YMax(geom) AS y1
-      FROM basin`);
-    // The global file has ~1.4M polygons and this DuckDB's ST_Read has no spatial
-    // filter, so the first run scans it once and caches the basin bbox subset.
-    const cache = `${outDir}/hydrolakes_bbox.parquet`;
-    if (!existsSync(cache)) {
-      console.log("scanning global HydroLAKES once (cached afterwards)…");
-      await db.conn.run(`
-        COPY (SELECT Hylak_id, Lake_name, Lake_type, Grand_id, Lake_area, geom
-              FROM ST_Read(${lakesShp})
-              WHERE ST_Intersects(geom, ${envelope({
-                xmin: Number(bb?.x0),
-                ymin: Number(bb?.y0),
-                xmax: Number(bb?.x1),
-                ymax: Number(bb?.y1),
-              })}))
-        TO ${lit(cache)} (FORMAT parquet)`);
-    }
+    // Basin-bbox subset of the global file, cached once (shared with pipeline:named).
+    const cache = await hydroLakesBbox(db);
     await db.conn.run(`
       CREATE TABLE lakes AS
       SELECT l.Hylak_id AS hylak_id, NULLIF(trim(l.Lake_name), '') AS name,

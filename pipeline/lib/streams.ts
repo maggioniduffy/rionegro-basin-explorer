@@ -245,3 +245,93 @@ export function streamDrainage(
     subbasin = net.endorheicNode;
   return { subbasin, receivingRiver };
 }
+
+export interface LineReach {
+  id: number;
+  nextDown: number;
+  /** Coverage of the shown name on this reach (pipeline:ign-match cover), 0..1. */
+  coverage: number;
+}
+
+export interface LineResult {
+  streams: DetectedStream[];
+  /** Reaches of the detected groups left out: below the threshold or unnamed, at an end. */
+  droppedReachIds: number[];
+}
+
+/**
+ * Keep only the reaches the IGN line runs along (owner, 2026-10-09). A named reach is on
+ * the line when its coverage is at least `minCoverage`. In each detected group
+ * (`detectStreams`, which already limits unnamed gaps to `maxGap` in a row) the ends that
+ * are not on the line are pruned, repeatedly: an upstream end (a member with no member
+ * upstream) and the mouth, until every end is on the line. What stays is the part of the
+ * group between reaches on the line: below-threshold and unnamed reaches only in between,
+ * and at a fork only the branches the line runs along. Pruning a mouth that joins two
+ * branches leaves two streams, as same-name siblings are (DECISSIONS.md, IGN streams).
+ * A group with no reach on the line is dropped whole.
+ */
+export function followIgnLines(
+  groups: readonly DetectedStream[],
+  reaches: ReadonlyMap<number, LineReach>,
+  { minCoverage }: { minCoverage: number },
+): LineResult {
+  const streams: DetectedStream[] = [];
+  const dropped: number[] = [];
+  const asc = (a: number, b: number) => a - b;
+  for (const g of groups) {
+    const named = new Set(g.namedReachIds);
+    const onLine = (id: number) =>
+      named.has(id) && (reaches.get(id)?.coverage ?? 0) >= minCoverage;
+    const kept = new Set(g.reachIds);
+    const down = (id: number) => reaches.get(id)?.nextDown ?? 0;
+    const upCount = new Map<number, number>();
+    for (const id of kept)
+      if (kept.has(down(id)))
+        upCount.set(down(id), (upCount.get(down(id)) ?? 0) + 1);
+    // Ends: upstream ends (no member upstream) and mouths (next-down not a member).
+    const isEnd = (id: number) =>
+      (upCount.get(id) ?? 0) === 0 || !kept.has(down(id));
+    const queue = [...kept].filter((id) => isEnd(id) && !onLine(id));
+    while (queue.length > 0) {
+      const id = queue.pop()!;
+      if (!kept.has(id) || onLine(id) || !isEnd(id)) continue;
+      kept.delete(id);
+      const d = down(id);
+      if (kept.has(d)) {
+        upCount.set(d, (upCount.get(d) ?? 1) - 1);
+        if (isEnd(d) && !onLine(d)) queue.push(d);
+      }
+      for (const up of g.reachIds)
+        if (kept.has(up) && down(up) === id && !onLine(up)) queue.push(up);
+    }
+    for (const id of g.reachIds) if (!kept.has(id)) dropped.push(id);
+    // Each remaining mouth closes one stream: the kept reaches that drain to it.
+    const mouthOf = (id: number) => {
+      let m = id;
+      for (let i = 0; kept.has(down(m)) && i <= kept.size; i++) m = down(m);
+      return m;
+    };
+    const byMouth = new Map<number, number[]>();
+    for (const id of kept) {
+      const m = mouthOf(id);
+      byMouth.set(m, [...(byMouth.get(m) ?? []), id]);
+    }
+    for (const [mouth, ids] of byMouth) {
+      ids.sort(asc);
+      streams.push({
+        id: streamId(g.key, mouth),
+        key: g.key,
+        mouth,
+        reachIds: ids,
+        namedReachIds: ids.filter((id) => named.has(id)),
+        absorbedReachIds: ids.filter((id) => !named.has(id)),
+      });
+    }
+  }
+  return {
+    streams: streams.sort(
+      (a, b) => a.key.localeCompare(b.key) || a.mouth - b.mouth,
+    ),
+    droppedReachIds: dropped.sort(asc),
+  };
+}

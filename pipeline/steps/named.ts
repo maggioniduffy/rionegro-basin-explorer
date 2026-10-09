@@ -1,9 +1,26 @@
 /**
  * pipeline:named — trace the named rivers of pipeline/names.json and aggregate
- * their metrics.
+ * their metrics. Runs after pipeline:ign-match.
  *
- * Each river runs from its mouth reach upstream, at every confluence taking the
- * largest-area branch that is not another named river's mouth (traceNamedRiver).
+ * A river runs where its IGN name runs (owner rule, 2026-10-09; IGN is the authority).
+ * From its mouth reach upstream it follows the reaches whose IGN line carries the river's
+ * name (pipeline:ign-match cover.parquet; traceAlongName in pipeline/lib/name-trace.ts):
+ *   - a reach is on the line when the name covers at least line.minCoverage of it
+ *     (pipeline/ign.config.json); the part of a reach inside a HydroLAKES lake is left out
+ *     of that share, since IGN draws no line in lakes;
+ *   - reaches with less coverage, or none (at most line.maxGap in a row), are kept only
+ *     between two reaches on the line; reaches within bufferM of a lake are not counted
+ *     (a river crosses its reservoirs and lakes);
+ *   - at a fork it follows the IGN line, not the larger area; it never enters another
+ *     approved river's mouth;
+ *   - the mouth end is never trimmed: leading reaches without the name (a reservoir, no
+ *     IGN line) are kept up to the first reach on the line.
+ * It ends on the last reach on the line. A `sourceReach` in names.json (with
+ * `sourceEvidence`) replaces the trace by the path from that reach down to the mouth; it is
+ * for cases the rule cannot see, and the report flags it. The report compares each river
+ * with the area trace (largest branch upstream, traceNamedRiver: the candidate stem that
+ * pipeline:ign-match votes on) and with the owner's source list (`sourceCheck`).
+ *
  * Metrics, all traceable to source fields (per-field provenance in each document):
  *   lengthKm            sum of HydroRIVERS LENGTH_KM along the path
  *   mouth.elevationM    RiverATLAS ele_mt_cmn of the mouth reach (minimum elevation of
@@ -33,13 +50,26 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb, type Row } from "../lib/duckdb";
 import { traceNamedRiver, upstreamIndex } from "../lib/graph";
+import { hydroLakesBbox } from "../lib/hydrolakes";
+import { ALBERS } from "../lib/ign";
+import type { MatchConfig } from "../lib/ign-match";
 import { requireInput } from "../lib/inputs";
-import { riverSlug } from "../lib/names";
+import { type ReachKind, traceAlongName } from "../lib/name-trace";
+import { nameKey, riverSlug } from "../lib/names";
 import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
 /** Summed drop vs source − mouth differences above this are listed for review. */
 const ELEVATION_CHECK_M = 100;
+/** A reach at least this share inside lakes has no meaningful IGN coverage (all lake). */
+const ALL_LAKE = 0.999;
+/** Lakes reported near a river's source, up to this distance (metres). */
+const SOURCE_LAKE_REPORT_M = 1500;
+
+/** The owner's expectation for where a river starts (owner, 2026-10-09), checked in the report. */
+type SourceCheck = { evidence: string } & (
+  { lakeOutlet: number[] } | { notCutAtLake: true } | { confluence: string[] }
+);
 
 interface NameEntry {
   name: string;
@@ -52,12 +82,17 @@ interface NameEntry {
   mouthReach: number;
   confidence: "strong" | "weak";
   evidence: string;
+  /** Override: the river starts at this reach (path down to the mouth), with evidence. */
+  sourceReach?: number;
+  sourceEvidence?: string;
+  sourceCheck?: SourceCheck;
 }
 
 const round = (x: number, digits = 1) => Number(x.toFixed(digits));
 
 const PROVENANCE = {
-  lengthKm: "HydroRIVERS v1.0 LENGTH_KM, summed along the traced path",
+  lengthKm:
+    "HydroRIVERS v1.0 LENGTH_KM, summed along the traced path (the reaches along the river's IGN line, pipeline:named)",
   "mouth.elevationM":
     "RiverATLAS v1.0 ele_mt_cmn of the mouth reach (EarthEnv-DEM90)",
   "source.elevationM":
@@ -91,8 +126,14 @@ async function main() {
       rivers: NameEntry[];
     }
   ).rivers;
+  const cfg = JSON.parse(
+    await readFile(`${ROOT}/pipeline/ign.config.json`, "utf8"),
+  ) as MatchConfig;
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const atlasFile = requireInput(workPath("rivers/riveratlas_basin.parquet"));
+  // IGN name coverage per reach (pipeline:ign-match); run it before this step.
+  const coverFile = requireInput(workPath("ign-match/cover.parquet"));
+  const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
   const outDir = workPath("named");
   await mkdir(outDir, { recursive: true });
   await mkdir(OUT_DIR, { recursive: true });
@@ -128,23 +169,162 @@ async function main() {
     }
     const slugs = names.map(riverSlug);
     const claimed = new Set(names.map((n) => n.mouthReach));
+    const area = (id: number) => num(id, "UPLAND_SKM");
+
+    // Lakes: share of each reach inside HydroLAKES polygons, for reaches within bufferM.
+    const lakesFile = await hydroLakesBbox(db);
+    const toAlbers = (g: string) =>
+      `ST_Transform(${g}, 'EPSG:4326', ${lit(ALBERS)}, always_xy := true)`;
+    await db.conn.run(`
+      CREATE TABLE lk AS
+      SELECT Hylak_id AS hylak_id, ${toAlbers("ST_MakeValid(geom)")} AS g
+      FROM read_parquet(${lit(lakesFile)})`);
+    await db.conn.run(
+      `CREATE TABLE lk_all AS SELECT ST_Union_Agg(g) AS g FROM lk`,
+    );
+    await db.conn.run(`
+      CREATE TABLE ra AS
+      SELECT HYRIV_ID, ${toAlbers("geom")} AS g,
+             ${toAlbers("ST_StartPoint(geom)")} AS start_a
+      FROM ${lit(reachesFile)} WHERE network = 'connected'`);
+    const lakeRows = await db.all(`
+      SELECT r.HYRIV_ID AS id,
+             ST_Length(ST_Intersection(r.g, l.g)) / nullif(ST_Length(r.g), 0) AS share
+      FROM ra r, lk_all l WHERE ST_DWithin(r.g, l.g, ${cfg.bufferM})`);
+    const lakeShare = new Map(
+      lakeRows.map((r) => [Number(r.id), Number(r.share ?? 0)]),
+    );
+
+    // Coverage of each river's own IGN name.
+    const keyOf = new Map(names.map((n, i) => [slugs[i]!, nameKey(n.name)]));
+    const coverRows = await db.all(`
+      SELECT HYRIV_ID AS id, name_key, coverage FROM read_parquet(${lit(coverFile)})
+      WHERE name_key IN (${[...new Set(keyOf.values())].map(lit).join(",")})`);
+    const coverage = new Map(
+      coverRows.map((r) => [`${r.id}|${r.name_key}`, Number(r.coverage)]),
+    );
+    const shownRows = await db.all(`
+      SELECT HYRIV_ID AS id, name_key FROM read_parquet(${lit(ignFile)}) WHERE display`);
+    const shownKey = new Map(
+      shownRows.map((r) => [Number(r.id), String(r.name_key)]),
+    );
+
+    // The share of a reach the IGN line can cover: its part outside lakes.
+    const lineCoverage = (id: number, key: string) => {
+      const c = coverage.get(`${id}|${key}`) ?? 0;
+      const share = lakeShare.get(id) ?? 0;
+      return share >= ALL_LAKE ? c : Math.min(1, c / (1 - share));
+    };
+    const kindFor =
+      (mouth: number, key: string) =>
+      (id: number): ReachKind => {
+        if (id !== mouth && claimed.has(id)) return "blocked";
+        const c = lineCoverage(id, key);
+        if (c >= cfg.line.minCoverage) return "strong";
+        if (c >= cfg.low.minCoverage) return "weak";
+        return lakeShare.has(id) ? "lake" : "gap";
+      };
+    /** Path from `source` down to `mouth` along NEXT_DOWN, mouth first. */
+    const pathDown = (source: number, mouth: number, slug: string) => {
+      const path = [source];
+      for (let id = source; id !== mouth;) {
+        id = num(id, "NEXT_DOWN");
+        if (!byId.has(id) || path.length > byId.size)
+          throw new Error(
+            `${slug}: sourceReach ${source} does not drain to the mouth`,
+          );
+        if (id !== mouth && claimed.has(id))
+          throw new Error(
+            `${slug}: sourceReach ${source} crosses another river's mouth ${id}`,
+          );
+        path.push(id);
+      }
+      return path.reverse();
+    };
 
     const riverOf = new Map<number, string>();
     const overlaps: { reach: number; rivers: string[] }[] = [];
     const traced = names.map((n, i) => {
       const slug = slugs[i]!;
-      const path = traceNamedRiver(
-        index,
-        (id) => num(id, "UPLAND_SKM"),
-        n.mouthReach,
-        claimed,
-      );
+      const key = keyOf.get(slug)!;
+      const areaPath = traceNamedRiver(index, area, n.mouthReach, claimed);
+      if (n.sourceReach !== undefined && !n.sourceEvidence?.trim())
+        throw new Error(`${slug}: sourceReach needs sourceEvidence`);
+      const path =
+        n.sourceReach !== undefined
+          ? pathDown(n.sourceReach, n.mouthReach, slug)
+          : traceAlongName(
+              n.mouthReach,
+              {
+                upstream: (id) => index.get(id) ?? [],
+                kind: kindFor(n.mouthReach, key),
+                evidence: (id) =>
+                  num(id, "LENGTH_KM") * (coverage.get(`${id}|${key}`) ?? 0),
+                area,
+              },
+              { maxGap: cfg.line.maxGap, unlimitedLeadingGap: true },
+            ).path;
       for (const id of path) {
         const other = riverOf.get(id);
         if (other) overlaps.push({ reach: id, rivers: [other, slug] });
         else riverOf.set(id, slug);
       }
-      return { n, slug, path };
+      return { n, slug, key, path, areaPath };
+    });
+
+    // Lakes near each source reach's upstream end (for the source kind and the report).
+    const sourceIds = traced.map((t) => t.path[t.path.length - 1]!);
+    const nearRows = await db.all(`
+      SELECT r.HYRIV_ID AS id, l.hylak_id, ST_Distance(r.start_a, l.g) AS d
+      FROM ra r JOIN lk l ON ST_DWithin(r.start_a, l.g, ${SOURCE_LAKE_REPORT_M})
+      WHERE r.HYRIV_ID IN (${sourceIds.join(",")})
+      ORDER BY d, l.hylak_id`);
+    const lakesNear = new Map<
+      number,
+      { hylakId: number; distanceM: number }[]
+    >();
+    for (const r of nearRows) {
+      const list = lakesNear.get(Number(r.id)) ?? [];
+      list.push({
+        hylakId: Number(r.hylak_id),
+        distanceM: Math.round(Number(r.d)),
+      });
+      lakesNear.set(Number(r.id), list);
+    }
+    const atLake = (id: number) =>
+      (lakesNear.get(id) ?? []).filter((l) => l.distanceM <= cfg.bufferM);
+
+    // Receiving water: the first approved-river reach downstream of the mouth. Since rivers
+    // are trimmed to their IGN line, a mouth can drain into reaches on no river (a lake the
+    // trimmed river no longer crosses, or IGN's own name running on below an approved
+    // mouth); those are walked through and reported.
+    const receiving = (mouth: number) => {
+      const between: number[] = [];
+      for (let id = num(mouth, "NEXT_DOWN"); ; id = num(id, "NEXT_DOWN")) {
+        if (id === 0) return { flowsInto: "sea", between };
+        const river = riverOf.get(id);
+        if (river) return { flowsInto: river, between };
+        if (!byId.has(id) || between.length > byId.size)
+          return { flowsInto: "unnamed", between };
+        between.push(id);
+      }
+    };
+    const throughUnnamed = traced.flatMap(({ n, slug, key }) => {
+      const { flowsInto, between } = receiving(n.mouthReach);
+      if (between.length === 0) return [];
+      const names = [...new Set(between.map((id) => shownKey.get(id) ?? null))];
+      return [
+        {
+          river: slug,
+          flowsInto,
+          reaches: between.length,
+          km: round(between.reduce((s, id) => s + num(id, "LENGTH_KM"), 0)),
+          inOrNearLakes: between.filter((id) => lakeShare.has(id)).length,
+          ignNames: names,
+          // IGN's own name runs on below the approved mouth: the mouth may be too high.
+          ownNameBelowMouth: names.includes(key),
+        },
+      ];
     });
 
     const elevationWarnings: Record<string, unknown>[] = [];
@@ -165,9 +345,15 @@ async function main() {
           summedDropM: Math.round(summedDropM),
         });
       }
-      // A trace ends at a headwater, or where every branch is another named river.
+      // A trace ends at a headwater, at a lake outlet (its upstream end within bufferM of a
+      // lake), or at a HydroRIVERS confluence (where the IGN name ends, or every branch is
+      // another named river).
       const sourceKind =
-        (index.get(head) ?? []).length === 0 ? "headwater" : "confluence";
+        (index.get(head) ?? []).length === 0
+          ? "headwater"
+          : atLake(head).length > 0
+            ? "lake"
+            : "confluence";
       const lengthWhere = (pred: (r: Row) => boolean) =>
         path
           .filter((id) => pred(byId.get(id)!))
@@ -176,8 +362,7 @@ async function main() {
         (r) => Number(r.predcat1) === 1 && r.predcat1 !== null,
       );
       const unknownKm = lengthWhere((r) => r.predcat1 === null);
-      const down = num(mouth, "NEXT_DOWN");
-      const flowsInto = down === 0 ? "sea" : (riverOf.get(down) ?? "unnamed");
+      const { flowsInto } = receiving(mouth);
       const m = byId.get(mouth)!;
       const extent = (field: string, pick: (...v: number[]) => number) =>
         round(pick(...path.map((id) => num(id, field))), 5);
@@ -252,6 +437,66 @@ async function main() {
       docs.map((d) => JSON.stringify(d)).join("\n") + "\n",
     );
 
+    // Trace against the area trace, and the owner's source list.
+    const kmOf = (ids: number[]) =>
+      round(ids.reduce((s, id) => s + num(id, "LENGTH_KM"), 0));
+    const trace = traced.map(({ n, slug, key, path, areaPath }) => {
+      const head = path[path.length - 1]!;
+      const kind = kindFor(n.mouthReach, key);
+      const firstOnLine = path.findIndex((id) => kind(id) === "strong");
+      return {
+        id: slug,
+        areaTrace: {
+          lengthKm: kmOf(areaPath),
+          reaches: areaPath.length,
+          sourceReach: areaPath[areaPath.length - 1],
+        },
+        lengthKm: kmOf(path),
+        reaches: path.length,
+        sourceReach: head,
+        sourceOnTheLine: kind(head) === "strong",
+        // Reaches kept at the mouth before the first reach on the line (never trimmed).
+        leadingWithoutLine: firstOnLine === -1 ? path.length : firstOnLine,
+        trimmedKm: round(kmOf(areaPath) - kmOf(path)),
+        lakesAtSource: lakesNear.get(head) ?? [],
+        override:
+          n.sourceReach !== undefined
+            ? { sourceReach: n.sourceReach, evidence: n.sourceEvidence }
+            : null,
+      };
+    });
+    const sourceList = traced
+      .filter(({ n }) => n.sourceCheck)
+      .map(({ n, slug, path }) => {
+        const c = n.sourceCheck!;
+        const head = path[path.length - 1]!;
+        const lakes = atLake(head);
+        let expected: string;
+        let agrees: boolean;
+        if ("lakeOutlet" in c) {
+          expected = `outlet of HydroLAKES ${c.lakeOutlet.join(" or ")}`;
+          agrees = lakes.some((l) => c.lakeOutlet.includes(l.hylakId));
+        } else if ("notCutAtLake" in c) {
+          expected = "not cut at a lake";
+          agrees = lakes.length === 0;
+        } else {
+          expected = `confluence of ${c.confluence.join(" and ")}`;
+          const upKeys = new Set(
+            (index.get(head) ?? []).map((id) => shownKey.get(id)),
+          );
+          agrees = c.confluence.every((name) => upKeys.has(nameKey(name)));
+        }
+        return {
+          river: slug,
+          expected,
+          sourceReach: head,
+          lakesWithinBufferM: lakes,
+          agrees,
+          byOverride: n.sourceReach !== undefined,
+          evidence: c.evidence,
+        };
+      });
+
     const checks = {
       uniqueSlugs: new Set(slugs).size === slugs.length,
       noOverlappingReaches: overlaps.length === 0,
@@ -260,6 +505,12 @@ async function main() {
       ),
       oneRiverReachesTheSea:
         docs.filter((d) => d.flowsInto === "sea").length === 1,
+      // The IGN line rule: every river (without an override) ends on a reach on its line.
+      everySourceOnTheLine: trace.every(
+        (t) => t.override !== null || t.sourceOnTheLine,
+      ),
+      mouthsKept: traced.every(({ n, path }) => path[0] === n.mouthReach),
+      ownerSourceListAgrees: sourceList.every((x) => x.agrees),
     };
     await writeReport("named", {
       ok: Object.values(checks).every(Boolean),
@@ -277,6 +528,29 @@ async function main() {
         population: d.watershed.population,
       })),
       namedKm: round(docs.reduce((s, d) => s + d.lengthKm, 0)),
+      line: cfg.line,
+      trace,
+      ownerSourceList: sourceList,
+      throughUnnamedToReceivingRiver: throughUnnamed,
+      // Rivers that need a sourceReach override, or disagree with the owner's list.
+      flagged: [
+        ...trace
+          .filter((t) => t.override !== null)
+          .map((t) => ({
+            river: t.id,
+            reason: "sourceReach override",
+            ...t.override,
+          })),
+        ...sourceList
+          .filter((x) => !x.agrees)
+          .map((x) => ({ river: x.river, reason: `disagrees: ${x.expected}` })),
+        ...throughUnnamed
+          .filter((x) => x.ownNameBelowMouth)
+          .map((x) => ({
+            river: x.river,
+            reason: `its IGN name continues ${x.km} km below the approved mouth reach, on no river`,
+          })),
+      ],
       overlaps: overlaps.slice(0, 20),
       elevationWarnings,
       outputs: [rel(ndjsonFile), rel(mappingFile)],

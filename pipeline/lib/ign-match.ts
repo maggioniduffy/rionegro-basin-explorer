@@ -20,6 +20,12 @@ export interface MatchConfig {
   riverNameMinEvidenceKm: number;
   /** Unmatched IGN pieces shorter than this (metres) are not kept in the detail layer. */
   minDetailPieceM: number;
+  /**
+   * Following an IGN line (pipeline:named, pipeline:ign-streams): a reach is on the line
+   * when its coverage by the name is at least minCoverage; reaches below it and unnamed
+   * reaches (at most maxGap in a row) are kept only between two reaches on the line.
+   */
+  line: { minCoverage: number; maxGap: number };
 }
 
 export interface Candidate {

@@ -13,6 +13,7 @@ const cfg: MatchConfig = {
   riverNameMinShare: 0.6,
   riverNameMinEvidenceKm: 50,
   minDetailPieceM: 500,
+  line: { minCoverage: 0.5, maxGap: 2 },
 };
 const c = (key: string, coverage: number) => ({ key, coverage });
 

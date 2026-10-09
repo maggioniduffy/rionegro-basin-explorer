@@ -1,5 +1,5 @@
 {
-  "$comment": "Hand-approved river names (HydroRIVERS has none). Keyed by mouth reach (HYRIV_ID). Names use IGN spelling (FUENTE: Instituto Geográfico Nacional de la República Argentina), chosen by the owner on 2026-10-01 over the earlier OpenStreetMap spelling; pipeline:ign-match's stem vote (data/work/ign-match/report.json) confirms the IGN name along each river's main stem. `slug` is the river's id (URLs, Mongo _id) and never changes once published, even if the name does; `aliases` are former names that search still finds. shortName/type are the name split at its first word. Approved by the project owner on 2026-09-30, IGN names on 2026-10-01; nine AIC subcuencas added on 2026-10-02.",
+  "$comment": "Hand-approved river names (HydroRIVERS has none). Keyed by mouth reach (HYRIV_ID). Names use IGN spelling (FUENTE: Instituto Geográfico Nacional de la República Argentina), chosen by the owner on 2026-10-01 over the earlier OpenStreetMap spelling; pipeline:ign-match's stem vote (data/work/ign-match/report.json) confirms the IGN name along each river's main stem. `slug` is the river's id (URLs, Mongo _id) and never changes once published, even if the name does; `aliases` are former names that search still finds. shortName/type are the name split at its first word. Approved by the project owner on 2026-09-30, IGN names on 2026-10-01; nine AIC subcuencas added on 2026-10-02. Owner rule (2026-10-09): a river runs where its IGN name runs (pipeline:named traces it along the IGN line); `sourceCheck` is the owner's expectation for where it starts (lake outlet by HydroLAKES id, not cut at a lake, or a confluence of IGN names), checked in data/work/named/report.json; `sourceReach` (with `sourceEvidence`) overrides the trace where the rule cannot see the IGN line, and is flagged in the report.",
   "rivers": [
     {
       "name": "Río Negro",
@@ -9,7 +9,9 @@
       "aliases": [],
       "mouthReach": 61560077,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #1, 2026-09-30); IGN name 'Río Negro' on 100% of the 711 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #1, 2026-09-30); IGN name 'Río Negro' on 100% of the 711 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
+      "sourceReach": 61546311,
+      "sourceEvidence": "IGN 'Río Negro' covers the stem up to the Limay–Neuquén confluence (the area trace's source, 61546311). The IGN line rule stops at 61552568 because two runs of three reaches (61552469–61552437 and 61547097–61547064) have no IGN line within the 250 m buffer: IGN's Río Negro line runs 290–970 m from them across the braided valley (measured 2026-10-09, Albers). Override by the coding agent, 2026-10-09; flagged for the owner."
     },
     {
       "name": "Río Limay",
@@ -19,7 +21,11 @@
       "aliases": [],
       "mouthReach": 61546258,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #3, 2026-09-30); IGN name 'Río Limay' on 95% of the 555 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #3, 2026-09-30); IGN name 'Río Limay' on 95% of the 555 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
+      "sourceCheck": {
+        "lakeOutlet": [990],
+        "evidence": "owner, 2026-10-09: starts at the outlet of Lago Nahuel Huapi (HydroLAKES 990)"
+      }
     },
     {
       "name": "Río Neuquén",
@@ -29,7 +35,11 @@
       "aliases": [],
       "mouthReach": 61546228,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #7, 2026-09-30); IGN name 'Río Neuquén' on 96% of the 598 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 4/5 sample points along the mouth segment (pipeline:osm-names, candidate #7, 2026-09-30); IGN name 'Río Neuquén' on 96% of the 598 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
+      "sourceCheck": {
+        "notCutAtLake": true,
+        "evidence": "owner, 2026-10-09: the Neuquén is not cut at its lakes"
+      }
     },
     {
       "name": "Río Collón Curá",
@@ -49,7 +59,11 @@
       "aliases": [],
       "mouthReach": 61541396,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #15, 2026-09-30); IGN name 'Río Agrio' on 100% of the 245 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 5/5 sample points along the mouth segment (pipeline:osm-names, candidate #15, 2026-09-30); IGN name 'Río Agrio' on 100% of the 245 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
+      "sourceCheck": {
+        "notCutAtLake": true,
+        "evidence": "owner, 2026-10-09: the Agrio is not cut at its lakes"
+      }
     },
     {
       "name": "Río Aluminé",
@@ -59,7 +73,11 @@
       "aliases": [],
       "mouthReach": 61552346,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #19, 2026-09-30); IGN name 'Río Aluminé' on 93% of the 185 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #19, 2026-09-30); IGN name 'Río Aluminé' on 93% of the 185 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
+      "sourceCheck": {
+        "lakeOutlet": [10567],
+        "evidence": "owner, 2026-10-09: starts at the outlet of the lower Aluminé lake (HydroLAKES 10567)"
+      }
     },
     {
       "name": "Río Catán Lil",
@@ -79,7 +97,11 @@
       "aliases": ["Río Chimehuin"],
       "mouthReach": 61553597,
       "confidence": "strong",
-      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #26, 2026-09-30); IGN name 'Río Chimehuín' on 76% of the 127 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01); name changed from 'Río Chimehuin' (owner, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 3/5 sample points along the mouth segment (pipeline:osm-names, candidate #26, 2026-09-30); IGN name 'Río Chimehuín' on 76% of the 127 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01); name changed from 'Río Chimehuin' (owner, 2026-10-01)",
+      "sourceCheck": {
+        "lakeOutlet": [984],
+        "evidence": "owner, 2026-10-09: starts at the outlet of Lago Huechulafquen (HydroLAKES 984); Río Paimún and the Río Blanco above the lake are not the Chimehuín"
+      }
     },
     {
       "name": "Río Caleufú",
@@ -89,7 +111,11 @@
       "aliases": [],
       "mouthReach": 61555946,
       "confidence": "weak",
-      "evidence": "OpenStreetMap waterway name at 2/5 sample points along the mouth segment (pipeline:osm-names, candidate #30, 2026-09-30); IGN name 'Río Caleufú' on 62% of the 120 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)"
+      "evidence": "OpenStreetMap waterway name at 2/5 sample points along the mouth segment (pipeline:osm-names, candidate #30, 2026-09-30); IGN name 'Río Caleufú' on 62% of the 120 km stem that has an IGN candidate (pipeline:ign-match, 2026-10-01)",
+      "sourceCheck": {
+        "confluence": ["Río Filo Hua Hum", "Río Meliquina"],
+        "evidence": "owner, 2026-10-09: starts at the confluence of Río Filo Hua Hum and Río Meliquina (the Meliquina comes out of a lake)"
+      }
     },
     {
       "name": "Río Pichi Leufú",
@@ -159,7 +185,11 @@
       "aliases": [],
       "mouthReach": 61558139,
       "confidence": "strong",
-      "evidence": "IGN name 'Río Traful' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02; the Río Traful is the outflow of Lago Traful (the Río Pichi Traful is a separate inflow) and flows into the Limay (owner)"
+      "evidence": "IGN name 'Río Traful' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02; the Río Traful is the outflow of Lago Traful (the Río Pichi Traful is a separate inflow) and flows into the Limay (owner)",
+      "sourceCheck": {
+        "lakeOutlet": [10593],
+        "evidence": "owner, 2026-10-09: starts at the outlet of Lago Traful (HydroLAKES 10593)"
+      }
     },
     {
       "name": "Río Varvarco",
@@ -169,7 +199,11 @@
       "aliases": [],
       "mouthReach": 61528155,
       "confidence": "strong",
-      "evidence": "IGN name 'Río Varvarco' on the next reach upstream (61528086, high confidence); IGN labels the mouth reach 61528155 'Río Neuquén', but the confluence with the Neuquén, at the town of Varvarco, is at its downstream end (owner, from imagery, 2026-10-02; pipeline/ign-overrides.json); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+      "evidence": "IGN name 'Río Varvarco' on the next reach upstream (61528086, high confidence); IGN labels the mouth reach 61528155 'Río Neuquén', but the confluence with the Neuquén, at the town of Varvarco, is at its downstream end (owner, from imagery, 2026-10-02; pipeline/ign-overrides.json); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02",
+      "sourceCheck": {
+        "lakeOutlet": [10536, 122704],
+        "evidence": "owner, 2026-10-09: starts at the outlet of HydroLAKES 10536 or 122704"
+      }
     },
     {
       "name": "Río Nahueve",
@@ -179,7 +213,11 @@
       "aliases": [],
       "mouthReach": 61531633,
       "confidence": "weak",
-      "evidence": "IGN name 'Río Nahueve' on the mouth reach, low confidence (coverage 49% vs 19% for 'Río Neuquén': the mouth sits at the confluence; pipeline:ign-match); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02 as weak"
+      "evidence": "IGN name 'Río Nahueve' on the mouth reach, low confidence (coverage 49% vs 19% for 'Río Neuquén': the mouth sits at the confluence; pipeline:ign-match); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02 as weak",
+      "sourceCheck": {
+        "lakeOutlet": [122763],
+        "evidence": "owner, 2026-10-09: starts at the outlet of HydroLAKES 122763"
+      }
     },
     {
       "name": "Río Lileo",
@@ -209,7 +247,13 @@
       "aliases": [],
       "mouthReach": 61551996,
       "confidence": "strong",
-      "evidence": "IGN name 'Río Malleo' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+      "evidence": "IGN name 'Río Malleo' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02",
+      "sourceReach": 61550450,
+      "sourceEvidence": "IGN 'Río Malleo' covers 86% of 61550450, whose upstream reach 61550075 lies mostly inside HydroLAKES 10575 (the owner's source lake). Between 61550450 and 61550632 three reaches (61550607, 61550606, 61550476) have IGN's Río Malleo line 51–1,062 m away, beyond the 250 m buffer, so the rule instead takes the 61550608 branch (Río Malleo 0.94; the reach above it, 61550507, 0.32). Override by the coding agent, 2026-10-09; flagged for the owner.",
+      "sourceCheck": {
+        "lakeOutlet": [10575],
+        "evidence": "owner, 2026-10-09: starts at the outlet of HydroLAKES 10575"
+      }
     },
     {
       "name": "Río Quillén",
@@ -219,7 +263,11 @@
       "aliases": [],
       "mouthReach": 61548783,
       "confidence": "strong",
-      "evidence": "IGN name 'Río Quillén' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+      "evidence": "IGN name 'Río Quillén' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02",
+      "sourceCheck": {
+        "lakeOutlet": [10574],
+        "evidence": "owner, 2026-10-09: starts at the outlet of Lago Quillén (HydroLAKES 10574)"
+      }
     },
     {
       "name": "Río Pulmarí",
@@ -229,7 +277,11 @@
       "aliases": [],
       "mouthReach": 61547114,
       "confidence": "strong",
-      "evidence": "IGN name 'Río Pulmarí' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02"
+      "evidence": "IGN name 'Río Pulmarí' on the mouth reach (pipeline:ign-match, high confidence); listed as an AIC subcuenca (Estadísticas Climáticas e Hidrológicas 2001–2010, https://www.aic.gob.ar/sitio/archivos/201801/parte%201.pdf); approved by the project owner on 2026-10-02",
+      "sourceCheck": {
+        "lakeOutlet": [123016],
+        "evidence": "owner, 2026-10-09: starts at the outlet of HydroLAKES 123016"
+      }
     },
     {
       "name": "Río Litrán",

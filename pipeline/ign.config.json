@@ -1,5 +1,5 @@
 {
-  "$comment": "Thresholds of pipeline:ign-match. PROVISIONAL (2026-10-01): chosen before looking at the score distribution, to be calibrated against the 15 approved rivers and the report's distributions, then recorded in DECISSIONS.md. coverage = fraction of a reach within bufferM of the lines carrying one IGN name; margin = coverage of the best name minus the runner-up. bufferM 250 follows the IGN gate (HydroRIVERS comes from a coarse grid, so positions are offset).",
+  "$comment": "Thresholds of pipeline:ign-match. PROVISIONAL (2026-10-01): chosen before looking at the score distribution, to be calibrated against the 15 approved rivers and the report's distributions, then recorded in DECISSIONS.md. coverage = fraction of a reach within bufferM of the lines carrying one IGN name; margin = coverage of the best name minus the runner-up. bufferM 250 follows the IGN gate (HydroRIVERS comes from a coarse grid, so positions are offset). line (owner rule, 2026-10-09): an approved river (pipeline:named) and an IGN stream (pipeline:ign-streams) run only where the IGN line of their name runs: a reach is on the line when its coverage is at least line.minCoverage; reaches below it, and unnamed reaches (at most line.maxGap in a row), are kept only between two such reaches. minCoverage 0.5: see pipeline/README.md (pipeline:named) for the calibration; ign-streams reports a sweep of it.",
   "bufferM": 250,
   "high": { "minCoverage": 0.8, "minMargin": 0.3 },
   "medium": { "minCoverage": 0.3, "minMargin": 0.3 },
@@ -7,6 +7,7 @@
   "riverNameMinShare": 0.6,
   "riverNameMinEvidenceKm": 50,
   "minDetailPieceM": 500,
+  "line": { "minCoverage": 0.5, "maxGap": 2 },
   "water": {
     "lakeNameMinOverlap": 0.5,
     "extraLakeMaxCoverage": 0.5,

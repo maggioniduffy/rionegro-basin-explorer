@@ -6,13 +6,20 @@
  *   data/work/rivers/reaches.parquet       HYRIV_ID, NEXT_DOWN, LENGTH_KM, geom (bbox)
  *   data/work/named/river_reaches.parquet  HYRIV_ID → river (approved rivers, pipeline:named)
  *   data/work/ign-match/reach_ign.parquet  HYRIV_ID → name, name_key, display
+ *   data/work/ign-match/cover.parquet      HYRIV_ID, name_key → coverage
  *   pipeline/names.json                    approved river names and aliases (left out)
+ *   pipeline/ign.config.json               line.minCoverage, line.maxGap
  * A reach carries an IGN name when `display` is true (export's `ign IS NOT NULL`).
  *
- * Same-name reaches joined along NEXT_DOWN through at most MAX_GAP unnamed reaches form
- * one stream (pipeline/lib/streams.ts); the unnamed reaches in between are absorbed.
+ * 1. Same-name reaches joined along NEXT_DOWN through at most maxGap unnamed reaches form
+ *    one group (detectStreams); the unnamed reaches in between are absorbed.
+ * 2. Each group keeps only the reaches the IGN line runs along (followIgnLines, owner
+ *    2026-10-09): ends with coverage below line.minCoverage are pruned until every end is
+ *    on the line, so reaches below it stay only between two reaches on the line, and at a
+ *    fork only branches the line runs along stay. The rest of the group is dropped (export
+ *    hides their IGN name).
  *
- * Outputs in data/work/ign-streams/: streams.json and report.json.
+ * Outputs in data/work/ign-streams/: streams.json, dropped.json and report.json.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
@@ -20,16 +27,19 @@ import { requireInput } from "../lib/inputs";
 import { nameKey } from "../lib/names";
 import { ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
+import type { MatchConfig } from "../lib/ign-match";
 import {
   type DetectResult,
+  type LineReach,
   type StreamReach,
   detectStreams,
+  followIgnLines,
 } from "../lib/streams";
 
-/** Most unnamed reaches allowed between two parts of the same stream (project decision). */
-export const MAX_GAP = 2;
-/** Gap tolerances compared in the report, so the choice of MAX_GAP is documented. */
+/** Gap tolerances compared in the report, so the choice of line.maxGap is documented. */
 const COMPARED_GAPS = [0, 1, 2];
+/** Coverage thresholds compared in the report, so the choice of line.minCoverage is documented. */
+const COMPARED_COVERAGE = [0.3, 0.4, 0.5, 0.6];
 /** Single-reach streams shorter than this are listed for review. */
 const SHORT_KM = 1;
 /** Entries kept per list in the report. */
@@ -45,12 +55,19 @@ interface Reach {
   river: string | null;
   name: string | null;
   key: string | null;
+  /** Coverage of the shown name on this reach (0 when none, or for a "name" override). */
+  coverage: number;
 }
 
 async function main() {
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const mappingFile = requireInput(workPath("named/river_reaches.parquet"));
   const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
+  const coverFile = requireInput(workPath("ign-match/cover.parquet"));
+  const { line } = JSON.parse(
+    await readFile(`${ROOT}/pipeline/ign.config.json`, "utf8"),
+  ) as MatchConfig;
+  const MAX_GAP = line.maxGap;
   const approvedKeys = new Set(
     (
       JSON.parse(await readFile(`${ROOT}/pipeline/names.json`, "utf8")) as {
@@ -70,10 +87,13 @@ async function main() {
              ST_XMax(r.geom) AS xmax, ST_YMax(r.geom) AS ymax,
              m.river,
              CASE WHEN i.display THEN i.name END AS name,
-             CASE WHEN i.display THEN i.name_key END AS name_key
+             CASE WHEN i.display THEN i.name_key END AS name_key,
+             c.coverage
       FROM ${lit(reachesFile)} r
       LEFT JOIN read_parquet(${lit(mappingFile)}) m USING (HYRIV_ID)
       LEFT JOIN read_parquet(${lit(ignFile)}) i USING (HYRIV_ID)
+      LEFT JOIN read_parquet(${lit(coverFile)}) c
+        ON c.HYRIV_ID = r.HYRIV_ID AND c.name_key = i.name_key AND i.display
       ORDER BY r.HYRIV_ID`);
   } finally {
     db.close();
@@ -86,6 +106,7 @@ async function main() {
     river: r.river == null ? null : String(r.river),
     name: r.name == null ? null : String(r.name),
     key: r.name_key == null ? null : String(r.name_key),
+    coverage: r.coverage == null ? 0 : Number(r.coverage),
   }));
   const byId = new Map(reaches.map((r) => [r.id, r]));
   const input: StreamReach[] = reaches.map((r) => ({
@@ -116,8 +137,45 @@ async function main() {
   const byGap = COMPARED_GAPS.map((n) => summarize(n, detect(n)));
   const result = detect(MAX_GAP);
 
+  // Keep only the reaches the IGN line runs along.
+  const lineReaches = new Map<number, LineReach>(
+    reaches.map((r) => [
+      r.id,
+      { id: r.id, nextDown: r.nextDown, coverage: r.coverage },
+    ]),
+  );
+  const follow = (minCoverage: number) =>
+    followIgnLines(result.streams, lineReaches, { minCoverage });
+  const lines = follow(line.minCoverage);
+  // Groups with no reach on the line at all (every named reach below the threshold).
+  const groupsWithoutLine = (res: typeof lines) => {
+    const covered = new Set(res.streams.flatMap((s) => s.reachIds));
+    return result.streams.filter(
+      (g) => !g.reachIds.some((id) => covered.has(id)),
+    );
+  };
+  const byCoverage = COMPARED_COVERAGE.map((c) => {
+    const res = c === line.minCoverage ? lines : follow(c);
+    return {
+      minCoverage: c,
+      streams: res.streams.length,
+      groupsLost: groupsWithoutLine(res).length,
+      droppedReaches: res.droppedReachIds.length,
+      droppedKm: round(kmOf(res.droppedReachIds)),
+    };
+  });
+  // Group → its streams, for the report (groups split by the line, groups lost).
+  const groupOfReach = new Map<number, string>();
+  for (const g of result.streams)
+    for (const id of g.reachIds) groupOfReach.set(id, g.id);
+  const streamsPerGroup = new Map<string, number>();
+  for (const s of lines.streams) {
+    const g = groupOfReach.get(s.mouth)!;
+    streamsPerGroup.set(g, (streamsPerGroup.get(g) ?? 0) + 1);
+  }
+
   // Stream documents.
-  const streams = result.streams.map((s) => {
+  const streams = lines.streams.map((s) => {
     const members = s.reachIds.map((id) => byId.get(id)!);
     const names = new Map<string, number>();
     for (const id of s.namedReachIds) {
@@ -146,6 +204,16 @@ async function main() {
   });
   const streamsFile = `${outDir}/streams.json`;
   await writeFile(streamsFile, JSON.stringify(streams, null, 1) + "\n");
+  // Named reaches left off every IGN line: export hides their IGN name.
+  const droppedFile = `${outDir}/dropped.json`;
+  await writeFile(
+    droppedFile,
+    JSON.stringify(
+      lines.droppedReachIds
+        .filter((id) => byId.get(id)!.key !== null)
+        .map((id) => ({ HYRIV_ID: id, nameKey: byId.get(id)!.key })),
+    ) + "\n",
+  );
 
   // Review lists.
   // Receiving water: walk down from the mouth to the first reach on an approved river or
@@ -195,8 +263,30 @@ async function main() {
   for (const s of streams)
     for (const id of s.reachIds) seen.set(id, (seen.get(id) ?? 0) + 1);
   const absorbedIds = streams.flatMap((s) => s.absorbedReachIds);
+  const droppedSet = new Set(lines.droppedReachIds);
+  const onLine = (id: number) =>
+    (byId.get(id)?.coverage ?? 0) >= line.minCoverage;
+  // A stream's ends (its mouth, and members with no member upstream) must be on the line.
+  const endsOnLine = streams.every((s) => {
+    const members = new Set(s.reachIds);
+    const hasUp = new Set(
+      s.reachIds
+        .map((id) => byId.get(id)!.nextDown)
+        .filter((d) => members.has(d)),
+    );
+    return (
+      onLine(s.mouthReach) &&
+      s.reachIds.every((id) => hasUp.has(id) || onLine(id))
+    );
+  });
   const checks = {
-    everyNamedReachInOneStream: namedIds.every((id) => seen.get(id) === 1),
+    everyNamedReachInOneStreamOrDropped: namedIds.every(
+      (id) => (seen.get(id) ?? 0) + (droppedSet.has(id) ? 1 : 0) === 1,
+    ),
+    everyReachOnTheLineInAStream: namedIds
+      .filter(onLine)
+      .every((id) => seen.get(id) === 1),
+    streamEndsOnTheLine: endsOnLine,
     noReachInTwoStreams: [...seen.values()].every((n) => n === 1),
     noApprovedRiverReachAbsorbed: absorbedIds.every(
       (id) => byId.get(id)?.river === null,
@@ -240,6 +330,34 @@ async function main() {
       absorbed: round(kmOf(absorbedIds)),
     },
     byGap,
+    line: {
+      minCoverage: line.minCoverage,
+      groups: result.streams.length,
+      groupsSplitByTheLine: [...streamsPerGroup.values()].filter((n) => n > 1)
+        .length,
+      groupsLost: (() => {
+        const lost = groupsWithoutLine(lines);
+        return {
+          count: lost.length,
+          list: lost.slice(0, LIST_CAP).map((g) => ({
+            id: g.id,
+            reaches: g.reachIds.length,
+            km: round(kmOf(g.reachIds), 2),
+            maxCoverage: round(
+              Math.max(...g.namedReachIds.map((id) => byId.get(id)!.coverage)),
+              3,
+            ),
+          })),
+        };
+      })(),
+      dropped: {
+        reaches: lines.droppedReachIds.length,
+        km: round(kmOf(lines.droppedReachIds)),
+        named: lines.droppedReachIds.filter((id) => byId.get(id)!.key !== null)
+          .length,
+      },
+      byCoverage,
+    },
     ambiguous: {
       gapClaimedByTwoStreams: {
         count: result.ambiguousGaps.length,
@@ -254,7 +372,7 @@ async function main() {
         list: shortSingles.slice(0, LIST_CAP),
       },
     },
-    outputs: [rel(streamsFile)],
+    outputs: [rel(streamsFile), rel(droppedFile)],
   });
 }
 

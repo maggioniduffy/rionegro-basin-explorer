@@ -13,8 +13,11 @@ Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 Status: Phase 1 is complete (`download` … `export`). Phase 2 adds `mask` and `tiles`; Phase 4 adds
 `subbasins` (run it after `export` and before `tiles`). Phase 5 adds `ign`, `ign-match` and `ign-layers`
 (`ign-gate` is the measurement that preceded it), and `ign-streams` (after `ign-match`, before `export`).
-Order: … `named`, `lakes`, `ign`, `ign-match`, `ign-streams`, `ign-layers`, `export`, `mask`, `subbasins`,
-`tiles`: `export` reads the IGN names from `ign-match`, and `tiles` reads the IGN layers from `ign-layers`.
+Order (2026-10-09): … `osm-names`, `ign`, `ign-match`, `named`, `lakes`, `ign-streams`, `ign-layers`,
+`export`, `mask`, `subbasins`, `tiles`. `named` trims each river to its IGN line, so it runs after
+`ign-match`; `ign-match` no longer reads `named` (its stem vote uses the area trace it computes itself).
+`lakes` and `ign-streams` read the trimmed rivers; `export` reads the IGN names and streams, and `tiles`
+reads the IGN layers from `ign-layers`.
 
 ## Prerequisites
 
@@ -136,10 +139,33 @@ all inside the basin. Places mapped only as areas are not included. Run it after
 ### `npm run pipeline:named`
 
 Traces every river in `pipeline/names.json`, a hand-approved list keyed by mouth reach, with OSM
-evidence for each name. A river starts at its mouth. At each confluence it takes the largest-area
-branch that is not another named river's mouth, and it stops at a headwater or where every branch is
-named (`source.kind = "confluence"`). The step writes `data/out/rivers.ndjson` (committed; seed input)
-and `data/work/named/river_reaches.parquet` (reach → river).
+evidence for each name. Runs after `ign-match`. A river runs where its IGN name runs (owner rule,
+2026-10-09; IGN is the authority): from its mouth upstream it follows the reaches whose IGN line
+carries the river's name (`ign-match/cover.parquet`; `traceAlongName` in `pipeline/lib/name-trace.ts`).
+
+- **On the line:** the name covers at least `line.minCoverage` (0.5, `ign.config.json`) of the reach.
+  The part of a reach inside a HydroLAKES lake is left out of that share (IGN draws no line in lakes),
+  so a lake-outlet reach counts by its part on land.
+- **In between only:** reaches with less coverage, and reaches with none (at most `line.maxGap` = 2 in a
+  row), are kept only between two reaches on the line, never at the upstream end. Reaches within
+  `bufferM` of a lake do not count as gaps, so a river crosses its reservoirs and lakes, and stops at a
+  lake whose far side carries another name (the Chimehuín at Lago Huechulafquen, not up the Paimún).
+- **Forks:** it follows the branch with the most IGN evidence (km × coverage), not the larger area, and
+  never enters another approved river's mouth.
+- **Mouth:** never trimmed; leading reaches without the name (a reservoir) are kept.
+- **Override:** `sourceReach` + `sourceEvidence` in `names.json` replace the trace by the path from that
+  reach to the mouth, for cases the rule cannot see (IGN's line offset beyond the buffer). The report
+  lists them under `flagged`.
+
+`source.kind` is `headwater` (no reach upstream), `lake` (its upstream end within `bufferM` of a lake)
+or `confluence`. Reaches cut off a river go back to the pool for `ign-streams`. The step writes
+`data/out/rivers.ndjson` (committed; seed input) and `data/work/named/river_reaches.parquet`
+(reach → river).
+
+Calibration of `line.minCoverage` (2026-10-09): on the approved rivers the trimmed sources are the same
+at 0.4 and 0.5 (at 0.3 the Comallo and the Malleo end on other upper reaches). Río Currhué's upper reach 61552597, which
+the owner identified as off the IGN line, has 0.37, so the threshold must be above it; 0.5 means the
+line runs along at least half the reach. `ign-streams` reports the effect of 0.3–0.6 on streams.
 
 Each document carries per-field provenance:
 
@@ -153,13 +179,18 @@ Each document carries per-field provenance:
 The sum of per-reach drops is reported only as a diagnostic, because it overstates on flat braided
 reaches.
 
-Checks: unique IDs, no reach in two rivers, every river flows into a named river or the sea, and
-exactly one river reaches the sea.
+Checks: unique IDs, no reach in two rivers, every river flows into a named river or the sea (walking
+through reaches on no river, which the report lists in `throughUnnamedToReceivingRiver`), exactly one
+river reaches the sea, every source (without an override) on its line, every mouth kept, and the
+owner's source list agrees (`sourceCheck` in `names.json`: the outlet of a given HydroLAKES lake, not
+cut at a lake, or a confluence of two IGN names). The report compares each river with the area trace
+(`trace`: km, source reach, km trimmed, lakes at the source).
 
 ### `npm run pipeline:lakes`
 
-HydroLAKES v1.0 polygons that intersect the basin, clipped to it. The first run scans the global
-shapefile once and caches its basin-bbox subset in `data/work/lakes/hydrolakes_bbox.parquet`.
+HydroLAKES v1.0 polygons that intersect the basin, clipped to it. The first run (of this step or
+`named`, `pipeline/lib/hydrolakes.ts`) scans the global shapefile once and caches its basin-bbox subset
+in `data/work/lakes/hydrolakes_bbox.parquet`.
 
 HydroRIVERS draws flow paths across lakes, and this step removes those lines from the map.
 
@@ -189,7 +220,8 @@ the mask hole and the `lakes` outline layer.
 Writes the Phase 1 artifacts:
 
 - `data/out/reaches.ndjson`: one document per reach (gitignored, about 3 MB). Each carries `stream`
-  (its stream id from `ign-streams`, or null; it can be set together with `river`).
+  (its stream id from `ign-streams`, or null; it can be set together with `river`). `ign` is null for
+  the reaches `ign-streams` dropped as off the IGN line (`dropped.json`).
 - `data/out/streams.ndjson`: one document per stream from `ign-streams` (replaces `ign-names.ndjson`):
   name, mouth reach, reach count, `lengthKm` (sum of `LENGTH_KM`), bbox, `subbasin` (first sub-basin
   mouth on the way down from the stream's mouth, see `streamDrainage`), `receivingRiver`, and the
@@ -287,7 +319,10 @@ measured in Albers (approximate to a few percent). Settings: `pipeline/ign.confi
 `pipeline/ign-overrides.json`.
 
 1. **Coverage.** For each reach and IGN name (compared by `nameKey`), the fraction of the reach within
-   `bufferM` (250 m, as the gate) of the lines carrying that name.
+   `bufferM` (250 m, as the gate) of the lines carrying that name. Every pair is written to
+   `cover.parquet` (`named` and `ign-streams` follow lines with it). IGN lines listed under `lines` in
+   `ign-overrides.json` (by IGN `gid`, action `unname`, with a note) lose their name first: an owner fact
+   that contradicts IGN (the line between Lago Currhué Grande and Chico is not the Río Currhué).
 2. **Tiers.** `classify` (`pipeline/lib/ign-match.ts`) turns the best name's coverage and its lead over the
    runner-up into high, medium, low or none. High and medium are shown; low and none are not. An override
    (`accept`, `reject`, `name`) decides a single reach and needs a note.
@@ -295,13 +330,14 @@ measured in Albers (approximate to a few percent). Settings: `pipeline/ign.confi
    `proposed-overrides.json` proposes `accept` where the same name is already shown on the next reach
    upstream or downstream (the river continues through it); copy the entries you agree with into
    `pipeline/ign-overrides.json`. Not accepting costs nothing: a hidden name is the default.
-4. **Approved rivers.** For each river in `names.json`, the IGN name along its main stem is voted by km
-   (over the stem km that has a candidate: IGN draws no line through reservoirs). The report proposes a
-   name; `names.json` holds the approved result.
+4. **Approved rivers.** For each river in `names.json`, the IGN name along its candidate stem (the area
+   trace from its mouth, computed here, since `named` runs later) is voted by km (over the stem km that
+   has a candidate: IGN draws no line through reservoirs). The report proposes a name; `names.json` holds
+   the approved result.
 5. **Detail layer.** The part of each IGN line farther than `bufferM` from every reach, in pieces of at least
    `minDetailPieceM`. Name and length only.
 
-Outputs in `data/work/ign-match/`: `reach_ign.parquet`, `detail.parquet`, `review.json`,
+Outputs in `data/work/ign-match/`: `reach_ign.parquet`, `cover.parquet`, `detail.parquet`, `review.json`,
 `proposed-overrides.json`, `report.json`. Checks: every reach once, coverage within 0..1, near + far km
 equal the IGN total, pieces not shorter than the minimum. The thresholds are provisional; see
 DECISSIONS.md (Phase 5) for how they were calibrated.
@@ -314,18 +350,27 @@ Splits each shown IGN name into real streams (detection only; `export` turns `st
 and `pipeline/names.json`. A reach carries an IGN name when `display` is true; approved river names and
 their aliases are left out, as in `export`.
 
-Two reaches with the same name key are one stream when one lies downstream of the other (`NEXT_DOWN`) and
-the path between them crosses at most `MAX_GAP` (2) reaches with no IGN name and no approved river. Those
-reaches are absorbed into the stream. A reach with another IGN name, or on an approved river, breaks the
-path. Each connected group per name is a stream, with id `<slug of the name key>-<mouth HYRIV_ID>`
-(mouth: the most downstream reach). The logic is `detectStreams` in `pipeline/lib/streams.ts`.
+Two reaches with the same name key are one group when one lies downstream of the other (`NEXT_DOWN`) and
+the path between them crosses at most `line.maxGap` (2) reaches with no IGN name and no approved river.
+Those reaches are absorbed. A reach with another IGN name, or on an approved river, breaks the path
+(`detectStreams` in `pipeline/lib/streams.ts`).
+
+A stream then keeps only the reaches the IGN line runs along (owner, 2026-10-09; `followIgnLines`): a
+named reach is on the line when its name's coverage (`ign-match/cover.parquet`) is at least
+`line.minCoverage` (0.5; calibration under `named`). Ends of a group that are not on the line (upstream
+ends and the mouth) are pruned until every end is; so reaches below the threshold, and absorbed gaps,
+stay only between two reaches on the line, and at a fork only the branches the line runs along stay.
+Pruning a mouth that joined two branches leaves two streams, like same-name siblings. A group with no
+reach on the line is dropped. Id: `<slug of the name key>-<mouth HYRIV_ID>`.
 
 Outputs in `data/work/ign-streams/`: `streams.json` (id, name, nameKey, mouthReach, reachIds,
-absorbedReachIds, lengthKm, bbox) and `report.json`: names considered and split, streams, reaches and km
-(named vs absorbed), the same counts for a gap tolerance of 0, 1 and 2, and review lists (a gap reach
-claimed by two names, same-name streams draining to the same receiving water, single-reach streams under
-1 km). Checks: every named reach in exactly one stream, no reach in two streams, no approved-river reach
-absorbed, unique ids.
+absorbedReachIds, lengthKm, bbox), `dropped.json` (named reaches off every line; `export` hides their IGN
+name) and `report.json`: names considered and split, streams, reaches and km (named vs absorbed), the same
+counts for a gap tolerance of 0, 1 and 2, `line` (groups, groups split or lost, reaches dropped, and the
+same for a threshold of 0.3–0.6), and review lists (a gap reach claimed by two names, same-name streams
+draining to the same receiving water, single-reach streams under 1 km). Checks: every named reach in
+exactly one stream or dropped, every reach on the line in a stream, every stream end on the line, no
+reach in two streams, no approved-river reach absorbed, unique ids.
 
 ### `npm run pipeline:ign-layers`
 
@@ -366,8 +411,9 @@ never before it. The only exception is a reach shorter than one tile unit at tha
 a pixel), which tippecanoe drops because it collapses to a point. It also checks that every mask
 level and every sub-basin is present at each checked zoom, and records file sizes and the tippecanoe version.
 
-Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `named` →
-`lakes` → `ign` → `ign-match` → `ign-streams` → `ign-layers` → `localities` → `export` → `mask` → `subbasins` → `tiles`.
+Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `ign` →
+`ign-match` → `named` → `lakes` → `ign-streams` → `ign-layers` → `localities` → `export` → `mask` →
+`subbasins` → `tiles`.
 
 ## Tools
 

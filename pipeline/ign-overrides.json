@@ -1,5 +1,5 @@
 {
-  "$comment": "Hand decisions on IGN name matches (pipeline:ign-match applies them; written while triaging data/work/ign-match/review.json). reaches: accept (show the best candidate although low confidence), reject (hide it) or name (show this IGN name instead); every entry needs a note. riverNames: force the display name of an approved river (slug) when the stem vote is wrong or split. Entries accepted in bulk on 2026-10-01 from the continuity proposal (same name on the next reach up or downstream); the owner will review them later. dams: IGN dam points (BH051 'Dique', keyed by gid) that pipeline:ign-layers drops after a check against the imagery; every entry needs a note.",
+  "$comment": "Hand decisions on IGN name matches (pipeline:ign-match applies them; written while triaging data/work/ign-match/review.json). reaches: accept (show the best candidate although low confidence), reject (hide it) or name (show this IGN name instead); every entry needs a note. riverNames: force the display name of an approved river (slug) when the stem vote is wrong or split. Entries accepted in bulk on 2026-10-01 from the continuity proposal (same name on the next reach up or downstream); the owner will review them later. dams: IGN dam points (BH051 'Dique', keyed by gid) that pipeline:ign-layers drops after a check against the imagery; every entry needs a note. lines: IGN watercourse lines (keyed by IGN gid) whose name pipeline:ign-match drops before matching (action unname), for owner facts that contradict an IGN name; every entry needs a note.",
   "reaches": [
     {
       "id": 61550637,
@@ -80,11 +80,6 @@
       "id": 61530546,
       "action": "accept",
       "note": "same name on the downstream reach 61530672 (Arroyo Motronco, coverage 0.24)"
-    },
-    {
-      "id": 61552393,
-      "action": "accept",
-      "note": "same name on the upstream reach 61552419 (Río Currhué, coverage 0.345)"
     },
     {
       "id": 61536211,
@@ -914,6 +909,43 @@
       "gid": 3454,
       "action": "reject",
       "note": "Unnamed 'Dique' (fdc Esri-World_Imagery) at -69.4593, -39.7679, on the braided Limay above the Ezequiel Ramos Mexía reservoir. The owner checked the imagery on 2026-10-02: there is no dam there."
+    }
+  ],
+  "lines": [
+    {
+      "gid": 815453,
+      "action": "unname",
+      "note": "owner, 2026-10-09: Río Currhué leaves Lago Currhué Chico (HydroLAKES 1113033, IGN 'Lago Currhué Chico') and flows to the Chimehuín; nothing between Chico and Lago Currhué Grande (HydroLAKES 10578, IGN 'Lago Currhué') is the Currhué. IGN names this 0.09 km line 'Río Currhué'; it lies between the Grande shore and the west shore of Chico."
+    },
+    {
+      "gid": 846806,
+      "action": "unname",
+      "note": "owner, 2026-10-09: Río Currhué leaves Lago Currhué Chico (HydroLAKES 1113033, IGN 'Lago Currhué Chico') and flows to the Chimehuín; nothing between Chico and Lago Currhué Grande (HydroLAKES 10578, IGN 'Lago Currhué') is the Currhué. IGN names this 0.95 km line 'Río Currhué'; it lies between the Grande shore and the west shore of Chico."
+    },
+    {
+      "gid": 812488,
+      "action": "unname",
+      "note": "owner, 2026-10-09: Río Currhué leaves Lago Currhué Chico (HydroLAKES 1113033, IGN 'Lago Currhué Chico') and flows to the Chimehuín; nothing between Chico and Lago Currhué Grande (HydroLAKES 10578, IGN 'Lago Currhué') is the Currhué. IGN names this 2.35 km line 'Río Currhué'; it lies between the Grande shore and the west shore of Chico."
+    },
+    {
+      "gid": 851263,
+      "action": "unname",
+      "note": "owner, 2026-10-09: Río Currhué leaves Lago Currhué Chico (HydroLAKES 1113033, IGN 'Lago Currhué Chico') and flows to the Chimehuín; nothing between Chico and Lago Currhué Grande (HydroLAKES 10578, IGN 'Lago Currhué') is the Currhué. IGN names this 0.67 km line 'Río Currhué'; it lies between the Grande shore and the west shore of Chico."
+    },
+    {
+      "gid": 842694,
+      "action": "unname",
+      "note": "owner, 2026-10-09: Río Currhué leaves Lago Currhué Chico (HydroLAKES 1113033, IGN 'Lago Currhué Chico') and flows to the Chimehuín; nothing between Chico and Lago Currhué Grande (HydroLAKES 10578, IGN 'Lago Currhué') is the Currhué. IGN names this 0.63 km line 'Río Currhué'; it lies between the Grande shore and the west shore of Chico."
+    },
+    {
+      "gid": 820757,
+      "action": "unname",
+      "note": "owner, 2026-10-09: Río Currhué leaves Lago Currhué Chico (HydroLAKES 1113033, IGN 'Lago Currhué Chico') and flows to the Chimehuín; nothing between Chico and Lago Currhué Grande (HydroLAKES 10578, IGN 'Lago Currhué') is the Currhué. IGN names this 0.84 km line 'Río Currhué'; it lies between the Grande shore and the west shore of Chico."
+    },
+    {
+      "gid": 886539,
+      "action": "unname",
+      "note": "owner, 2026-10-09: Río Currhué leaves Lago Currhué Chico (HydroLAKES 1113033, IGN 'Lago Currhué Chico') and flows to the Chimehuín; nothing between Chico and Lago Currhué Grande (HydroLAKES 10578, IGN 'Lago Currhué') is the Currhué. IGN names this 0.76 km line 'Río Currhué'; it lies between the Grande shore and the west shore of Chico."
     }
   ]
 }

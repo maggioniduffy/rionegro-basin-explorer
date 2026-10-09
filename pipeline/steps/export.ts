@@ -118,6 +118,8 @@ async function main() {
   const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
   // Streams (pipeline:ign-streams) and the sub-basin / river inputs that place their mouths.
   const streamsFile = requireInput(workPath("ign-streams/streams.json"));
+  // Named reaches off every IGN line (pipeline:ign-streams): their IGN name is not shown.
+  const droppedFile = requireInput(workPath("ign-streams/dropped.json"));
   const riversNdjson = requireInput(`${OUT_DIR}/rivers.ndjson`);
   const streams = await readJson<StreamsFileEntry[]>(streamsFile);
   const subbasinNodes = (
@@ -181,7 +183,7 @@ async function main() {
              r.predcat30 AS nonPerennial30d, round(r.predprob30::DOUBLE, 3) AS nonPerennialProb30d,
              [round(ST_XMin(r.geom), 5), round(ST_YMin(r.geom), 5),
               round(ST_XMax(r.geom), 5), round(ST_YMax(r.geom), 5)] AS bbox,
-             CASE WHEN i.display
+             CASE WHEN i.display AND d.HYRIV_ID IS NULL
                   THEN {name: i.name, confidence: i.confidence, reviewed: i.reviewed}
              END AS ign,
              rs.stream AS stream,
@@ -191,6 +193,9 @@ async function main() {
       JOIN ${lit(atlasFile)} a USING (HYRIV_ID)
       LEFT JOIN ${lit(mappingFile)} m USING (HYRIV_ID)
       LEFT JOIN read_parquet(${lit(ignFile)}) i USING (HYRIV_ID)
+      LEFT JOIN read_json(${lit(droppedFile)},
+                          columns = {HYRIV_ID: 'BIGINT', nameKey: 'VARCHAR'}) d
+        USING (HYRIV_ID)
       LEFT JOIN read_json(${lit(reachStreamFile)},
                           columns = {HYRIV_ID: 'BIGINT', stream: 'VARCHAR'}) rs
         USING (HYRIV_ID)`);
@@ -364,6 +369,8 @@ async function main() {
       endorheic: r.counts.endorheic,
       inNamedRivers: counts?.named_n,
       withIgnName: counts?.ign_named_n,
+      // IGN name not shown: off every IGN line (pipeline:ign-streams dropped.json).
+      ignNameHiddenOffLine: (await readJson<unknown[]>(droppedFile)).length,
       // Entirely inside a lake, so not drawn on the map (pipeline:lakes); data kept.
       notDrawnInsideLakes: counts?.not_drawn_n,
       orphans: r.topology.orphans,

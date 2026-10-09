@@ -39,7 +39,7 @@ export const riverSchema = z.strictObject({
     regulationPct: num,
   }),
   source: z.strictObject({
-    kind: z.enum(["headwater", "confluence"]),
+    kind: z.enum(["headwater", "lake", "confluence"]),
     lat: num,
     lon: num,
     elevationM: num,
