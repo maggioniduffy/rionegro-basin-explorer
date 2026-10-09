@@ -6,7 +6,10 @@
     "namedChecks": true,
     "zeroOrphanReaches": true,
     "everyReachExported": true,
-    "ignNamesUnique": true
+    "streamIdsUnique": true,
+    "everyStreamExported": true,
+    "noReachInTwoStreams": true,
+    "everyStreamHasSubbasin": true
   },
   "basin": {
     "areaKm2": 136204,
@@ -323,11 +326,43 @@
       "population": 718
     }
   ],
-  "ignNames": {
-    "names": 403,
-    "uniqueSlugs": true,
-    "keysWithoutSlug": 0,
-    "excludedApprovedRivers": 24
+  "streams": {
+    "streams": 467,
+    "reachesInStreams": 1375,
+    "reachesOnStreamsAndRivers": 88,
+    "uniqueValidIds": true,
+    "everyReachExported": true,
+    "reachCountsMatch": true,
+    "mouthsInStreams": true,
+    "reachesTaggedMatchFile": true,
+    "everyStreamHasSubbasin": true,
+    "withoutReceivingRiver": 1,
+    "bySubbasin": {
+      "curi-leuvu": 31,
+      "neuquen": 65,
+      "varvarco": 16,
+      "collon-cura": 3,
+      "comallo": 4,
+      "lileo": 6,
+      "chimehuin": 28,
+      "alumine": 35,
+      "limay": 80,
+      "nahueve": 22,
+      "trocoman": 18,
+      "catan-lil": 5,
+      "agrio": 79,
+      "renileuvu": 11,
+      "caleufu": 14,
+      "covunco": 7,
+      "picun-leufu": 4,
+      "traful": 21,
+      "pulmari": 5,
+      "malleo": 3,
+      "litran": 3,
+      "quillen": 4,
+      "endorheic": 1,
+      "negro": 2
+    }
   },
   "intermittence": [
     {

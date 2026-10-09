@@ -194,5 +194,8 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 - **Reaches on approved rivers (owner).** A reach on an approved river that carries another IGN name belongs to both the river and the stream. The report counts them (`namedOnApprovedRivers`).
 - **Click (owner).** A click on a stream reach opens the whole stream, as approved rivers do. On a reach that belongs to both, the approved river wins, and the stream stays reachable from search.
 - **Stable id:** `<slug of the name key>-<mouth HYRIV_ID>`.
-- **Agents (owner).** Detection was written by an Opus agent and the merge into the app by a Sonnet agent.
-- **Not run on real data yet.** The cloud container has no `data/raw` or `data/work`, and the DuckDB spatial extension can't be downloaded there. Left for the owner, locally: `ign-streams` → `export` → `tiles` → `seed`, then read the reports.
+- **Agents (owner).** Detection and the merge into the app were written by Opus agents; the local pipeline run and seed by a Sonnet agent.
+- **Missing values stay null.** Export kept a stream's mouth and watershed values as `Number()`, which turns a missing value into 0; they now stay null so the seed rejects them (Rule 2).
+- **`ignNames` dropped.** The seed drops the old `ignNames` collection on Atlas; `data/out/ign-names.ndjson` is removed.
+- **Run on real data (2026-10-09, locally).** 403 IGN names considered, 24 approved-river keys excluded, 44 names split into several streams. Streams: 468 with gap 0, 468 with gap 1, **467 with gap 2** (the rule). Gap 2 absorbs 2 reaches (4.8 km), with no gap reach claimed by two streams. `namedOnApprovedRivers` = 88. 10 streams are a single reach under 1 km. Export: 467 streams over 1,375 reaches, all in a sub-basin (most in Limay 80, Agrio 79, Neuquén 65), 1 without a receiving river. Tiles, seed (12 checks) and `atlas:check` pass.
+- **Open (owner):** 15 same-name sibling-branch cases with the same receiving water (e.g. `arroyo blanco` → `river:chimehuin`, `arroyo blanco` → `river:limay`, `arroyo butalon` → `river:neuquen`) are listed in `data/work/ign-streams/report.json` for review.

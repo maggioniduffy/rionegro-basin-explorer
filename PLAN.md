@@ -144,8 +144,9 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#design-v3-landing-and-app-restyle-2026-
 ## IGN streams — same-name reaches as one stream
 
 - [x] `pipeline:ign-streams`: split each IGN name into connected streams (gap ≤ 2 unnamed reaches, absorbed under the stream's name), report with N = 0/1/2 and ambiguous cases
-- [ ] Export, tiles, seed, API, search, panel and URL use streams instead of `ign-names`; a click on a stream reach opens the whole stream
-- [ ] **Owner, locally:** run `pipeline:ign-streams` → `export` → `tiles` → `seed` on the real data, read both reports, review the flagged cases (not possible in the cloud container: no `data/raw`/`data/work`, IGN data is local-only)
+- [x] Export, tiles, seed, API, search, panel and URL use streams instead of `ign-names`; a click on a stream reach opens the whole stream
+- [x] Run `pipeline:ign-streams` → `export` → `tiles` → `seed` on the real data and read the reports (2026-10-09, locally: 467 streams, all checks true, Atlas seeded)
+- [ ] **Owner:** review the 15 same-name sibling-branch cases listed in `data/work/ign-streams/report.json`
 
 Decisions: [DECISSIONS.md](DECISSIONS.md#ign-streams-2026-10-09).
 
