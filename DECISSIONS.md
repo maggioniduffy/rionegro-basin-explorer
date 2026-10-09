@@ -185,3 +185,14 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 - **Accessibility.** Language links and buttons keep the visible code in their name ("EN (English)"), and the map card is named by its own text (WCAG 2.5.3, flagged by Lighthouse). Tab order covers every landing control with the accent ring, and the hero animation stops under reduced motion.
 - **Checked (2026-10-06, local production build):** Lighthouse on `/`: accessibility 1.0, performance 0.93–0.98 (simulated mobile, LCP 2.3–3.0 s, the hero image). No horizontal scroll at 390 px. Scratch screenshots, EN/ES × dark/light × 1440/390, compared to the bundle. The river and sub-basin panels were checked with live data the same day, once the read-only user was fixed (below). The e2e screenshot baselines were not regenerated (rule 11).
 - **Atlas read-only user fixed (2026-10-06, owner).** Its password in `.env.local` did not match Atlas: the seed user connected to the same cluster, so network and access list were fine. After the owner reset it, `npm run atlas:check` passes (`read-only@admin`, `readAnyDatabase`, no write actions, all four collections readable), and the local API serves all 25 sub-basins. Left: put this URI in Vercel's `MONGODB_URI`.
+
+## IGN streams (2026-10-09)
+
+- **Why.** `ign-names` grouped reaches by name only, so streams that share a common name ("Arroyo Blanco", 15 reaches between 37° S and 41° S) were one search hit, and search opened only the longest reach.
+- **Rule (owner).** Same-name reaches are one stream when one lies downstream of the other along `NEXT_DOWN` with at most **2** gap reaches between them. A gap reach has no shown IGN name and is not on an approved river. Gap reaches are absorbed into the stream and take its name. Another IGN name or an approved river breaks the path. The report also gives the counts for 0 and 1 gap reaches.
+- **Sibling branches (owner).** Two same-name tributaries that meet at an unnamed reach, where neither lies downstream of the other, are **not** joined. The report lists them under the same receiving water for the owner to review.
+- **Reaches on approved rivers (owner).** A reach on an approved river that carries another IGN name belongs to both the river and the stream. The report counts them (`namedOnApprovedRivers`).
+- **Click (owner).** A click on a stream reach opens the whole stream, as approved rivers do. On a reach that belongs to both, the approved river wins, and the stream stays reachable from search.
+- **Stable id:** `<slug of the name key>-<mouth HYRIV_ID>`.
+- **Agents (owner).** Detection was written by an Opus agent and the merge into the app by a Sonnet agent.
+- **Not run on real data yet.** The cloud container has no `data/raw` or `data/work`, and the DuckDB spatial extension can't be downloaded there. Left for the owner, locally: `ign-streams` → `export` → `tiles` → `seed`, then read the reports.
