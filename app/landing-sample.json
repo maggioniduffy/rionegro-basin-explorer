@@ -2,7 +2,7 @@
   "river": {
     "id": "limay",
     "name": "Río Limay",
-    "lengthKm": 555.3,
+    "lengthKm": 461.6,
     "strahler": 6,
     "dischargeM3s": 762.2,
     "flowsInto": {
