@@ -7,16 +7,18 @@ import { parseSearchQuery } from "@/lib/data/params";
 import { useMapStore } from "@/lib/store";
 import { useApi } from "@/lib/use-api";
 import { Icon } from "./Icon";
+import { useSubbasinLabel } from "./panel/subbasin-label";
 
 const DEBOUNCE_MS = 200;
 
 /**
- * River, IGN-name and HYRIV_ID search (combobox): type, pick with arrows + Enter or a
+ * River, IGN-stream and HYRIV_ID search (combobox): type, pick with arrows + Enter or a
  * click.
  */
 export function SearchBox() {
   const t = useTranslations("search");
   const tReach = useTranslations("panel.reach");
+  const subbasinLabel = useSubbasinLabel();
   const select = useMapStore((s) => s.select);
   const listId = useId();
   const [text, setText] = useState("");
@@ -36,11 +38,10 @@ export function SearchBox() {
   const showList = open && query !== null && state.status !== "loading";
 
   function choose(hit: SearchHit) {
-    // A river fits to the whole river; an IGN name opens its longest reach and fits to it.
-    // A typed HYRIV_ID opens that reach.
+    // A river or an IGN stream fits to the whole of it. A typed HYRIV_ID opens that reach.
     select(
-      hit.kind === "river"
-        ? { kind: "river", id: hit.id }
+      hit.kind === "river" || hit.kind === "stream"
+        ? { kind: hit.kind, id: hit.id }
         : { kind: "reach", id: Number(hit.id) },
       { fit: true },
     );
@@ -131,6 +132,16 @@ export function SearchBox() {
                   {tReach("id", { id: hit.id })}
                   {hit.name && (
                     <span className="text-muted"> · {hit.name}</span>
+                  )}
+                </>
+              ) : hit.kind === "stream" ? (
+                <>
+                  {hit.name}
+                  {hit.subbasin && (
+                    <span className="text-muted">
+                      {" "}
+                      · {subbasinLabel(hit.subbasin)}
+                    </span>
                   )}
                 </>
               ) : (

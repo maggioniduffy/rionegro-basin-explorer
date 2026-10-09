@@ -121,6 +121,12 @@
       "sea": "el mar",
       "weakName": "El nombre de este río es menos seguro que el de los demás."
     },
+    "stream": {
+      "label": "Detalles del curso de agua",
+      "title": "Curso de agua del IGN",
+      "inSubbasin": "En",
+      "nameNote": "Nombre del IGN. El curso une los tramos que comparten este nombre a lo largo de la red de drenaje."
+    },
     "reach": {
       "label": "Detalles del curso",
       "title": "Curso sin nombre",
@@ -129,7 +135,8 @@
       "showRiver": "Ver todo el {river}",
       "endorheic": "Endorreico: drena hacia el interior y no llega al mar.",
       "ignName": "Nombre del IGN. Confianza de la coincidencia: {confidence, select, high {alta} medium {media} other {baja}}.",
-      "ignNameReviewed": "Nombre del IGN, confirmado a mano."
+      "ignNameReviewed": "Nombre del IGN, confirmado a mano.",
+      "showStream": "Mostrar todo el {stream}"
     },
     "groups": {
       "course": "Recorrido",

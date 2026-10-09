@@ -1,6 +1,6 @@
 /**
  * npm run seed — load data/out/rivers.ndjson, reaches.ndjson, subbasins.ndjson and
- * ign-names.ndjson into Mongo.
+ * streams.ndjson into Mongo.
  *
  * Idempotent: whole-document upserts keyed on _id, documents no longer in the files
  * are deleted, indexes are created only if missing. Re-run after the pipeline changes
@@ -14,7 +14,8 @@
  *            searchTerms (normalized names) for prefix search
  *   reaches  river (reaches of a named river)
  *   subbasins _id is the slug; parentId (children of a sub-basin)
- *   ignNames _id is the slug of the IGN name; searchTerms (normalized name) for prefix search
+ *   streams  _id is the stream id (name slug + mouth reach); searchTerms (normalized name) for
+ *            prefix search; subbasin (streams of a sub-basin)
  */
 import { readFile } from "node:fs/promises";
 import {
@@ -25,9 +26,9 @@ import {
 } from "mongodb";
 import { z } from "zod";
 import {
-  ignNameSchema,
   reachSchema,
   riverSchema,
+  streamSchema,
   subbasinSchema,
 } from "../lib/data/schemas";
 import { OUT_DIR } from "../pipeline/lib/paths";
@@ -35,8 +36,8 @@ import { writeReport } from "../pipeline/lib/report";
 import {
   chunk,
   parseNdjson,
-  toIgnNameDoc,
   toRiverDoc,
+  toStreamDoc,
   upsertOps,
 } from "./seed-lib";
 
@@ -88,10 +89,10 @@ async function main() {
     subbasinSchema,
   );
 
-  const ignNames = parseNdjson(
-    await readFile(`${OUT_DIR}/ign-names.ndjson`, "utf8"),
-    ignNameSchema,
-  ).map(toIgnNameDoc);
+  const streams = parseNdjson(
+    await readFile(`${OUT_DIR}/streams.ndjson`, "utf8"),
+    streamSchema,
+  ).map(toStreamDoc);
 
   const client = new MongoClient(seedUri, {
     serverSelectionTimeoutMS: 10_000,
@@ -103,35 +104,58 @@ async function main() {
     const subbasinsColl =
       db.collection<(typeof subbasins)[number]>("subbasins");
 
-    const ignNamesColl = db.collection<(typeof ignNames)[number]>("ignNames");
+    const streamsColl = db.collection<(typeof streams)[number]>("streams");
 
     const riverResult = await sync(riversColl, rivers);
     const reachResult = await sync(reachesColl, reaches);
     const subbasinResult = await sync(subbasinsColl, subbasins);
-    const ignNameResult = await sync(ignNamesColl, ignNames);
+    const streamResult = await sync(streamsColl, streams);
 
     await riversColl.createIndex(
       { name: "text", shortName: "text" },
       { name: "names_text", default_language: "none" },
     );
     await riversColl.createIndex({ searchTerms: 1 }, { name: "searchTerms" });
-    await ignNamesColl.createIndex({ searchTerms: 1 }, { name: "searchTerms" });
+    await streamsColl.createIndex({ searchTerms: 1 }, { name: "searchTerms" });
+    await streamsColl.createIndex({ subbasin: 1 }, { name: "subbasin" });
+    await reachesColl.createIndex({ stream: 1 }, { name: "stream" });
     await reachesColl.createIndex({ river: 1 }, { name: "river" });
     await subbasinsColl.createIndex({ parentId: 1 }, { name: "parentId" });
 
     const reachById = new Map(reaches.map((r) => [r._id, r]));
+    const reachesPerStream = new Map<string, number>();
+    for (const r of reaches)
+      if (r.stream !== null)
+        reachesPerStream.set(
+          r.stream,
+          (reachesPerStream.get(r.stream) ?? 0) + 1,
+        );
+    const streamIds = new Set(streams.map((st) => st._id));
+    const subbasinIds = new Set(subbasins.map((b) => b._id));
+    const riverIds = new Set(rivers.map((v) => v._id));
     const checks = {
       riversCountMatchesFile: riverResult.count === rivers.length,
       reachesCountMatchesFile: reachResult.count === reaches.length,
       everyNamedReachRiverExists: reaches.every(
         (r) => r.river === null || rivers.some((v) => v._id === r.river),
       ),
-      ignNamesCountMatchesFile: ignNameResult.count === ignNames.length,
-      // Search opens the longest reach, so it must exist and carry that name.
-      everyIgnNameResolves: ignNames.every((n) => {
-        const reach = reachById.get(n.longestReach);
-        return reach?.ign?.name === n.name;
-      }),
+      streamsCountMatchesFile: streamResult.count === streams.length,
+      // Search opens the stream and the panel links to its mouth: both must resolve, and
+      // the mouth reach must belong to the stream.
+      everyStreamResolves: streams.every(
+        (st) => reachById.get(st.mouthReach)?.stream === st._id,
+      ),
+      everyStreamReachCountMatches: streams.every(
+        (st) => (reachesPerStream.get(st._id) ?? 0) === st.reachCount,
+      ),
+      everyReachStreamExists: reaches.every(
+        (r) => r.stream === null || streamIds.has(r.stream),
+      ),
+      everyStreamSubbasinExists: streams.every(
+        (st) =>
+          (st.subbasin === null || subbasinIds.has(st.subbasin)) &&
+          (st.receivingRiver === null || riverIds.has(st.receivingRiver)),
+      ),
       subbasinsCountMatchesFile: subbasinResult.count === subbasins.length,
       everySubbasinRiverExists: subbasins.every((b) =>
         [...(b.river === null ? [] : [b.river]), ...b.rivers].every((id) =>
@@ -157,12 +181,12 @@ async function main() {
       rivers: riverResult,
       reaches: reachResult,
       subbasins: subbasinResult,
-      ignNames: ignNameResult,
+      streams: streamResult,
       indexes: {
         rivers: (await riversColl.indexes()).map((i) => i.name),
         reaches: (await reachesColl.indexes()).map((i) => i.name),
         subbasins: (await subbasinsColl.indexes()).map((i) => i.name),
-        ignNames: (await ignNamesColl.indexes()).map((i) => i.name),
+        streams: (await streamsColl.indexes()).map((i) => i.name),
       },
     });
   } finally {

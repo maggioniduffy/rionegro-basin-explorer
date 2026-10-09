@@ -28,7 +28,7 @@ const READ_ACTIONS = new Set([
   // Atlas's "Only read any database" role (readAnyDatabase) adds this cluster action.
   "listDatabases",
 ]);
-const APP_COLLECTIONS = ["rivers", "reaches", "subbasins", "ignNames"];
+const APP_COLLECTIONS = ["rivers", "reaches", "subbasins", "streams"];
 
 const env = z
   .object({

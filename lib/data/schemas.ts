@@ -67,6 +67,14 @@ export const reachSchema = z.strictObject({
   _id: z.number().int().positive(),
   /** Named river slug, null for unnamed reaches. */
   river: z.string().nullable(),
+  /**
+   * Stream id (pipeline:ign-streams), null when the reach is in none. A reach on a named
+   * river can also be in a stream.
+   */
+  stream: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .nullable(),
   network: z.enum(["connected", "endorheic"]),
   nextDown: z.number().int(),
   mainRiv: z.number().int(),
@@ -154,20 +162,43 @@ export const subbasinSchema = z.strictObject({
 export type Subbasin = z.infer<typeof subbasinSchema>;
 
 /**
- * data/out/ign-names.ndjson (pipeline:export): an IGN name shown on unnamed reaches, for
- * search. Names of approved rivers are not here (they are rivers). A name can belong to
- * many unrelated streams ("Arroyo Blanco"), so bbox is the union of all its reaches.
+ * data/out/streams.ndjson (pipeline:export): an IGN stream, a connected group of reaches
+ * that share a shown IGN name (pipeline:ign-streams). Streams of approved rivers are not
+ * here (they are rivers). `mouth` and `watershed` are RiverATLAS / HydroRIVERS values of
+ * the mouth reach, as for rivers.
  */
-export const ignNameSchema = z.strictObject({
+export const streamSchema = z.strictObject({
+  /** `<slug of the name>-<mouth HYRIV_ID>`. */
   _id: slug,
   name: z.string().min(1),
+  mouthReach: z.number().int().positive(),
+  /** Named reaches plus the unnamed ones absorbed between them. */
   reachCount: z.number().int().positive(),
   lengthKm: num,
-  /** The longest reach with this name; search opens it. */
-  longestReach: z.number().int().positive(),
+  /** Sub-basin that holds the mouth (deepest node); null when none was found. */
+  subbasin: slug.nullable(),
+  /** Slug of the first approved river downstream of the mouth, null when none. */
+  receivingRiver: slug.nullable(),
+  mouth: z.strictObject({
+    elevationM: num,
+    dischargeM3s: num,
+    uplandKm2: num,
+    distanceToSeaKm: num,
+    strahler: z.number().int(),
+    regulationPct: num,
+  }),
+  watershed: z.strictObject({
+    floodedMinPct: num,
+    floodedMaxPct: num,
+    lakesPct: num,
+    population: z.number().int(),
+  }),
   bbox: bboxSchema,
+  /** Dotted paths of modeled or estimated values (CLAUDE.md rule 4). */
+  modeled: z.array(z.string()),
+  provenance: z.record(z.string(), z.string()),
 });
-export type IgnName = z.infer<typeof ignNameSchema>;
+export type Stream = z.infer<typeof streamSchema>;
 
 /** As stored in Mongo: the seed adds normalized names for search. */
-export type IgnNameDoc = IgnName & { searchTerms: string[] };
+export type StreamDoc = Stream & { searchTerms: string[] };

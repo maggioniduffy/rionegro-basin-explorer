@@ -3,7 +3,9 @@ import {
   type StreamReach,
   detectStreams,
   resolveGapClaims,
+  streamDrainage,
   streamId,
+  subbasinMouths,
 } from "../../pipeline/lib/streams";
 
 const A = "arroyo blanco";
@@ -160,5 +162,82 @@ describe("streamId", () => {
     expect(streamId("arroyo ñirihuau", 60123456)).toBe(
       "arroyo-nirihuau-60123456",
     );
+  });
+});
+
+describe("subbasinMouths", () => {
+  const rivers = [
+    { _id: "negro", mouthReach: 10 },
+    { _id: "limay", mouthReach: 20 },
+  ];
+  it("maps the mouth reach of each river node, skipping endorheic nodes", () => {
+    const nodes = [
+      { id: "negro", kind: "river", river: "negro" },
+      { id: "limay", kind: "river", river: "limay" },
+      { id: "endorheic", kind: "endorheic" },
+    ] as const;
+    expect([...subbasinMouths(nodes, rivers)]).toEqual([
+      [10, "negro"],
+      [20, "limay"],
+    ]);
+  });
+  it("fails when a node's river is unknown", () => {
+    expect(() =>
+      subbasinMouths([{ id: "x", kind: "river", river: "x" }], rivers),
+    ).toThrow(/sub-basin x/);
+  });
+});
+
+describe("streamDrainage", () => {
+  // 1 → 2 → 3 → 4 → 0; 3 is on river "limay" (node mouth 4); 5 → 6 → 0 is endorheic.
+  const net = {
+    nextDown: new Map([
+      [1, 2],
+      [2, 3],
+      [3, 4],
+      [4, 0],
+      [5, 6],
+      [6, 0],
+    ]),
+    river: new Map([[3, "limay"]]),
+    endorheic: new Set([5, 6]),
+    nodeByMouth: new Map([[4, "limay"]]),
+    endorheicNode: "endorheic",
+  };
+  it("finds the sub-basin and the receiving river downstream of the mouth", () => {
+    expect(streamDrainage(1, net)).toEqual({
+      subbasin: "limay",
+      receivingRiver: "limay",
+    });
+  });
+  it("counts the mouth reach itself for the sub-basin, not for the receiving river", () => {
+    expect(streamDrainage(3, net)).toEqual({
+      subbasin: "limay",
+      receivingRiver: null,
+    });
+  });
+  it("puts an endorheic mouth in the endorheic node", () => {
+    expect(streamDrainage(5, net)).toEqual({
+      subbasin: "endorheic",
+      receivingRiver: null,
+    });
+  });
+  it("gives null for a mouth that reaches no node and is not endorheic", () => {
+    expect(streamDrainage(1, { ...net, nodeByMouth: new Map() }).subbasin).toBe(
+      null,
+    );
+  });
+  it("stops on a cycle", () => {
+    const cyc = {
+      ...net,
+      nextDown: new Map([
+        [1, 2],
+        [2, 1],
+      ]),
+    };
+    expect(streamDrainage(1, cyc)).toEqual({
+      subbasin: null,
+      receivingRiver: null,
+    });
   });
 });

@@ -3,16 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { RiverResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
-import { type Caveat, Caveats, Group, Row, useFormat } from "./parts";
-
-/** Modeled value path (River.modeled) → the caveat that explains it. */
-const CAVEAT_BY_PATH: [string, Caveat][] = [
-  ["mouth.dischargeM3s", "discharge"],
-  ["nonPerennialPct", "nonPerennial"],
-  ["watershed.floodedMaxPct", "flooded"],
-  ["watershed.population", "population"],
-  ["mouth.regulationPct", "regulation"],
-];
+import { CAVEAT_BY_PATH, Caveats, Group, Row, useFormat } from "./parts";
 
 export function RiverPanel({ river }: { river: RiverResponse }) {
   const t = useTranslations("panel");

@@ -106,7 +106,7 @@ function selectionPadding() {
 /** Clicks within this many px of a line hit it; river lines are thin. */
 const HIT_TOLERANCE_PX = 6;
 
-/** What a click at a point finds: a river, reach or sub-basin, or a map feature. */
+/** What a click at a point finds: a river, stream, reach or sub-basin, or a map feature. */
 type Hit =
   | { type: "selection"; selection: Selection }
   | { type: "picked"; picked: Picked };
@@ -233,6 +233,10 @@ function hitReach(map: MapLibreMap, x: number, y: number): Selection | null {
   if (!best) return null;
   const river: unknown = best.properties.river;
   if (typeof river === "string" && river) return { kind: "river", id: river };
+  // A reach on a stream (and on no approved river) opens the whole stream.
+  const stream: unknown = best.properties.stream;
+  if (typeof stream === "string" && stream)
+    return { kind: "stream", id: stream };
   const id = Number(best.id);
   return Number.isSafeInteger(id) && id > 0 ? { kind: "reach", id } : null;
 }
@@ -437,7 +441,7 @@ export default function MapView() {
     // logs an error on every pointer move.
     let loaded = false;
 
-    // Click a line to select its river (or the reach, if unnamed); in the sub-basin
+    // Click a line to select its river, else its stream, else the reach; in the sub-basin
     // view, click land to select its sub-basin; click elsewhere to clear. Hovering
     // something selectable shows a pointer.
     map.on("click", (e) => {

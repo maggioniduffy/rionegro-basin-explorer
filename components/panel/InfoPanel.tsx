@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import type {
   ReachResponse,
   RiverResponse,
+  StreamResponse,
   SubbasinResponse,
 } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
@@ -14,12 +15,15 @@ import { FeaturePanel } from "./FeaturePanel";
 import { PanelFrame } from "./parts";
 import { ReachPanel } from "./ReachPanel";
 import { RiverPanel } from "./RiverPanel";
+import { StreamPanel } from "./StreamPanel";
 import { SubbasinPanel } from "./SubbasinPanel";
 
 const apiPath = (s: Selection) => {
   switch (s.kind) {
     case "river":
       return `/api/rivers/${encodeURIComponent(s.id)}`;
+    case "stream":
+      return `/api/streams/${encodeURIComponent(s.id)}`;
     case "reach":
       return `/api/reaches/${s.id}`;
     case "subbasin":
@@ -29,11 +33,12 @@ const apiPath = (s: Selection) => {
 
 const LABEL_KEY = {
   river: "river.label",
+  stream: "stream.label",
   reach: "reach.label",
   subbasin: "subbasin.label",
 } as const;
 
-/** Details of the selected river, reach, sub-basin or clicked map feature. */
+/** Details of the selected river, stream, reach, sub-basin or clicked map feature. */
 export function InfoPanel() {
   const selection = useMapStore((s) => s.selection);
   const picked = useMapStore((s) => s.picked);
@@ -49,9 +54,9 @@ function Panel({ selection }: { selection: Selection }) {
   const select = useMapStore((s) => s.select);
   const fitPending = useMapStore((s) => s.fitPending);
   const focusOn = useMapStore((s) => s.focusOn);
-  const state = useApi<RiverResponse | ReachResponse | SubbasinResponse>(
-    apiPath(selection),
-  );
+  const state = useApi<
+    RiverResponse | StreamResponse | ReachResponse | SubbasinResponse
+  >(apiPath(selection));
 
   // Selections from search, links or panel buttons fit the map once the bbox is known.
   useEffect(() => {
@@ -71,6 +76,9 @@ function Panel({ selection }: { selection: Selection }) {
       {state.status === "error" && <p className="pr-8">{t("error")}</p>}
       {state.status === "ok" && selection.kind === "river" && (
         <RiverPanel river={state.data as RiverResponse} />
+      )}
+      {state.status === "ok" && selection.kind === "stream" && (
+        <StreamPanel stream={state.data as StreamResponse} />
       )}
       {state.status === "ok" && selection.kind === "reach" && (
         <ReachPanel reach={state.data as ReachResponse} />

@@ -1,22 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
-  ignNameSchema,
   reachSchema,
   riverSchema,
+  streamSchema,
   subbasinSchema,
 } from "@/lib/data/schemas";
 import { normalizeSearch, searchTerms } from "@/lib/data/search";
 import {
   chunk,
   parseNdjson,
-  toIgnNameDoc,
   toRiverDoc,
+  toStreamDoc,
   upsertOps,
 } from "../scripts/seed-lib";
 
 const reach = {
   _id: 61523537,
   river: null,
+  stream: null,
   network: "connected",
   nextDown: 61523580,
   mainRiv: 61560077,
@@ -137,27 +138,59 @@ describe("subbasinSchema", () => {
   });
 });
 
-describe("IGN names", () => {
-  const name = {
-    _id: "arroyo-nireco",
+describe("streams", () => {
+  const stream = {
+    _id: "arroyo-nireco-61533765",
     name: "Arroyo Ñireco",
+    mouthReach: 61533765,
     reachCount: 25,
     lengthKm: 134.9,
-    longestReach: 61533765,
+    subbasin: "limay",
+    receivingRiver: "limay",
+    mouth: {
+      elevationM: 770,
+      dischargeM3s: 1.2,
+      uplandKm2: 310.4,
+      distanceToSeaKm: 640.2,
+      strahler: 4,
+      regulationPct: 0,
+    },
+    watershed: {
+      floodedMinPct: 0,
+      floodedMaxPct: 1,
+      lakesPct: 0.5,
+      population: 1200,
+    },
     bbox: [-71.36875, -41.25, -70.36458, -36.72292] as [
       number,
       number,
       number,
       number,
     ],
+    modeled: ["mouth.dischargeM3s"],
+    provenance: { lengthKm: "HydroRIVERS v1.0 LENGTH_KM, summed" },
   };
   it("validates a document and rejects unknown fields", () => {
-    expect(parseNdjson(JSON.stringify(name), ignNameSchema)).toEqual([name]);
+    expect(parseNdjson(JSON.stringify(stream), streamSchema)).toEqual([stream]);
     expect(() =>
-      parseNdjson(JSON.stringify({ ...name, extra: 1 }), ignNameSchema),
+      parseNdjson(JSON.stringify({ ...stream, extra: 1 }), streamSchema),
+    ).toThrow();
+  });
+  it("allows no sub-basin or receiving river, but not a bad id", () => {
+    const open = { ...stream, subbasin: null, receivingRiver: null };
+    expect(parseNdjson(JSON.stringify(open), streamSchema)).toEqual([open]);
+    expect(() =>
+      parseNdjson(JSON.stringify({ ...stream, _id: "Bad Id" }), streamSchema),
     ).toThrow();
   });
   it("adds accent-free search terms, so 'nireco' finds 'Ñireco'", () => {
-    expect(toIgnNameDoc(name).searchTerms).toEqual(["arroyo nireco"]);
+    expect(toStreamDoc(stream).searchTerms).toEqual(["arroyo nireco"]);
+  });
+  it("tags a reach with its stream, or null", () => {
+    const tagged = { ...reach, stream: "arroyo-nireco-61533765" };
+    expect(parseNdjson(JSON.stringify(tagged), reachSchema)).toEqual([tagged]);
+    const { stream: _omit, ...untagged } = reach;
+    void _omit;
+    expect(() => parseNdjson(JSON.stringify(untagged), reachSchema)).toThrow();
   });
 });

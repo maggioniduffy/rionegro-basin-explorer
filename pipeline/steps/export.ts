@@ -2,7 +2,8 @@
  * pipeline:export — final Phase 1 artifacts and the combined report.
  *
  *   data/out/reaches.ndjson        one document per basin reach (gitignored; seed input)
- *   data/out/ign-names.ndjson      one document per IGN name shown on unnamed reaches (search)
+ *   data/out/streams.ndjson        one document per IGN stream (pipeline:ign-streams): search,
+ *                                  panel; mouth-reach values like rivers.ndjson
  *   data/work/tiles/reaches.geojson  reach lines with the few properties the map styles
  *                                  on (tippecanoe input), clipped out of lakes by
  *                                  pipeline:lakes
@@ -15,13 +16,19 @@
  * lka_pc_use (percent × 10), pop_ct_usu (thousands) and dor_pc_pva (percent × 10).
  * bbox is [west, south, east, north] of the reach's HydroRIVERS line.
  * The "upstream*" fields cover the whole watershed upstream of the reach's pour point.
+ * `stream` on each reach (ndjson and tile GeoJSON) is its stream id from
+ * pipeline:ign-streams, null when it is in none; it can be set together with `river`.
  */
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
 import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
-import { nameKey, slugify } from "../lib/names";
+import {
+  type SubbasinNode,
+  streamDrainage,
+  subbasinMouths,
+} from "../lib/streams";
 
 interface BasinReport {
   ok: boolean;
@@ -38,6 +45,13 @@ interface RiversReport {
   topology: { orphans: number };
   gires: { byNetworkAndClass1Day: unknown };
 }
+/** One entry of data/work/ign-streams/streams.json (pipeline:ign-streams). */
+interface StreamsFileEntry {
+  id: string;
+  name: string;
+  mouthReach: number;
+  reachIds: number[];
+}
 interface NamedReport {
   ok: boolean;
   namedKm: number;
@@ -48,6 +62,47 @@ async function readJson<T>(file: string): Promise<T> {
   return JSON.parse(await readFile(requireInput(file), "utf8")) as T;
 }
 
+/** Rounds like pipeline:named, which sums LENGTH_KM and rounds the total once. */
+const round = (x: number, digits = 1) => Number(x.toFixed(digits));
+
+const STREAM_PROVENANCE = {
+  name: "pipeline:ign-streams: most frequent IGN spelling of the stream's name (pipeline:ign-match)",
+  reachCount:
+    "pipeline:ign-streams: named reaches plus the unnamed reaches absorbed between them",
+  lengthKm: "HydroRIVERS v1.0 LENGTH_KM, summed over the stream's reaches",
+  subbasin:
+    "First sub-basin mouth reach (data/out/rivers.ndjson mouthReach of each river node in pipeline/subbasins.config.json) on the way down from the stream's mouth reach along HydroRIVERS NEXT_DOWN; the endorheic node for endorheic mouths",
+  receivingRiver:
+    "First approved-river reach (pipeline:named) strictly downstream of the mouth reach along HydroRIVERS NEXT_DOWN",
+  "mouth.elevationM":
+    "RiverATLAS v1.0 ele_mt_cmn of the mouth reach (EarthEnv-DEM90)",
+  "mouth.dischargeM3s":
+    "HydroRIVERS v1.0 DIS_AV_CMS at the mouth reach; modeled natural long-term average 1971–2000 (WaterGAP), does not reflect dam regulation",
+  "mouth.uplandKm2": "HydroRIVERS v1.0 UPLAND_SKM at the mouth reach",
+  "mouth.distanceToSeaKm": "HydroRIVERS v1.0 DIST_DN_KM at the mouth reach",
+  "mouth.strahler": "HydroRIVERS v1.0 ORD_STRA at the mouth reach",
+  "mouth.regulationPct":
+    "RiverATLAS v1.0 dor_pc_pva / 10 at the mouth reach: degree of regulation, reservoir storage of GRanD v1.1 dams upstream as a percent of the modeled natural annual flow (capped at 1000 %)",
+  "watershed.floodedMinPct":
+    "RiverATLAS v1.0 inu_pc_umn at the mouth reach: mean annual minimum inundation extent of the upstream watershed, GIEMS-D15 (satellite, 1993–2004, downscaled)",
+  "watershed.floodedMaxPct":
+    "RiverATLAS v1.0 inu_pc_umx at the mouth reach: mean annual maximum inundation extent of the upstream watershed, GIEMS-D15 (satellite, 1993–2004, downscaled)",
+  "watershed.lakesPct":
+    "RiverATLAS v1.0 lka_pc_use / 10 at the mouth reach: percent lake area of the upstream watershed (HydroLAKES)",
+  "watershed.population":
+    "RiverATLAS v1.0 pop_ct_usu × 1000 at the mouth reach: population of the upstream watershed, GPWv4 estimate for 2010",
+  bbox: "Union of the HydroRIVERS line extents of the stream's reaches",
+};
+
+/** Values of `mouth` and `watershed` that are modeled or estimated (CLAUDE.md rule 4). */
+const STREAM_MODELED = [
+  "mouth.dischargeM3s",
+  "mouth.regulationPct",
+  "watershed.floodedMinPct",
+  "watershed.floodedMaxPct",
+  "watershed.population",
+];
+
 async function main() {
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const atlasFile = requireInput(workPath("rivers/riveratlas_basin.parquet"));
@@ -55,19 +110,52 @@ async function main() {
   const reachGeomFile = requireInput(workPath("lakes/reach_geom.parquet"));
   // IGN names per reach (pipeline:ign-match); run it before this step.
   const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
+  // Streams (pipeline:ign-streams) and the sub-basin / river inputs that place their mouths.
+  const streamsFile = requireInput(workPath("ign-streams/streams.json"));
+  const riversNdjson = requireInput(`${OUT_DIR}/rivers.ndjson`);
+  const streams = await readJson<StreamsFileEntry[]>(streamsFile);
+  const subbasinNodes = (
+    await readJson<{ subbasins: SubbasinNode[] }>(
+      `${ROOT}/pipeline/subbasins.config.json`,
+    )
+  ).subbasins;
+  const rivers = (await readFile(riversNdjson, "utf8"))
+    .split("\n")
+    .filter((l) => l.trim() !== "")
+    .map((l) => JSON.parse(l) as { _id: string; mouthReach: number });
+  const nodeByMouth = subbasinMouths(subbasinNodes, rivers);
+  const endorheicNode =
+    subbasinNodes.find((n) => n.kind === "endorheic")?.id ?? null;
   const tilesDir = workPath("tiles");
   await mkdir(tilesDir, { recursive: true });
   const db = await openDb();
 
   const reachesNdjson = `${OUT_DIR}/reaches.ndjson`;
   const reachesGeojson = `${tilesDir}/reaches.geojson`;
-  const ignNamesNdjson = `${OUT_DIR}/ign-names.ndjson`;
+  const streamsNdjson = `${OUT_DIR}/streams.ndjson`;
+  const reachStreamFile = workPath("export/reach_stream.json");
+  await mkdir(workPath("export"), { recursive: true });
+  await writeFile(
+    reachStreamFile,
+    JSON.stringify(
+      streams.flatMap((s) =>
+        s.reachIds.map((id) => ({ HYRIV_ID: id, stream: s.id })),
+      ),
+    ),
+  );
   let counts;
-  let ignNamesCheck: {
-    names: number;
-    uniqueSlugs: boolean;
-    keysWithoutSlug: number;
-    excludedApprovedRivers: number;
+  let streamsCheck: {
+    streams: number;
+    reachesInStreams: number;
+    reachesOnStreamsAndRivers: number;
+    uniqueValidIds: boolean;
+    everyReachExported: boolean;
+    reachCountsMatch: boolean;
+    mouthsInStreams: boolean;
+    reachesTaggedMatchFile: boolean;
+    everyStreamHasSubbasin: boolean;
+    withoutReceivingRiver: number;
+    bySubbasin: Record<string, number>;
   } | null = null;
   try {
     await db.conn.run(`
@@ -90,19 +178,23 @@ async function main() {
              CASE WHEN i.display
                   THEN {name: i.name, confidence: i.confidence, reviewed: i.reviewed}
              END AS ign,
-             i.name_key AS ign_key,
+             rs.stream AS stream,
+             r.LENGTH_KM::DOUBLE AS length_raw,
              r.geom
       FROM ${lit(reachesFile)} r
       JOIN ${lit(atlasFile)} a USING (HYRIV_ID)
       LEFT JOIN ${lit(mappingFile)} m USING (HYRIV_ID)
-      LEFT JOIN read_parquet(${lit(ignFile)}) i USING (HYRIV_ID)`);
+      LEFT JOIN read_parquet(${lit(ignFile)}) i USING (HYRIV_ID)
+      LEFT JOIN read_json(${lit(reachStreamFile)},
+                          columns = {HYRIV_ID: 'BIGINT', stream: 'VARCHAR'}) rs
+        USING (HYRIV_ID)`);
     await db.conn.run(`
-      COPY (SELECT * EXCLUDE (geom, ign_key) FROM out ORDER BY _id)
+      COPY (SELECT * EXCLUDE (geom, length_raw) FROM out ORDER BY _id)
       TO ${lit(reachesNdjson)} (FORMAT json)`);
     // Map geometry: reaches that cross a lake use the clipped line from pipeline:lakes;
     // those left with no line are not drawn (their data stays in reaches.ndjson).
     await db.conn.run(`
-      COPY (SELECT o._id AS id, o.river, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
+      COPY (SELECT o._id AS id, o.river, o.stream, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
                    coalesce(g.geom, o.geom) AS geom
             FROM out o LEFT JOIN read_parquet(${lit(reachGeomFile)}) g ON g.HYRIV_ID = o._id
             WHERE g.geom IS NULL OR NOT ST_IsEmpty(g.geom))
@@ -114,51 +206,112 @@ async function main() {
              sum((ign IS NOT NULL)::INT)::INT AS ign_named_n
       FROM out`);
 
-    // IGN names that find reaches: one document per name key, longest reach first.
-    // Names of the approved rivers are left out; those are found as rivers.
-    const approvedKeys = new Set(
-      (
-        await readJson<{
-          rivers: {
-            name: string;
-            shortName: string;
-            slug?: string;
-            aliases?: string[];
-          }[];
-        }>(`${ROOT}/pipeline/names.json`)
-      ).rivers.flatMap((r) => [r.name, ...(r.aliases ?? [])].map(nameKey)),
-    );
-    const groups = await db.all(`
-      SELECT ign_key AS key, any_value(ign.name) AS name, count(*)::INT AS reach_count,
-             round(sum(lengthKm), 1) AS length_km, arg_max(_id, lengthKm) AS longest_reach,
-             round(min(bbox[1]), 5) AS west, round(min(bbox[2]), 5) AS south,
-             round(max(bbox[3]), 5) AS east, round(max(bbox[4]), 5) AS north
-      FROM out WHERE ign IS NOT NULL GROUP BY ign_key ORDER BY sum(lengthKm) DESC, ign_key`);
-    const ignNames = groups
-      .filter((g) => !approvedKeys.has(String(g.key)))
-      .map((g) => ({
-        _id: slugify(String(g.key)),
-        name: String(g.name),
-        reachCount: Number(g.reach_count),
-        lengthKm: Number(g.length_km),
-        longestReach: Number(g.longest_reach),
-        bbox: [
-          Number(g.west),
-          Number(g.south),
-          Number(g.east),
-          Number(g.north),
-        ],
-      }));
-    const slugCount = new Set(ignNames.map((n) => n._id)).size;
-    ignNamesCheck = {
-      names: ignNames.length,
-      uniqueSlugs: slugCount === ignNames.length,
-      keysWithoutSlug: ignNames.filter((n) => n._id === "").length,
-      excludedApprovedRivers: groups.length - ignNames.length,
+    // Streams (pipeline:ign-streams): one document per stream, with the values of its
+    // mouth reach. Their length is the sum of LENGTH_KM, rounded once, as in pipeline:named.
+    const mouthIds = streams.map((s) => s.mouthReach);
+    const mouthRows = await db.all(`
+      SELECT _id, catchmentMinElevationM, dischargeM3s, uplandKm2, distanceToSeaKm, strahler,
+             regulationPct, upstreamFloodedMinPct, upstreamFloodedMaxPct,
+             upstreamLakesPct, upstreamPopulation
+      FROM out WHERE _id IN (${mouthIds.length ? mouthIds.join(",") : "NULL"})`);
+    const mouthById = new Map(mouthRows.map((m) => [Number(m._id), m]));
+    const totals = await db.all(`
+      SELECT stream, count(*)::INT AS n, sum(length_raw) AS km,
+             min(bbox[1]) AS west, min(bbox[2]) AS south,
+             max(bbox[3]) AS east, max(bbox[4]) AS north,
+             sum((river IS NOT NULL)::INT)::INT AS on_rivers
+      FROM out WHERE stream IS NOT NULL GROUP BY stream`);
+    const totalById = new Map(totals.map((t) => [String(t.stream), t]));
+    const net = await db.all(`SELECT _id, nextDown, network, river FROM out`);
+    const drainNet = {
+      nextDown: new Map(net.map((r) => [Number(r._id), Number(r.nextDown)])),
+      river: new Map(
+        net.flatMap((r) =>
+          r.river == null ? [] : [[Number(r._id), String(r.river)] as const],
+        ),
+      ),
+      endorheic: new Set(
+        net.filter((r) => r.network === "endorheic").map((r) => Number(r._id)),
+      ),
+      nodeByMouth,
+      endorheicNode,
+    };
+    const docs = streams.flatMap((s) => {
+      const m = mouthById.get(s.mouthReach);
+      const t = totalById.get(s.id);
+      if (!m || !t) return [];
+      const { subbasin, receivingRiver } = streamDrainage(
+        s.mouthReach,
+        drainNet,
+      );
+      return [
+        {
+          _id: s.id,
+          name: s.name,
+          mouthReach: s.mouthReach,
+          reachCount: Number(t.n),
+          lengthKm: round(Number(t.km)),
+          subbasin,
+          receivingRiver,
+          mouth: {
+            elevationM: Number(m.catchmentMinElevationM),
+            dischargeM3s: Number(m.dischargeM3s),
+            uplandKm2: Number(m.uplandKm2),
+            distanceToSeaKm: Number(m.distanceToSeaKm),
+            strahler: Number(m.strahler),
+            regulationPct: Number(m.regulationPct),
+          },
+          watershed: {
+            floodedMinPct: Number(m.upstreamFloodedMinPct),
+            floodedMaxPct: Number(m.upstreamFloodedMaxPct),
+            lakesPct: Number(m.upstreamLakesPct),
+            population: Number(m.upstreamPopulation),
+          },
+          bbox: [
+            round(Number(t.west), 5),
+            round(Number(t.south), 5),
+            round(Number(t.east), 5),
+            round(Number(t.north), 5),
+          ],
+          modeled: STREAM_MODELED,
+          provenance: STREAM_PROVENANCE,
+        },
+      ];
+    });
+    const bySubbasin: Record<string, number> = {};
+    for (const d of docs) {
+      const k = d.subbasin ?? "none";
+      bySubbasin[k] = (bySubbasin[k] ?? 0) + 1;
+    }
+    const taggedInOut = totals.reduce((n, t) => n + Number(t.n), 0);
+    streamsCheck = {
+      streams: docs.length,
+      reachesInStreams: taggedInOut,
+      reachesOnStreamsAndRivers: totals.reduce(
+        (n, t) => n + Number(t.on_rivers),
+        0,
+      ),
+      // A slug part is required ("-123" would be a name that slugifies to nothing); the
+      // length limit is the API's (lib/data/params.ts parseStreamId).
+      uniqueValidIds:
+        new Set(streams.map((s) => s.id)).size === streams.length &&
+        streams.every((s) => /^[a-z0-9][a-z0-9-]{0,127}$/.test(s.id)),
+      everyReachExported: docs.length === streams.length,
+      reachCountsMatch: streams.every(
+        (s) => Number(totalById.get(s.id)?.n) === s.reachIds.length,
+      ),
+      mouthsInStreams: streams.every((s) => s.reachIds.includes(s.mouthReach)),
+      // No reach in two streams, so the tagged total equals the file's total.
+      reachesTaggedMatchFile:
+        taggedInOut === streams.reduce((n, s) => n + s.reachIds.length, 0),
+      everyStreamHasSubbasin: docs.every((d) => d.subbasin !== null),
+      withoutReceivingRiver: docs.filter((d) => d.receivingRiver === null)
+        .length,
+      bySubbasin,
     };
     await writeFile(
-      ignNamesNdjson,
-      ignNames.map((n) => JSON.stringify(n)).join("\n") + "\n",
+      streamsNdjson,
+      docs.map((d) => JSON.stringify(d)).join("\n") + "\n",
     );
   } finally {
     db.close();
@@ -182,9 +335,13 @@ async function main() {
     namedChecks: n.ok,
     zeroOrphanReaches: r.topology.orphans === 0,
     everyReachExported: counts?.n === counts?.source_n,
-    ignNamesUnique:
-      ignNamesCheck?.uniqueSlugs === true &&
-      ignNamesCheck.keysWithoutSlug === 0,
+    streamIdsUnique: streamsCheck?.uniqueValidIds === true,
+    everyStreamExported:
+      streamsCheck?.everyReachExported === true &&
+      streamsCheck.reachCountsMatch &&
+      streamsCheck.mouthsInStreams,
+    noReachInTwoStreams: streamsCheck?.reachesTaggedMatchFile === true,
+    everyStreamHasSubbasin: streamsCheck?.everyStreamHasSubbasin === true,
   };
   const summary = {
     ok: Object.values(checks).every(Boolean),
@@ -212,7 +369,7 @@ async function main() {
       namedRivers: n.namedKm,
     },
     namedRivers: n.rivers,
-    ignNames: ignNamesCheck,
+    streams: streamsCheck,
     intermittence: r.gires.byNetworkAndClass1Day,
   };
   const outReport = `${OUT_DIR}/report.json`;
@@ -221,7 +378,7 @@ async function main() {
     ...summary,
     outputs: [
       rel(reachesNdjson),
-      rel(ignNamesNdjson),
+      rel(streamsNdjson),
       rel(reachesGeojson),
       rel(`${tilesDir}/basin.geojson`),
       rel(outReport),

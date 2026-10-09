@@ -93,11 +93,16 @@ describe("endorheic overlay", () => {
 });
 
 describe("selectionFilter", () => {
-  it("matches a river by slug, a reach by feature id, nothing otherwise", () => {
+  it("matches a river by slug, a stream by id, a reach by feature id, nothing otherwise", () => {
     expect(selectionFilter({ kind: "river", id: "limay" })).toEqual([
       "==",
       ["get", "river"],
       "limay",
+    ]);
+    expect(selectionFilter({ kind: "stream", id: "arroyo-blanco-7" })).toEqual([
+      "==",
+      ["get", "stream"],
+      "arroyo-blanco-7",
     ]);
     expect(selectionFilter({ kind: "reach", id: 7 })).toEqual([
       "==",

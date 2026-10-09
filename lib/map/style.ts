@@ -211,16 +211,24 @@ export const IGN_DETAIL_COLOR = "#67e8f9";
 
 export const IMAGERY_LAYER_ID = "imagery";
 export const BACKGROUND_LAYER_ID = "background";
-/** Halo under the selected river or reach, drawn below the flow-class lines. */
+/** Halo under the selected river, stream or reach, drawn below the flow-class lines. */
 export const SELECTED_LAYER_ID = "reaches-selected";
 export const SELECTED_COLOR = "#fde68a";
 
-/** Tile features carry the reach id as feature id and the river slug as `river`. */
+/**
+ * Tile features carry the reach id as feature id, the river slug as `river` and the
+ * stream id as `stream` (both absent when the reach has none).
+ */
 export function selectionFilter(sel: Selection | null): FilterSpecification {
   if (!sel || sel.kind === "subbasin") return ["boolean", false];
-  return sel.kind === "river"
-    ? ["==", ["get", "river"], sel.id]
-    : ["==", ["id"], sel.id];
+  switch (sel.kind) {
+    case "river":
+      return ["==", ["get", "river"], sel.id];
+    case "stream":
+      return ["==", ["get", "stream"], sel.id];
+    case "reach":
+      return ["==", ["id"], sel.id];
+  }
 }
 
 // tippecanoe omits null attributes, so "no GIRES prediction" is a missing property.

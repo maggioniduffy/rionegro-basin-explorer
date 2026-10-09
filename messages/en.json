@@ -121,6 +121,12 @@
       "sea": "the sea",
       "weakName": "This river's name is less certain than the others."
     },
+    "stream": {
+      "label": "Stream details",
+      "title": "IGN stream",
+      "inSubbasin": "In",
+      "nameNote": "Name from IGN. The stream joins the reaches that share this name along the flow network."
+    },
     "reach": {
       "label": "Stream details",
       "title": "Unnamed stream",
@@ -129,7 +135,8 @@
       "showRiver": "Show the whole {river}",
       "endorheic": "Endorheic: drains inland and does not reach the sea.",
       "ignName": "Name from IGN. Match confidence: {confidence, select, high {high} medium {medium} other {low}}.",
-      "ignNameReviewed": "Name from IGN, confirmed by hand."
+      "ignNameReviewed": "Name from IGN, confirmed by hand.",
+      "showStream": "Show the whole {stream}"
     },
     "groups": {
       "course": "Course",

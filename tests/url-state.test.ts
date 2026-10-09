@@ -71,11 +71,40 @@ describe("sub-basin selection", () => {
   });
 });
 
+describe("stream selection", () => {
+  it("reads ?t= after ?r= and before ?reach=", () => {
+    expect(parseSelection(params("t=arroyo-blanco-61537003"))).toEqual({
+      kind: "stream",
+      id: "arroyo-blanco-61537003",
+    });
+    expect(parseSelection(params("r=limay&t=arroyo-blanco-1"))).toEqual({
+      kind: "river",
+      id: "limay",
+    });
+    expect(parseSelection(params("t=arroyo-blanco-1&reach=42"))).toEqual({
+      kind: "stream",
+      id: "arroyo-blanco-1",
+    });
+    expect(parseSelection(params("t=Bad Id&s=limay"))).toEqual({
+      kind: "subbasin",
+      id: "limay",
+    });
+  });
+  it("round-trips and replaces a previous selection", () => {
+    const sel = { kind: "stream", id: "arroyo-blanco-1" } as const;
+    const qs = selectionSearch(params("r=negro&reach=5&foo=1"), sel);
+    expect(qs).toBe("?foo=1&t=arroyo-blanco-1");
+    expect(parseSelection(params(qs))).toEqual(sel);
+    expect(sameSelection(sel, { kind: "river", id: sel.id })).toBe(false);
+  });
+});
+
 describe("legacyMapPath", () => {
   it.each([
     ["/", "r=limay", "/map"],
     ["/", "reach=61560077", "/map"],
     ["/", "s=neuquen", "/map"],
+    ["/", "t=arroyo-blanco-1", "/map"],
     ["/", "", null],
     ["/", "utm_source=x", null],
     ["/map", "r=limay", null],

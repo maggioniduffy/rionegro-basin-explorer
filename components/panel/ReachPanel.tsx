@@ -15,6 +15,7 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
   const f = useFormat();
   const select = useMapStore((s) => s.select);
   const river = reach.river;
+  const stream = reach.stream;
 
   return (
     <>
@@ -39,6 +40,17 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
             onClick={() => select({ kind: "river", id: river }, { fit: true })}
           >
             {t("reach.showRiver", { river: reach.riverName })}
+          </button>
+        )}
+        {stream && reach.streamName && (
+          <button
+            type="button"
+            className="self-start text-sm underline decoration-dotted underline-offset-2"
+            onClick={() =>
+              select({ kind: "stream", id: stream }, { fit: true })
+            }
+          >
+            {t("reach.showStream", { stream: reach.streamName })}
           </button>
         )}
         {reach.network === "endorheic" && (

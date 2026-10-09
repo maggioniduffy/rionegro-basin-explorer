@@ -9,6 +9,11 @@ export function parseRiverId(raw: string): string | null {
   return /^[a-z0-9-]{1,64}$/.test(raw) ? raw : null;
 }
 
+/** Stream ids: a name slug plus the mouth HYRIV_ID (pipeline/lib/streams.ts streamId). */
+export function parseStreamId(raw: string): string | null {
+  return /^[a-z0-9][a-z0-9-]{0,127}$/.test(raw) ? raw : null;
+}
+
 /** Sub-basin ids are slugs too (pipeline/subbasins.config.json). */
 export const parseSubbasinId = parseRiverId;
 

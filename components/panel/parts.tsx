@@ -11,6 +11,15 @@ import { Icon } from "../Icon";
 export type Caveat =
   "discharge" | "population" | "flooded" | "regulation" | "nonPerennial";
 
+/** Modeled value path (River.modeled, Stream.modeled) → the caveat that explains it. */
+export const CAVEAT_BY_PATH: [string, Caveat][] = [
+  ["mouth.dischargeM3s", "discharge"],
+  ["nonPerennialPct", "nonPerennial"],
+  ["watershed.floodedMaxPct", "flooded"],
+  ["watershed.population", "population"],
+  ["mouth.regulationPct", "regulation"],
+];
+
 export function useFormat() {
   const locale = useLocale();
   const units = useMapStore((s) => s.units);

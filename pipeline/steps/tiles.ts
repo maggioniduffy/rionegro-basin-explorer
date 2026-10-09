@@ -61,6 +61,7 @@ interface Feature {
 const REACH_PROPS = [
   "id",
   "river",
+  "stream",
   "network",
   "strahler",
   "nonPerennial1d",

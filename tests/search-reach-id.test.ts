@@ -5,7 +5,12 @@ vi.mock("server-only", () => ({}));
 
 // A tiny in-memory stand-in for the collections searchNames reads.
 type Doc = Record<string, unknown> & { _id: unknown };
-const data: Record<string, Doc[]> = { reaches: [], rivers: [], ignNames: [] };
+const data: Record<string, Doc[]> = {
+  reaches: [],
+  rivers: [],
+  streams: [],
+  subbasins: [],
+};
 const calls: string[] = [];
 
 function collection(name: string) {
@@ -22,7 +27,9 @@ function collection(name: string) {
     },
     find: (filter: Record<string, unknown>) => {
       calls.push(`${name}.find`);
-      const docs = "_id" in filter ? data[name]!.filter(match(filter)) : [];
+      // Name searches (no _id) return every stored document, as a prefix match would.
+      const docs =
+        "_id" in filter ? data[name]!.filter(match(filter)) : data[name]!;
       const cursor = {
         sort: () => cursor,
         limit: () => cursor,
@@ -69,5 +76,56 @@ describe("searchNames with a HYRIV_ID", () => {
     expect(await searchNames("12345")).toEqual([]);
     expect(await searchNames("0123")).toEqual([]);
     expect(calls).toEqual(["reaches.findOne"]);
+  });
+});
+
+describe("searchNames with a name", () => {
+  it("returns streams with the sub-basin of their mouth, longest first", async () => {
+    data.rivers = [{ _id: "varvarco", name: "Río Varvarco", lengthKm: 100 }];
+    data.subbasins = [
+      { _id: "neuquen", name: "Neuquén", kind: "river" },
+      { _id: "endorheic", name: null, kind: "endorheic" },
+    ];
+    data.streams = [
+      {
+        _id: "arroyo-blanco-1",
+        name: "Arroyo Blanco",
+        lengthKm: 12,
+        bbox,
+        subbasin: "neuquen",
+      },
+      {
+        _id: "arroyo-blanco-2",
+        name: "Arroyo Blanco",
+        lengthKm: 150,
+        bbox,
+        subbasin: "endorheic",
+      },
+      {
+        _id: "arroyo-blanco-3",
+        name: "Arroyo Blanco",
+        lengthKm: 5,
+        bbox,
+        subbasin: null,
+      },
+    ];
+    const hits = await searchNames("arroyo blanco");
+    expect(hits.map((h) => `${h.kind}:${h.id}`)).toEqual([
+      "stream:arroyo-blanco-2",
+      "river:varvarco",
+      "stream:arroyo-blanco-1",
+      "stream:arroyo-blanco-3",
+    ]);
+    expect(hits[0]).toEqual({
+      kind: "stream",
+      id: "arroyo-blanco-2",
+      name: "Arroyo Blanco",
+      bbox,
+      subbasin: { id: "endorheic", name: null, kind: "endorheic" },
+    });
+    expect(hits[2]).toMatchObject({
+      subbasin: { id: "neuquen", name: "Neuquén", kind: "river" },
+    });
+    expect(hits[3]).toMatchObject({ subbasin: null });
   });
 });

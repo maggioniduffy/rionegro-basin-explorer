@@ -3,6 +3,7 @@ import {
   parseReachId,
   parseRiverId,
   parseSearchQuery,
+  parseStreamId,
   searchPattern,
   SEARCH_MAX_LENGTH,
 } from "@/lib/data/params";
@@ -12,6 +13,16 @@ describe("parseRiverId", () => {
     expect(parseRiverId("collon-cura")).toBe("collon-cura");
     for (const bad of ["", "Negro", "a b", "a/b", "x".repeat(65), "$where"])
       expect(parseRiverId(bad)).toBeNull();
+  });
+});
+
+describe("parseStreamId", () => {
+  it("accepts a name slug plus mouth reach and rejects anything else", () => {
+    expect(parseStreamId("arroyo-blanco-61537003")).toBe(
+      "arroyo-blanco-61537003",
+    );
+    for (const bad of ["", "-1", "Arroyo", "a b", "a/b", "x".repeat(129)])
+      expect(parseStreamId(bad)).toBeNull();
   });
 });
 

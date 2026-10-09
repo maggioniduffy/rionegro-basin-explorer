@@ -188,7 +188,13 @@ the mask hole and the `lakes` outline layer.
 
 Writes the Phase 1 artifacts:
 
-- `data/out/reaches.ndjson`: one document per reach (gitignored, about 3 MB).
+- `data/out/reaches.ndjson`: one document per reach (gitignored, about 3 MB). Each carries `stream`
+  (its stream id from `ign-streams`, or null; it can be set together with `river`).
+- `data/out/streams.ndjson`: one document per stream from `ign-streams` (replaces `ign-names.ndjson`):
+  name, mouth reach, reach count, `lengthKm` (sum of `LENGTH_KM`), bbox, `subbasin` (first sub-basin
+  mouth on the way down from the stream's mouth, see `streamDrainage`), `receivingRiver`, and the
+  mouth-reach values with `modeled` and `provenance`, as in `rivers.ndjson`. Needs `ign-streams`
+  and `named` (`data/out/rivers.ndjson`) first.
 - `data/work/tiles/reaches.geojson` and `basin.geojson`: tippecanoe inputs for Phase 2.
 - `data/out/report.json`: the combined, committed report. It covers counts, km, orphans, the area
   check and the named rivers.
@@ -302,7 +308,7 @@ DECISSIONS.md (Phase 5) for how they were calibrated.
 
 ### `npm run pipeline:ign-streams`
 
-Splits each shown IGN name into real streams (detection only; nothing in `data/out` changes yet). Inputs:
+Splits each shown IGN name into real streams (detection only; `export` turns `streams.json` into `data/out/streams.ndjson`). Inputs:
 `rivers/reaches.parquet` (`HYRIV_ID`, `NEXT_DOWN`, `LENGTH_KM`, geometry for the bbox),
 `named/river_reaches.parquet` (`river`), `ign-match/reach_ign.parquet` (`name`, `name_key`, `display`)
 and `pipeline/names.json`. A reach carries an IGN name when `display` is true; approved river names and

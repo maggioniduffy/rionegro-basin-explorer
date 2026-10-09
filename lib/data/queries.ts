@@ -3,18 +3,32 @@ import { getDb } from "@/lib/mongo";
 import { parseReachId, searchPattern, SEARCH_LIMIT } from "./params";
 import type {
   Bbox,
-  IgnNameDoc,
   Reach,
   River,
   RiverDoc,
+  Stream,
+  StreamDoc,
   Subbasin,
 } from "./schemas";
 
 /** River as served by /api/rivers/[id]: the stored document plus names it refers to. */
 export type RiverResponse = River & { flowsIntoName: string | null };
 
+/**
+ * Stream as served by /api/streams/[id]: the stored document plus the names it refers to.
+ * `subbasinRef` is the sub-basin that holds its mouth; `receivingRiverRef` the approved
+ * river downstream of it.
+ */
+export type StreamResponse = Stream & {
+  subbasinRef: SubbasinRef | null;
+  receivingRiverRef: NamedRef | null;
+};
+
 /** Reach as served by /api/reaches/[id]. */
-export type ReachResponse = Reach & { riverName: string | null };
+export type ReachResponse = Reach & {
+  riverName: string | null;
+  streamName: string | null;
+};
 
 export interface NamedRef {
   id: string;
@@ -33,23 +47,28 @@ export type SubbasinResponse = Subbasin & {
   riverRefs: NamedRef[];
 };
 
-/**
- * A search result: a named river (id = slug) or an IGN name (id = the longest reach with
- * that name, bbox = all its reaches).
- */
 /** A node of the sub-basin tree served by /api/subbasins, in hierarchy order. */
 export type SubbasinTreeNode = SubbasinRef &
   Pick<Subbasin, "level" | "parentId" | "childIds" | "areaKm2">;
 
+/**
+ * A search result: a named river (id = slug), an IGN stream (id = stream id, bbox = all
+ * its reaches; `subbasin` tells same-name streams apart) or a typed HYRIV_ID.
+ */
 export type SearchHit =
   | { kind: "river"; id: string; name: string }
-  | { kind: "reach"; id: string; name: string; bbox: Bbox }
+  | {
+      kind: "stream";
+      id: string;
+      name: string;
+      bbox: Bbox;
+      subbasin: SubbasinRef | null;
+    }
   /** A typed HYRIV_ID; name is its IGN name or its river's, null for neither. */
   | { kind: "reachId"; id: string; name: string | null; bbox: Bbox };
 
 const rivers = async () => (await getDb()).collection<RiverDoc>("rivers");
-const ignNames = async () =>
-  (await getDb()).collection<IgnNameDoc>("ignNames");
+const streams = async () => (await getDb()).collection<StreamDoc>("streams");
 const reaches = async () => (await getDb()).collection<Reach>("reaches");
 const subbasins = async () =>
   (await getDb()).collection<Subbasin>("subbasins");
@@ -98,10 +117,36 @@ export async function getRiver(id: string): Promise<RiverResponse | null> {
   return { ...doc, flowsIntoName: await riverName(doc.flowsInto) };
 }
 
+export async function getStream(id: string): Promise<StreamResponse | null> {
+  const doc = await (await streams()).findOne(
+    { _id: id },
+    { projection: { searchTerms: 0 } },
+  );
+  if (!doc) return null;
+  const [[subbasinRef], [receivingRiverRef]] = await Promise.all([
+    subbasinRefs(doc.subbasin ? [doc.subbasin] : []),
+    namedRivers(doc.receivingRiver ? [doc.receivingRiver] : []),
+  ]);
+  return {
+    ...doc,
+    subbasinRef: subbasinRef ?? null,
+    receivingRiverRef: receivingRiverRef ?? null,
+  };
+}
+
 export async function getReach(id: number): Promise<ReachResponse | null> {
   const doc = await (await reaches()).findOne({ _id: id });
   if (!doc) return null;
-  return { ...doc, riverName: await riverName(doc.river) };
+  const [river, stream] = await Promise.all([
+    riverName(doc.river),
+    doc.stream
+      ? (await streams()).findOne(
+          { _id: doc.stream },
+          { projection: { name: 1 } },
+        )
+      : null,
+  ]);
+  return { ...doc, riverName: river, streamName: stream?.name ?? null };
 }
 
 export async function getSubbasin(
@@ -144,8 +189,9 @@ export async function getSubbasinTree(): Promise<SubbasinTreeNode[]> {
 }
 
 /**
- * Rivers and IGN names with a word starting with the normalized query, longest first.
- * Both collections are asked for the limit, then merged by total length.
+ * Rivers and IGN streams with a word starting with the normalized query, longest first.
+ * Both collections are asked for the limit, then merged by total length. Each stream hit
+ * carries the sub-basin of its mouth, so streams with the same name can be told apart.
  */
 export async function searchNames(q: string): Promise<SearchHit[]> {
   // A number is a HydroRIVERS HYRIV_ID: open that reach (names have no digits only).
@@ -154,36 +200,49 @@ export async function searchNames(q: string): Promise<SearchHit[]> {
     return id === null ? [] : reachIdHit(id);
   }
   const filter = { searchTerms: { $regex: searchPattern(q) } };
-  const [riverDocs, nameDocs] = await Promise.all([
+  const [riverDocs, streamDocs] = await Promise.all([
     (await rivers())
       .find(filter, { projection: { name: 1, lengthKm: 1 } })
       .sort({ lengthKm: -1 })
       .limit(SEARCH_LIMIT)
       .toArray(),
-    (await ignNames())
-      .find(filter, { projection: { searchTerms: 0 } })
+    (await streams())
+      .find(filter, {
+        projection: { name: 1, lengthKm: 1, bbox: 1, subbasin: 1 },
+      })
       .sort({ lengthKm: -1 })
       .limit(SEARCH_LIMIT)
       .toArray(),
   ]);
-  return [
-    ...riverDocs.map((d) => ({
-      lengthKm: d.lengthKm,
-      hit: { kind: "river" as const, id: d._id, name: d.name },
-    })),
-    ...nameDocs.map((d) => ({
-      lengthKm: d.lengthKm,
-      hit: {
-        kind: "reach" as const,
-        id: String(d.longestReach),
-        name: d.name,
-        bbox: d.bbox,
-      },
-    })),
-  ]
-    .sort((a, b) => b.lengthKm - a.lengthKm)
-    .slice(0, SEARCH_LIMIT)
-    .map((x) => x.hit);
+  const merged: { lengthKm: number; hit: SearchHit; subbasin?: string | null }[] =
+    [
+      ...riverDocs.map((d) => ({
+        lengthKm: d.lengthKm,
+        hit: { kind: "river" as const, id: d._id, name: d.name },
+      })),
+      ...streamDocs.map((d) => ({
+        lengthKm: d.lengthKm,
+        subbasin: d.subbasin,
+        hit: {
+          kind: "stream" as const,
+          id: d._id,
+          name: d.name,
+          bbox: d.bbox,
+          subbasin: null,
+        },
+      })),
+    ]
+      .sort((a, b) => b.lengthKm - a.lengthKm)
+      .slice(0, SEARCH_LIMIT);
+  const wanted = [
+    ...new Set(merged.flatMap((m) => (m.subbasin ? [m.subbasin] : []))),
+  ];
+  const refs = new Map((await subbasinRefs(wanted)).map((r) => [r.id, r]));
+  return merged.map((m) =>
+    m.hit.kind === "stream" && m.subbasin
+      ? { ...m.hit, subbasin: refs.get(m.subbasin) ?? null }
+      : m.hit,
+  );
 }
 
 async function reachIdHit(id: number): Promise<SearchHit[]> {
