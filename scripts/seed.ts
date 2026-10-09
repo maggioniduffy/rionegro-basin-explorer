@@ -9,6 +9,8 @@
  * is a read-only user (Phase 8), so the seed has its own. Writes
  * data/work/seed/report.json.
  *
+ * The ignNames collection (one document per IGN name, before streams) is dropped if found.
+ *
  * Indexes:
  *   rivers   _id is the slug (unique by definition); text index on name/shortName;
  *            searchTerms (normalized names) for prefix search
@@ -110,6 +112,14 @@ async function main() {
     const reachResult = await sync(reachesColl, reaches);
     const subbasinResult = await sync(subbasinsColl, subbasins);
     const streamResult = await sync(streamsColl, streams);
+    // ignNames held one document per IGN name before streams replaced it; nothing reads
+    // it any more, so drop it once (later runs find nothing to drop).
+    const legacyIgnNamesDropped =
+      (
+        await db
+          .listCollections({ name: "ignNames" }, { nameOnly: true })
+          .toArray()
+      ).length > 0 && (await db.dropCollection("ignNames"));
 
     await riversColl.createIndex(
       { name: "text", shortName: "text" },
@@ -182,6 +192,7 @@ async function main() {
       reaches: reachResult,
       subbasins: subbasinResult,
       streams: streamResult,
+      legacyIgnNamesDropped,
       indexes: {
         rivers: (await riversColl.indexes()).map((i) => i.name),
         reaches: (await reachesColl.indexes()).map((i) => i.name),

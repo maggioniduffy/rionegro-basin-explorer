@@ -54,6 +54,7 @@ import {
   selectedOutlineFilter,
   SUBBASIN_SELECTED_LAYER_ID,
   THEME_COLORS,
+  reachFeatureSelection,
 } from "@/lib/map/style";
 import { initMaplibre } from "@/lib/map/init";
 import { setMainMap } from "@/lib/map/main-map";
@@ -231,14 +232,7 @@ function hitReach(map: MapLibreMap, x: number, y: number): Selection | null {
     undefined,
   );
   if (!best) return null;
-  const river: unknown = best.properties.river;
-  if (typeof river === "string" && river) return { kind: "river", id: river };
-  // A reach on a stream (and on no approved river) opens the whole stream.
-  const stream: unknown = best.properties.stream;
-  if (typeof stream === "string" && stream)
-    return { kind: "stream", id: stream };
-  const id = Number(best.id);
-  return Number.isSafeInteger(id) && id > 0 ? { kind: "reach", id } : null;
+  return reachFeatureSelection(best.properties, best.id);
 }
 
 type State = ReturnType<typeof useMapStore.getState>;

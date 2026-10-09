@@ -231,6 +231,23 @@ export function selectionFilter(sel: Selection | null): FilterSpecification {
   }
 }
 
+/**
+ * What a click on a reach tile feature opens: its approved river, else its stream (the
+ * river wins on a reach that is in both; the stream stays reachable from search), else
+ * the reach itself.
+ */
+export function reachFeatureSelection(
+  properties: Record<string, unknown>,
+  featureId: unknown,
+): Selection | null {
+  const { river, stream } = properties;
+  if (typeof river === "string" && river) return { kind: "river", id: river };
+  if (typeof stream === "string" && stream)
+    return { kind: "stream", id: stream };
+  const id = Number(featureId);
+  return Number.isSafeInteger(id) && id > 0 ? { kind: "reach", id } : null;
+}
+
 // tippecanoe omits null attributes, so "no GIRES prediction" is a missing property.
 const CLASS_FILTER: Record<FlowClass, ExpressionSpecification> = {
   perennial: ["==", ["get", "nonPerennial1d"], 0],

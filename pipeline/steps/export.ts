@@ -65,6 +65,12 @@ async function readJson<T>(file: string): Promise<T> {
 /** Rounds like pipeline:named, which sums LENGTH_KM and rounds the total once. */
 const round = (x: number, digits = 1) => Number(x.toFixed(digits));
 
+/**
+ * A DuckDB value as a number, keeping null as null so the seed's schema rejects a missing
+ * value instead of storing 0 (CLAUDE.md rule 2).
+ */
+const orNull = (v: unknown) => (v == null ? null : Number(v));
+
 const STREAM_PROVENANCE = {
   name: "pipeline:ign-streams: most frequent IGN spelling of the stream's name (pipeline:ign-match)",
   reachCount:
@@ -254,18 +260,18 @@ async function main() {
           subbasin,
           receivingRiver,
           mouth: {
-            elevationM: Number(m.catchmentMinElevationM),
-            dischargeM3s: Number(m.dischargeM3s),
-            uplandKm2: Number(m.uplandKm2),
-            distanceToSeaKm: Number(m.distanceToSeaKm),
-            strahler: Number(m.strahler),
-            regulationPct: Number(m.regulationPct),
+            elevationM: orNull(m.catchmentMinElevationM),
+            dischargeM3s: orNull(m.dischargeM3s),
+            uplandKm2: orNull(m.uplandKm2),
+            distanceToSeaKm: orNull(m.distanceToSeaKm),
+            strahler: orNull(m.strahler),
+            regulationPct: orNull(m.regulationPct),
           },
           watershed: {
-            floodedMinPct: Number(m.upstreamFloodedMinPct),
-            floodedMaxPct: Number(m.upstreamFloodedMaxPct),
-            lakesPct: Number(m.upstreamLakesPct),
-            population: Number(m.upstreamPopulation),
+            floodedMinPct: orNull(m.upstreamFloodedMinPct),
+            floodedMaxPct: orNull(m.upstreamFloodedMaxPct),
+            lakesPct: orNull(m.upstreamLakesPct),
+            population: orNull(m.upstreamPopulation),
           },
           bbox: [
             round(Number(t.west), 5),

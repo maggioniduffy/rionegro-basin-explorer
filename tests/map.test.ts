@@ -23,6 +23,7 @@ import {
   maskLayerId,
   reachFilter,
   reachLayerId,
+  reachFeatureSelection,
   selectionFilter,
   waterFilter,
 } from "../lib/map/style";
@@ -214,5 +215,31 @@ describe("reachFilter with the Display toggles", () => {
       false,
     );
     expect(keeps(reachFilter("unknown", false, layers), {})).toBe(false);
+  });
+});
+
+describe("reachFeatureSelection", () => {
+  it("opens the approved river first, then the stream, then the reach", () => {
+    const both = { river: "limay", stream: "arroyo-blanco-7" };
+    expect(reachFeatureSelection(both, 7)).toEqual({
+      kind: "river",
+      id: "limay",
+    });
+    expect(reachFeatureSelection({ stream: "arroyo-blanco-7" }, 7)).toEqual({
+      kind: "stream",
+      id: "arroyo-blanco-7",
+    });
+    expect(reachFeatureSelection({ strahler: 1 }, 7)).toEqual({
+      kind: "reach",
+      id: 7,
+    });
+  });
+  it("ignores empty properties and invalid feature ids", () => {
+    expect(reachFeatureSelection({ river: "", stream: "" }, "7")).toEqual({
+      kind: "reach",
+      id: 7,
+    });
+    expect(reachFeatureSelection({}, undefined)).toBeNull();
+    expect(reachFeatureSelection({}, 0)).toBeNull();
   });
 });
