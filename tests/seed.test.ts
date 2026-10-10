@@ -69,7 +69,10 @@ describe("parseNdjson", () => {
       ign: { name: "Arroyo Ñireco", confidence: "high", reviewed: false },
     };
     expect(parseNdjson(JSON.stringify(named), reachSchema)).toEqual([named]);
-    const bad = { ...named, ign: { ...named.ign, confidence: "none" } };
+    // "none": an owner-named reach that no IGN line carries (Río Correntoso).
+    const owner = { ...named, ign: { ...named.ign, confidence: "none" } };
+    expect(parseNdjson(JSON.stringify(owner), reachSchema)).toEqual([owner]);
+    const bad = { ...named, ign: { ...named.ign, confidence: "certain" } };
     expect(() => parseNdjson(JSON.stringify(bad), reachSchema)).toThrow();
   });
   it("rejects a missing field", () => {
