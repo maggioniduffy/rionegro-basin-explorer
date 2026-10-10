@@ -96,7 +96,7 @@ icons, tiles and the MapLibre worker untouched, the OG image is built per region
       such as `/?r=limay`; check `/api/health` returns `{"ok":true}`; share the landing URL
       in a link-preview tool (or check `og:image` in the page source) to see the OG image.
 
-### Step 5c — the map reads its region on the client (this commit)
+### Step 5c — the map reads its region on the client (`ed96bd4`)
 
 `app/[region]/layout.tsx` provides the region (`components/RegionProvider.tsx`); the main
 map and the minimap take their extent, bounds and tile URLs from it (`mapConfigFor`,
