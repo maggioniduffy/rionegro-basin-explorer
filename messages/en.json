@@ -103,6 +103,22 @@
       "feet": "ft"
     }
   },
+  "ask": {
+    "label": "Ask about the basin",
+    "placeholder": "Ask: biggest tributary of the Limay",
+    "submit": "Ask",
+    "loading": "Asking…",
+    "noMatch": "Nothing on the map matches that question.",
+    "unsupported": "The map cannot answer that question. Try naming a river or a basin.",
+    "examplesTitle": "Try one of these",
+    "examples": {
+      "0": "Collón Curá",
+      "1": "Neuquén basin",
+      "2": "Limay"
+    },
+    "rateLimited": "Too many questions. Wait a moment and try again.",
+    "error": "The question could not be answered right now."
+  },
   "search": {
     "label": "Search rivers and streams",
     "placeholder": "Search a river or stream",

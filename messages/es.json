@@ -103,6 +103,22 @@
       "feet": "ft"
     }
   },
+  "ask": {
+    "label": "Preguntá sobre la cuenca",
+    "placeholder": "Preguntá: mayor afluente del Limay",
+    "submit": "Preguntar",
+    "loading": "Preguntando…",
+    "noMatch": "Nada en el mapa coincide con esa pregunta.",
+    "unsupported": "El mapa no puede responder esa pregunta. Probá nombrando un río o una cuenca.",
+    "examplesTitle": "Probá con alguno de estos",
+    "examples": {
+      "0": "Collón Curá",
+      "1": "Cuenca del Neuquén",
+      "2": "Limay"
+    },
+    "rateLimited": "Demasiadas preguntas. Esperá un momento y probá de nuevo.",
+    "error": "No se pudo responder la pregunta en este momento."
+  },
   "search": {
     "label": "Buscar ríos y arroyos",
     "placeholder": "Buscar un río o arroyo",
