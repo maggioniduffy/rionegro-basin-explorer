@@ -146,7 +146,7 @@ region's prompt examples exists in its `data/out`.
 - [ ] The PLAN.md Design v3 item "Regenerate `basin.png`" now means
       `public/landing/nqn/basin.png`.
 
-### `--region` is required (this commit)
+### `--region` is required (`5660717`)
 
 Every pipeline step, `seed`, `atlas:check`, `landing:sample`, `inspect:file` and
 `scripts/og-shapes.ts` now stop with "pass --region <id>" when the flag is missing, before
