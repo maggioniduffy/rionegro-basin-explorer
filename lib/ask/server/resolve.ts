@@ -82,10 +82,15 @@ function winnerSelect(
     : null;
 }
 
-/** A cached resolution may only point at ids the current catalog has; else null (a miss). */
+/**
+ * A cached resolution may only point at ids the current catalog has; else null (a miss).
+ * `question` is the text the cache key was made from, so a threshold's number is checked
+ * against it again.
+ */
 export function revalidate(
   hit: AskResolution,
   catalog: Catalog,
+  question: string,
 ): AskResolution | null {
   switch (hit.action) {
     case "select":
@@ -95,7 +100,7 @@ export function revalidate(
     case "compare":
     case "rank":
     case "fact": {
-      const checked = validateIntent(hit, catalog.known);
+      const checked = validateIntent(hit, catalog.known, question);
       return checked.action === hit.action ? checked : null;
     }
     default:

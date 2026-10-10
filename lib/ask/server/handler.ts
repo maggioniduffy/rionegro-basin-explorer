@@ -57,7 +57,7 @@ export async function handleAsk(req: Request): Promise<Response> {
     const catalog = await getCatalog();
     const key = askCacheKey(parsed.normalized, body.locale, catalog.version);
     const hit = await readCache(key);
-    const valid = hit && revalidate(hit, catalog);
+    const valid = hit && revalidate(hit, catalog, parsed.normalized);
     if (valid) return respond(await materialize(valid, "cache", catalog));
 
     const { resolution, source, cacheable } = await resolveAsk(

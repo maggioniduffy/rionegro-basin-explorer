@@ -292,10 +292,16 @@ export interface MetricDoc {
   name: string | null;
   /** Null when the document has no finite number at the path (rule 2). */
   value: number | null;
-  /** The document lists the path in `modeled`. */
+  /** Every requested path's stored number (null when absent), keyed by path. */
+  values: Record<string, number | null>;
+  /** The document lists the main path in `modeled`. */
   modeled: boolean;
-  /** The document's provenance text for the path. */
+  /** The document's provenance text for the main path. */
   provenance: string | null;
+  /** Sub-basins only: ids from the root to this node (null for rivers). */
+  lineage: string[] | null;
+  /** Sub-basins only: the named rivers whose mouth lies inside (null for rivers). */
+  rivers: string[] | null;
 }
 
 function valueAt(doc: unknown, path: string): number | null {
@@ -307,17 +313,32 @@ function valueAt(doc: unknown, path: string): number | null {
   return typeof node === "number" && Number.isFinite(node) ? node : null;
 }
 
+function idList(value: unknown): string[] | null {
+  return Array.isArray(value) && value.every((v) => typeof v === "string")
+    ? (value as string[])
+    : null;
+}
+
 /**
- * The value at `path` (a dotted document path from lib/ask/metrics.ts) of the rivers or
- * sub-basins `ids`, with its modeled flag and provenance. Unknown ids are left out.
+ * The values at `paths` (dotted document paths from lib/ask/metrics.ts, plus the fields a
+ * ranking filters on) of the rivers or sub-basins `ids`. `paths[0]` is the main one: its
+ * value, modeled flag and provenance are returned apart. Sub-basins also carry their
+ * lineage and rivers. Unknown ids are left out.
  */
 export async function getMetricDocs(
   kind: "river" | "subbasin",
   ids: string[],
-  path: string,
+  paths: string[],
 ): Promise<MetricDoc[]> {
   if (ids.length === 0) return [];
-  const projection = { name: 1, modeled: 1, provenance: 1, [path]: 1 };
+  const main = paths[0];
+  const projection: Record<string, 1> = {
+    name: 1,
+    modeled: 1,
+    provenance: 1,
+    ...Object.fromEntries(paths.map((p) => [p, 1 as const])),
+    ...(kind === "subbasin" ? { path: 1, rivers: 1 } : {}),
+  };
   const filter = { _id: { $in: ids } };
   const docs =
     kind === "river"
@@ -326,9 +347,12 @@ export async function getMetricDocs(
   return docs.map((doc) => ({
     id: doc._id,
     name: doc.name ?? null,
-    value: valueAt(doc, path),
-    modeled: Array.isArray(doc.modeled) && doc.modeled.includes(path),
-    provenance: doc.provenance?.[path] ?? null,
+    value: main === undefined ? null : valueAt(doc, main),
+    values: Object.fromEntries(paths.map((p) => [p, valueAt(doc, p)])),
+    modeled: main !== undefined && Array.isArray(doc.modeled) && doc.modeled.includes(main),
+    provenance: main === undefined ? null : (doc.provenance?.[main] ?? null),
+    lineage: kind === "subbasin" ? idList((doc as { path?: unknown }).path) : null,
+    rivers: kind === "subbasin" ? idList((doc as { rivers?: unknown }).rivers) : null,
   }));
 }
 

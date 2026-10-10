@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Catalog } from "@/lib/ask/catalog";
 import type { AskResult } from "@/lib/ask/contract";
-import type { Intent } from "@/lib/ask/intent";
+import { validateIntent, type Intent } from "@/lib/ask/intent";
 import type { CatalogDocs } from "@/lib/data/queries";
 
 vi.mock("server-only", () => ({}));
@@ -137,8 +137,18 @@ beforeEach(() => {
   metricDocs.overrides.clear();
   getMetricDocs.mockReset();
   getMetricDocs.mockImplementation(
-    async (_kind: string, ids: string[], path: string) =>
+    async (_kind: string, ids: string[], paths: string[]) =>
       ids.map((id) => {
+        const path = paths[0] ?? "";
+        const at = (p: string): number | null => {
+          const v = p
+            .split(".")
+            .reduce<unknown>(
+              (node, key) => (node as Record<string, unknown>)?.[key],
+              seeded(id),
+            );
+          return typeof v === "number" ? v : null;
+        };
         const doc = seeded(id) as {
           name: string;
           modeled: string[];
@@ -156,6 +166,9 @@ beforeEach(() => {
           id,
           name: doc.name,
           value: typeof value === "number" ? value : null,
+          values: Object.fromEntries(paths.map((p) => [p, at(p)])),
+          lineage: null,
+          rivers: null,
           modeled: doc.modeled.includes(path),
           provenance: doc.provenance[path] ?? null,
         };
@@ -475,6 +488,62 @@ describe("POST /api/ask: compare, rank and fact", () => {
     });
     if (res.action !== "answer") throw new Error("expected an answer");
     expect(res.answer.items[0]).toMatchObject({ modeled: true });
+  });
+});
+
+describe("POST /api/ask: rank with a threshold", () => {
+  const rank = (number: number): Intent => ({
+    action: "rank",
+    kind: "river",
+    scope: "all",
+    metric: "length",
+    order: "max",
+    filters: [{ type: "threshold", metric: "length", op: "gt", number }],
+  });
+  const long = (r: unknown) => (r as { lengthKm: number }).lengthKm;
+
+  it("answers a number written in the question and serves the repeat from cache", async () => {
+    llm.resolveIntent.mockResolvedValue(rank(100));
+    const POST = await setup();
+    const q = "rios de mas de 100 km por largo";
+    const first = await ask(POST, q);
+    if (first.action !== "answer") throw new Error("expected an answer");
+    const expected = (docs.rivers as unknown[]).filter((r) => long(r) > 100);
+    expect(first.source).toBe("llm");
+    expect(first.answer.total).toBe(expected.length);
+    expect(first.answer.filters).toEqual([
+      { type: "threshold", metric: "length", op: "gt", number: 100 },
+    ]);
+
+    const again = await ask(POST, q);
+    expect(again).toMatchObject({ action: "answer", source: "cache" });
+    expect(llm.resolveIntent).toHaveBeenCalledTimes(1);
+  });
+
+  it("is unsupported when the number is not in the question", async () => {
+    // Like lib/llm.ts: the model's intent is validated against the question.
+    llm.resolveIntent.mockImplementation(async (query: string) =>
+      validateIntent(rank(250), catalog.known, query),
+    );
+    const POST = await setup();
+    expect(await ask(POST, "rios de mas de 100 km por largo")).toEqual({
+      action: "unsupported",
+      source: "llm",
+    });
+    expect(getMetricDocs).not.toHaveBeenCalled();
+  });
+
+  it("revalidates a cached threshold against the question", async () => {
+    llm.resolveIntent.mockResolvedValue(rank(100));
+    const POST = await setup();
+    await ask(POST, "rios de mas de 100 km por largo");
+    const key = [...upstash.kv.keys()][0] as string;
+    upstash.kv.set(key, rank(250));
+    const cold = await setup();
+    expect(await ask(cold, "rios de mas de 100 km por largo")).toMatchObject({
+      source: "llm",
+    });
+    expect(llm.resolveIntent).toHaveBeenCalledTimes(2);
   });
 });
 

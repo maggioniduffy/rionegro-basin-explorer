@@ -1,9 +1,9 @@
 import "server-only";
 import type { Catalog } from "@/lib/ask/catalog";
 import type { AnswerItem, AskAnswer } from "@/lib/ask/contract";
-import type { Intent } from "@/lib/ask/intent";
+import type { Filter, Intent } from "@/lib/ask/intent";
 import { metricPath } from "@/lib/ask/metrics";
-import { getMetricDocs } from "@/lib/data/queries";
+import { getMetricDocs, type MetricDoc } from "@/lib/data/queries";
 
 export type AnswerIntent = Extract<
   Intent,
@@ -12,6 +12,85 @@ export type AnswerIntent = Extract<
 
 /** Most items a ranking shows. */
 export const RANK_LIMIT = 5;
+/** Most items a ranking with filters shows (the card also says how many matched). */
+export const FILTERED_RANK_LIMIT = 10;
+
+const NON_PERENNIAL = "nonPerennialPct";
+const UNKNOWN = "unknownPct";
+const REGULATION: Record<AnswerIntent["kind"], string> = {
+  river: "mouth.regulationPct",
+  subbasin: "outlet.regulationPct",
+};
+
+/** Document fields the filters read, besides the metric. */
+function filterPaths(filters: Filter[], kind: AnswerIntent["kind"]): string[] {
+  return filters.flatMap((f) => {
+    switch (f.type) {
+      case "regime":
+        return f.value === "perennial"
+          ? [NON_PERENNIAL, UNKNOWN]
+          : [NON_PERENNIAL];
+      case "regulated":
+        return [REGULATION[kind]];
+      case "threshold": {
+        const path = metricPath(f.metric, kind);
+        return path === null ? [] : [path];
+      }
+      case "within":
+        return [];
+    }
+  });
+}
+
+/**
+ * Ids of the rivers inside each sub-basin named by a `within` filter, read from the
+ * sub-basin documents. Sub-basins use their own lineage instead (no extra read).
+ */
+async function riversWithin(
+  filters: Filter[],
+  kind: AnswerIntent["kind"],
+): Promise<Map<string, Set<string>>> {
+  const slugs = filters.flatMap((f) => (f.type === "within" ? [f.slug] : []));
+  const members = new Map<string, Set<string>>();
+  if (kind !== "river" || slugs.length === 0) return members;
+  const docs = await getMetricDocs("subbasin", [...new Set(slugs)], []);
+  for (const doc of docs) members.set(doc.id, new Set(doc.rivers ?? []));
+  return members;
+}
+
+/** Whether a document meets one filter; missing fields never match (rule 2). */
+function matches(
+  doc: MetricDoc,
+  filter: Filter,
+  kind: AnswerIntent["kind"],
+  within: Map<string, Set<string>>,
+): boolean {
+  switch (filter.type) {
+    case "regime": {
+      const nonPerennial = doc.values[NON_PERENNIAL] ?? null;
+      if (nonPerennial === null) return false;
+      if (filter.value === "nonPerennial") return nonPerennial > 0;
+      // Same rule as the map's blue line: no orange and no unknown share.
+      return nonPerennial === 0 && doc.values[UNKNOWN] === 0;
+    }
+    case "regulated": {
+      const regulation = doc.values[REGULATION[kind]] ?? null;
+      if (regulation === null) return false;
+      return filter.value === "yes" ? regulation > 0 : regulation === 0;
+    }
+    case "within":
+      return kind === "river"
+        ? (within.get(filter.slug)?.has(doc.id) ?? false)
+        : doc.id !== filter.slug &&
+            (doc.lineage?.includes(filter.slug) ?? false);
+    case "threshold": {
+      const path = metricPath(filter.metric, kind);
+      const value = path === null ? null : (doc.values[path] ?? null);
+      if (value === null) return false;
+      return filter.op === "gt" ? value > filter.number : value < filter.number;
+    }
+  }
+}
 
 /** The ids the intent asks about, from the catalog (the LLM only names slugs). */
 function idsOf(intent: AnswerIntent, catalog: Catalog): string[] {
@@ -52,8 +131,14 @@ export async function computeAnswer(
   const parent = parentOf(intent, catalog);
   const ids = idsOf(intent, catalog);
 
-  const docs =
-    ids.length === 0 ? [] : await getMetricDocs(intent.kind, ids, path);
+  const filters = intent.action === "rank" ? (intent.filters ?? []) : [];
+  const paths = [...new Set([path, ...filterPaths(filters, intent.kind)])];
+  const all =
+    ids.length === 0 ? [] : await getMetricDocs(intent.kind, ids, paths);
+  const within = await riversWithin(filters, intent.kind);
+  const docs = all.filter((d) =>
+    filters.every((f) => matches(d, f, intent.kind, within)),
+  );
   const direction = order === "min" ? 1 : -1;
   const sorted = [...docs].sort((a, b) => {
     if (a.value === null || b.value === null) {
@@ -61,12 +146,15 @@ export async function computeAnswer(
     }
     return direction * (a.value - b.value);
   });
-  const shown = intent.action === "rank" ? sorted.slice(0, RANK_LIMIT) : sorted;
-  const items: AnswerItem[] = shown.map(({ id, name, value, modeled }) => ({
-    id,
-    name,
-    value,
-    modeled,
+  const limit = filters.length > 0 ? FILTERED_RANK_LIMIT : RANK_LIMIT;
+  const shown = intent.action === "rank" ? sorted.slice(0, limit) : sorted;
+  const byRegime = filters.some((f) => f.type === "regime");
+  const items: AnswerItem[] = shown.map((d) => ({
+    id: d.id,
+    name: d.name,
+    value: d.value,
+    modeled: d.modeled,
+    ...(byRegime ? { nonPerennialPct: d.values[NON_PERENNIAL] ?? null } : {}),
   }));
 
   const best = items[0]?.value ?? null;
@@ -88,9 +176,13 @@ export async function computeAnswer(
     items,
     winnerIds,
     provenance,
-    // Filters are applied in the next step.
-    filters: [],
-    total: null,
-    filterCaveats: [],
+    filters,
+    total: intent.action === "rank" ? docs.length : null,
+    filterCaveats: [
+      ...(byRegime ? (["nonPerennial"] as const) : []),
+      ...(filters.some((f) => f.type === "regulated")
+        ? (["regulation"] as const)
+        : []),
+    ],
   };
 }
