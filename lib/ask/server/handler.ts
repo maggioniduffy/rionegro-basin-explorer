@@ -1,12 +1,12 @@
 import "server-only";
 import { z } from "zod";
-import { getCatalog, type Catalog } from "@/lib/ask/catalog";
+import { getCatalog } from "@/lib/ask/catalog";
 import type { AskResult } from "@/lib/ask/contract";
 import { ASK_MAX_LENGTH, askCacheKey, parseAsk } from "@/lib/ask/query";
 import { badRequest, json, serverError } from "@/lib/data/http";
-import { readCache, writeCache, type AskAnswer } from "./cache";
+import { readCache, writeCache } from "./cache";
 import { checkRateLimit, clientIp } from "./limiter";
-import { resolveAsk } from "./resolve";
+import { materialize, resolveAsk, revalidate } from "./resolve";
 
 const bodySchema = z.object({
   q: z.string().max(ASK_MAX_LENGTH),
@@ -25,14 +25,6 @@ async function readBody(req: Request) {
   } catch {
     return null;
   }
-}
-
-/** A cached answer may only point at something the current catalog has. */
-function isInCatalog(answer: AskAnswer, catalog: Catalog): boolean {
-  if (answer.action !== "select") return true;
-  return catalog.entries.some(
-    (e) => e.kind === answer.kind && e.id === answer.id,
-  );
 }
 
 const respond = (result: AskResult) => json(result, { cache: "no-store" });
@@ -65,18 +57,17 @@ export async function handleAsk(req: Request): Promise<Response> {
     const catalog = await getCatalog();
     const key = askCacheKey(parsed.normalized, body.locale, catalog.version);
     const hit = await readCache(key);
-    if (hit && isInCatalog(hit, catalog)) {
-      return respond({ ...hit, source: "cache" });
-    }
+    const valid = hit && revalidate(hit, catalog);
+    if (valid) return respond(await materialize(valid, "cache", catalog));
 
-    const { answer, source, cacheable } = await resolveAsk(
+    const { resolution, source, cacheable } = await resolveAsk(
       parsed,
       body.locale,
       catalog,
       llmAllowed,
     );
-    if (cacheable) await writeCache(key, answer);
-    return respond({ ...answer, source });
+    if (cacheable) await writeCache(key, resolution);
+    return respond(await materialize(resolution, source, catalog));
   } catch (error) {
     return serverError(
       "api/ask",

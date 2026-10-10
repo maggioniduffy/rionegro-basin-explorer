@@ -286,6 +286,52 @@ export async function getCatalogDocs(): Promise<CatalogDocs> {
   };
 }
 
+/** One document's value of an ask metric, as stored (never computed). */
+export interface MetricDoc {
+  id: string;
+  name: string | null;
+  /** Null when the document has no finite number at the path (rule 2). */
+  value: number | null;
+  /** The document lists the path in `modeled`. */
+  modeled: boolean;
+  /** The document's provenance text for the path. */
+  provenance: string | null;
+}
+
+function valueAt(doc: unknown, path: string): number | null {
+  let node: unknown = doc;
+  for (const key of path.split(".")) {
+    if (typeof node !== "object" || node === null) return null;
+    node = (node as Record<string, unknown>)[key];
+  }
+  return typeof node === "number" && Number.isFinite(node) ? node : null;
+}
+
+/**
+ * The value at `path` (a dotted document path from lib/ask/metrics.ts) of the rivers or
+ * sub-basins `ids`, with its modeled flag and provenance. Unknown ids are left out.
+ */
+export async function getMetricDocs(
+  kind: "river" | "subbasin",
+  ids: string[],
+  path: string,
+): Promise<MetricDoc[]> {
+  if (ids.length === 0) return [];
+  const projection = { name: 1, modeled: 1, provenance: 1, [path]: 1 };
+  const filter = { _id: { $in: ids } };
+  const docs =
+    kind === "river"
+      ? await (await rivers()).find(filter, { projection }).toArray()
+      : await (await subbasins()).find(filter, { projection }).toArray();
+  return docs.map((doc) => ({
+    id: doc._id,
+    name: doc.name ?? null,
+    value: valueAt(doc, path),
+    modeled: Array.isArray(doc.modeled) && doc.modeled.includes(path),
+    provenance: doc.provenance?.[path] ?? null,
+  }));
+}
+
 export type CatalogRiver = Pick<
   River,
   "_id" | "name" | "shortName" | "aliases" | "flowsInto" | "lengthKm"

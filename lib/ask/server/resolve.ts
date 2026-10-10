@@ -3,7 +3,10 @@ import type { Catalog } from "@/lib/ask/catalog";
 import { fuzzyMatch, type CatalogKind } from "@/lib/ask/fuzzy";
 import type { AskLocale, ParsedAsk } from "@/lib/ask/query";
 import { isLlmEnabled, resolveIntent } from "@/lib/llm";
-import type { AskAnswer } from "./cache";
+import type { AskAnswer, AskResult, AskSource } from "@/lib/ask/contract";
+import { validateIntent } from "@/lib/ask/intent";
+import { computeAnswer } from "./answer";
+import type { AskResolution } from "./cache";
 
 /** At or above this a typed name is trusted without asking the LLM. */
 export const ASK_FUZZY_THRESHOLD = 0.8;
@@ -11,7 +14,7 @@ export const ASK_FUZZY_THRESHOLD = 0.8;
 export const ASK_SEARCH_MIN_CONFIDENCE = 0.7;
 
 export interface Resolved {
-  answer: AskAnswer;
+  resolution: AskResolution;
   source: "fuzzy" | "llm";
   /** Worth keeping for 7 days: not a result of the LLM being off, over quota or down. */
   cacheable: boolean;
@@ -19,7 +22,7 @@ export interface Resolved {
 
 function selectOf(
   entry: { kind: CatalogKind; id: string } | undefined,
-): AskAnswer | null {
+): AskResolution | null {
   return entry ? { action: "select", kind: entry.kind, id: entry.id } : null;
 }
 
@@ -27,7 +30,7 @@ function selectOf(
 export function fuzzyAnswer(
   parsed: ParsedAsk,
   catalog: Catalog,
-): AskAnswer | null {
+): AskResolution | null {
   const best = (kinds?: CatalogKind[]) => {
     const matches = [parsed.name, parsed.normalized]
       .filter((q) => q !== "")
@@ -44,7 +47,7 @@ async function llmAnswer(
   parsed: ParsedAsk,
   locale: AskLocale,
   catalog: Catalog,
-): Promise<AskAnswer> {
+): Promise<AskResolution> {
   const intent = await resolveIntent(parsed.normalized, locale, catalog);
   switch (intent.action) {
     case "select_river":
@@ -59,12 +62,65 @@ async function llmAnswer(
           : null) ?? { action: "no_match" }
       );
     }
-    // Answered from Mongo values in the next step (lib/ask/server/answer.ts).
+    // Kept as the intent: values are read from Mongo each time (see materialize).
     case "compare":
     case "rank":
     case "fact":
+      return intent;
     case "unsupported":
       return { action: "unsupported" };
+  }
+}
+
+/** The single winner, if exactly one, to open on the map. */
+function winnerSelect(
+  answer: AskAnswer,
+): { kind: "river" | "subbasin"; id: string } | null {
+  const [only, ...rest] = answer.winnerIds;
+  return only !== undefined && rest.length === 0
+    ? { kind: answer.kind, id: only }
+    : null;
+}
+
+/** A cached resolution may only point at ids the current catalog has; else null (a miss). */
+export function revalidate(
+  hit: AskResolution,
+  catalog: Catalog,
+): AskResolution | null {
+  switch (hit.action) {
+    case "select":
+      return catalog.entries.some((e) => e.kind === hit.kind && e.id === hit.id)
+        ? hit
+        : null;
+    case "compare":
+    case "rank":
+    case "fact": {
+      const checked = validateIntent(hit, catalog.known);
+      return checked.action === hit.action ? checked : null;
+    }
+    default:
+      return hit;
+  }
+}
+
+/**
+ * Turns a resolution into the response body. Comparisons, rankings and facts read their
+ * values from Mongo here, on every request, including cache hits.
+ */
+export async function materialize(
+  resolution: AskResolution,
+  source: AskSource,
+  catalog: Catalog,
+): Promise<AskResult> {
+  switch (resolution.action) {
+    case "compare":
+    case "rank":
+    case "fact": {
+      const answer = await computeAnswer(resolution, catalog);
+      return { action: "answer", answer, select: winnerSelect(answer), source };
+    }
+    default:
+      return { ...resolution, source };
   }
 }
 
@@ -76,20 +132,20 @@ export async function resolveAsk(
   llmAllowed: boolean,
 ): Promise<Resolved> {
   const fuzzy = fuzzyAnswer(parsed, catalog);
-  if (fuzzy) return { answer: fuzzy, source: "fuzzy", cacheable: true };
+  if (fuzzy) return { resolution: fuzzy, source: "fuzzy", cacheable: true };
   if (!llmAllowed || !isLlmEnabled()) {
     return {
-      answer: { action: "unsupported" },
+      resolution: { action: "unsupported" },
       source: "fuzzy",
       cacheable: false,
     };
   }
-  const answer = await llmAnswer(parsed, locale, catalog);
-  // resolveIntent turns a timeout or outage into `unsupported` too, so that answer is
+  const resolution = await llmAnswer(parsed, locale, catalog);
+  // resolveIntent turns a timeout or outage into `unsupported` too, so that resolution is
   // never cached: it could pin a transient failure for 7 days.
   return {
-    answer,
+    resolution,
     source: "llm",
-    cacheable: answer.action !== "unsupported",
+    cacheable: resolution.action !== "unsupported",
   };
 }

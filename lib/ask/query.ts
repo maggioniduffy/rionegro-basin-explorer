@@ -46,5 +46,5 @@ export function askCacheKey(
   version: string,
 ): string {
   const hash = createHash("sha256").update(normalized).digest("hex");
-  return `ask:v1:${version}:${locale}:${hash.slice(0, 32)}`;
+  return `ask:v2:${version}:${locale}:${hash.slice(0, 32)}`;
 }

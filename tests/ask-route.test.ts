@@ -31,6 +31,18 @@ vi.mock("@/lib/ask/catalog", async (importOriginal) => ({
   },
 }));
 
+// Values are read from the seeded documents, as Mongo would return them; every read is counted.
+const metricDocs = vi.hoisted(() => ({ overrides: new Map<string, number>() }));
+const getMetricDocs = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/data/queries", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/data/queries")>()),
+  getMetricDocs,
+}));
+const seeded = (id: string) =>
+  (docs.rivers as unknown as Array<Record<string, unknown>>).find(
+    (r) => r["_id"] === id,
+  );
+
 const catalogFailure = vi.hoisted(() => ({ on: false }));
 const llm = vi.hoisted(() => ({
   enabled: true,
@@ -122,6 +134,33 @@ beforeEach(() => {
   upstash.failRedis = false;
   llm.enabled = true;
   catalogFailure.on = false;
+  metricDocs.overrides.clear();
+  getMetricDocs.mockReset();
+  getMetricDocs.mockImplementation(
+    async (_kind: string, ids: string[], path: string) =>
+      ids.map((id) => {
+        const doc = seeded(id) as {
+          name: string;
+          modeled: string[];
+          provenance: Record<string, string>;
+        };
+        const value = metricDocs.overrides.has(id)
+          ? metricDocs.overrides.get(id)
+          : path
+              .split(".")
+              .reduce<unknown>(
+                (node, key) => (node as Record<string, unknown>)?.[key],
+                doc,
+              );
+        return {
+          id,
+          name: doc.name,
+          value: typeof value === "number" ? value : null,
+          modeled: doc.modeled.includes(path),
+          provenance: doc.provenance[path] ?? null,
+        };
+      }),
+  );
   llm.resolveIntent.mockReset();
   llm.resolveIntent.mockResolvedValue({ action: "unsupported" } as Intent);
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://example.upstash.io");
@@ -228,7 +267,7 @@ describe("POST /api/ask: LLM", () => {
     } satisfies Intent);
     let POST = await setup();
     await ask(POST, sentence);
-    expect([...upstash.kv.keys()][0]).toMatch(/^ask:v1:/);
+    expect([...upstash.kv.keys()][0]).toMatch(/^ask:v2:/);
     POST = await setup(); // a cold instance: empty memory tier
     expect(await ask(POST, sentence)).toMatchObject({
       kind: "subbasin",
@@ -331,6 +370,111 @@ describe("POST /api/ask: LLM", () => {
     const POST = await setup();
     expect(await ask(POST, sentence)).toMatchObject({ action: "unsupported" });
     expect(llm.resolveIntent).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/ask: compare, rank and fact", () => {
+  const sentence = "cual es mas largo el caleufu o el agrio";
+  const compare: Intent = {
+    action: "compare",
+    kind: "river",
+    slugs: ["caleufu", "agrio"],
+    metric: "length",
+    order: "max",
+  };
+  const lengthOf = (id: string) => seeded(id)?.["lengthKm"] as number;
+  const longer = lengthOf("caleufu") > lengthOf("agrio") ? "caleufu" : "agrio";
+
+  it("answers from the documents and selects the winner", async () => {
+    llm.resolveIntent.mockResolvedValue(compare);
+    const POST = await setup();
+    const res = await ask(POST, sentence);
+    expect(res).toMatchObject({
+      action: "answer",
+      source: "llm",
+      select: { kind: "river", id: longer },
+    });
+    if (res.action !== "answer") throw new Error("expected an answer");
+    expect(res.answer.winnerIds).toEqual([longer]);
+    expect(res.answer.items.map((i) => [i.id, i.value])).toEqual(
+      ["caleufu", "agrio"]
+        .map((id) => [id, lengthOf(id)] as const)
+        .sort((a, b) => b[1] - a[1]),
+    );
+  });
+
+  it("serves a repeat from cache but re-reads the values from Mongo", async () => {
+    llm.resolveIntent.mockResolvedValue(compare);
+    const POST = await setup();
+    await ask(POST, sentence);
+    expect(getMetricDocs).toHaveBeenCalledTimes(1);
+
+    // The document changed (a reseed): the cache hit must show the new value.
+    metricDocs.overrides.set("agrio", 9999);
+    const again = await ask(POST, sentence);
+    expect(again).toMatchObject({
+      action: "answer",
+      source: "cache",
+      select: { kind: "river", id: "agrio" },
+    });
+    expect(llm.resolveIntent).toHaveBeenCalledTimes(1);
+    expect(getMetricDocs).toHaveBeenCalledTimes(2);
+    if (again.action !== "answer") throw new Error("expected an answer");
+    expect(again.answer.items[0]?.value).toBe(9999);
+  });
+
+  it("caches the intent, never numbers", async () => {
+    llm.resolveIntent.mockResolvedValue(compare);
+    const POST = await setup();
+    await ask(POST, sentence);
+    const stored = [...upstash.kv.values()];
+    expect(stored).toEqual([compare]);
+    const json = JSON.stringify(stored);
+    expect(json).not.toContain(String(lengthOf("caleufu")));
+    expect(json).not.toContain(String(lengthOf("agrio")));
+  });
+
+  it("selects nothing on a tie", async () => {
+    metricDocs.overrides.set("agrio", 100);
+    metricDocs.overrides.set("caleufu", 100);
+    llm.resolveIntent.mockResolvedValue(compare);
+    const POST = await setup();
+    const res = await ask(POST, sentence);
+    expect(res).toMatchObject({ action: "answer", select: null });
+    if (res.action !== "answer") throw new Error("expected an answer");
+    expect(res.answer.winnerIds).toHaveLength(2);
+  });
+
+  it("ignores a cached intent that names an unknown id", async () => {
+    llm.resolveIntent.mockResolvedValue(compare);
+    const POST = await setup();
+    await ask(POST, sentence);
+    for (const key of upstash.kv.keys()) {
+      upstash.kv.set(key, { ...compare, slugs: ["caleufu", "no-such-river"] });
+    }
+    const cold = await setup();
+    expect(await ask(cold, sentence)).toMatchObject({
+      action: "answer",
+      source: "llm",
+    });
+    expect(llm.resolveIntent).toHaveBeenCalledTimes(2);
+  });
+
+  it("answers a fact with the item selected", async () => {
+    llm.resolveIntent.mockResolvedValue({
+      action: "fact",
+      kind: "river",
+      slug: "neuquen",
+      metric: "discharge",
+    } satisfies Intent);
+    const POST = await setup();
+    const res = await ask(POST, "cuanto caudal tiene el neuquen en la boca");
+    expect(res).toMatchObject({
+      action: "answer",
+      select: { kind: "river", id: "neuquen" },
+    });
+    if (res.action !== "answer") throw new Error("expected an answer");
+    expect(res.answer.items[0]).toMatchObject({ modeled: true });
   });
 });
 
