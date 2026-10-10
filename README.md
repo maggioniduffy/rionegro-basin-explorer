@@ -68,18 +68,18 @@ Requires Node 24.
 ```bash
 npm ci
 cp .env.example .env.local   # fill in MONGODB_URI, MONGODB_DB and the imagery variables
-npm run seed                 # loads data/out/<region>/*.ndjson into MongoDB (idempotent)
+npm run seed -- --region nqn # loads data/out/<region>/*.ndjson into MongoDB (idempotent)
 npm run dev
 ```
 
-| Command                   | What it does                                      |
-| ------------------------- | ------------------------------------------------- |
-| `npm run dev`             | Development server                                |
-| `npm run check`           | Typecheck, lint, format check and unit tests      |
-| `npm run test:e2e`        | Playwright screenshot tests                       |
-| `npm run pipeline:<step>` | One data pipeline step (see `pipeline/README.md`) |
-| `npm run seed`            | Upserts the NDJSON outputs into MongoDB           |
-| `npm run atlas:check`     | Verifies that the app's Mongo user can only read  |
+| Command                                    | What it does                                                     |
+| ------------------------------------------ | ---------------------------------------------------------------- |
+| `npm run dev`                              | Development server                                               |
+| `npm run check`                            | Typecheck, lint, format check and unit tests                     |
+| `npm run test:e2e`                         | Playwright screenshot tests                                      |
+| `npm run pipeline:<step> -- --region <id>` | One data pipeline step for one region (see `pipeline/README.md`) |
+| `npm run seed -- --region <id>`            | Upserts a region's NDJSON outputs into MongoDB                   |
+| `npm run atlas:check -- --region <id>`     | Verifies that the app's Mongo user can only read                 |
 
 Rebuilding the data needs tippecanoe on your `PATH`. DuckDB is installed by `npm ci`. The full
 pipeline order and its prerequisites are in [pipeline/README.md](pipeline/README.md).
@@ -177,18 +177,18 @@ Requiere Node 24.
 ```bash
 npm ci
 cp .env.example .env.local   # completar MONGODB_URI, MONGODB_DB y las variables de imágenes
-npm run seed                 # carga data/out/<region>/*.ndjson en MongoDB (idempotente)
+npm run seed -- --region nqn # carga data/out/<region>/*.ndjson en MongoDB (idempotente)
 npm run dev
 ```
 
-| Comando                   | Qué hace                                                 |
-| ------------------------- | -------------------------------------------------------- |
-| `npm run dev`             | Servidor de desarrollo                                   |
-| `npm run check`           | Typecheck, lint, chequeo de formato y tests unitarios    |
-| `npm run test:e2e`        | Tests de capturas con Playwright                         |
-| `npm run pipeline:<step>` | Un paso del pipeline de datos (ver `pipeline/README.md`) |
-| `npm run seed`            | Hace upsert de los NDJSON en MongoDB                     |
-| `npm run atlas:check`     | Verifica que el usuario de Mongo de la app solo lea      |
+| Comando                                    | Qué hace                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| `npm run dev`                              | Servidor de desarrollo                                                   |
+| `npm run check`                            | Typecheck, lint, chequeo de formato y tests unitarios                    |
+| `npm run test:e2e`                         | Tests de capturas con Playwright                                         |
+| `npm run pipeline:<step> -- --region <id>` | Un paso del pipeline de datos para una región (ver `pipeline/README.md`) |
+| `npm run seed -- --region <id>`            | Hace upsert de los NDJSON de una región en MongoDB                       |
+| `npm run atlas:check -- --region <id>`     | Verifica que el usuario de Mongo de la app solo lea                      |
 
 Para regenerar los datos hace falta tener tippecanoe en el `PATH`. DuckDB se instala con `npm ci`.
 El orden completo del pipeline y sus requisitos están en [pipeline/README.md](pipeline/README.md).

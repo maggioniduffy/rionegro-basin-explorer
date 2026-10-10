@@ -3,7 +3,7 @@
  * read from the seed files, so the landing shows no invented numbers (CLAUDE.md rule 2).
  * Rerun after `pipeline:export` or `pipeline:subbasins` changes data/out/<region>:
  *
- *   npm run landing:sample -- --region <id>    # default nqn
+ *   npm run landing:sample -- --region <id>    # --region is required
  *
  * The river and sub-basin come from regions/<id>/content.ts (landingSample). Writes
  * regions/<id>/landing-sample.json; tests/landing-sample.test.ts fails while it is stale.

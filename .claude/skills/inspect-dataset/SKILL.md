@@ -14,7 +14,8 @@ CLAUDE.md rules 2 and 6: never guess attribute names, never `cat` geo files.
 1. **Raw sources first.** For anything under `data/raw/`, check the existing
    profiles from `npm run pipeline:inspect` before scanning again:
    `data/work/<region>/inspect/<source>__<layer>.json` (index in `data/work/<region>/inspect/report.json`).
-2. **Any other file:** `npm run -s inspect:file -- <path> [--layer=<name>] [--samples=<n>]`.
+2. **Any other file:** `npm run -s inspect:file -- <path> --region <id> [--layer=<name>] [--samples=<n>]`
+   (`--region` is required: it picks where the profile is written).
    It prints a 3-line summary and writes the full profile to
    `data/work/<region>/inspect/adhoc/<file>[__<layer>].json`. FileGDB needs `--layer`.
 3. **Drill down with jq, not by reading the whole profile**, e.g.

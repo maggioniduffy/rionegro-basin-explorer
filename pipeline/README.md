@@ -10,8 +10,10 @@ Final artifacts: NDJSON for `npm run seed` in `data/out/<region>/`, and PMTiles 
 (committed, because Vercel serves them from `/public` and tippecanoe does not run there).
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
-**Regions.** Every step works on one region: `npm run pipeline:<step> -- --region <id>` (or
-`--region=<id>`; default `nqn`, the Río Negro basin). Its configs are in `regions/<id>/`, its work
+**Regions.** Every step works on one region and **requires** it: `npm run pipeline:<step> -- --region <id>`
+(or `--region=<id>`; `nqn` is the Río Negro basin). Without it a step stops before touching any file,
+so one region's run can never overwrite another's. The same holds for `seed`, `atlas:check`,
+`landing:sample`, `inspect:file` and `scripts/og-shapes.ts`. The headings below omit the flag. Its configs are in `regions/<id>/`, its work
 and output files in `data/work/<region>/` and `data/out/<region>/`. `data/raw/` is shared. Work
 files from before regions (2026-10-10) move once: `mkdir -p data/work/nqn && mv data/work/* data/work/nqn/`
 (the `mv` warns that it can't move `nqn` into itself; that is expected).
@@ -423,7 +425,7 @@ Full run order: `download` → `inspect` → `basin` → `rivers` → `candidate
 
 ## Tools
 
-### `npm run inspect:file -- <path> [--layer=<name>] [--samples=<n>]`
+### `npm run inspect:file -- <path> --region <id> [--layer=<name>] [--samples=<n>]`
 
 Profiles one file without dumping it: columns and types, row count, DuckDB `SUMMARIZE` stats (null
 %, min/max, approximate distinct values, mean), geometry types, extent and invalid count, and three

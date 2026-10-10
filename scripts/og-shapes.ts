@@ -4,7 +4,7 @@
  * No new data: the same tiles the map draws. Coordinates stay in Web Mercator, fitted
  * into the image's map box. Rerun after rebuilding the tiles:
  *
- *   npx tsx scripts/og-shapes.ts --region <id>    # default nqn
+ *   npx tsx scripts/og-shapes.ts --region <id>    # --region is required
  *
  * Writes regions/<id>/og-shapes.json and prints its size.
  */

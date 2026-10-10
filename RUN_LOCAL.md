@@ -60,7 +60,7 @@ Vercel keep `MONGODB_DB=basin-explorer` (now the base name). Other regions will 
   npm run seed -- --region nqn
   jq '{ok, region, db}' data/work/nqn/seed/report.json   # expected: ok true, db "basin-explorer"
   ```
-- [ ] `npm run atlas:check` (or `-- --region nqn`) still prints `"ok": true` and `"db": "basin-explorer"`.
+- [ ] `npm run atlas:check -- --region nqn` still prints `"ok": true` and `"db": "basin-explorer"`.
 - [ ] Later, before Córdoba goes live: the read-only app user has `read@basin-explorer` only.
       Give it `read@basin-explorer-cba` too (Atlas → Database Access → edit user), or switch it to
       Atlas's "Only read any database" role. Then run `npm run atlas:check -- --region cba`.
@@ -145,3 +145,12 @@ region's prompt examples exists in its `data/out`.
       before.
 - [ ] The PLAN.md Design v3 item "Regenerate `basin.png`" now means
       `public/landing/nqn/basin.png`.
+
+### `--region` is required (this commit)
+
+Every pipeline step, `seed`, `atlas:check`, `landing:sample`, `inspect:file` and
+`scripts/og-shapes.ts` now stop with "pass --region <id>" when the flag is missing, before
+touching any file. Only the test runner falls back to `nqn`. Commands above already pass it.
+
+- [ ] Any shell alias, script or note of yours that runs these without `--region nqn` needs it
+      added.

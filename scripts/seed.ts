@@ -1,6 +1,6 @@
 /**
  * npm run seed — load rivers.ndjson, reaches.ndjson, subbasins.ndjson and streams.ndjson
- * from data/out/<region>/ into Mongo (`npm run seed -- --region <id>`, default nqn).
+ * from data/out/<region>/ into Mongo (`npm run seed -- --region <id>`; --region is required).
  *
  * Idempotent: whole-document upserts keyed on _id, documents no longer in the files
  * are deleted, indexes are created only if missing. Re-run after the pipeline changes

@@ -10,16 +10,26 @@ import {
 export const ROOT = path.resolve(import.meta.dirname, "../..");
 
 /**
- * The region a step works on: `--region <id>` or `--region=<id>`, else the default (`nqn`).
+ * The region a step works on: `--region <id>` or `--region=<id>`, required, so a step never
+ * writes into another region's files by default. Only the test runner (VITEST set), which
+ * imports these paths without running a step, falls back to the default region.
  * Region configs (basin, map, sub-basins, names, lakes, IGN thresholds and overrides) live in
  * regions/<id>/; work and output files in data/work/<id>/ and data/out/<id>/. data/raw is
  * shared: the HydroSHEDS, IGN and OSM downloads cover every region.
  */
-export function parseRegionArg(argv: readonly string[]): RegionId {
+export function parseRegionArg(
+  argv: readonly string[],
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): RegionId {
   const i = argv.findIndex(
     (a) => a === "--region" || a.startsWith("--region="),
   );
-  if (i === -1) return DEFAULT_REGION;
+  if (i === -1) {
+    if (env.VITEST) return DEFAULT_REGION;
+    throw new Error(
+      `pass --region <id> (one of ${REGION_IDS.join(", ")}), e.g. npm run <script> -- --region ${DEFAULT_REGION}`,
+    );
+  }
   const arg = argv[i] ?? "";
   const value = arg.includes("=")
     ? arg.slice(arg.indexOf("=") + 1)

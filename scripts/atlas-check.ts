@@ -7,9 +7,8 @@
  * if the app's collections cannot be read. Reads only; never writes. Prints a short
  * verdict, never the URI or the password.
  *
- *   npm run atlas:check                      # the default region (nqn)
- *   npm run atlas:check -- --region <id>     # another region's database
- *   MONGODB_URI='<the Vercel value>' npm run atlas:check   # shell env wins over .env.local
+ *   npm run atlas:check -- --region <id>     # --region is required
+ *   MONGODB_URI='<the Vercel value>' npm run atlas:check -- --region nqn   # shell env wins over .env.local
  */
 import { MongoClient } from "mongodb";
 import { z } from "zod";

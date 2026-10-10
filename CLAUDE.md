@@ -19,7 +19,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 
 - `npm run dev` — dev server
 - `npm run check` — typecheck + lint + tests (run before every commit)
-- `npm run pipeline:<step> -- --region <id>` — data pipeline steps for one region (default `nqn`; see `/pipeline/README.md`)
+- `npm run pipeline:<step> -- --region <id>` — data pipeline steps for one region; `--region` is required (`nqn` = Río Negro; see `/pipeline/README.md`)
 - `npm run seed -- --region <id>` — idempotent Mongo seed from `data/out/<region>/`
 - `npm run test:e2e` — Playwright screenshot tests
 

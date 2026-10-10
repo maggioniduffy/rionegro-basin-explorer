@@ -1,5 +1,5 @@
 /**
- * npm run inspect:file -- <path> [--layer=<name>] [--samples=<n>]
+ * npm run inspect:file -- <path> --region <id> [--layer=<name>] [--samples=<n>]
  *
  * Profile one dataset without dumping it: columns and types, row count, per-column
  * stats from DuckDB SUMMARIZE (nulls %, min/max, approx distinct, mean), geometry
@@ -114,7 +114,9 @@ async function main() {
   });
   const file = positionals[0];
   if (!file)
-    throw new Error("usage: npm run inspect:file -- <path> [--layer=<name>]");
+    throw new Error(
+      "usage: npm run inspect:file -- <path> --region <id> [--layer=<name>]",
+    );
   const profile = await inspectFile(requireInput(path.resolve(file)), {
     layer: values.layer,
     samples: values.samples ? Number(values.samples) : undefined,
