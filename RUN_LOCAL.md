@@ -110,7 +110,7 @@ Not checked in a browser in the cloud (project rule: no Chromium runs unless ask
 - [ ] `npm run pipeline:mask -- --region nqn` and `npm run pipeline:tiles -- --region nqn`
       still run; `git status public/tiles` shows no change.
 
-### Step 6a — region strings in `regions/<id>/messages/` (this commit)
+### Step 6a — region strings in `regions/<id>/messages/` (`9d78738`)
 
 Fourteen strings that name the Río Negro basin (titles, map title, landing hero and
 cards, ask examples, the dam caveat) moved from `messages/*.json` to
