@@ -4,6 +4,7 @@ import {
   intentSchema,
   validateIntent,
   validateIntentText,
+  numberInQuestion,
 } from "@/lib/ask/intent";
 import { askCacheKey, ASK_MAX_LENGTH, parseAsk } from "@/lib/ask/query";
 
@@ -279,5 +280,99 @@ describe("askCacheKey", () => {
     expect(askCacheKey("limay", "es", "v1")).not.toBe(key);
     expect(askCacheKey("limay", "en", "v2")).not.toBe(key);
     expect(key).not.toContain("limay");
+  });
+});
+
+describe("validateIntent: rank filters", () => {
+  const base = {
+    action: "rank",
+    kind: "river",
+    slug: null,
+    slugs: null,
+    scope: "all",
+    metric: "length",
+    order: "min",
+    query: null,
+  };
+  const filter = (f: Record<string, unknown>) => ({
+    type: null,
+    value: null,
+    slug: null,
+    metric: null,
+    op: null,
+    number: null,
+    ...f,
+  });
+
+  it("accepts regime, regulated and within filters", () => {
+    expect(
+      validateIntent(
+        {
+          ...base,
+          filters: [
+            filter({ type: "regime", value: "perennial" }),
+            filter({ type: "regulated", value: "no" }),
+            filter({ type: "within", slug: "limay" }),
+          ],
+        },
+        known,
+      ),
+    ).toMatchObject({
+      action: "rank",
+      filters: [
+        { type: "regime", value: "perennial" },
+        { type: "regulated", value: "no" },
+        { type: "within", slug: "limay" },
+      ],
+    });
+  });
+
+  it("accepts a threshold only when the number is in the question", () => {
+    const raw = {
+      ...base,
+      filters: [
+        filter({ type: "threshold", metric: "length", op: "gt", number: 100 }),
+      ],
+    };
+    expect(validateIntent(raw, known, "rios de mas de 100 km")).toMatchObject({
+      action: "rank",
+    });
+    expect(validateIntent(raw, known, "rios de mas de 200 km")).toEqual(
+      unsupported,
+    );
+    // Without the question (e.g. a caller that forgot it), never trusted.
+    expect(validateIntent(raw, known)).toEqual(unsupported);
+  });
+
+  it.each([
+    ["an unknown sub-basin", filter({ type: "within", slug: "amazonas" })],
+    [
+      "a regime value not in the enum",
+      filter({ type: "regime", value: "dry" }),
+    ],
+    [
+      "a threshold metric the kind doesn't have",
+      filter({ type: "threshold", metric: "area", op: "gt", number: 100 }),
+    ],
+    ["an unknown filter type", filter({ type: "province", value: "yes" })],
+  ])("%s → unsupported", (_, f) => {
+    expect(
+      validateIntent({ ...base, filters: [f] }, known, "rios de mas de 100 km"),
+    ).toEqual(unsupported);
+  });
+});
+
+describe("numberInQuestion", () => {
+  it.each([
+    [100, "rios de mas de 100 km", true],
+    [1000, "mas de 1 000 m", true],
+    [1000, "mas de 1.000 m", true],
+    [1.5, "pendiente mayor a 1 5", true],
+    [1.5, "slope above 1.5", true],
+    [5, "mas de 50 km", false],
+    [300, "mas de 200 km", false],
+    [100, "the longest river", false],
+  ])("%d in %j → %s", (n, q, expected) => {
+    expect(numberInQuestion(n, q)).toBe(expected);
   });
 });

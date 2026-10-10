@@ -48,7 +48,7 @@ export async function resolveIntent(
       query,
       AbortSignal.timeout(LLM_TIMEOUT_MS),
     );
-    return validateIntentText(text, catalog.known);
+    return validateIntentText(text, catalog.known, query);
   } catch (error) {
     const reason =
       error instanceof Error

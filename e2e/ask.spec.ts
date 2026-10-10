@@ -77,6 +77,9 @@ test.describe("search bar (en)", () => {
         })),
         winnerIds: [winner],
         provenance: "HydroRIVERS (test)",
+        filters: [],
+        total: null,
+        filterCaveats: [],
       },
     };
     await page.route("**/api/ask", (route) => route.fulfill({ json: result }));

@@ -88,5 +88,9 @@ export async function computeAnswer(
     items,
     winnerIds,
     provenance,
+    // Filters are applied in the next step.
+    filters: [],
+    total: null,
+    filterCaveats: [],
   };
 }
