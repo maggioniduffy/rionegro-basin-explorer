@@ -20,6 +20,32 @@ function riverLength(id: string): number {
   throw new Error(`no lengthKm for river ${id}`);
 }
 
+/** Perennial rivers as the ask server counts them: no orange and no unknown length. */
+function perennialRivers() {
+  const rivers: { id: string; name: string; lengthKm: number }[] = [];
+  for (const line of readFileSync("data/out/rivers.ndjson", "utf8").split(
+    "\n",
+  )) {
+    if (!line.trim()) continue;
+    const doc = JSON.parse(line) as {
+      _id: string;
+      name?: string;
+      lengthKm?: number;
+      nonPerennialPct?: number;
+      unknownPct?: number;
+    };
+    if (
+      doc.nonPerennialPct === 0 &&
+      doc.unknownPct === 0 &&
+      typeof doc.lengthKm === "number" &&
+      doc.name
+    ) {
+      rivers.push({ id: doc._id, name: doc.name, lengthKm: doc.lengthKm });
+    }
+  }
+  return rivers.sort((a, b) => a.lengthKm - b.lengthKm);
+}
+
 test.describe("search bar (en)", () => {
   test.use({ locale: "en-US" });
 
@@ -104,6 +130,52 @@ test.describe("search bar (en)", () => {
 
     await input.press("Escape");
     await expect(card).toBeHidden();
+  });
+
+  test("a filtered ranking shows its filters and how many rivers match", async ({
+    page,
+  }) => {
+    const perennial = perennialRivers();
+    const items = perennial.slice(0, 3);
+    const [shortest] = items;
+    if (!shortest) throw new Error("no perennial river in the seed");
+    const result: AskResult = {
+      action: "answer",
+      source: "llm",
+      select: { kind: "river", id: shortest.id },
+      answer: {
+        type: "rank",
+        kind: "river",
+        metric: "length",
+        order: "min",
+        parent: null,
+        items: items.map((r) => ({
+          id: r.id,
+          name: r.name,
+          value: r.lengthKm,
+          modeled: false,
+          nonPerennialPct: 0,
+        })),
+        winnerIds: [shortest.id],
+        provenance: "HydroRIVERS (test)",
+        filters: [{ type: "regime", value: "perennial" }],
+        total: perennial.length,
+        filterCaveats: ["nonPerennial"],
+      },
+    };
+    await page.route("**/api/ask", (route) => route.fulfill({ json: result }));
+
+    await openMap(page, "/map");
+    const input = page.getByRole("combobox", { name: en.search.label });
+    await input.fill("shortest perennial rivers");
+    await input.press("Enter");
+
+    const card = page.getByRole("region", { name: en.ask.label });
+    await expect(card).toContainText(
+      en.ask.filters.label.replace("{list}", "perennial"),
+    );
+    await expect(card).toContainText(`${perennial.length} matches`);
+    await expect(card).toContainText(shortest.name);
   });
 });
 

@@ -146,8 +146,22 @@
       "fact": "{name}, {metric}: {value}.",
       "rank": {
         "tributaries": "{parent}: {kind, select, river {tributaries} other {sub-basins}} by {metric} ({direction}): {winner} ({value}).",
-        "all": "All {kind, select, river {rivers} other {sub-basins}} by {metric} ({direction}): {winner} ({value})."
+        "all": "All {kind, select, river {rivers} other {sub-basins}} by {metric} ({direction}): {winner} ({value}).",
+        "allFiltered": "{adjectives} {kind, select, river {rivers} other {sub-basins}} by {metric} ({direction}): {winner} ({value}).",
+        "tributariesFiltered": "{parent}: {adjectives} {kind, select, river {tributaries} other {sub-basins}} by {metric} ({direction}): {winner} ({value})."
       }
+    },
+    "noneMatch": "{kind, select, river {No river meets those conditions.} other {No sub-basin meets those conditions.}}",
+    "total": "{total, plural, one {# match} other {# matches}}",
+    "intermittentShare": "{pct} intermittent",
+    "filters": {
+      "label": "Filters: {list}",
+      "regime": "{value, select, perennial {perennial} other {intermittent}}",
+      "regulated": "{value, select, yes {regulated} other {not regulated}}",
+      "within": "in the {name} basin",
+      "withinEndorheic": "in the endorheic areas",
+      "withinUnknown": "in a sub-basin",
+      "threshold": "{metric} {op, select, gt {over} other {under}} {value}"
     }
   },
   "search": {

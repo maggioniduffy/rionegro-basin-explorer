@@ -146,8 +146,22 @@
       "fact": "{name}, {metric}: {value}.",
       "rank": {
         "tributaries": "{parent}: {kind, select, river {afluentes} other {subcuencas}} según {metric} ({direction}): {winner} ({value}).",
-        "all": "{kind, select, river {Todos los ríos} other {Todas las subcuencas}} según {metric} ({direction}): {winner} ({value})."
+        "all": "{kind, select, river {Todos los ríos} other {Todas las subcuencas}} según {metric} ({direction}): {winner} ({value}).",
+        "allFiltered": "{kind, select, river {Ríos} other {Subcuencas}} {adjectives} según {metric} ({direction}): {winner} ({value}).",
+        "tributariesFiltered": "{parent}: {kind, select, river {afluentes} other {subcuencas}} {adjectives} según {metric} ({direction}): {winner} ({value})."
       }
+    },
+    "noneMatch": "{kind, select, river {Ningún río cumple esas condiciones.} other {Ninguna subcuenca cumple esas condiciones.}}",
+    "total": "{total, plural, one {# coincide} other {# coinciden}}",
+    "intermittentShare": "{pct} intermitente",
+    "filters": {
+      "label": "Filtros: {list}",
+      "regime": "{value, select, perennial {permanentes} other {intermitentes}}",
+      "regulated": "{value, select, yes {{kind, select, river {regulados} other {reguladas}}} other {{kind, select, river {no regulados} other {no reguladas}}}}",
+      "within": "en la cuenca del {name}",
+      "withinEndorheic": "en las áreas endorreicas",
+      "withinUnknown": "en una subcuenca",
+      "threshold": "{metric} {op, select, gt {mayor a} other {menor a}} {value}"
     }
   },
   "search": {

@@ -2,11 +2,14 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import type { AnswerItem, AskAnswer, AskResult } from "@/lib/ask/contract";
+import type { Filter } from "@/lib/ask/intent";
 import { METRICS } from "@/lib/ask/metrics";
+import type { SubbasinTreeNode } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
+import { useApi } from "@/lib/use-api";
 import type { AskNotice } from "./use-ask";
 import { Icon } from "./Icon";
-import { Caveats, useFormat } from "./panel/parts";
+import { type Caveat, Caveats, useFormat } from "./panel/parts";
 import { useSubbasinLabel } from "./panel/subbasin-label";
 
 /** Keep in step with messages ask.examples: the first two need the LLM, the third doesn't. */
@@ -105,50 +108,78 @@ function AnswerBody({ answer }: { answer: AskAnswer }) {
   const metric = METRICS[answer.metric];
   const name = useItemName(answer.kind);
   const sentence = useSentence(answer, name);
-  const caveat =
-    metric.caveat !== null && answer.items.some((i) => i.modeled)
-      ? metric.caveat
-      : null;
+  const filterLine = useFilterLine(answer);
+  const caveats: Caveat[] = [
+    ...(metric.caveat !== null && answer.items.some((i) => i.modeled)
+      ? [metric.caveat]
+      : []),
+    ...answer.filterCaveats,
+  ].filter((c, i, all) => all.indexOf(c) === i);
+  const none = answer.total === 0;
+  const regimeFilter = answer.filters.some((f) => f.type === "regime");
 
   return (
     <>
-      <p>{sentence ?? t("noData")}</p>
-      <div>
-        <p className="text-muted mb-1 text-xs first-letter:uppercase">
-          {t(`metric.${answer.metric}`)}
+      <p>
+        {none
+          ? t("noneMatch", { kind: answer.kind })
+          : (sentence ?? t("noData"))}
+      </p>
+      {filterLine && <p className="text-muted text-xs">{filterLine}</p>}
+      {answer.total !== null && answer.total > 0 && (
+        <p className="text-muted text-xs">
+          {t("total", { total: answer.total })}
         </p>
-        <ul className="divide-line-faint divide-y">
-          {answer.items.map((item) => (
-            <li
-              key={item.id}
-              className="flex items-center justify-between gap-2 py-1"
-            >
-              <span className="min-w-0 flex-1 truncate">{name(item.name)}</span>
-              <span className="text-muted tabular-nums">
-                {item.value === null
-                  ? t("noValue")
-                  : format(metric.quantity, item.value)}
-              </span>
-              <button
-                type="button"
-                aria-label={t("openItem", { name: name(item.name) })}
-                onClick={() =>
-                  select({ kind: answer.kind, id: item.id }, { fit: true })
-                }
-                className="min-h-8 shrink-0 rounded-md border border-(--border) px-2.5 text-xs hover:bg-(--panel-hover) focus:ring-2 focus:ring-(--accent) focus:outline-none"
+      )}
+      {!none && (
+        <div>
+          <p className="text-muted mb-1 text-xs first-letter:uppercase">
+            {t(`metric.${answer.metric}`)}
+          </p>
+          <ul className="divide-line-faint divide-y">
+            {answer.items.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-2 py-1"
               >
-                {t("open")}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-      {answer.provenance && (
+                <span className="min-w-0 flex-1 truncate">
+                  {name(item.name)}
+                </span>
+                {regimeFilter &&
+                  item.nonPerennialPct != null &&
+                  item.nonPerennialPct > 0 && (
+                    <span className="text-muted text-xs tabular-nums">
+                      {t("intermittentShare", {
+                        pct: format("pct", item.nonPerennialPct),
+                      })}
+                    </span>
+                  )}
+                <span className="text-muted tabular-nums">
+                  {item.value === null
+                    ? t("noValue")
+                    : format(metric.quantity, item.value)}
+                </span>
+                <button
+                  type="button"
+                  aria-label={t("openItem", { name: name(item.name) })}
+                  onClick={() =>
+                    select({ kind: answer.kind, id: item.id }, { fit: true })
+                  }
+                  className="min-h-8 shrink-0 rounded-md border border-(--border) px-2.5 text-xs hover:bg-(--panel-hover) focus:ring-2 focus:ring-(--accent) focus:outline-none"
+                >
+                  {t("open")}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {!none && answer.provenance && (
         <p className="text-muted text-xs">
           {t("source", { provenance: answer.provenance })}
         </p>
       )}
-      {caveat && <Caveats caveats={[caveat]} />}
+      {caveats.length > 0 && <Caveats caveats={caveats} />}
     </>
   );
 }
@@ -200,22 +231,28 @@ function useSentence(
   }
   if (answer.type === "rank") {
     const direction = t("answer.direction", { order });
-    return answer.parent
-      ? t("answer.rank.tributaries", {
-          parent: name(answer.parent.name),
-          kind: answer.kind,
-          metric,
-          direction,
-          winner: name(first.name),
-          value,
-        })
-      : t("answer.rank.all", {
-          kind: answer.kind,
-          metric,
-          direction,
-          winner: name(first.name),
-          value,
-        });
+    const common = {
+      kind: answer.kind,
+      metric,
+      direction,
+      winner: name(first.name),
+      value,
+    };
+    const adjectives = filterAdjectives(answer, t);
+    if (answer.parent) {
+      const parent = name(answer.parent.name);
+      return adjectives
+        ? t("answer.rank.tributariesFiltered", {
+            ...common,
+            parent,
+            adjectives,
+          })
+        : t("answer.rank.tributaries", { ...common, parent });
+    }
+    if (!adjectives) return t("answer.rank.all", common);
+    const text = t("answer.rank.allFiltered", { ...common, adjectives });
+    // English puts the adjectives first, so the sentence no longer starts with a capital.
+    return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
   }
 
   const others = answer.items.filter(
@@ -235,4 +272,53 @@ function useSentence(
     value,
     others: list.format(others.map((i) => `${name(i.name)} (${show(i)})`)),
   });
+}
+
+type Translate = ReturnType<typeof useTranslations<"ask">>;
+
+/** "perennial regulated": the filters that qualify the noun of a ranking sentence. */
+function filterAdjectives(answer: AskAnswer, t: Translate): string {
+  return answer.filters
+    .flatMap((f) =>
+      f.type === "regime"
+        ? [t("filters.regime", { value: f.value })]
+        : f.type === "regulated"
+          ? [t("filters.regulated", { value: f.value, kind: answer.kind })]
+          : [],
+    )
+    .join(" ");
+}
+
+/** The conditions of a ranking in one line, or null without filters. */
+function useFilterLine(answer: AskAnswer): string | null {
+  const t = useTranslations("ask");
+  const format = useFormat();
+  const hasWithin = answer.filters.some((f) => f.type === "within");
+  // The answer carries the slug only; the sub-basin tree gives its name.
+  const tree = useApi<SubbasinTreeNode[]>(hasWithin ? "/api/subbasins" : null);
+  if (answer.filters.length === 0) return null;
+
+  const part = (f: Filter): string => {
+    switch (f.type) {
+      case "regime":
+        return t("filters.regime", { value: f.value });
+      case "regulated":
+        return t("filters.regulated", { value: f.value, kind: answer.kind });
+      case "within": {
+        const node =
+          tree.status === "ok" ? tree.data.find((n) => n.id === f.slug) : null;
+        if (!node) return t("filters.withinUnknown");
+        return node.kind === "endorheic" || node.name === null
+          ? t("filters.withinEndorheic")
+          : t("filters.within", { name: node.name });
+      }
+      case "threshold":
+        return t("filters.threshold", {
+          metric: t(`metric.${f.metric}`),
+          op: f.op,
+          value: format(METRICS[f.metric].quantity, f.number),
+        });
+    }
+  };
+  return t("filters.label", { list: answer.filters.map(part).join(" · ") });
 }
