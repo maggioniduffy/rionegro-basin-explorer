@@ -74,6 +74,156 @@ describe("validateIntent", () => {
   });
 });
 
+describe("validateIntent: compare, rank, fact", () => {
+  const nulls = {
+    kind: null,
+    slug: null,
+    slugs: null,
+    metric: null,
+    order: null,
+    scope: null,
+    query: null,
+  };
+
+  it("accepts known ids with a metric of their kind", () => {
+    expect(
+      validateIntent(
+        {
+          ...nulls,
+          action: "compare",
+          kind: "river",
+          slugs: ["limay", "collon-cura"],
+          metric: "length",
+          order: "max",
+        },
+        known,
+      ),
+    ).toEqual({
+      action: "compare",
+      kind: "river",
+      slugs: ["limay", "collon-cura"],
+      metric: "length",
+      order: "max",
+    });
+    expect(
+      validateIntent(
+        {
+          ...nulls,
+          action: "rank",
+          kind: "river",
+          scope: "tributaries",
+          slug: "limay",
+          metric: "length",
+          order: "max",
+        },
+        known,
+      ),
+    ).toMatchObject({ action: "rank", slug: "limay" });
+    expect(
+      validateIntent(
+        {
+          ...nulls,
+          action: "rank",
+          kind: "subbasin",
+          scope: "all",
+          metric: "area",
+          order: "max",
+        },
+        known,
+      ),
+    ).toMatchObject({ action: "rank", scope: "all" });
+    expect(
+      validateIntent(
+        {
+          ...nulls,
+          action: "fact",
+          kind: "subbasin",
+          slug: "limay",
+          metric: "population",
+        },
+        known,
+      ),
+    ).toMatchObject({ action: "fact", metric: "population" });
+  });
+
+  it.each([
+    [
+      "an invented slug among the compared",
+      {
+        action: "compare",
+        kind: "river",
+        slugs: ["limay", "amazonas"],
+        metric: "length",
+        order: "max",
+      },
+    ],
+    [
+      "one slug only",
+      {
+        action: "compare",
+        kind: "river",
+        slugs: ["limay"],
+        metric: "length",
+        order: "max",
+      },
+    ],
+    [
+      "six slugs",
+      {
+        action: "compare",
+        kind: "river",
+        slugs: ["a", "b", "c", "d", "e", "f"],
+        metric: "length",
+        order: "max",
+      },
+    ],
+    [
+      "repeated slugs",
+      {
+        action: "compare",
+        kind: "river",
+        slugs: ["limay", "limay"],
+        metric: "length",
+        order: "max",
+      },
+    ],
+    [
+      "a metric the kind doesn't have (area of a river)",
+      { action: "fact", kind: "river", slug: "limay", metric: "area" },
+    ],
+    [
+      "an unknown metric",
+      { action: "fact", kind: "river", slug: "limay", metric: "temperature" },
+    ],
+    [
+      "a river slug as a sub-basin",
+      { action: "fact", kind: "subbasin", slug: "collon-cura", metric: "area" },
+    ],
+    [
+      "tributaries without a parent",
+      {
+        action: "rank",
+        kind: "river",
+        scope: "tributaries",
+        metric: "length",
+        order: "max",
+      },
+    ],
+    [
+      "a value smuggled in",
+      {
+        action: "fact",
+        kind: "river",
+        slug: "limay",
+        metric: "length",
+        value: 500,
+      },
+    ],
+  ])("%s → unsupported", (_, raw) => {
+    expect(validateIntent({ ...nulls, ...raw }, known)).toEqual(unsupported);
+  });
+});
+
 describe("INTENT_JSON_SCHEMA", () => {
   it("lists the same actions as the Zod schema", () => {
     const actions = intentSchema.options.map((o) => o.shape.action.value);

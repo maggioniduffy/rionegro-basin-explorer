@@ -59,6 +59,10 @@ async function llmAnswer(
           : null) ?? { action: "no_match" }
       );
     }
+    // Answered from Mongo values in the next step (lib/ask/server/answer.ts).
+    case "compare":
+    case "rank":
+    case "fact":
     case "unsupported":
       return { action: "unsupported" };
   }
