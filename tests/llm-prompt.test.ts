@@ -21,7 +21,7 @@ const docs = {
   subbasins: ndjson("subbasins"),
   streams: ndjson("streams"),
 } as CatalogDocs;
-const catalog = buildCatalog(docs);
+const catalog = buildCatalog("nqn", docs);
 const prompt = buildSystemPrompt("en", catalog);
 
 describe("buildSystemPrompt", () => {

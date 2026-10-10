@@ -4,6 +4,7 @@ import { getCatalog } from "@/lib/ask/catalog";
 import type { AskResult } from "@/lib/ask/contract";
 import { ASK_MAX_LENGTH, askCacheKey, parseAsk } from "@/lib/ask/query";
 import { badRequest, json, serverError } from "@/lib/data/http";
+import type { RegionId } from "@/regions";
 import { readCache, writeCache } from "./cache";
 import { checkRateLimit, clientIp } from "./limiter";
 import { materialize, resolveAsk, revalidate } from "./resolve";
@@ -33,7 +34,10 @@ const respond = (result: AskResult) => json(result, { cache: "no-store" });
  * POST /api/ask logic. Neither the question nor the client's address is ever logged:
  * errors are reported by name only.
  */
-export async function handleAsk(req: Request): Promise<Response> {
+export async function handleAsk(
+  req: Request,
+  region: RegionId,
+): Promise<Response> {
   const body = await readBody(req);
   const parsed = body && parseAsk(body.q);
   if (!body || !parsed) return badRequest();
@@ -54,8 +58,13 @@ export async function handleAsk(req: Request): Promise<Response> {
     }
     const llmAllowed = limit.status === "ok";
 
-    const catalog = await getCatalog();
-    const key = askCacheKey(parsed.normalized, body.locale, catalog.version);
+    const catalog = await getCatalog(region);
+    const key = askCacheKey(
+      parsed.normalized,
+      body.locale,
+      region,
+      catalog.version,
+    );
     const hit = await readCache(key);
     const valid = hit && revalidate(hit, catalog, parsed.normalized);
     if (valid) return respond(await materialize(valid, "cache", catalog));

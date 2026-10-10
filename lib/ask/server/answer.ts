@@ -47,13 +47,19 @@ function filterPaths(filters: Filter[], kind: AnswerIntent["kind"]): string[] {
  * sub-basin documents. Sub-basins use their own lineage instead (no extra read).
  */
 async function riversWithin(
+  catalog: Catalog,
   filters: Filter[],
   kind: AnswerIntent["kind"],
 ): Promise<Map<string, Set<string>>> {
   const slugs = filters.flatMap((f) => (f.type === "within" ? [f.slug] : []));
   const members = new Map<string, Set<string>>();
   if (kind !== "river" || slugs.length === 0) return members;
-  const docs = await getMetricDocs("subbasin", [...new Set(slugs)], []);
+  const docs = await getMetricDocs(
+    catalog.region,
+    "subbasin",
+    [...new Set(slugs)],
+    [],
+  );
   for (const doc of docs) members.set(doc.id, new Set(doc.rivers ?? []));
   return members;
 }
@@ -134,8 +140,10 @@ export async function computeAnswer(
   const filters = intent.action === "rank" ? (intent.filters ?? []) : [];
   const paths = [...new Set([path, ...filterPaths(filters, intent.kind)])];
   const all =
-    ids.length === 0 ? [] : await getMetricDocs(intent.kind, ids, paths);
-  const within = await riversWithin(filters, intent.kind);
+    ids.length === 0
+      ? []
+      : await getMetricDocs(catalog.region, intent.kind, ids, paths);
+  const within = await riversWithin(catalog, filters, intent.kind);
   const docs = all.filter((d) =>
     filters.every((f) => matches(d, f, intent.kind, within)),
   );

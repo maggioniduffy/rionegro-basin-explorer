@@ -272,13 +272,16 @@ describe("askCacheKey", () => {
   it("is the same for variants that normalize the same", () => {
     const a = parseAsk("Collón Curá")!.normalized;
     const b = parseAsk("collon  cura")!.normalized;
-    expect(askCacheKey(a, "en", "v")).toBe(askCacheKey(b, "en", "v"));
+    expect(askCacheKey(a, "en", "nqn", "v")).toBe(
+      askCacheKey(b, "en", "nqn", "v"),
+    );
   });
 
-  it("changes with the locale and the catalog version, and hides the text", () => {
-    const key = askCacheKey("limay", "en", "v1");
-    expect(askCacheKey("limay", "es", "v1")).not.toBe(key);
-    expect(askCacheKey("limay", "en", "v2")).not.toBe(key);
+  it("changes with the region, the locale and the catalog version, and hides the text", () => {
+    const key = askCacheKey("limay", "en", "nqn", "v1");
+    expect(askCacheKey("limay", "en", "cba", "v1")).not.toBe(key);
+    expect(askCacheKey("limay", "es", "nqn", "v1")).not.toBe(key);
+    expect(askCacheKey("limay", "en", "nqn", "v2")).not.toBe(key);
     expect(key).not.toContain("limay");
   });
 });

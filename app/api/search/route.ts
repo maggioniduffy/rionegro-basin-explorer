@@ -3,6 +3,8 @@ import { fuzzySearchHits } from "@/lib/ask/search";
 import { badRequest, json, serverError } from "@/lib/data/http";
 import { parseSearchQuery } from "@/lib/data/params";
 import { searchNames } from "@/lib/data/queries";
+// The request's region arrives with app/[region] (PLAN.md R1, step 5b).
+import { DEFAULT_REGION } from "@/regions";
 
 /**
  * GET /api/search?q=neuq → named rivers and IGN streams: [{ kind, id, name, bbox?, subbasin? }].
@@ -13,9 +15,9 @@ export async function GET(req: NextRequest) {
   const q = parseSearchQuery(req.nextUrl.searchParams.get("q"));
   if (!q) return badRequest();
   try {
-    const hits = await searchNames(q);
+    const hits = await searchNames(DEFAULT_REGION, q);
     if (hits.length > 0 || /^\d+$/.test(q)) return json(hits);
-    return json(await fuzzySearchHits(q));
+    return json(await fuzzySearchHits(DEFAULT_REGION, q));
   } catch (error) {
     return serverError("api/search", error);
   }

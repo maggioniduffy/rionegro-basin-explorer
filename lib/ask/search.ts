@@ -3,6 +3,7 @@ import { subbasinRefs, type SearchHit } from "@/lib/data/queries";
 import { SEARCH_LIMIT } from "@/lib/data/params";
 import { getCatalog } from "./catalog";
 import { fuzzyMatch } from "./fuzzy";
+import type { RegionId } from "@/regions";
 
 /**
  * Lowest confidence the search list shows. Looser than the ask box's threshold: here the
@@ -11,14 +12,19 @@ import { fuzzyMatch } from "./fuzzy";
 export const SEARCH_FUZZY_MIN = 0.7;
 
 /** Rivers and streams whose name is close to `q`, as /api/search hits. */
-export async function fuzzySearchHits(q: string): Promise<SearchHit[]> {
-  const { index } = await getCatalog();
+export async function fuzzySearchHits(
+  region: RegionId,
+  q: string,
+): Promise<SearchHit[]> {
+  const { index } = await getCatalog(region);
   const matches = fuzzyMatch(index, q, {
     kinds: ["river", "stream"],
     limit: SEARCH_LIMIT,
   }).filter((m) => m.confidence >= SEARCH_FUZZY_MIN);
   const wanted = [...new Set(matches.flatMap((m) => m.entry.subbasin ?? []))];
-  const refs = new Map((await subbasinRefs(wanted)).map((r) => [r.id, r]));
+  const refs = new Map(
+    (await subbasinRefs(region, wanted)).map((r) => [r.id, r]),
+  );
   return matches.flatMap(({ entry }): SearchHit[] => {
     if (entry.name === null) return [];
     if (entry.kind === "river")

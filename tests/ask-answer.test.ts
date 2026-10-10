@@ -43,7 +43,7 @@ vi.mock("@/lib/data/queries", () => ({ getMetricDocs }));
 
 const { buildCatalog } = await import("@/lib/ask/catalog");
 const { computeAnswer } = await import("@/lib/ask/server/answer");
-const catalog: Catalog = buildCatalog(docs as unknown as CatalogDocs);
+const catalog: Catalog = buildCatalog("nqn", docs as unknown as CatalogDocs);
 
 beforeEach(() => {
   mongo.overrides.clear();
@@ -54,7 +54,12 @@ beforeEach(() => {
       : at(d, path);
   let mainPath = "";
   getMetricDocs.mockImplementation(
-    async (kind: "river" | "subbasin", ids: string[], paths: string[]) => {
+    async (
+      _region: string,
+      kind: "river" | "subbasin",
+      ids: string[],
+      paths: string[],
+    ) => {
       const source = (kind === "river" ? rivers : subbasins) as Doc[];
       const main = paths[0];
       mainPath = main ?? "";

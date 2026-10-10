@@ -64,3 +64,14 @@ Vercel keep `MONGODB_DB=basin-explorer` (now the base name). Other regions will 
 - [ ] Later, before Córdoba goes live: the read-only app user has `read@basin-explorer` only.
       Give it `read@basin-explorer-cba` too (Atlas → Database Access → edit user), or switch it to
       Atlas's "Only read any database" role. Then run `npm run atlas:check -- --region cba`.
+
+### Step 5a — queries and the ask box take a region (this commit)
+
+Every data query, the ask catalog (one in-memory catalog per region) and the ask cache key
+(`ask:v2:<region>:…`) take a region; the routes still pass `nqn`. The cache key format
+changed, so the ask box's Upstash cache starts empty once deployed: expected, entries
+expire on their own (7 days).
+
+- [ ] `npm run dev`: search a river ("limay", and a typo like "limai"), open a river, a
+      sub-basin, a stream and a reach panel; ask "¿Qué río es más largo, Caleufú o Agrio?".
+      All should behave as before.

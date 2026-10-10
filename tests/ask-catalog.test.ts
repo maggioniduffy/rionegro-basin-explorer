@@ -35,10 +35,13 @@ describe("getCatalog", () => {
     getCatalogDocs.mockResolvedValue(docs);
     const getCatalog = await load();
     const { CATALOG_TTL_MS } = await import("@/lib/ask/catalog");
-    const [a, b] = await Promise.all([getCatalog(0), getCatalog(1)]);
+    const [a, b] = await Promise.all([
+      getCatalog("nqn", 0),
+      getCatalog("nqn", 1),
+    ]);
     expect(a).toBe(b);
     expect(getCatalogDocs).toHaveBeenCalledTimes(1);
-    await getCatalog(CATALOG_TTL_MS + 1);
+    await getCatalog("nqn", CATALOG_TTL_MS + 1);
     expect(getCatalogDocs).toHaveBeenCalledTimes(2);
   });
 
@@ -47,8 +50,8 @@ describe("getCatalog", () => {
       .mockRejectedValueOnce(new Error("timeout"))
       .mockResolvedValue(docs);
     const getCatalog = await load();
-    await expect(getCatalog(0)).rejects.toThrow("timeout");
-    const catalog = await getCatalog(1);
+    await expect(getCatalog("nqn", 0)).rejects.toThrow("timeout");
+    const catalog = await getCatalog("nqn", 1);
     expect(catalog.entries.map((e) => e.id)).toEqual(["limay"]);
   });
 });

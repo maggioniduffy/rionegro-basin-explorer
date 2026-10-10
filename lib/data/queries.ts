@@ -1,6 +1,6 @@
 import "server-only";
 import { getDb } from "@/lib/mongo";
-import { DEFAULT_REGION } from "@/regions";
+import type { RegionId } from "@/regions";
 import { parseReachId, searchPattern, SEARCH_LIMIT } from "./params";
 import type {
   Bbox,
@@ -68,20 +68,19 @@ export type SearchHit =
   /** A typed HYRIV_ID; name is its IGN name or its river's, null for neither. */
   | { kind: "reachId"; id: string; name: string | null; bbox: Bbox };
 
-/** The routes don't know their region yet (PLAN.md R1, step 5): the default one. */
-const REGION = DEFAULT_REGION;
-const rivers = async () =>
-  (await getDb(REGION)).collection<RiverDoc>("rivers");
-const streams = async () =>
-  (await getDb(REGION)).collection<StreamDoc>("streams");
-const reaches = async () => (await getDb(REGION)).collection<Reach>("reaches");
-const subbasins = async () =>
-  (await getDb(REGION)).collection<Subbasin>("subbasins");
+/** Every query reads one region's database (lib/mongo.ts getDb). */
+const rivers = async (region: RegionId) =>
+  (await getDb(region)).collection<RiverDoc>("rivers");
+const streams = async (region: RegionId) =>
+  (await getDb(region)).collection<StreamDoc>("streams");
+const reaches = async (region: RegionId) => (await getDb(region)).collection<Reach>("reaches");
+const subbasins = async (region: RegionId) =>
+  (await getDb(region)).collection<Subbasin>("subbasins");
 
 /** Refs of the rivers `ids`, in the order given; unknown ids are left out. */
-async function namedRivers(ids: string[]): Promise<NamedRef[]> {
+async function namedRivers(region: RegionId, ids: string[]): Promise<NamedRef[]> {
   if (ids.length === 0) return [];
-  const docs = await (await rivers())
+  const docs = await (await rivers(region))
     .find({ _id: { $in: ids } }, { projection: { name: 1 } })
     .toArray();
   const byId = new Map(docs.map((d) => [d._id, d.name]));
@@ -93,10 +92,11 @@ async function namedRivers(ids: string[]): Promise<NamedRef[]> {
 
 /** Refs of the sub-basins `ids`, in the order given; unknown ids are left out. */
 export async function subbasinRefs(
+  region: RegionId,
   ids: string[],
 ): Promise<SubbasinRef[]> {
   if (ids.length === 0) return [];
-  const docs = await (await subbasins())
+  const docs = await (await subbasins(region))
     .find({ _id: { $in: ids } }, { projection: { name: 1, kind: 1 } })
     .toArray();
   const byId = new Map(docs.map((d) => [d._id, d]));
@@ -106,33 +106,33 @@ export async function subbasinRefs(
   });
 }
 
-async function riverName(id: string | null): Promise<string | null> {
+async function riverName(region: RegionId, id: string | null): Promise<string | null> {
   if (!id || id === "sea") return null;
-  const doc = await (await rivers()).findOne(
+  const doc = await (await rivers(region)).findOne(
     { _id: id },
     { projection: { name: 1 } },
   );
   return doc?.name ?? null;
 }
 
-export async function getRiver(id: string): Promise<RiverResponse | null> {
-  const doc = await (await rivers()).findOne(
+export async function getRiver(region: RegionId, id: string): Promise<RiverResponse | null> {
+  const doc = await (await rivers(region)).findOne(
     { _id: id },
     { projection: { searchTerms: 0 } },
   );
   if (!doc) return null;
-  return { ...doc, flowsIntoName: await riverName(doc.flowsInto) };
+  return { ...doc, flowsIntoName: await riverName(region, doc.flowsInto) };
 }
 
-export async function getStream(id: string): Promise<StreamResponse | null> {
-  const doc = await (await streams()).findOne(
+export async function getStream(region: RegionId, id: string): Promise<StreamResponse | null> {
+  const doc = await (await streams(region)).findOne(
     { _id: id },
     { projection: { searchTerms: 0 } },
   );
   if (!doc) return null;
   const [[subbasinRef], [receivingRiverRef]] = await Promise.all([
-    subbasinRefs(doc.subbasin ? [doc.subbasin] : []),
-    namedRivers(doc.receivingRiver ? [doc.receivingRiver] : []),
+    subbasinRefs(region, doc.subbasin ? [doc.subbasin] : []),
+    namedRivers(region, doc.receivingRiver ? [doc.receivingRiver] : []),
   ]);
   return {
     ...doc,
@@ -141,13 +141,13 @@ export async function getStream(id: string): Promise<StreamResponse | null> {
   };
 }
 
-export async function getReach(id: number): Promise<ReachResponse | null> {
-  const doc = await (await reaches()).findOne({ _id: id });
+export async function getReach(region: RegionId, id: number): Promise<ReachResponse | null> {
+  const doc = await (await reaches(region)).findOne({ _id: id });
   if (!doc) return null;
   const [river, stream] = await Promise.all([
-    riverName(doc.river),
+    riverName(region, doc.river),
     doc.stream
-      ? (await streams()).findOne(
+      ? (await streams(region)).findOne(
           { _id: doc.stream },
           { projection: { name: 1 } },
         )
@@ -157,14 +157,15 @@ export async function getReach(id: number): Promise<ReachResponse | null> {
 }
 
 export async function getSubbasin(
+  region: RegionId,
   id: string,
 ): Promise<SubbasinResponse | null> {
-  const doc = await (await subbasins()).findOne({ _id: id });
+  const doc = await (await subbasins(region)).findOne({ _id: id });
   if (!doc) return null;
   const [ancestors, children, riverRefs] = await Promise.all([
-    subbasinRefs(doc.path.slice(0, -1)),
-    subbasinRefs(doc.childIds),
-    namedRivers(doc.rivers),
+    subbasinRefs(region, doc.path.slice(0, -1)),
+    subbasinRefs(region, doc.childIds),
+    namedRivers(region, doc.rivers),
   ]);
   return {
     ...doc,
@@ -176,8 +177,8 @@ export async function getSubbasin(
 }
 
 /** Every sub-basin, without metrics; the seed keeps the pipeline's hierarchy order. */
-export async function getSubbasinTree(): Promise<SubbasinTreeNode[]> {
-  const docs = await (await subbasins())
+export async function getSubbasinTree(region: RegionId): Promise<SubbasinTreeNode[]> {
+  const docs = await (await subbasins(region))
     .find(
       {},
       {
@@ -200,20 +201,20 @@ export async function getSubbasinTree(): Promise<SubbasinTreeNode[]> {
  * Both collections are asked for the limit, then merged by total length. Each stream hit
  * carries the sub-basin of its mouth, so streams with the same name can be told apart.
  */
-export async function searchNames(q: string): Promise<SearchHit[]> {
+export async function searchNames(region: RegionId, q: string): Promise<SearchHit[]> {
   // A number is a HydroRIVERS HYRIV_ID: open that reach (names have no digits only).
   if (/^\d+$/.test(q)) {
     const id = parseReachId(q);
-    return id === null ? [] : reachIdHit(id);
+    return id === null ? [] : reachIdHit(region, id);
   }
   const filter = { searchTerms: { $regex: searchPattern(q) } };
   const [riverDocs, streamDocs] = await Promise.all([
-    (await rivers())
+    (await rivers(region))
       .find(filter, { projection: { name: 1, lengthKm: 1 } })
       .sort({ lengthKm: -1 })
       .limit(SEARCH_LIMIT)
       .toArray(),
-    (await streams())
+    (await streams(region))
       .find(filter, {
         projection: { name: 1, lengthKm: 1, bbox: 1, subbasin: 1 },
       })
@@ -244,7 +245,7 @@ export async function searchNames(q: string): Promise<SearchHit[]> {
   const wanted = [
     ...new Set(merged.flatMap((m) => (m.subbasin ? [m.subbasin] : []))),
   ];
-  const refs = new Map((await subbasinRefs(wanted)).map((r) => [r.id, r]));
+  const refs = new Map((await subbasinRefs(region, wanted)).map((r) => [r.id, r]));
   return merged.map((m) =>
     m.hit.kind === "stream" && m.subbasin
       ? { ...m.hit, subbasin: refs.get(m.subbasin) ?? null }
@@ -253,9 +254,9 @@ export async function searchNames(q: string): Promise<SearchHit[]> {
 }
 
 /** Names, links and sizes of every river, sub-basin and stream, for the fuzzy catalog. */
-export async function getCatalogDocs(): Promise<CatalogDocs> {
+export async function getCatalogDocs(region: RegionId): Promise<CatalogDocs> {
   const [riverDocs, subbasinDocs, streamDocs] = await Promise.all([
-    (await rivers())
+    (await rivers(region))
       .find(
         {},
         {
@@ -270,13 +271,13 @@ export async function getCatalogDocs(): Promise<CatalogDocs> {
         },
       )
       .toArray(),
-    (await subbasins())
+    (await subbasins(region))
       .find(
         {},
         { projection: { kind: 1, name: 1, parentId: 1, river: 1, areaKm2: 1 } },
       )
       .toArray(),
-    (await streams())
+    (await streams(region))
       .find(
         {},
         { projection: { name: 1, lengthKm: 1, bbox: 1, subbasin: 1 } },
@@ -331,6 +332,7 @@ function idList(value: unknown): string[] | null {
  * lineage and rivers. Unknown ids are left out.
  */
 export async function getMetricDocs(
+  region: RegionId,
   kind: "river" | "subbasin",
   ids: string[],
   paths: string[],
@@ -347,8 +349,8 @@ export async function getMetricDocs(
   const filter = { _id: { $in: ids } };
   const docs =
     kind === "river"
-      ? await (await rivers()).find(filter, { projection }).toArray()
-      : await (await subbasins()).find(filter, { projection }).toArray();
+      ? await (await rivers(region)).find(filter, { projection }).toArray()
+      : await (await subbasins(region)).find(filter, { projection }).toArray();
   return docs.map((doc) => ({
     id: doc._id,
     name: doc.name ?? null,
@@ -379,13 +381,13 @@ export interface CatalogDocs {
   streams: CatalogStream[];
 }
 
-async function reachIdHit(id: number): Promise<SearchHit[]> {
-  const doc = await (await reaches()).findOne(
+async function reachIdHit(region: RegionId, id: number): Promise<SearchHit[]> {
+  const doc = await (await reaches(region)).findOne(
     { _id: id },
     { projection: { river: 1, ign: 1, bbox: 1 } },
   );
   if (!doc) return [];
-  const [river] = doc.river ? await namedRivers([doc.river]) : [];
+  const [river] = doc.river ? await namedRivers(region, [doc.river]) : [];
   return [
     {
       kind: "reachId",

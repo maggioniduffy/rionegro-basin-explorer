@@ -22,7 +22,7 @@ const docs = {
 } as CatalogDocs;
 
 const { buildCatalog } = await import("@/lib/ask/catalog");
-const catalog: Catalog = buildCatalog(docs);
+const catalog: Catalog = buildCatalog("nqn", docs);
 vi.mock("@/lib/ask/catalog", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/ask/catalog")>()),
   getCatalog: async () => {
@@ -137,7 +137,7 @@ beforeEach(() => {
   metricDocs.overrides.clear();
   getMetricDocs.mockReset();
   getMetricDocs.mockImplementation(
-    async (_kind: string, ids: string[], paths: string[]) =>
+    async (_region: string, _kind: string, ids: string[], paths: string[]) =>
       ids.map((id) => {
         const path = paths[0] ?? "";
         const at = (p: string): number | null => {

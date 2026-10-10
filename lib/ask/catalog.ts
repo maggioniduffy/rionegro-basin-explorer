@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { getCatalogDocs, type CatalogDocs } from "@/lib/data/queries";
+import type { RegionId } from "@/regions";
 import {
   catalogEntries,
   createFuzzyIndex,
@@ -10,6 +11,8 @@ import {
 import type { KnownIds } from "./intent";
 
 export interface Catalog {
+  /** The region whose database the documents came from. */
+  region: RegionId;
   entries: CatalogEntry[];
   index: FuzzyIndex;
   /** The documents behind it (names, flowsInto, upstream area) for the LLM prompt. */
@@ -23,16 +26,18 @@ export interface Catalog {
 /** Data only changes when the seed runs; an hour bounds how stale a warm instance gets. */
 export const CATALOG_TTL_MS = 60 * 60 * 1000;
 
-let cached: { at: number; promise: Promise<Catalog> } | undefined;
+/** One catalog per region. */
+const cached = new Map<RegionId, { at: number; promise: Promise<Catalog> }>();
 
 /** Builds the catalog from documents (exported for tests). */
-export function buildCatalog(docs: CatalogDocs): Catalog {
+export function buildCatalog(region: RegionId, docs: CatalogDocs): Catalog {
   const entries = catalogEntries(docs);
   const version = createHash("sha256")
     .update(JSON.stringify(entries.map((e) => [e.kind, e.id, e.name])))
     .digest("hex")
     .slice(0, 8);
   return {
+    region,
     entries,
     index: createFuzzyIndex(entries),
     docs,
@@ -45,18 +50,22 @@ export function buildCatalog(docs: CatalogDocs): Catalog {
 }
 
 /**
- * Every river, sub-basin and stream name, held in memory per server instance (about 500
- * short names). Concurrent callers share one load; a failed load is not cached.
+ * Every river, sub-basin and stream name of a region, held in memory per server instance
+ * (about 500 short names for nqn). Concurrent callers share one load; a failed load is
+ * not cached.
  */
-export function getCatalog(now = Date.now()): Promise<Catalog> {
-  if (!cached || now - cached.at > CATALOG_TTL_MS) {
-    const promise = getCatalogDocs()
-      .then(buildCatalog)
-      .catch((error: unknown) => {
-        if (cached?.promise === promise) cached = undefined;
-        throw error;
-      });
-    cached = { at: now, promise };
-  }
-  return cached.promise;
+export function getCatalog(
+  region: RegionId,
+  now = Date.now(),
+): Promise<Catalog> {
+  const current = cached.get(region);
+  if (current && now - current.at <= CATALOG_TTL_MS) return current.promise;
+  const promise = getCatalogDocs(region)
+    .then((docs) => buildCatalog(region, docs))
+    .catch((error: unknown) => {
+      if (cached.get(region)?.promise === promise) cached.delete(region);
+      throw error;
+    });
+  cached.set(region, { at: now, promise });
+  return promise;
 }

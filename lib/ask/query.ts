@@ -38,13 +38,14 @@ export function parseAsk(raw: string): ParsedAsk | null {
 
 /**
  * Cache key of a question. The text is hashed, so the store holds no readable questions;
- * the locale is part of it, and `version` changes when the catalog does.
+ * the region and locale are part of it, and `version` changes when the catalog does.
  */
 export function askCacheKey(
   normalized: string,
   locale: AskLocale,
+  region: string,
   version: string,
 ): string {
   const hash = createHash("sha256").update(normalized).digest("hex");
-  return `ask:v2:${version}:${locale}:${hash.slice(0, 32)}`;
+  return `ask:v2:${region}:${version}:${locale}:${hash.slice(0, 32)}`;
 }

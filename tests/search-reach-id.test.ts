@@ -60,7 +60,7 @@ beforeEach(() => {
 
 describe("searchNames with a HYRIV_ID", () => {
   it("returns the reach with its IGN name", async () => {
-    expect(await searchNames("61537003")).toEqual([
+    expect(await searchNames("nqn", "61537003")).toEqual([
       { kind: "reachId", id: "61537003", name: "Arroyo Blanco", bbox },
     ]);
     // Digits only: no name search.
@@ -68,13 +68,15 @@ describe("searchNames with a HYRIV_ID", () => {
   });
 
   it("falls back to the river's name, then to none", async () => {
-    expect((await searchNames("61528155"))[0]?.name).toBe("Río Varvarco");
-    expect((await searchNames("61500001"))[0]?.name).toBeNull();
+    expect((await searchNames("nqn", "61528155"))[0]?.name).toBe(
+      "Río Varvarco",
+    );
+    expect((await searchNames("nqn", "61500001"))[0]?.name).toBeNull();
   });
 
   it("returns nothing for an unknown or invalid id", async () => {
-    expect(await searchNames("12345")).toEqual([]);
-    expect(await searchNames("0123")).toEqual([]);
+    expect(await searchNames("nqn", "12345")).toEqual([]);
+    expect(await searchNames("nqn", "0123")).toEqual([]);
     expect(calls).toEqual(["reaches.findOne"]);
   });
 });
@@ -109,7 +111,7 @@ describe("searchNames with a name", () => {
         subbasin: null,
       },
     ];
-    const hits = await searchNames("arroyo blanco");
+    const hits = await searchNames("nqn", "arroyo blanco");
     expect(hits.map((h) => `${h.kind}:${h.id}`)).toEqual([
       "stream:arroyo-blanco-2",
       "river:varvarco",
