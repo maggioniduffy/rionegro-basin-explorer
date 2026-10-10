@@ -87,7 +87,7 @@ pipeline order and its prerequisites are in [pipeline/README.md](pipeline/README
 ### Repository layout
 
 ```
-app/          pages, /attributions, /api/{rivers,reaches,subbasins,search,health}
+app/[region]/ pages, /attributions, /api/{rivers,reaches,subbasins,search,health,ask} (one region per host, proxy.ts)
 components/   map, panels, controls, search, mobile sheet
 lib/          mongo.ts, data/ (schemas, queries), map/ (style, mask, minimap), store.ts, url-state.ts
 messages/     en.json, es.json
@@ -196,7 +196,7 @@ El orden completo del pipeline y sus requisitos están en [pipeline/README.md](p
 ### Estructura del repositorio
 
 ```
-app/          páginas, /attributions, /api/{rivers,reaches,subbasins,search,health}
+app/[region]/ páginas, /attributions, /api/{rivers,reaches,subbasins,search,health,ask} (una región por host, proxy.ts)
 components/   mapa, paneles, controles, búsqueda, panel móvil
 lib/          mongo.ts, data/ (esquemas, consultas), map/ (estilo, máscara, minimapa), store.ts, url-state.ts
 messages/     en.json, es.json

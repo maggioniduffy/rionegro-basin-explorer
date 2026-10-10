@@ -3,13 +3,20 @@ import en from "@/messages/en.json";
 import es from "@/messages/es.json";
 import { OG_MAP_BOX, OG_SIZE } from "@/lib/og";
 import { FLOW_STYLE, THEME_COLORS } from "@/lib/map/style";
-import shapes from "./og-shapes.json";
+import shapes from "@/app/og-shapes.json";
+import { REGION_IDS } from "@/regions";
 
 // One static image for both languages: a shared link has no locale cookie, so the
 // card shows both titles (the site picks its language per visitor).
 export const alt = `${en.metadata.title} · ${es.metadata.title}`;
 export const size = OG_SIZE;
 export const contentType = "image/png";
+
+// Rendered at build time, one per region (the drawing is still the Río Negro basin's until
+// the region content moves to regions/<id>/, PLAN.md R1 step 6).
+export function generateStaticParams() {
+  return REGION_IDS.map((region) => ({ region }));
+}
 
 const { mask, lake } = THEME_COLORS.dark;
 

@@ -1,8 +1,14 @@
+import { isRegionId, type RegionId } from "@/regions";
 import { normalizeSearch } from "./search";
 
 /** Query and path input limits for the public API. */
 export const SEARCH_MAX_LENGTH = 64;
 export const SEARCH_LIMIT = 8;
+
+/** The [region] route segment: a known region id (regions/index.ts), else null. */
+export function parseRegion(raw: string): RegionId | null {
+  return isRegionId(raw) ? raw : null;
+}
 
 /** River slugs as written by pipeline/lib/names.ts slugify. */
 export function parseRiverId(raw: string): string | null {

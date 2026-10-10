@@ -112,7 +112,9 @@ function post(
 
 async function setup() {
   vi.resetModules();
-  return (await import("@/app/api/ask/route")).POST;
+  const { POST } = await import("@/app/[region]/api/ask/route");
+  return (req: Request) =>
+    POST(req, { params: Promise.resolve({ region: "nqn" }) });
 }
 
 async function ask(

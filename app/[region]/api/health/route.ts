@@ -1,10 +1,15 @@
 import { getDb } from "@/lib/mongo";
-import { DEFAULT_REGION } from "@/regions";
+import { parseRegion } from "@/lib/data/params";
 
-export async function GET() {
+export async function GET(
+  _req: Request,
+  ctx: RouteContext<"/[region]/api/health">,
+) {
+  const region = parseRegion((await ctx.params).region);
+  if (!region) return new Response(null, { status: 404 });
   let db: "up" | "down";
   try {
-    await (await getDb(DEFAULT_REGION)).command({ ping: 1 });
+    await (await getDb(region)).command({ ping: 1 });
     db = "up";
   } catch (error) {
     // Log server-side only; the response never includes error details.

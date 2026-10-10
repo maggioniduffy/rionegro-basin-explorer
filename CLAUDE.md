@@ -25,7 +25,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 
 ## Repo layout
 
-- `/app` pages + `/api/*` route handlers
+- `/app/[region]` pages + `/api/*` route handlers (`proxy.ts` rewrites each host to its region; see `regions/`)
 - `/components`, `/lib` (mongo.ts, map/, store.ts, units.ts), `/messages` (en.json, es.json)
 - `/pipeline` TS scripts orchestrating DuckDB / GDAL / tippecanoe; each step writes to `data/work/<region>/` and emits a report
 - `/data` — `raw/` and `work/` are gitignored; `out/` holds tiles and NDJSON for the seed

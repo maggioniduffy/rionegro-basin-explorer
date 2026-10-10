@@ -75,3 +75,23 @@ expire on their own (7 days).
 - [ ] `npm run dev`: search a river ("limay", and a typo like "limai"), open a river, a
       sub-basin, a stream and a reach panel; ask "¿Qué río es más largo, Caleufú o Agrio?".
       All should behave as before.
+
+### Step 5b — pages and API routes under `app/[region]/`, host → region in `proxy.ts` (this commit)
+
+`proxy.ts` rewrites every request to its host's region (`regions/hosts.ts`): a host whose
+first label is a region id (`cba.example.com`, `cba.localhost:3000`) serves that region;
+any other host, including `rionegrobasinexplorer.vercel.app` and plain `localhost`, serves
+`nqn`. Public URLs don't change. Checked in the cloud with `next build` + `next start`:
+pages 200 on any host, `/en`, `/es/map` and `/?r=limay` still redirect, `/xyz/map` 404,
+icons, tiles and the MapLibre worker untouched, the OG image is built per region at
+`/nqn/opengraph-image`. API routes answered 500 there only because the cloud has no
+`MONGODB_URI`.
+
+- [ ] `npm run dev`, then open both `http://localhost:3000/map` and
+      `http://nqn.localhost:3000/map` (Chrome and Firefox resolve `*.localhost` on their own;
+      Safari may not). Click a river, search, ask a question: the API routes must answer
+      from Atlas as before.
+- [ ] `npm run test:e2e` (Playwright, local only) — the URLs the tests use haven't changed.
+- [ ] After the Vercel deploy: open the landing, the map, `/attributions` and a shared link
+      such as `/?r=limay`; check `/api/health` returns `{"ok":true}`; share the landing URL
+      in a link-preview tool (or check `og:image` in the page source) to see the OG image.

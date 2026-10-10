@@ -25,7 +25,7 @@ and a strip of land around it is visible, with river panels and a sub-basin view
 ## Repo layout
 
 ```
-/app                 pages, /api/rivers/[id], /api/reaches/[id], /api/subbasins/[id], /api/search
+/app/[region]        pages, /api/rivers/[id], /api/reaches/[id], /api/subbasins/[id], /api/search
 /components          map/, panel/ (River, Reach, Subbasin, Info), SearchBox, UrlSync, Controls, ViewModeToggle, SubbasinLegend, LocaleSwitcher
 /lib                 mongo.ts, data/ (schemas, queries), map/, store.ts, url-state.ts, units.ts
 /messages            en.json, es.json
@@ -175,8 +175,8 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run 
 - [x] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared (step 2, 2026-10-10; default `nqn`)
 - [~] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region — tiles moved, versioned per region, `tilePaths(region)` (step 3, 2026-10-10); callers still pass the default region until step 5, and `mapConfig` follows with the region provider
 - [x] Mongo: one database per region on the same cluster, `getDb(region)`; seed and `atlas:check` take `--region` (step 4, 2026-10-10; routes pass the default region until step 5)
-- [~] Routes and the ask catalog, LLM cache key and rate limit read the request's region — queries, catalog (one per region) and cache key take it (step 5a, 2026-10-10); the routes pass `nqn` until 5b. The rate limit stays per IP across regions (one LLM quota)
-- [ ] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn`
+- [x] Routes and the ask catalog, LLM cache key and rate limit read the request's region — queries, catalog (one per region) and cache key take it (step 5a, 2026-10-10); the routes read it from `app/[region]` since 5b. The rate limit stays per IP across regions (one LLM quota)
+- [x] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn` (step 5b, 2026-10-10)
 - [ ] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/`
 - **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds.
 

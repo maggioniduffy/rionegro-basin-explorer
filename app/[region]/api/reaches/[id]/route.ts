@@ -1,17 +1,18 @@
 import { badRequest, json, notFound, serverError } from "@/lib/data/http";
-import { parseReachId } from "@/lib/data/params";
+import { parseReachId, parseRegion } from "@/lib/data/params";
 import { getReach } from "@/lib/data/queries";
-// The request's region arrives with app/[region] (PLAN.md R1, step 5b).
-import { DEFAULT_REGION } from "@/regions";
 
 export async function GET(
   _req: Request,
-  ctx: RouteContext<"/api/reaches/[id]">,
+  ctx: RouteContext<"/[region]/api/reaches/[id]">,
 ) {
-  const id = parseReachId((await ctx.params).id);
+  const params = await ctx.params;
+  const region = parseRegion(params.region);
+  if (!region) return notFound();
+  const id = parseReachId(params.id);
   if (!id) return badRequest();
   try {
-    const reach = await getReach(DEFAULT_REGION, id);
+    const reach = await getReach(region, id);
     return reach ? json(reach) : notFound();
   } catch (error) {
     return serverError("api/reaches", error);
