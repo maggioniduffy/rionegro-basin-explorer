@@ -76,7 +76,7 @@ expire on their own (7 days).
       sub-basin, a stream and a reach panel; ask "¿Qué río es más largo, Caleufú o Agrio?".
       All should behave as before.
 
-### Step 5b — pages and API routes under `app/[region]/`, host → region in `proxy.ts` (this commit)
+### Step 5b — pages and API routes under `app/[region]/`, host → region in `proxy.ts` (`d15af69`)
 
 `proxy.ts` rewrites every request to its host's region (`regions/hosts.ts`): a host whose
 first label is a region id (`cba.example.com`, `cba.localhost:3000`) serves that region;
