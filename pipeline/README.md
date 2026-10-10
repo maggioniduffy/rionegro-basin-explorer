@@ -63,7 +63,7 @@ attribute names that appear there.**
 
 ### `npm run pipeline:basin`
 
-Delineates the basin from HydroBASINS level 12. Configuration is in `pipeline/basin.config.json`.
+Delineates the basin from HydroBASINS level 12. Configuration is in `regions/nqn/basin.config.json`.
 
 1. **Outlet.** Picks the sea-draining HydroRIVERS reach (`NEXT_DOWN = 0`) with the largest
    `UPLAND_SKM` inside a search box and reports it with the runners-up.
@@ -109,7 +109,7 @@ The report checks:
 
 ### `npm run pipeline:candidates`
 
-Lists the major branches of the connected network so they can be named in `pipeline/names.json`
+Lists the major branches of the connected network so they can be named in `regions/nqn/names.json`
 (HydroRIVERS has no names). A candidate is either the outlet reach, or a branch at a confluence where
 at least two branches drain ≥ 2,000 km² (`-- --min-area=<km²>` to change). Both branches of such a
 confluence are listed. Each candidate's segment runs up the largest branch to the next candidate
@@ -123,7 +123,7 @@ for the named waterways and water bodies in the basin bbox, cached in
 `data/work/osm-names/overpass.json`, so reruns send nothing. It retries on 429 and 504, which the
 public instance returns when busy. Each candidate segment gets up to five sample points, matched
 locally to OSM lines within 750 m. `matches.json` lists the names per candidate, such as
-"Río Limay 5/5". A person reviews it to write `pipeline/names.json`.
+"Río Limay 5/5". A person reviews it to write `regions/nqn/names.json`.
 
 ### `npm run pipeline:localities`
 
@@ -138,7 +138,7 @@ all inside the basin. Places mapped only as areas are not included. Run it after
 
 ### `npm run pipeline:named`
 
-Traces every river in `pipeline/names.json`, a hand-approved list keyed by mouth reach, with OSM
+Traces every river in `regions/nqn/names.json`, a hand-approved list keyed by mouth reach, with OSM
 evidence for each name. Runs after `ign-match`. A river runs where its IGN name runs (owner rule,
 2026-10-09; IGN is the authority): from its mouth upstream it follows the reaches whose IGN line
 carries the river's name (`ign-match/cover.parquet`; `traceAlongName` in `pipeline/lib/name-trace.ts`).
@@ -195,7 +195,7 @@ in `data/work/lakes/hydrolakes_bbox.parquet`.
 HydroRIVERS draws flow paths across lakes, and this step removes those lines from the map.
 
 - **Every lake:** the parts of reaches inside it are cut away.
-- **Exception:** the reservoirs approved in `pipeline/lakes.json` keep the line of their main river.
+- **Exception:** the reservoirs approved in `regions/nqn/lakes.json` keep the line of their main river.
   The main river is the named river (`pipeline:named`) of the lake's largest-`UPLAND_SKM` reach,
   i.e. its outflow path.
 - **Slivers:** clipped pieces under 50 m are dropped, since they are artifacts where a line grazes a
@@ -235,7 +235,7 @@ Only RiverATLAS fields whose catalog units were checked are exported (`ele_mt_cm
 
 ### `npm run pipeline:mask`
 
-Polygons for the "Visible Land" slider, from `pipeline/map.config.json`. For each level in
+Polygons for the "Visible Land" slider, from `regions/nqn/map.config.json`. For each level in
 `mask.baseHalfWidthKm`, every reach is buffered on each side by that width times
 `mask.strahlerFactor[order]`, in South America Albers (ESRI:102033). Endorheic reaches are included.
 The buffers are unioned and clipped to the basin to make the visible "hole". The mask is the
@@ -249,9 +249,9 @@ with each level, and that the last level is the whole basin.
 
 ### `npm run pipeline:subbasins`
 
-Builds the sub-basin hierarchy listed in `pipeline/subbasins.config.json` from HydroBASINS level 12.
+Builds the sub-basin hierarchy listed in `regions/nqn/subbasins.config.json` from HydroBASINS level 12.
 The root (`negro`) is the whole basin; level 1 is `limay`, `neuquen` and `endorheic`; levels 2–4 are
-the other approved rivers of `pipeline/names.json`, nested by where they flow (`collon-cura` and its
+the other approved rivers of `regions/nqn/names.json`, nested by where they flow (`collon-cura` and its
 four tributaries under `limay`, and so on). A parent is listed before its children; the config's
 structure (levels, parents, no cycles) is checked before anything runs.
 
@@ -315,8 +315,8 @@ part of `fna`.
 ### `npm run pipeline:ign-match`
 
 Matches IGN names to HydroRIVERS reaches and keeps the IGN lines HydroRIVERS lacks. Everything is
-measured in Albers (approximate to a few percent). Settings: `pipeline/ign.config.json`; hand decisions:
-`pipeline/ign-overrides.json`.
+measured in Albers (approximate to a few percent). Settings: `regions/nqn/ign.config.json`; hand decisions:
+`regions/nqn/ign-overrides.json`.
 
 1. **Coverage.** For each reach and IGN name (compared by `nameKey`), the fraction of the reach within
    `bufferM` (250 m, as the gate) of the lines carrying that name. Every pair is written to
@@ -329,7 +329,7 @@ measured in Albers (approximate to a few percent). Settings: `pipeline/ign.confi
 3. **Review.** `review.json` lists the low or ambiguous reaches, longest first, with the candidates.
    `proposed-overrides.json` proposes `accept` where the same name is already shown on the next reach
    upstream or downstream (the river continues through it); copy the entries you agree with into
-   `pipeline/ign-overrides.json`. Not accepting costs nothing: a hidden name is the default.
+   `regions/nqn/ign-overrides.json`. Not accepting costs nothing: a hidden name is the default.
 4. **Approved rivers.** For each river in `names.json`, the IGN name along its candidate stem (the area
    trace from its mouth, computed here, since `named` runs later) is voted by km (over the stem km that
    has a candidate: IGN draws no line through reservoirs). The report proposes a name; `names.json` holds
@@ -347,7 +347,7 @@ DECISSIONS.md (Phase 5) for how they were calibrated.
 Splits each shown IGN name into real streams (detection only; `export` turns `streams.json` into `data/out/streams.ndjson`). Inputs:
 `rivers/reaches.parquet` (`HYRIV_ID`, `NEXT_DOWN`, `LENGTH_KM`, geometry for the bbox),
 `named/river_reaches.parquet` (`river`), `ign-match/reach_ign.parquet` (`name`, `name_key`, `display`)
-and `pipeline/names.json`. A reach carries an IGN name when `display` is true; approved river names and
+and `regions/nqn/names.json`. A reach carries an IGN name when `display` is true; approved river names and
 their aliases are left out, as in `export`.
 
 Two reaches with the same name key are one group when one lies downstream of the other (`NEXT_DOWN`) and
@@ -378,7 +378,7 @@ IGN lakes, dams and the detail lines, as tippecanoe inputs: names for HydroLAKES
 covering at least `water.lakeNameMinOverlap` of the lake), extra lakes (IGN water bodies HydroLAKES
 covers less than `water.extraLakeMaxCoverage`, minus what it covers, at least `water.minExtraLakeKm2`),
 detail lines cut out of every lake, and dam points and walls. Dam points listed under `dams` in
-`pipeline/ign-overrides.json` (by IGN `gid`, each with a note) are dropped: points checked against the
+`regions/nqn/ign-overrides.json` (by IGN `gid`, each with a note) are dropped: points checked against the
 imagery that mark no dam. Each feature gets `network` by the same rule as `pipeline:lakes`.
 
 Outputs: `data/work/tiles/ign_lakes.geojson`, `ign_lakes_extra.geojson`, `ign_detail.geojson`,

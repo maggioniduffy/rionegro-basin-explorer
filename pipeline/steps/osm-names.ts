@@ -7,7 +7,7 @@
  * candidate segment (data/work/candidates/candidates.json) up to SAMPLE_POINTS reach
  * midpoints spread along it are matched to OSM lines within RADIUS_M. Names are
  * tallied per point ("Río Limay: 5/5 points"). This is evidence for a person to
- * review when writing pipeline/names.json, not an automatic naming.
+ * review when writing regions/nqn/names.json, not an automatic naming.
  *
  * OSM data is ODbL 1.0, © OpenStreetMap contributors (see SOURCES.md).
  */

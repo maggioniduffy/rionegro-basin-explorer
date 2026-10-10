@@ -22,7 +22,7 @@
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
-import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, OUT_DIR, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import {
   type SubbasinNode,
@@ -77,6 +77,7 @@ const STREAM_PROVENANCE = {
     "pipeline:ign-streams: named reaches plus the unnamed reaches absorbed between them",
   lengthKm: "HydroRIVERS v1.0 LENGTH_KM, summed over the stream's reaches",
   subbasin:
+    // Provenance text seeded to Mongo: the old config path stays until the next re-export (Phase R1).
     "First sub-basin mouth reach (data/out/rivers.ndjson mouthReach of each river node in pipeline/subbasins.config.json) on the way down from the stream's mouth reach along HydroRIVERS NEXT_DOWN; the endorheic node for endorheic mouths",
   receivingRiver:
     "First approved-river reach (pipeline:named) strictly downstream of the mouth reach along HydroRIVERS NEXT_DOWN",
@@ -124,7 +125,7 @@ async function main() {
   const streams = await readJson<StreamsFileEntry[]>(streamsFile);
   const subbasinNodes = (
     await readJson<{ subbasins: SubbasinNode[] }>(
-      `${ROOT}/pipeline/subbasins.config.json`,
+      regionFile("subbasins.config.json"),
     )
   ).subbasins;
   const rivers = (await readFile(riversNdjson, "utf8"))
@@ -337,7 +338,7 @@ async function main() {
   const r = await readJson<RiversReport>(workPath("rivers/report.json"));
   const n = await readJson<NamedReport>(workPath("named/report.json"));
   const { reference } = await readJson<{ reference: unknown }>(
-    `${ROOT}/pipeline/basin.config.json`,
+    regionFile("basin.config.json"),
   );
 
   const checks = {

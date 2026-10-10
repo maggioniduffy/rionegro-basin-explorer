@@ -175,7 +175,7 @@ export function detectStreams(
   };
 }
 
-/** A sub-basin node of pipeline/subbasins.config.json, as far as streams need it. */
+/** A sub-basin node of regions/nqn/subbasins.config.json, as far as streams need it. */
 export interface SubbasinNode {
   id: string;
   kind: "river" | "endorheic";

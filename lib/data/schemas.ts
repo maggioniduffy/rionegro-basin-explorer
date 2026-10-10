@@ -17,7 +17,7 @@ export const riverSchema = z.strictObject({
   name: z.string().min(1),
   shortName: z.string().min(1),
   type: z.string().min(1),
-  /** Former names that search still finds (pipeline/names.json). */
+  /** Former names that search still finds (regions/nqn/names.json). */
   aliases: z.array(z.string().min(1)),
   nameConfidence: z.enum(["strong", "weak"]),
   /** Slug of the river it flows into, or "sea". */
@@ -100,7 +100,7 @@ export const reachSchema = z.strictObject({
    * IGN name matched to the reach (pipeline:ign-match); null when none is shown.
    * confidence: coverage of the reach by the IGN lines of that name ("none" when no IGN
    * line carries it: an owner-named reach); `reviewed` is true when a hand decision
-   * (pipeline/ign-overrides.json) applies.
+   * (regions/nqn/ign-overrides.json) applies.
    */
   ign: z
     .strictObject({

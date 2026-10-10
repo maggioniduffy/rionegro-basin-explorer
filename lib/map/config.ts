@@ -1,6 +1,6 @@
-import config from "@/pipeline/map.config.json";
+import config from "@/regions/nqn/map.config.json";
 
-/** Shared with the pipeline (pipeline/map.config.json); see its $comment. */
+/** Shared with the pipeline (regions/nqn/map.config.json); see its $comment. */
 export const mapConfig = config;
 
 type Bbox = { xmin: number; ymin: number; xmax: number; ymax: number };

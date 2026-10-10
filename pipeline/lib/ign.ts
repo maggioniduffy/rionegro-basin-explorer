@@ -91,7 +91,7 @@ export async function createNameMap(db: Db, table: string, column: string) {
   }
 }
 
-/** Thresholds of pipeline:ign-layers (pipeline/ign.config.json, key "water"). */
+/** Thresholds of pipeline:ign-layers (regions/nqn/ign.config.json, key "water"). */
 export interface WaterConfig {
   /** An IGN polygon names a HydroLAKES lake when it covers at least this share of the lake. */
   lakeNameMinOverlap: number;

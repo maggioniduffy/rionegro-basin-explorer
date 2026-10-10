@@ -5,7 +5,7 @@
  * ranked coverages into a confidence tier and apply the hand-made overrides.
  */
 
-/** Thresholds live in pipeline/ign.config.json. */
+/** Thresholds live in regions/nqn/ign.config.json. */
 export interface MatchConfig {
   /** A reach and an IGN line match when they are within this many metres (Albers). */
   bufferM: number;
@@ -67,7 +67,7 @@ export function classify(
   return { best, margin, confidence, ambiguous };
 }
 
-/** Decisions recorded while triaging pipeline/ign-overrides.json. */
+/** Decisions recorded while triaging regions/nqn/ign-overrides.json. */
 export type ReachOverride =
   | { id: number; action: "accept" | "reject"; note: string }
   | { id: number; action: "name"; name: string; note: string };

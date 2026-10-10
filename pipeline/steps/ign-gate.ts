@@ -25,7 +25,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile } from "node:fs/promises";
 import { type Db, lit, openDb } from "../lib/duckdb";
 import { envelope, lengthSpheroidKm, pctDiff } from "../lib/geo";
-import { ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import { requireInput } from "../lib/inputs";
 import { riverSlug } from "../lib/names";
@@ -115,7 +115,7 @@ async function main() {
     await readFile(requireInput(workPath("rivers/report.json")), "utf8"),
   ) as { lengthKm: { total: number; geodesicTotal: number } };
   const names = (
-    JSON.parse(await readFile(`${ROOT}/pipeline/names.json`, "utf8")) as {
+    JSON.parse(await readFile(regionFile("names.json"), "utf8")) as {
       rivers: { name: string; shortName: string; slug?: string }[];
     }
   ).rivers.map((r) => ({ name: r.name, slug: riverSlug(r) }));

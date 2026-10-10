@@ -1,6 +1,6 @@
 /**
  * pipeline:candidates — list the major branches of the connected network so they
- * can be named by hand in pipeline/names.json (HydroRIVERS has no names).
+ * can be named by hand in regions/nqn/names.json (HydroRIVERS has no names).
  *
  * A candidate is the outlet reach, or a reach at a confluence where at least two
  * upstream branches drain >= MIN_AREA_KM2 (both branches are listed). Each

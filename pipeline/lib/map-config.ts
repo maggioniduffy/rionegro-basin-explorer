@@ -1,5 +1,5 @@
 import { z } from "zod";
-import raw from "../map.config.json";
+import raw from "../../regions/nqn/map.config.json";
 
 const byStrahler = z.record(z.string(), z.number());
 
@@ -39,7 +39,7 @@ const schema = z.object({
 
 export type MapConfig = z.infer<typeof schema>;
 
-/** pipeline/map.config.json, validated. */
+/** regions/nqn/map.config.json, validated. */
 export const mapConfig: MapConfig = schema.parse(raw);
 
 /** Zoom at which a reach of this Strahler order first appears. */

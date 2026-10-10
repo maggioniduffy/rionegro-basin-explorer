@@ -6,7 +6,7 @@
  * (BH051 "Dique") and dam-wall lines (BI020 "Muro de embalse") in data/raw/ign/, the
  * HydroLAKES polygons from pipeline:lakes, the detail lines from pipeline:ign-match,
  * the basin and its HydroBASINS level-12 polygons (for the endorheic flag), and the
- * `water` thresholds of pipeline/ign.config.json.
+ * `water` thresholds of regions/nqn/ign.config.json.
  *
  * What it does:
  *  - Names: a HydroLAKES lake takes the IGN name (`fna`, e.g. "Embalse Alicurá") of the IGN
@@ -18,7 +18,7 @@
  *    (HydroLAKES or extra) removed, as pipeline:lakes does for HydroRIVERS, and again
  *    dropping pieces shorter than `minDetailPieceM`.
  *  - Dams: BH051 points and BI020 lines inside the basin, minus the points rejected by
- *    hand in pipeline/ign-overrides.json (`dams`, keyed by IGN gid).
+ *    hand in regions/nqn/ign-overrides.json (`dams`, keyed by IGN gid).
  *  Every feature carries `network` ("connected" | "endorheic"), by the same rule as
  *  pipeline:lakes, so the map's endorheic filter covers them. Areas are Albers, so
  *  approximate; no hydrology is attached to any of it.
@@ -37,7 +37,7 @@ import {
 } from "../lib/ign";
 import type { MatchConfig } from "../lib/ign-match";
 import { requireInput } from "../lib/inputs";
-import { ROOT, rawPath, rel, workPath } from "../lib/paths";
+import { regionFile, rawPath, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
 const num = (v: unknown) => Number(v ?? 0);
@@ -69,11 +69,11 @@ const read = (shp: string) =>
 
 async function main() {
   const cfg = JSON.parse(
-    await readFile(`${ROOT}/pipeline/ign.config.json`, "utf8"),
+    await readFile(regionFile("ign.config.json"), "utf8"),
   ) as MatchConfig & { water: WaterConfig };
   const water = cfg.water;
   const overrides = JSON.parse(
-    await readFile(`${ROOT}/pipeline/ign-overrides.json`, "utf8"),
+    await readFile(regionFile("ign-overrides.json"), "utf8"),
   ) as { dams?: DamOverride[] };
   const rejectedDamGids = (overrides.dams ?? [])
     .filter((d) => d.action === "reject")

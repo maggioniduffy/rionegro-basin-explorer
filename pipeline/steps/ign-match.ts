@@ -3,8 +3,8 @@
  * HydroRIVERS does not draw (Phase 5).
  *
  * Inputs: data/work/ign/lines.parquet (pipeline:ign), the reaches (pipeline:rivers),
- * pipeline/names.json, pipeline/ign.config.json and the hand decisions in
- * pipeline/ign-overrides.json. It does not read pipeline:named: named runs after this step
+ * regions/nqn/names.json, regions/nqn/ign.config.json and the hand decisions in
+ * regions/nqn/ign-overrides.json. It does not read pipeline:named: named runs after this step
  * and trims each river to its IGN name, so the stem vote here uses the candidate stem, the
  * area trace from the mouth (traceNamedRiver, as named traces before trimming).
  *
@@ -40,7 +40,7 @@ import {
 } from "../lib/ign-match";
 import { requireInput } from "../lib/inputs";
 import { nameKey, riverSlug } from "../lib/names";
-import { ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
 const num = (v: unknown) => Number(v ?? 0);
@@ -82,12 +82,10 @@ interface ReachRow {
 }
 
 async function main() {
-  const cfg = await readJson<MatchConfig>(`${ROOT}/pipeline/ign.config.json`);
-  const overrides = await readJson<Overrides>(
-    `${ROOT}/pipeline/ign-overrides.json`,
-  );
+  const cfg = await readJson<MatchConfig>(regionFile("ign.config.json"));
+  const overrides = await readJson<Overrides>(regionFile("ign-overrides.json"));
   const approved = (
-    await readJson<{ rivers: ApprovedRiver[] }>(`${ROOT}/pipeline/names.json`)
+    await readJson<{ rivers: ApprovedRiver[] }>(regionFile("names.json"))
   ).rivers.map((r) => ({ ...r, slug: riverSlug(r) }));
   const linesFile = requireInput(workPath("ign/lines.parquet"));
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
@@ -339,7 +337,7 @@ async function main() {
       JSON.stringify(
         {
           $comment:
-            "Proposal only. Copy the entries you accept into pipeline/ign-overrides.json.",
+            "Proposal only. Copy the entries you accept into regions/nqn/ign-overrides.json.",
           reaches: proposed.map((r) => ({
             id: r.id,
             action: "accept",

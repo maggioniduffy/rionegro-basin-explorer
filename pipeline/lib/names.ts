@@ -61,7 +61,7 @@ export function nameKey(name: string): string {
 }
 
 /**
- * A river's id: its `slug` in pipeline/names.json, which stays fixed once published even
+ * A river's id: its `slug` in regions/nqn/names.json, which stays fixed once published even
  * when the name changes; otherwise the slug of its short name.
  */
 export function riverSlug(entry: { slug?: string; shortName: string }): string {

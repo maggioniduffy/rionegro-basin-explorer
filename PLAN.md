@@ -171,7 +171,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10).
 
 ### Phase R1 — Region refactor, no behavior change
 
-- [ ] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace)
+- [~] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace) — configs moved to `regions/nqn/` with the registry `regions/index.ts` (step 1, 2026-10-10)
 - [ ] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared
 - [ ] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region
 - [ ] Mongo: one database per region on the same cluster, `getDb(region)`; seed and `atlas:check` take `--region`

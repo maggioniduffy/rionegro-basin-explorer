@@ -7,9 +7,9 @@
  *   data/work/named/river_reaches.parquet  HYRIV_ID → river (approved rivers, pipeline:named)
  *   data/work/ign-match/reach_ign.parquet  HYRIV_ID → name, name_key, display
  *   data/work/ign-match/cover.parquet      HYRIV_ID, name_key → coverage
- *   pipeline/names.json                    approved river names and aliases (left out)
- *   pipeline/ign.config.json               line.minCoverage, line.maxGap
- *   pipeline/ign-overrides.json            reaches named by the owner ("name") count as on
+ *   regions/nqn/names.json                    approved river names and aliases (left out)
+ *   regions/nqn/ign.config.json               line.minCoverage, line.maxGap
+ *   regions/nqn/ign-overrides.json            reaches named by the owner ("name") count as on
  *                                          the line whatever their coverage
  * A reach carries an IGN name when `display` is true (export's `ign IS NOT NULL`).
  *
@@ -27,7 +27,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
 import { nameKey } from "../lib/names";
-import { ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import type { MatchConfig } from "../lib/ign-match";
 import {
@@ -67,12 +67,12 @@ async function main() {
   const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
   const coverFile = requireInput(workPath("ign-match/cover.parquet"));
   const { line } = JSON.parse(
-    await readFile(`${ROOT}/pipeline/ign.config.json`, "utf8"),
+    await readFile(regionFile("ign.config.json"), "utf8"),
   ) as MatchConfig;
   const MAX_GAP = line.maxGap;
   const approvedKeys = new Set(
     (
-      JSON.parse(await readFile(`${ROOT}/pipeline/names.json`, "utf8")) as {
+      JSON.parse(await readFile(regionFile("names.json"), "utf8")) as {
         rivers: { name: string; aliases?: string[] }[];
       }
     ).rivers.flatMap((r) => [r.name, ...(r.aliases ?? [])].map(nameKey)),
@@ -81,9 +81,9 @@ async function main() {
   // buffer coverage (owner, 2026-10-09: Río Turbio, coverage 0.43 and 0.22).
   const ownerNamed = new Set(
     (
-      JSON.parse(
-        await readFile(`${ROOT}/pipeline/ign-overrides.json`, "utf8"),
-      ) as { reaches: { id: number; action: string }[] }
+      JSON.parse(await readFile(regionFile("ign-overrides.json"), "utf8")) as {
+        reaches: { id: number; action: string }[];
+      }
     ).reaches
       .filter((o) => o.action === "name")
       .map((o) => o.id),

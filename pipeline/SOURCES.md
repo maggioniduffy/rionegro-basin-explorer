@@ -228,7 +228,7 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 - Use in Phase 1: `pipeline:osm-names` makes **one** Overpass request (overpass-api.de; the fair-use
   guidance is about 10,000 requests or 1 GB a day). It asks for the named waterways and water bodies
   in the basin bbox, and the response is cached in `data/work/osm-names/overpass.json`. The names are
-  evidence for choosing the river names in `pipeline/names.json` by hand.
+  evidence for choosing the river names in `regions/nqn/names.json` by hand.
 - Use in Phase 7: `pipeline:localities` makes one more Overpass request for the named
   `place=city|town|village` nodes in the basin bbox (cached in `data/work/localities/overpass.json`)
   and keeps those inside the basin polygon: 116 points, name and class only (no population). They are

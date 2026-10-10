@@ -15,7 +15,7 @@ import { lit, openDb } from "../lib/duckdb";
 import { areaAlbersKm2, areaSpheroidKm2, envelope, pctDiff } from "../lib/geo";
 import { difference, upstreamIndex, upstreamSet } from "../lib/graph";
 import { INPUTS, requireInput } from "../lib/inputs";
-import { ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
 interface BasinConfig {
@@ -32,7 +32,7 @@ const AREA_AGREEMENT_PCT = 1;
 
 async function main() {
   const config = JSON.parse(
-    await readFile(`${ROOT}/pipeline/basin.config.json`, "utf8"),
+    await readFile(regionFile("basin.config.json"), "utf8"),
   ) as BasinConfig;
   const rivers = lit(requireInput(INPUTS.hydroRivers));
   const lev12 = lit(requireInput(INPUTS.hydroBasins(12)));

@@ -2,7 +2,7 @@
  * pipeline:lakes — HydroLAKES polygons in the basin, and river lines clipped out of them.
  *
  * HydroRIVERS draws flow paths across lakes. On the map those lines are removed inside
- * every lake, except in the reservoirs approved in pipeline/lakes.json, which keep the
+ * every lake, except in the reservoirs approved in regions/nqn/lakes.json, which keep the
  * line of their main river (e.g. the Limay through El Chocón). Everything else inside
  * a lake, tributary lines included, is cut away. Reach data (lengths etc.) is not
  * changed: this only affects the geometry drawn on the map.
@@ -11,7 +11,7 @@
  * - A lake's main river is the named river (pipeline:named) of the reach with the
  *   largest UPLAND_SKM that intersects it, i.e. the lake's outflow path. Lakes with
  *   Lake_type 2 (reservoir) or 3 (controlled lake) and a named main river are listed
- *   in candidates.json for review; approved ones go into pipeline/lakes.json.
+ *   in candidates.json for review; approved ones go into regions/nqn/lakes.json.
  *
  * Outputs in data/work/lakes/:
  *   lakes.parquet, lakes.geojson  clipped lake polygons (mask hole, outline tiles)
@@ -27,7 +27,7 @@ import { lit, openDb } from "../lib/duckdb";
 import { lengthSpheroidKm } from "../lib/geo";
 import { hydroLakesBbox } from "../lib/hydrolakes";
 import { requireInput } from "../lib/inputs";
-import { ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
 interface KeepEntry {
@@ -50,7 +50,7 @@ async function main() {
   const mappingFile = lit(
     requireInput(workPath("named/river_reaches.parquet")),
   );
-  const keepFile = `${ROOT}/pipeline/lakes.json`;
+  const keepFile = regionFile("lakes.json");
   const keep: KeepEntry[] = existsSync(keepFile)
     ? (
         JSON.parse(await readFile(keepFile, "utf8")) as {
@@ -217,7 +217,7 @@ async function main() {
       JSON.stringify(
         {
           $comment:
-            "Reservoirs (Lake_type 2) and controlled lakes (3) with a named main river. Approve the ones whose main river line should stay drawn by copying them into pipeline/lakes.json (keepMainStem: hylakId, name, river, evidence).",
+            "Reservoirs (Lake_type 2) and controlled lakes (3) with a named main river. Approve the ones whose main river line should stay drawn by copying them into regions/nqn/lakes.json (keepMainStem: hylakId, name, river, evidence).",
           candidates,
         },
         null,

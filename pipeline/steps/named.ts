@@ -1,12 +1,12 @@
 /**
- * pipeline:named — trace the named rivers of pipeline/names.json and aggregate
+ * pipeline:named — trace the named rivers of regions/nqn/names.json and aggregate
  * their metrics. Runs after pipeline:ign-match.
  *
  * A river runs where its IGN name runs (owner rule, 2026-10-09; IGN is the authority).
  * From its mouth reach upstream it follows the reaches whose IGN line carries the river's
  * name (pipeline:ign-match cover.parquet; traceAlongName in pipeline/lib/name-trace.ts):
  *   - a reach is on the line when the name covers at least line.minCoverage of it
- *     (pipeline/ign.config.json); the part of a reach inside a HydroLAKES lake is left out
+ *     (regions/nqn/ign.config.json); the part of a reach inside a HydroLAKES lake is left out
  *     of that share, since IGN draws no line in lakes;
  *   - reaches with less coverage, or none (at most line.maxGap in a row), are kept only
  *     between two reaches on the line; reaches within bufferM of a lake are not counted
@@ -56,7 +56,7 @@ import type { MatchConfig } from "../lib/ign-match";
 import { requireInput } from "../lib/inputs";
 import { type ReachKind, traceAlongName } from "../lib/name-trace";
 import { nameKey, riverSlug } from "../lib/names";
-import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, OUT_DIR, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
 /** Summed drop vs source − mouth differences above this are listed for review. */
@@ -117,17 +117,18 @@ const PROVENANCE = {
   "mouth.regulationPct":
     "RiverATLAS v1.0 dor_pc_pva / 10 at the mouth reach: degree of regulation, reservoir storage of GRanD v1.1 dams upstream as a percent of the modeled natural annual flow (capped at 1000 %)",
   bbox: "HydroRIVERS v1.0 geometry extent of the traced reaches",
+  // Provenance text seeded to Mongo: the old config path stays until the next re-export (Phase R1).
   name: "pipeline/names.json (hand-approved; IGN spelling, FUENTE: Instituto Geográfico Nacional de la República Argentina)",
 };
 
 async function main() {
   const names = (
-    JSON.parse(await readFile(`${ROOT}/pipeline/names.json`, "utf8")) as {
+    JSON.parse(await readFile(regionFile("names.json"), "utf8")) as {
       rivers: NameEntry[];
     }
   ).rivers;
   const cfg = JSON.parse(
-    await readFile(`${ROOT}/pipeline/ign.config.json`, "utf8"),
+    await readFile(regionFile("ign.config.json"), "utf8"),
   ) as MatchConfig;
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const atlasFile = requireInput(workPath("rivers/riveratlas_basin.parquet"));

@@ -14,7 +14,7 @@ export function parseStreamId(raw: string): string | null {
   return /^[a-z0-9][a-z0-9-]{0,127}$/.test(raw) ? raw : null;
 }
 
-/** Sub-basin ids are slugs too (pipeline/subbasins.config.json). */
+/** Sub-basin ids are slugs too (regions/nqn/subbasins.config.json). */
 export const parseSubbasinId = parseRiverId;
 
 /** HydroRIVERS HYRIV_ID: a positive integer. */

@@ -30,7 +30,7 @@ import { lit, openDb, type Row } from "../lib/duckdb";
 import { areaSpheroidKm2, pctDiff } from "../lib/geo";
 import { difference, upstreamIndex, upstreamSet } from "../lib/graph";
 import { requireInput } from "../lib/inputs";
-import { OUT_DIR, ROOT, rel, workPath } from "../lib/paths";
+import { regionFile, OUT_DIR, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import {
   ancestorPath,
@@ -111,7 +111,7 @@ const ENDORHEIC_PROVENANCE = {
 
 async function main() {
   const { subbasins: nodes } = JSON.parse(
-    await readFile(`${ROOT}/pipeline/subbasins.config.json`, "utf8"),
+    await readFile(regionFile("subbasins.config.json"), "utf8"),
   ) as { subbasins: ConfigNode[] };
   const structure = hierarchyProblems(nodes);
   if (structure.length > 0)
