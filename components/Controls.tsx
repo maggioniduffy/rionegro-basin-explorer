@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { type CSSProperties, useState } from "react";
 import { MASK_LEVEL_COUNT } from "@/lib/map/config";
+import { levelToPosition, positionToLevel } from "@/lib/map/mask";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
 import { Legend } from "./Legend";
@@ -63,6 +64,7 @@ export function MapControlsContent() {
   const setHideEndorheic = useMapStore((s) => s.setHideEndorheic);
   const viewMode = useMapStore((s) => s.viewMode);
   const max = MASK_LEVEL_COUNT - 1;
+  const position = levelToPosition(visibleLand);
 
   return (
     <>
@@ -80,16 +82,18 @@ export function MapControlsContent() {
           id="visible-land"
           type="range"
           min={0}
-          max={max}
-          step={0.01}
-          value={visibleLand}
+          max={1}
+          step={0.001}
+          value={position}
           aria-valuetext={t("visibleLandValue", {
             level: Math.round(visibleLand) + 1,
             count: max + 1,
           })}
-          onChange={(e) => setVisibleLand(Number(e.target.value))}
+          onChange={(e) =>
+            setVisibleLand(positionToLevel(Number(e.target.value)))
+          }
           // The filled part of the rail (globals.css .range-slider).
-          style={{ "--fill": `${(visibleLand / max) * 100}%` } as CSSProperties}
+          style={{ "--fill": `${position * 100}%` } as CSSProperties}
           className="range-slider"
         />
         <div className="text-secondary flex justify-between text-xs">

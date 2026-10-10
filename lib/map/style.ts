@@ -31,7 +31,11 @@ export const FLOW_STYLE: Record<
   unknown: { color: "#9aa3ab", widthScale: 0.6 },
 };
 
-/** The mask is the page background, so the basin sits on the page (lib/theme-tokens.ts). */
+/**
+ * The mask is dark in both themes (owner, 2026-10-10): the basin's land reads the same
+ * on the light page, so the outline that sits on the mask stays light as well. Only
+ * the lake shore, drawn over imagery, follows the theme text colour.
+ */
 export const THEME_COLORS: Record<
   Theme,
   { mask: string; outline: string; lake: string }
@@ -42,8 +46,8 @@ export const THEME_COLORS: Record<
     lake: `rgba(${THEME_TOKENS.dark.textRgb}, 0.35)`,
   },
   light: {
-    mask: THEME_TOKENS.light.bg,
-    outline: `rgba(${THEME_TOKENS.light.textRgb}, 0.55)`,
+    mask: THEME_TOKENS.dark.bg,
+    outline: `rgba(${THEME_TOKENS.dark.textRgb}, 0.55)`,
     lake: `rgba(${THEME_TOKENS.light.textRgb}, 0.35)`,
   },
 };
