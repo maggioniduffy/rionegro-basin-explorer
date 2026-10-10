@@ -87,7 +87,9 @@ async function namedRivers(ids: string[]): Promise<NamedRef[]> {
 }
 
 /** Refs of the sub-basins `ids`, in the order given; unknown ids are left out. */
-async function subbasinRefs(ids: string[]): Promise<SubbasinRef[]> {
+export async function subbasinRefs(
+  ids: string[],
+): Promise<SubbasinRef[]> {
   if (ids.length === 0) return [];
   const docs = await (await subbasins())
     .find({ _id: { $in: ids } }, { projection: { name: 1, kind: 1 } })
@@ -243,6 +245,63 @@ export async function searchNames(q: string): Promise<SearchHit[]> {
       ? { ...m.hit, subbasin: refs.get(m.subbasin) ?? null }
       : m.hit,
   );
+}
+
+/** Names, links and sizes of every river, sub-basin and stream, for the fuzzy catalog. */
+export async function getCatalogDocs(): Promise<CatalogDocs> {
+  const [riverDocs, subbasinDocs, streamDocs] = await Promise.all([
+    (await rivers())
+      .find(
+        {},
+        {
+          projection: {
+            name: 1,
+            shortName: 1,
+            aliases: 1,
+            flowsInto: 1,
+            lengthKm: 1,
+            "mouth.uplandKm2": 1,
+          },
+        },
+      )
+      .toArray(),
+    (await subbasins())
+      .find(
+        {},
+        { projection: { kind: 1, name: 1, parentId: 1, river: 1, areaKm2: 1 } },
+      )
+      .toArray(),
+    (await streams())
+      .find(
+        {},
+        { projection: { name: 1, lengthKm: 1, bbox: 1, subbasin: 1 } },
+      )
+      .toArray(),
+  ]);
+  // The projections above select exactly these fields.
+  return {
+    rivers: riverDocs as CatalogRiver[],
+    subbasins: subbasinDocs as CatalogSubbasin[],
+    streams: streamDocs as CatalogStream[],
+  };
+}
+
+export type CatalogRiver = Pick<
+  River,
+  "_id" | "name" | "shortName" | "aliases" | "flowsInto" | "lengthKm"
+> & { mouth: Pick<River["mouth"], "uplandKm2"> };
+export type CatalogSubbasin = Pick<
+  Subbasin,
+  "_id" | "kind" | "name" | "parentId" | "river" | "areaKm2"
+>;
+export type CatalogStream = Pick<
+  Stream,
+  "_id" | "name" | "lengthKm" | "bbox" | "subbasin"
+>;
+export interface CatalogDocs {
+  rivers: CatalogRiver[];
+  subbasins: CatalogSubbasin[];
+  streams: CatalogStream[];
 }
 
 async function reachIdHit(id: number): Promise<SearchHit[]> {
