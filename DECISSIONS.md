@@ -229,3 +229,13 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
   - **A question opens nothing (owner).** The card's Open buttons select an item; the side panel stays as it was.
   - **Unsupported filters.** "¿Cuál es el río permanente más corto?" was first answered as the shortest of all rivers, dropping "permanente". The prompt now returns `unsupported` for conditions it can't express (perennial, province, near a town, …).
   - Groq strict mode supports `anyOf` (checked in its docs), so nullable enum fields use `anyOf [schema, null]`; `@google/genai`'s types list `anyOf` for `responseJsonSchema`.
+
+## Multi-region (2026-10-10)
+
+- **Goal (owner).** Sub-apps per region sharing components: the current Río Negro basin becomes region `nqn`; Córdoba (`cba`) is next.
+- **Option A (owner): one Next.js app, a region registry**, not a monorepo of separate apps. The code is already config-driven (pipeline JSONs, `lib/map/config.ts`), tiles are 5.6 MB and `data/out` 1.3 MB, so one deploy on Vercel hobby and one Atlas M0 cluster can host several regions at no extra cost. A monorepo stays possible later if regions need separate releases.
+- **Subdomains (owner).** The host selects the region in `proxy.ts`. A wildcard needs a custom domain (recurring cost, not decided); per-region `*.vercel.app` aliases on the same project are the free alternative. Not verified yet: Vercel hobby limits on aliases per project.
+- **Data per region.** One Mongo database per region on the same cluster (no slug collisions, queries unchanged); tiles, `data/work` and `data/out` under the region id; `data/raw` shared (HydroSHEDS downloads are South America-wide).
+- **Córdoba scope (owner): province boundary plus the nearby interprovincial basins.** Which crossing basins are taken whole is still open (Phase R0); the report must show area inside and outside the province.
+- **Endorheic basins are split (owner).** Each endorheic sink (Mar Chiquita/Ansenuza, Salinas Grandes, …) is its own root, not one grouped `endorheic` node as in Río Negro. Rivers that end in wetlands (Río Quinto, Río Cuarto) have a terminal reach instead of a sea mouth.
+- **Provincial data.** The owner proposed the Córdoba ArcGIS Experience "Cuencas y Unidades de Gestión" (shared as a `draft=true` view). Not inspected: `arcgis.com` is blocked by this environment's network policy. Its owner, license and layer schema are unverified; it is not used until license-checker confirms terms and `SOURCES.md` has an entry.

@@ -156,6 +156,47 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#design-v3-landing-and-app-restyle-2026-
 
 Decisions: [DECISSIONS.md](DECISSIONS.md#ign-streams-2026-10-09).
 
+## Multi-region — sub-apps per region (Río Negro = `nqn`, Córdoba = `cba`)
+
+One Next.js app serves every region (Option A, owner 2026-10-10); a region is a config folder, not a fork.
+Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10).
+
+### Phase R0 — Decisions & inputs
+
+- [x] Option A (one app, region registry), subdomains, `nqn` = the current Río Negro basin, Córdoba = province + the interprovincial basins that reach it, endorheic basins split (one root per sink)
+- [ ] Domain for subdomains: wildcard on a custom domain (recurring cost, owner) vs one `*.vercel.app` alias per region (free); decide before R1's host routing
+- [ ] Córdoba scope rule: which crossing basins are whole and which are clipped (e.g. the Salí-Dulce reaches Mar Chiquita from Tucumán); list candidates with areas first
+- [ ] Córdoba provincial layers (ArcGIS Experience "Cuencas y Unidades de Gestión"): owner exports or allows `arcgis.com` in the environment; license-checker before use; the shared link is a `draft=true` view, confirm the published one
+- **Done when:** the open items above are decided and recorded in DECISSIONS.md.
+
+### Phase R1 — Region refactor, no behavior change
+
+- [ ] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace)
+- [ ] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared
+- [ ] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region
+- [ ] Mongo: one database per region on the same cluster, `getDb(region)`; seed and `atlas:check` take `--region`
+- [ ] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn`
+- [ ] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/`
+- **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds.
+
+### Phase R2 — Córdoba gate
+
+- [ ] Delineate candidate basins touching the province from HydroBASINS (sea/river outlets and endorheic sinks: Mar Chiquita, Salinas Grandes, Bañados del Quinto, …), report areas inside/outside the province
+- [ ] IGN gate for Córdoba (HydroRIVERS vs IGN km and % named); Sierras streams are short and steep, so 15″ HydroRIVERS may be too coarse
+- [ ] Compare with the provincial "Cuencas y Unidades de Gestión" layer (if licensed)
+- **Done when:** the owner picks the basin list and IGN's role from the report.
+
+### Phase R3 — Córdoba pipeline & app (Phases 1–6 reused)
+
+- [ ] Basin step supports several roots: river outlets and endorheic sinks, each its own top-level node (no grouped endorheic node)
+- [ ] Rivers that end in wetlands or sinks: the "mouth" is the terminal reach, flagged; no sea distance
+- [ ] Names, IGN match/streams, sub-basins, localities, tiles, seed for `cba`; caveats name Córdoba's dams (San Roque, Los Molinos, Río Tercero, …)
+- **Done when:** the same report checks as Río Negro pass for every root (partition, no orphans, child ≤ parent).
+
+### Phase R4 — Hub
+
+- [ ] Hub landing listing the regions; each region's landing links back
+
 ## Open decisions
 
 - PMTiles hosting (`/public` vs object storage)
