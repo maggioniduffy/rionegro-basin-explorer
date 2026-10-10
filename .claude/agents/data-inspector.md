@@ -1,6 +1,6 @@
 ---
 name: data-inspector
-description: Read-only dataset profiling for the Río Negro pipeline. Use to learn the schema, attribute names, null rates, value ranges or geometry of any file in data/raw, data/work or data/out (Parquet, GeoJSON, NDJSON, Shapefile, FileGDB) before code relies on it. Returns a short summary, never raw rows. Can run in parallel, one per source.
+description: Read-only dataset profiling for the basin pipeline (any region). Use to learn the schema, attribute names, null rates, value ranges or geometry of any file in data/raw, data/work or data/out (Parquet, GeoJSON, NDJSON, Shapefile, FileGDB) before code relies on it. Returns a short summary, never raw rows. Can run in parallel, one per source.
 tools: Read, Grep, Glob, Bash
 model: haiku
 skills:
@@ -13,7 +13,7 @@ steps, never commit.
 
 How to work:
 
-- Follow the preloaded `inspect-dataset` skill. Use `npm run -s inspect:file -- <path>`
+- Follow the preloaded `inspect-dataset` skill. Use `npm run -s inspect:file -- <path> --region <id>`
   and `jq` on the profile it writes; for raw sources, read the existing
   `data/work/<region>/inspect/*.json` profiles first.
 - Never `cat` or `head` a geo file; never print coordinates or more than the 3 sample

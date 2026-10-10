@@ -2,7 +2,8 @@
 
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
-Amazon Basin Explorer. See `PLAN.md` for phases and status, and `DECISSIONS.md` for the dated
+Amazon Basin Explorer. One app serves several **regions**, one per subdomain: `nqn` (the Río
+Negro basin, live) and `cba` (Córdoba, a stub, not served yet); see "Regions" below. See `PLAN.md` for phases and status, and `DECISSIONS.md` for the dated
 decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `PLAN.md`).
 
 ## Stack
@@ -26,14 +27,15 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 ## Repo layout
 
 - `/app/[region]` pages + `/api/*` route handlers (`proxy.ts` rewrites each host to its region; see `regions/`)
-- `/components`, `/lib` (mongo.ts, map/, store.ts, units.ts), `/messages` (en.json, es.json)
+- `/regions` — registry (`index.ts`, `hosts.ts`) and one folder per region: pipeline configs, `messages/`, `content.ts`, generated landing/OG files
+- `/components`, `/lib` (mongo.ts, map/, store.ts, units.ts), `/messages` (shared en.json, es.json), `/i18n` (merges shared + region messages)
 - `/pipeline` TS scripts orchestrating DuckDB / GDAL / tippecanoe; each step writes to `data/work/<region>/` and emits a report
-- `/data` — `raw/` and `work/` are gitignored; `out/` holds tiles and NDJSON for the seed
+- `/data` — `raw/` (shared) and `work/<region>/` are gitignored; `out/<region>/` holds NDJSON for the seed; tiles are in `public/tiles/<region>/`
 - `/.claude` — `agents/` and `skills/` (committed)
 
 ## Rules
 
-1. **Language:** code, comments, commit messages, docs and identifiers in English. **All user-facing strings go through i18n** (`/messages/en.json` and `es.json`); never hardcode UI text. River and place names are proper nouns and are not translated.
+1. **Language:** code, comments, commit messages, docs and identifiers in English. **All user-facing strings go through i18n** (`/messages/en.json` and `es.json`, or `regions/<id>/messages/` for strings that name a region); never hardcode UI text. River and place names are proper nouns and are not translated.
 2. **No invented data.** Every derived number must be traceable to a source field (HydroRIVERS, HydroATLAS, HydroBASINS, IGN, OSM). If a value can't be sourced, leave it null and say so. Never guess attribute names — inspect the actual schema first.
 3. **Flag uncertainty** instead of overstating. When something can't be verified (a license, a data quality claim, a library API), say so and propose how to check it.
 4. **Modeled data caveat:** HydroATLAS values are modeled or estimated, each for its own period: discharge is a natural long-term average for 1971–2000 that doesn't reflect current dam regulation; population is a 2010 estimate (GPWv4); flooded area comes from 1993–2004 satellite data (GIEMS-D15); dam regulation comes from GRanD v1.1 dams. The UI must state this, with the right period, wherever those values appear.
@@ -45,6 +47,14 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 10. **Workflow:** work one phase at a time from `PLAN.md`, in plan mode first. Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `DECISSIONS.md`.
 11. Dismiss visual and chromium tests unless called for
 12. Execute plan's steps one at a time.
+
+## Regions
+
+- **Known vs served.** `regions/index.ts`: `KNOWN_REGION_IDS` is what `--region` accepts (pipeline, seed, scripts); `REGION_IDS` is what the app serves. A known but unserved region's host gets 404. To serve a region, follow its `regions/<id>/README.md`; adding the id to `REGION_IDS` makes TypeScript list every per-region record still missing.
+- **Routing.** `proxy.ts` maps the host to a region (`regions/hosts.ts`: host table, then a region-id first label, else `nqn`) and rewrites to `app/[region]`; public URLs carry no region. Server code gets the region from route params (or the `x-basin-region` header in `i18n/request.ts`); client code from `useRegion()`.
+- **Per region:** pipeline configs and `--region` (required), Mongo database (`regionDbName`: `nqn` keeps `basin-explorer`, others append `-<id>`), tiles (`public/tiles/<id>/`, versioned per region), UI strings that name the region, `content.ts` (featured rivers, landing sample picks, OG subtitle, ask prompt place and examples). Everything else is shared.
+- **Never** let a region's code path fall back to another region's data silently: no default region in pipeline commands, and tests check that every served region defines the same message keys and valid prompt slugs.
+- Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in `RUN_LOCAL.md` after each change.
 
 ## Sub-agents, skills and background work
 

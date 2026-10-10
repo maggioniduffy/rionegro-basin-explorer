@@ -28,9 +28,10 @@ and a strip of land around it is visible, with river panels and a sub-basin view
 /app/[region]        pages, /api/rivers/[id], /api/reaches/[id], /api/subbasins/[id], /api/search
 /components          map/, panel/ (River, Reach, Subbasin, Info), SearchBox, UrlSync, Controls, ViewModeToggle, SubbasinLegend, LocaleSwitcher
 /lib                 mongo.ts, data/ (schemas, queries), map/, store.ts, url-state.ts, units.ts
-/messages            en.json, es.json
+/regions             index.ts (known/served ids, DB names), hosts.ts, <id>/ (configs, messages/, content.ts, generated files)
+/messages            shared en.json, es.json (region strings in regions/<id>/messages)
 /pipeline            TS steps + README.md + SOURCES.md
-/data                raw/ work/ (gitignored) · out/ (tiles, NDJSON)
+/data                raw/ (shared) work/<region>/ (gitignored) · out/<region>/ (NDJSON)
 /scripts             seed.ts
 CLAUDE.md  PLAN.md  DECISSIONS.md
 .claude/             agents/ and skills/ (committed)
@@ -170,6 +171,8 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run 
 - **Done when:** the open items above are decided and recorded in DECISSIONS.md. The ArcGIS item blocks R2's comparison only, not R1.
 
 ### Phase R1 — Region refactor, no behavior change
+
+Code and docs done in the cloud (2026-10-10, steps 1–8); waiting on the local checks in [RUN_LOCAL.md](RUN_LOCAL.md) before it counts as done.
 
 - [x] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace) — configs moved to `regions/nqn/` with the registry `regions/index.ts` (step 1, 2026-10-10)
 - [x] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared (step 2, 2026-10-10; default `nqn`)

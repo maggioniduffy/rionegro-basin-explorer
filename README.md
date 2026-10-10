@@ -13,6 +13,10 @@ and Río Negro). The map shows only the river system and a strip of land around 
 a reach or a sub-basin to open a panel with its metrics. The UI is in English and Spanish.
 Inspired by Amazon Basin Explorer.
 
+The same app is built to serve more regions, one per subdomain, sharing every component. The
+Río Negro basin (`nqn`) is live; Córdoba (`cba`) is in preparation and not served yet (see
+`regions/cba/README.md`).
+
 ### Features
 
 - Rivers from HydroRIVERS: smaller streams appear as you zoom in. Perennial and non-perennial
@@ -90,8 +94,9 @@ pipeline order and its prerequisites are in [pipeline/README.md](pipeline/README
 app/[region]/ pages, /attributions, /api/{rivers,reaches,subbasins,search,health,ask} (one region per host, proxy.ts)
 components/   map, panels, controls, search, mobile sheet
 lib/          mongo.ts, data/ (schemas, queries), map/ (style, mask, minimap), store.ts, url-state.ts
-messages/     en.json, es.json
-pipeline/     data pipeline steps, configs, SOURCES.md
+messages/     shared en.json, es.json
+regions/      region registry (index.ts, hosts.ts) and one folder per region: configs, messages/, content.ts
+pipeline/     data pipeline steps, SOURCES.md
 scripts/      seed, Atlas check, OG shapes
 public/tiles/<region>/ PMTiles archives (committed)
 ```
@@ -119,6 +124,10 @@ Un explorador satelital interactivo de la cuenca del Río Negro, en el norte de 
 (Limay, Neuquén y Río Negro). El mapa muestra solo la red de ríos y una franja de tierra a su
 alrededor. Al hacer clic en un río, un tramo o una subcuenca se abre un panel con sus métricas. La
 interfaz está en español e inglés. Inspirado en Amazon Basin Explorer.
+
+La misma app está pensada para servir más regiones, una por subdominio, compartiendo todos los
+componentes. La cuenca del Río Negro (`nqn`) está publicada; Córdoba (`cba`) está en preparación y
+todavía no se sirve (ver `regions/cba/README.md`).
 
 ### Funcionalidades
 
@@ -199,8 +208,9 @@ El orden completo del pipeline y sus requisitos están en [pipeline/README.md](p
 app/[region]/ páginas, /attributions, /api/{rivers,reaches,subbasins,search,health,ask} (una región por host, proxy.ts)
 components/   mapa, paneles, controles, búsqueda, panel móvil
 lib/          mongo.ts, data/ (esquemas, consultas), map/ (estilo, máscara, minimapa), store.ts, url-state.ts
-messages/     en.json, es.json
-pipeline/     pasos del pipeline de datos, configuración, SOURCES.md
+messages/     en.json, es.json compartidos
+regions/      registro de regiones (index.ts, hosts.ts) y una carpeta por región: configuración, messages/, content.ts
+pipeline/     pasos del pipeline de datos, SOURCES.md
 scripts/      seed, chequeo de Atlas, formas para la imagen OG
 public/tiles/<region>/ archivos PMTiles (commiteados)
 ```

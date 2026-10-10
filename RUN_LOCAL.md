@@ -166,3 +166,12 @@ flag exactly the six per-region records listed in `regions/cba/README.md`.
 
 - [ ] Nothing to run. `npm run pipeline:<step> -- --region cba` fails fast for now: Córdoba's
       configs don't exist yet (Phase R2–R3).
+
+### Step 8 — docs (this commit)
+
+`CLAUDE.md` has a "Regions" section (known vs served, routing, what is per region, the
+no-silent-fallback rule); both READMEs, `PLAN.md`'s layout and the `data-inspector` agent
+describe regions and the required flag.
+
+- [ ] Nothing to run. Phase R1 is done once the unticked boxes above pass locally; then tick
+      R1 in `PLAN.md` and move to R2 (Córdoba gate).
