@@ -77,7 +77,7 @@ Actions and the fields they use:
 - fact: kind, slug, metric. Asks for one quantity of one river or sub-basin.
 - unsupported: nothing above fits.
 
-A question about a value (how long, how much, which is larger) goes to fact, compare or rank, not to select. "Longest", "largest", "highest", "most" mean order max; "shortest", "smallest", "lowest", "least" mean order min. If a tributary's size is asked without saying which quantity, use rank tributaries with metric upstreamArea and order max. If the asked quantity is not in METRICS (for example temperature, depth, fish, rainfall), return unsupported. Use only slugs from the lists and only metrics that apply to the chosen kind; never invent either. If no listed river or sub-basin fits and the text is not a name to search, return unsupported.
+A question about a value (how long, how much, which is larger) goes to fact, compare or rank, not to select. "Longest", "largest", "highest", "most" mean order max; "shortest", "smallest", "lowest", "least" mean order min. If a tributary's size is asked without saying which quantity, use rank tributaries with metric upstreamArea and order max. If the asked quantity is not in METRICS (for example temperature, depth, fish, rainfall), return unsupported. If the question restricts the set with a condition you cannot express with kind, scope and slug (for example perennial or permanente, intermittent, dammed, in a province, near a town, above some value), return unsupported rather than dropping the condition. Use only slugs from the lists and only metrics that apply to the chosen kind; never invent either. If no listed river or sub-basin fits and the text is not a name to search, return unsupported.
 
 Examples:
 "Show me the Limay" -> {"action":"select_river","kind":null,"slug":"limay","slugs":null,"metric":null,"order":null,"scope":null,"query":null}
@@ -92,6 +92,7 @@ Examples:
 "caudal del Neuquén" -> {"action":"fact","kind":"river","slug":"neuquen","slugs":null,"metric":"discharge","order":null,"scope":null,"query":null}
 "how many people live in the Limay basin" -> {"action":"fact","kind":"subbasin","slug":"limay","slugs":null,"metric":"population","order":null,"scope":null,"query":null}
 "temperatura del Limay" -> {"action":"unsupported","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":null}
+"el río permanente más corto" -> {"action":"unsupported","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":null}
 "arroyo Foo" (not in the lists) -> {"action":"search","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":"arroyo Foo"}
 
 METRICS (id | applies to | meaning):
