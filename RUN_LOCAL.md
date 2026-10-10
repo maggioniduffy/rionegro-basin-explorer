@@ -47,3 +47,20 @@ The committed tiles moved to `public/tiles/nqn/` (byte-identical). Checked in th
 - [ ] After the next Vercel deploy: open the map and check in the browser's Network tab that a
       tile request to `/tiles/nqn/<hash>/…` returns 206 with the `immutable` header. The
       `DECISSIONS.md` Phase 8 note says this was never checked on Vercel.
+
+### Step 4 — one Mongo database per region (this commit)
+
+`nqn` keeps the `basin-explorer` database, so nothing needs reseeding and `.env.local` /
+Vercel keep `MONGODB_DB=basin-explorer` (now the base name). Other regions will use
+`basin-explorer-<id>`.
+
+- [ ] Check the seed still targets the same database without writing anything new: the
+      report names it.
+  ```sh
+  npm run seed -- --region nqn
+  jq '{ok, region, db}' data/work/nqn/seed/report.json   # expected: ok true, db "basin-explorer"
+  ```
+- [ ] `npm run atlas:check` (or `-- --region nqn`) still prints `"ok": true` and `"db": "basin-explorer"`.
+- [ ] Later, before Córdoba goes live: the read-only app user has `read@basin-explorer` only.
+      Give it `read@basin-explorer-cba` too (Atlas → Database Access → edit user), or switch it to
+      Atlas's "Only read any database" role. Then run `npm run atlas:check -- --region cba`.

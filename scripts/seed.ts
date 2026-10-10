@@ -4,7 +4,8 @@
  *
  * Idempotent: whole-document upserts keyed on _id, documents no longer in the files
  * are deleted, indexes are created only if missing. Re-run after the pipeline changes
- * data/out/<region>/. Needs a user with write access and MONGODB_DB, read from .env.local:
+ * data/out/<region>/, into the region's database (regions/index.ts regionDbName). Needs a user
+ * with write access and MONGODB_DB (the base name), read from .env.local:
  * MONGODB_SEED_URI, or MONGODB_URI when it is not set. The deployed app's MONGODB_URI
  * is a read-only user (Phase 8), so the seed has its own. Writes
  * data/work/<region>/seed/report.json.
@@ -33,7 +34,8 @@ import {
   streamSchema,
   subbasinSchema,
 } from "../lib/data/schemas";
-import { OUT_DIR } from "../pipeline/lib/paths";
+import { OUT_DIR, REGION_ID } from "../pipeline/lib/paths";
+import { regionDbName } from "../regions";
 import { writeReport } from "../pipeline/lib/report";
 import {
   chunk,
@@ -52,6 +54,7 @@ const env = z
     MONGODB_DB: z.string().min(1),
   })
   .parse(process.env);
+const DB_NAME = regionDbName(env.MONGODB_DB, REGION_ID);
 const seedUri = (() => {
   const uri = env.MONGODB_SEED_URI ?? env.MONGODB_URI;
   if (!uri) throw new Error("set MONGODB_SEED_URI (or MONGODB_URI)");
@@ -100,7 +103,7 @@ async function main() {
     serverSelectionTimeoutMS: 10_000,
   });
   try {
-    const db = client.db(env.MONGODB_DB);
+    const db = client.db(DB_NAME);
     const riversColl = db.collection<(typeof rivers)[number]>("rivers");
     const reachesColl = db.collection<(typeof reaches)[number]>("reaches");
     const subbasinsColl =
@@ -187,7 +190,8 @@ async function main() {
     await writeReport("seed", {
       ok: Object.values(checks).every(Boolean),
       checks,
-      db: env.MONGODB_DB,
+      region: REGION_ID,
+      db: DB_NAME,
       rivers: riverResult,
       reaches: reachResult,
       subbasins: subbasinResult,

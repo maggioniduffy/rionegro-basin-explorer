@@ -1,9 +1,10 @@
 import { getDb } from "@/lib/mongo";
+import { DEFAULT_REGION } from "@/regions";
 
 export async function GET() {
   let db: "up" | "down";
   try {
-    await (await getDb()).command({ ping: 1 });
+    await (await getDb(DEFAULT_REGION)).command({ ping: 1 });
     db = "up";
   } catch (error) {
     // Log server-side only; the response never includes error details.

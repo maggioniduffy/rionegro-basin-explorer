@@ -13,3 +13,14 @@ export const DEFAULT_REGION: RegionId = "nqn";
 export function isRegionId(value: unknown): value is RegionId {
   return (REGION_IDS as readonly unknown[]).includes(value);
 }
+
+/**
+ * Each region has its own Mongo database on the same cluster, named after MONGODB_DB (the
+ * base name). `nqn` keeps the base name itself, the database seeded before regions existed;
+ * every other region appends `-<id>` (e.g. basin-explorer-cba).
+ */
+const DB_SUFFIX: Record<RegionId, string> = { nqn: "" };
+
+export function regionDbName(base: string, region: RegionId): string {
+  return `${base}${DB_SUFFIX[region]}`;
+}

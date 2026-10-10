@@ -1,5 +1,6 @@
 import "server-only";
 import { getDb } from "@/lib/mongo";
+import { DEFAULT_REGION } from "@/regions";
 import { parseReachId, searchPattern, SEARCH_LIMIT } from "./params";
 import type {
   Bbox,
@@ -67,11 +68,15 @@ export type SearchHit =
   /** A typed HYRIV_ID; name is its IGN name or its river's, null for neither. */
   | { kind: "reachId"; id: string; name: string | null; bbox: Bbox };
 
-const rivers = async () => (await getDb()).collection<RiverDoc>("rivers");
-const streams = async () => (await getDb()).collection<StreamDoc>("streams");
-const reaches = async () => (await getDb()).collection<Reach>("reaches");
+/** The routes don't know their region yet (PLAN.md R1, step 5): the default one. */
+const REGION = DEFAULT_REGION;
+const rivers = async () =>
+  (await getDb(REGION)).collection<RiverDoc>("rivers");
+const streams = async () =>
+  (await getDb(REGION)).collection<StreamDoc>("streams");
+const reaches = async () => (await getDb(REGION)).collection<Reach>("reaches");
 const subbasins = async () =>
-  (await getDb()).collection<Subbasin>("subbasins");
+  (await getDb(REGION)).collection<Subbasin>("subbasins");
 
 /** Refs of the rivers `ids`, in the order given; unknown ids are left out. */
 async function namedRivers(ids: string[]): Promise<NamedRef[]> {

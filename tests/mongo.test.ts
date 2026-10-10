@@ -51,7 +51,7 @@ describe("getMongoClient", () => {
   it("reuses a connected client", async () => {
     const a = await getMongoClient();
     const b = await getMongoClient();
-    const db = await getDb();
+    const db = await getDb("nqn");
     expect(a).toBe(b);
     expect(instances).toHaveLength(1);
     expect(instances[0]?.connect).toHaveBeenCalledOnce();
@@ -62,7 +62,7 @@ describe("getMongoClient", () => {
     let release!: () => void;
     connectResults.push(() => new Promise<void>((r) => (release = r)));
 
-    const pending = [getMongoClient(), getMongoClient(), getDb()];
+    const pending = [getMongoClient(), getMongoClient(), getDb("nqn")];
     release();
     const [a, b, db] = await Promise.all(pending);
     expect(instances).toHaveLength(1);
@@ -76,11 +76,11 @@ describe("getMongoClient", () => {
       throw new Error("ReplicaSetNoPrimary");
     });
 
-    const results = await Promise.allSettled([getDb(), getDb()]);
+    const results = await Promise.allSettled([getDb("nqn"), getDb("nqn")]);
     expect(results.map((r) => r.status)).toEqual(["rejected", "rejected"]);
     expect(instances).toHaveLength(1);
 
-    await expect(getDb()).resolves.toMatchObject({ name: "test" });
+    await expect(getDb("nqn")).resolves.toMatchObject({ name: "test" });
     expect(instances).toHaveLength(2);
   });
 });

@@ -1,5 +1,6 @@
 import "server-only";
 import { MongoClient, type Db } from "mongodb";
+import { regionDbName, type RegionId } from "@/regions";
 import { getServerEnv } from "./env";
 
 // Reuse one connected client per server instance (and across dev hot reloads),
@@ -32,6 +33,9 @@ export function getMongoClient(): Promise<MongoClient> {
   return globalForMongo._mongoClientPromise;
 }
 
-export async function getDb(): Promise<Db> {
-  return (await getMongoClient()).db(getServerEnv().MONGODB_DB);
+/** The region's database (regions/index.ts regionDbName); one client serves them all. */
+export async function getDb(region: RegionId): Promise<Db> {
+  return (await getMongoClient()).db(
+    regionDbName(getServerEnv().MONGODB_DB, region),
+  );
 }

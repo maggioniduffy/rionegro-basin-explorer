@@ -7,11 +7,14 @@
  * if the app's collections cannot be read. Reads only; never writes. Prints a short
  * verdict, never the URI or the password.
  *
- *   npm run atlas:check
+ *   npm run atlas:check                      # the default region (nqn)
+ *   npm run atlas:check -- --region <id>     # another region's database
  *   MONGODB_URI='<the Vercel value>' npm run atlas:check   # shell env wins over .env.local
  */
 import { MongoClient } from "mongodb";
 import { z } from "zod";
+import { parseRegionArg } from "../pipeline/lib/paths";
+import { regionDbName } from "../regions";
 
 /** Read actions the app needs (lib/data/queries.ts: find, aggregate, ping). */
 const READ_ACTIONS = new Set([
@@ -36,6 +39,8 @@ const env = z
     MONGODB_DB: z.string().min(1),
   })
   .parse(process.env);
+const REGION = parseRegionArg(process.argv);
+const DB_NAME = regionDbName(env.MONGODB_DB, REGION);
 
 type Privilege = {
   resource: { db?: string; collection?: string; cluster?: boolean };
@@ -54,7 +59,7 @@ async function main() {
     serverSelectionTimeoutMS: 10_000,
   });
   try {
-    const db = client.db(env.MONGODB_DB);
+    const db = client.db(DB_NAME);
     const status = (await db.command({
       connectionStatus: 1,
       showPrivileges: true,
@@ -89,6 +94,8 @@ async function main() {
     console.log(
       JSON.stringify(
         {
+          region: REGION,
+          db: DB_NAME,
           users: authenticatedUsers.map((u) => `${u.user}@${u.db}`),
           roles: authenticatedUserRoles.map((r) => `${r.role}@${r.db}`),
           readOnly,
