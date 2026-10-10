@@ -106,8 +106,6 @@ Not checked in a browser in the cloud (project rule: no Chromium runs unless ask
 
 - [ ] `npm run dev`, open `/map`: the map opens on the basin, can't pan past the mask edge,
       draws every layer, and the minimap (desktop, Display panel) shows the basin and follows
-      the view. The browser's Network tab shows tiles from `/tiles/nqn/<hash>/…` (`dev` in
-      place of the hash under `npm run dev` is expected only if `next.config.ts` didn't run;
-      normally it shows the hash).
+      the view. The browser's Network tab shows tiles from `/tiles/nqn/<hash>/…`.
 - [ ] `npm run pipeline:mask -- --region nqn` and `npm run pipeline:tiles -- --region nqn`
       still run; `git status public/tiles` shows no change.
