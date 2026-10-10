@@ -1,20 +1,20 @@
 /**
  * pipeline:tiles — PMTiles for the map, via tippecanoe.
  *
- *   public/tiles/rivers.pmtiles  layers `reaches` (per-feature minzoom by Strahler order,
+ *   public/tiles/<region>/rivers.pmtiles  layers `reaches` (per-feature minzoom by Strahler order,
  *                                map.config.json), `basin` (outline) and `lakes`
  *                                (HydroLAKES polygons from pipeline:lakes, for outlines)
- *   public/tiles/mask.pmtiles    layers `mask` (Visible Land levels) and `endorheic` (land
+ *   public/tiles/<region>/mask.pmtiles    layers `mask` (Visible Land levels) and `endorheic` (land
  *                                visible only because of endorheic drainage, per level),
  *                                both from pipeline:mask
- *   public/tiles/subbasins.pmtiles layers `subbasins` (own areas from pipeline:subbasins)
+ *   public/tiles/<region>/subbasins.pmtiles layers `subbasins` (own areas from pipeline:subbasins)
  *                                and `outlines` (each node's whole area, for the selected
  *                                border); --detect-shared-borders keeps neighbours gap-free
- *   public/tiles/ign.pmtiles     IGN layers from pipeline:ign-layers: `detail` (perennial
+ *   public/tiles/<region>/ign.pmtiles     IGN layers from pipeline:ign-layers: `detail` (perennial
  *                                lines HydroRIVERS lacks), `lakes_extra` (water bodies
  *                                HydroLAKES lacks), `dams` (points), `dam_walls` (lines);
  *                                per-feature minzoom from map.config.json (ign)
- *   public/tiles/localities.pmtiles layer `localities` (OSM city, town, village points from
+ *   public/tiles/<region>/localities.pmtiles layer `localities` (OSM city, town, village points from
  *                                pipeline:localities; per-feature minzoom by class,
  *                                map.config.json localities)
  *
@@ -29,7 +29,7 @@ import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { requireInput } from "../lib/inputs";
 import { mapConfig, reachMinzoom, stepMinzoom } from "../lib/map-config";
-import { ROOT, rel, workPath } from "../lib/paths";
+import { REGION_ID, ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
 const TIPPECANOE = process.env.TIPPECANOE ?? "tippecanoe";
@@ -48,7 +48,7 @@ const TILE_JOIN = TIPPECANOE.replace(/tippecanoe$/, "tile-join");
 const MASK_LOW_MAXZOOM = 7;
 const MASK_LOW_DETAIL = 10;
 const MASK_MAX_TILE_BYTES = 100_000;
-const TILES_DIR = `${ROOT}/public/tiles`;
+const TILES_DIR = `${ROOT}/public/tiles/${REGION_ID}`;
 
 interface Feature {
   type: "Feature";

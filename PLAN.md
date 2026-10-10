@@ -159,7 +159,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#ign-streams-2026-10-09).
 ## Multi-region — sub-apps per region (Río Negro = `nqn`, Córdoba = `cba`)
 
 One Next.js app serves every region (Option A, owner 2026-10-10); a region is a config folder, not a fork.
-Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10).
+Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run locally after each change: [RUN_LOCAL.md](RUN_LOCAL.md).
 
 ### Phase R0 — Decisions & inputs
 
@@ -173,7 +173,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10).
 
 - [~] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace) — configs moved to `regions/nqn/` with the registry `regions/index.ts` (step 1, 2026-10-10)
 - [x] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared (step 2, 2026-10-10; default `nqn`)
-- [ ] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region
+- [~] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region — tiles moved, versioned per region, `tilePaths(region)` (step 3, 2026-10-10); callers still pass the default region until step 5, and `mapConfig` follows with the region provider
 - [ ] Mongo: one database per region on the same cluster, `getDb(region)`; seed and `atlas:check` take `--region`
 - [ ] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn`
 - [ ] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/`

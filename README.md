@@ -42,7 +42,7 @@ Inspired by Amazon Basin Explorer.
 Sources (HydroSHEDS, HydroLAKES, GIRES, IGN, OSM)
    │  pipeline/  — TS steps running DuckDB + tippecanoe, each writes a report.json
    ▼
-public/tiles/*.pmtiles (geometry)      data/out/<region>/*.ndjson → npm run seed → MongoDB Atlas (metadata)
+public/tiles/<region>/*.pmtiles (geometry)      data/out/<region>/*.ndjson → npm run seed → MongoDB Atlas (metadata)
    │ HTTP Range                                                           │
    ▼                                                                      ▼
 MapLibre GL in the browser ── click → feature id → /api/* route handlers (CDN-cached)
@@ -93,7 +93,7 @@ lib/          mongo.ts, data/ (schemas, queries), map/ (style, mask, minimap), s
 messages/     en.json, es.json
 pipeline/     data pipeline steps, configs, SOURCES.md
 scripts/      seed, Atlas check, OG shapes
-public/tiles/ PMTiles archives (committed)
+public/tiles/<region>/ PMTiles archives (committed)
 ```
 
 Project docs: [PLAN.md](PLAN.md) (phases and status) and [DECISSIONS.md](DECISSIONS.md) (dated
@@ -150,7 +150,7 @@ interfaz está en español e inglés. Inspirado en Amazon Basin Explorer.
 Fuentes (HydroSHEDS, HydroLAKES, GIRES, IGN, OSM)
    │  pipeline/  — pasos en TS con DuckDB + tippecanoe; cada uno escribe un report.json
    ▼
-public/tiles/*.pmtiles (geometría)     data/out/<region>/*.ndjson → npm run seed → MongoDB Atlas (metadatos)
+public/tiles/<region>/*.pmtiles (geometría)     data/out/<region>/*.ndjson → npm run seed → MongoDB Atlas (metadatos)
    │ HTTP Range                                                           │
    ▼                                                                      ▼
 MapLibre GL en el navegador ── clic → id del feature → route handlers /api/* (con caché de CDN)
@@ -202,7 +202,7 @@ lib/          mongo.ts, data/ (esquemas, consultas), map/ (estilo, máscara, min
 messages/     en.json, es.json
 pipeline/     pasos del pipeline de datos, configuración, SOURCES.md
 scripts/      seed, chequeo de Atlas, formas para la imagen OG
-public/tiles/ archivos PMTiles (commiteados)
+public/tiles/<region>/ archivos PMTiles (commiteados)
 ```
 
 Documentación del proyecto: [PLAN.md](PLAN.md) (fases y estado) y [DECISSIONS.md](DECISSIONS.md)

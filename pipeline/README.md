@@ -6,7 +6,7 @@ TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe
 - reads from `data/raw/` or an earlier step's output in `data/work/<region>/`;
 - writes a `report.json` (counts, total km, orphan segments, area checks) next to its output.
 
-Final artifacts: NDJSON for `npm run seed` in `data/out/<region>/`, and PMTiles for the map in `public/tiles/`
+Final artifacts: NDJSON for `npm run seed` in `data/out/<region>/`, and PMTiles for the map in `public/tiles/<region>/`
 (committed, because Vercel serves them from `/public` and tippecanoe does not run there).
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
 
@@ -139,7 +139,7 @@ named `place=city|town|village` nodes in the basin bbox, cached in
 `data/work/<region>/basin/basin.geojson` and writes `data/work/<region>/tiles/localities.geojson` (id, name, place; no
 population). Report: counts inside and outside the basin, per class; checks: unique ids, all named,
 all inside the basin. Places mapped only as areas are not included. Run it after `basin` and before
-`tiles`, which writes `public/tiles/localities.pmtiles` with a minzoom per class
+`tiles`, which writes `public/tiles/<region>/localities.pmtiles` with a minzoom per class
 (`map.config.json`, `localities`).
 
 ### `npm run pipeline:named`
@@ -396,19 +396,19 @@ every rejected dam point found (a stale `gid` fails the step).
 
 Runs tippecanoe with the feature and tile-size limits off, except for the mask (below):
 
-- `public/tiles/rivers.pmtiles`: layer `reaches`, with the properties the map styles on and a
+- `public/tiles/<region>/rivers.pmtiles`: layer `reaches`, with the properties the map styles on and a
   per-feature minzoom from `reachMinzoomByStrahler`; layer `basin`, the outline; layer `lakes`, the
   HydroLAKES polygons with IGN names (`ign_lakes.geojson` from `pipeline:ign-layers`).
-- `public/tiles/mask.pmtiles`: layer `mask`, one feature per level, and layer `endorheic`. Built
+- `public/tiles/<region>/mask.pmtiles`: layer `mask`, one feature per level, and layer `endorheic`. Built
   in two parts joined with `tile-join`: z0–7 at `--full-detail=10` (about 2 tile units per screen
   pixel), z8 and up at full detail, both with `--detect-shared-borders` and a 100 KB tile cap.
   tippecanoe lowers an oversized tile's detail rather than dropping features, and fails if it still
   doesn't fit. This keeps the worst tile near 75k vertices instead of ~274k (z6), which MapLibre
   would otherwise triangulate on every tile load while zooming. `tile-join` must be on PATH next to
   tippecanoe.
-- `public/tiles/subbasins.pmtiles`: layers `subbasins` (the own areas from `pipeline:subbasins`) and
+- `public/tiles/<region>/subbasins.pmtiles`: layers `subbasins` (the own areas from `pipeline:subbasins`) and
   `outlines` (each node's whole area), built with `--detect-shared-borders` so simplification leaves no slivers between neighbours.
-- `public/tiles/ign.pmtiles`: layers `detail` (IGN streams HydroRIVERS lacks), `lakes_extra`, `dams` and
+- `public/tiles/<region>/ign.pmtiles`: layers `detail` (IGN streams HydroRIVERS lacks), `lakes_extra`, `dams` and
   `dam_walls`, each feature with a minzoom from `map.config.json` (`ign`: by length, by area, dams from
   z6). The report checks every feature is present at maxzoom and none before its first zoom.
 

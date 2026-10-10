@@ -4,7 +4,7 @@
  * per tile (total and worst tile). With --by=<prop>, vertices are also split by that
  * property's value (e.g. --by=level for the mask). Prints a compact table, no rows.
  *
- *   npx tsx pipeline/tools/tile-stats.ts public/tiles/mask.pmtiles [--by=level]
+ *   npx tsx pipeline/tools/tile-stats.ts public/tiles/nqn/mask.pmtiles [--by=level]
  */
 import { readFile } from "node:fs/promises";
 import { gunzipSync } from "node:zlib";
