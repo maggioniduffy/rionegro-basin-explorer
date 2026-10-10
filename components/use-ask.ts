@@ -9,9 +9,9 @@ export type AskNotice = "noMatch" | "unsupported" | "rateLimited" | "error";
 
 /**
  * Posts a question to /api/ask. A "select" result opens that river, sub-basin or stream
- * on the map; an "answer" result is kept for the answer card and its winner (or the
- * fact's item) is opened too, so the map flies there while the card stays. `ask` resolves
- * to true when the question was answered by opening something on the map ("select").
+ * on the map; an "answer" result is only kept for the answer card under the bar (owner,
+ * 2026-10-10: a question does not open the side panel; the card's Open buttons do). `ask`
+ * resolves to true when the question was answered by opening something ("select").
  */
 export function useAsk() {
   const locale = useLocale();
@@ -65,7 +65,6 @@ export function useAsk() {
           return true;
         } else if (body.action === "answer") {
           setResult(body);
-          if (body.select) select(body.select, { fit: true });
         } else {
           setNotice(body.action === "no_match" ? "noMatch" : "unsupported");
         }

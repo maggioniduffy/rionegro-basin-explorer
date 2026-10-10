@@ -48,7 +48,9 @@ test.describe("search bar (en)", () => {
     await expect(input).toHaveValue("");
   });
 
-  test("an answer opens a card and selects the winner", async ({ page }) => {
+  test("an answer opens a card; only its Open button selects", async ({
+    page,
+  }) => {
     const agrio = riverLength("agrio");
     const caleufu = riverLength("caleufu");
     const [winner, other] =
@@ -56,6 +58,7 @@ test.describe("search bar (en)", () => {
         ? (["agrio", "caleufu"] as const)
         : (["caleufu", "agrio"] as const);
     const values = { agrio, caleufu };
+    const NAMES = { agrio: "Río Agrio", caleufu: "Río Caleufú" };
     const result: AskResult = {
       action: "answer",
       source: "llm",
@@ -87,6 +90,13 @@ test.describe("search bar (en)", () => {
     await expect(card).toContainText("Río Agrio");
     await expect(card).toContainText("Río Caleufú");
     await expect(card).toContainText("HydroRIVERS (test)");
+    // A question does not open the side panel (owner, 2026-10-10).
+    await expect(page).not.toHaveURL(/[?&]r=/);
+    await card
+      .getByRole("button", {
+        name: en.ask.openItem.replace("{name}", NAMES[winner]),
+      })
+      .click();
     await expect(page).toHaveURL(new RegExp(`[?&]r=${winner}(&|$)`));
 
     await input.press("Escape");
