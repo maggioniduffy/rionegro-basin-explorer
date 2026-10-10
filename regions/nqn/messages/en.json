@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "title": "Río Negro Basin Explorer",
+    "description": "Satellite explorer of the Río Negro basin: the Limay, Neuquén and Río Negro rivers and their tributaries."
+  },
+  "home": {
+    "title": "Río Negro Basin Explorer"
+  },
+  "map": {
+    "maplibre": {
+      "title": "Map of the Río Negro basin"
+    }
+  },
+  "ask": {
+    "examples": {
+      "0": "Which is longer, Caleufú or Agrio?",
+      "1": "Longest tributary of the Limay",
+      "2": "Neuquén basin"
+    }
+  },
+  "attributions": {
+    "metaTitle": "Sources and licenses · Río Negro Basin Explorer",
+    "modeled": {
+      "regulated": "Large dams regulate the Limay and the Neuquén today, so the flow in these rivers can differ a lot from the natural averages shown here."
+    }
+  },
+  "landing": {
+    "eyebrow": "Río Negro basin · Patagonia, Argentina",
+    "h1": "Follow the water from the Andes to the Atlantic.",
+    "sub": "Explore the Limay, Neuquén and Negro rivers, their tributaries and sub-basins on satellite imagery.",
+    "f2p": "Switch from the whole basin to Limay, Neuquén and Río Negro, then drill into finer levels with breadcrumb navigation.",
+    "d2": "Discharge is a modeled natural average for 1971–2000 and does not reflect current dam regulation at El Chocón, Piedra del Águila, Alicurá and others. Population is a 2010 estimate.",
+    "home": "Río Negro Basin Explorer, home",
+    "card": {
+      "alt": "Satellite image of the Río Negro basin with its rivers highlighted in cyan"
+    }
+  }
+}

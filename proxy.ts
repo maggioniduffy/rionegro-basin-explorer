@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isLocale, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "./i18n/config";
 import { legacyMapPath } from "./lib/url-state";
 import { isRegionId } from "./regions";
-import { regionFromHost } from "./regions/hosts";
+import { REGION_HEADER, regionFromHost } from "./regions/hosts";
 
 /**
  * URLs carry no locale (it lives in a cookie; see i18n/config.ts). /en and /es, the
@@ -22,11 +22,16 @@ export function proxy(request: NextRequest) {
   const path = locale ? `/${rest.join("/")}` : pathname;
   const target = legacyMapPath(path, searchParams) ?? path;
   if (!locale && target === pathname) {
-    if (isRegionId(prefix)) return NextResponse.next();
+    const headers = new Headers(request.headers);
+    if (isRegionId(prefix)) {
+      headers.set(REGION_HEADER, prefix);
+      return NextResponse.next({ request: { headers } });
+    }
     const url = request.nextUrl.clone();
     const region = regionFromHost(request.headers.get("host"));
     url.pathname = pathname === "/" ? `/${region}` : `/${region}${pathname}`;
-    return NextResponse.rewrite(url);
+    headers.set(REGION_HEADER, region);
+    return NextResponse.rewrite(url, { request: { headers } });
   }
 
   const response = NextResponse.redirect(

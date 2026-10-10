@@ -177,7 +177,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run 
 - [x] Mongo: one database per region on the same cluster, `getDb(region)`; seed and `atlas:check` take `--region` (step 4, 2026-10-10; routes pass the default region until step 5)
 - [x] Routes and the ask catalog, LLM cache key and rate limit read the request's region — queries, catalog (one per region) and cache key take it (step 5a, 2026-10-10); the routes read it from `app/[region]` since 5b. The rate limit stays per IP across regions (one LLM quota)
 - [x] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn` (step 5b, 2026-10-10)
-- [ ] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/`
+- [~] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/` — strings done (step 6a, 2026-10-10: `regions/nqn/messages/`, merged per request)
 - **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds.
 
 ### Phase R2 — Córdoba gate

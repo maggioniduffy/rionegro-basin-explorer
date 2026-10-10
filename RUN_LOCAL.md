@@ -109,3 +109,18 @@ Not checked in a browser in the cloud (project rule: no Chromium runs unless ask
       the view. The browser's Network tab shows tiles from `/tiles/nqn/<hash>/…`.
 - [ ] `npm run pipeline:mask -- --region nqn` and `npm run pipeline:tiles -- --region nqn`
       still run; `git status public/tiles` shows no change.
+
+### Step 6a — region strings in `regions/<id>/messages/` (this commit)
+
+Fourteen strings that name the Río Negro basin (titles, map title, landing hero and
+cards, ask examples, the dam caveat) moved from `messages/*.json` to
+`regions/nqn/messages/*.json`, same keys, merged per request (`i18n/messages.ts`).
+`proxy.ts` sends the region to `i18n/request.ts` in the `x-basin-region` header (always
+overwritten, so a client can't pick it). Checked in the cloud with `next start`: titles,
+hero and `/attributions` in both languages are unchanged, and the OG image renders.
+
+- [ ] If you have uncommitted edits to `messages/*.json` touching those keys, redo them in
+      `regions/nqn/messages/`. New shared strings still go in `messages/`; new strings that
+      name a region go in every `regions/<id>/messages/` (a test checks every region has the
+      same keys).
+- [ ] `npm run test:e2e`: the specs now read `messagesFor("nqn", …)`.

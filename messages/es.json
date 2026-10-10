@@ -1,10 +1,5 @@
 {
-  "metadata": {
-    "title": "Explorador de la Cuenca del Río Negro",
-    "description": "Explorador satelital de la cuenca del Río Negro: los ríos Limay, Neuquén y Negro y sus afluentes."
-  },
   "home": {
-    "title": "Explorador de la Cuenca del Río Negro",
     "sources": "Fuentes y licencias"
   },
   "localeSwitcher": {
@@ -94,7 +89,6 @@
       "osm": "© colaboradores de OpenStreetMap"
     },
     "maplibre": {
-      "title": "Mapa de la cuenca del Río Negro",
       "toggleAttribution": "Mostrar u ocultar créditos",
       "mapFeedback": "Comentarios sobre el mapa",
       "kilometers": "km",
@@ -112,11 +106,6 @@
     "noMatch": "Nada en el mapa coincide con esa pregunta.",
     "unsupported": "El mapa no puede responder esa pregunta. Probá nombrando un río o una cuenca.",
     "examplesTitle": "Probá con alguno de estos",
-    "examples": {
-      "0": "¿Qué río es más largo, Caleufú o Agrio?",
-      "1": "El afluente más largo del Limay",
-      "2": "Cuenca del Neuquén"
-    },
     "rateLimited": "Demasiadas preguntas. Esperá un momento y probá de nuevo.",
     "error": "No se pudo responder la pregunta en este momento.",
     "noData": "El mapa no tiene datos para responder eso.",
@@ -300,7 +289,6 @@
     }
   },
   "attributions": {
-    "metaTitle": "Fuentes y licencias · Explorador de la Cuenca del Río Negro",
     "back": "Volver al mapa",
     "title": "Fuentes y licencias",
     "intro": "De dónde vienen los datos del mapa, cómo citarlos y qué significan sus valores.",
@@ -308,7 +296,6 @@
     "modeled": {
       "title": "Valores modelados y estimados",
       "intro": "Muchos valores de los paneles no son mediciones. Provienen de modelos y conjuntos de datos globales, cada uno de su propio período, y se marcan con * donde aparecen:",
-      "regulated": "Hoy grandes represas regulan el Limay y el Neuquén, así que el caudal de estos ríos puede diferir mucho de los promedios naturales que se muestran aquí.",
       "derived": "El contorno de la cuenca, las subcuencas y los cursos de los ríos con nombre fueron derivados por este proyecto a partir de HydroBASINS e HydroRIVERS. La mayoría de los nombres provienen del IGN, asignados a la red de ríos de forma automática, con un nivel de confianza indicado en cada curso. Pueden contener errores."
     },
     "sources": {
@@ -351,31 +338,24 @@
   "landing": {
     "attr": "Atribuciones",
     "nav": "Sitio",
-    "eyebrow": "Cuenca del Río Negro · Patagonia, Argentina",
-    "h1": "Seguí el agua desde los Andes hasta el Atlántico.",
-    "sub": "Explorá los ríos Limay, Neuquén y Negro, sus afluentes y subcuencas sobre imágenes satelitales.",
     "exTag": "Qué podés explorar",
     "exH": "Una cuenca, tres formas de entrar.",
     "f1h": "Ríos y afluentes",
     "f1p": "Elegí cualquier curso y mirá su longitud, altitud de nacimiento y desembocadura, orden de Strahler, caudal y más.",
     "f2h": "Subcuencas",
-    "f2p": "Pasá de la cuenca completa al Limay, al Neuquén y al Río Negro, y bajá a niveles más finos con migas de pan.",
     "f3h": "Tierra visible",
     "f3p": "Deslizá desde solo los ríos hasta toda la cuenca y descubrí la imagen satelital alrededor del agua.",
     "sample": "* Modelado: caudal medio natural de 1971–2000, que no refleja la regulación actual de las represas.",
     "dTag": "Datos y transparencia",
     "dH": "Modelado, no medido.",
     "d1": "Construido sobre HydroRIVERS, HydroATLAS y HydroBASINS, con datos del IGN para los cursos de agua argentinos.",
-    "d2": "El caudal es un promedio natural modelado para 1971–2000 y no refleja la regulación actual de las represas de El Chocón, Piedra del Águila, Alicurá y otras. La población es una estimación de 2010.",
     "credit": "Imágenes: EOxCloudless · Datos: HydroSHEDS, GIRES, IGN, OSM",
     "open": "Abrir mapa",
-    "home": "Río Negro Basin Explorer, inicio",
     "card": {
       "title": "Abrir el explorador",
       "text": "Imágenes satelitales de la cuenca, con ríos, afluentes y subcuencas. Todo en un mapa.",
       "btn": "Abrir mapa",
       "quick": "Ir directo a",
-      "alt": "Imagen satelital de la cuenca del Río Negro con sus ríos resaltados en celeste",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
     }
   }

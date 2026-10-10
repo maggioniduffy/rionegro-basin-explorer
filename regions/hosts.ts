@@ -18,3 +18,9 @@ export function regionFromHost(host: string | null): RegionId {
   const label = name.split(".")[0];
   return isRegionId(label) ? label : DEFAULT_REGION;
 }
+
+/**
+ * Request header proxy.ts sets to the region it routes to, for code that has no route
+ * params (i18n/request.ts). Always overwritten by the proxy, so a client can't choose it.
+ */
+export const REGION_HEADER = "x-basin-region";

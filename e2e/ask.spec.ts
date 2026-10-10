@@ -1,9 +1,12 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { AskResult } from "../lib/ask/contract";
-import en from "../messages/en.json";
-import es from "../messages/es.json";
+import { messagesFor } from "../i18n/messages";
 import { openMap } from "./map-helpers";
+
+// The e2e server runs on localhost, which serves the default region.
+const en = messagesFor("nqn", "en");
+const es = messagesFor("nqn", "es");
 
 // No LLM env in e2e: /api/ask is only exercised through its fuzzy-name paths; the answer
 // card is driven by a stubbed response.

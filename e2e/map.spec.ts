@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
-import en from "../messages/en.json";
-import es from "../messages/es.json";
+import { messagesFor } from "../i18n/messages";
 import { openMap, setVisibleLand, waitForMapIdle } from "./map-helpers";
+
+// The e2e server runs on localhost, which serves the default region.
+const en = messagesFor("nqn", "en");
+const es = messagesFor("nqn", "es");
 
 test.describe("map (en)", () => {
   test.use({ locale: "en-US" });

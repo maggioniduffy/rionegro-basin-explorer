@@ -1,10 +1,5 @@
 {
-  "metadata": {
-    "title": "Río Negro Basin Explorer",
-    "description": "Satellite explorer of the Río Negro basin: the Limay, Neuquén and Río Negro rivers and their tributaries."
-  },
   "home": {
-    "title": "Río Negro Basin Explorer",
     "sources": "Sources and licenses"
   },
   "localeSwitcher": {
@@ -94,7 +89,6 @@
       "osm": "© OpenStreetMap contributors"
     },
     "maplibre": {
-      "title": "Map of the Río Negro basin",
       "toggleAttribution": "Toggle attribution",
       "mapFeedback": "Map feedback",
       "kilometers": "km",
@@ -112,11 +106,6 @@
     "noMatch": "Nothing on the map matches that question.",
     "unsupported": "The map cannot answer that question. Try naming a river or a basin.",
     "examplesTitle": "Try one of these",
-    "examples": {
-      "0": "Which is longer, Caleufú or Agrio?",
-      "1": "Longest tributary of the Limay",
-      "2": "Neuquén basin"
-    },
     "rateLimited": "Too many questions. Wait a moment and try again.",
     "error": "The question could not be answered right now.",
     "noData": "The map has no data to answer that.",
@@ -300,7 +289,6 @@
     }
   },
   "attributions": {
-    "metaTitle": "Sources and licenses · Río Negro Basin Explorer",
     "back": "Back to the map",
     "title": "Sources and licenses",
     "intro": "Where the data on the map comes from, how to cite it, and what its values mean.",
@@ -308,7 +296,6 @@
     "modeled": {
       "title": "Modeled and estimated values",
       "intro": "Many values in the panels are not measurements. They come from global models and datasets, each for its own period, and are marked with * where they appear:",
-      "regulated": "Large dams regulate the Limay and the Neuquén today, so the flow in these rivers can differ a lot from the natural averages shown here.",
       "derived": "The basin outline, the sub-basins and the courses of the named rivers were derived by this project from HydroBASINS and HydroRIVERS. Most names come from IGN, matched to the river network automatically, with a confidence level shown on each stream. They may contain errors."
     },
     "sources": {
@@ -351,31 +338,24 @@
   "landing": {
     "attr": "Attributions",
     "nav": "Site",
-    "eyebrow": "Río Negro basin · Patagonia, Argentina",
-    "h1": "Follow the water from the Andes to the Atlantic.",
-    "sub": "Explore the Limay, Neuquén and Negro rivers, their tributaries and sub-basins on satellite imagery.",
     "exTag": "What you can explore",
     "exH": "One basin, three ways in.",
     "f1h": "Rivers & tributaries",
     "f1p": "Select any stream for its length, source and mouth elevation, Strahler order, discharge and more.",
     "f2h": "Sub-basins",
-    "f2p": "Switch from the whole basin to Limay, Neuquén and Río Negro, then drill into finer levels with breadcrumb navigation.",
     "f3h": "Visible land",
     "f3p": "Slide from rivers only to the whole basin, revealing the satellite imagery around the water.",
     "sample": "* Modeled: natural mean discharge for 1971–2000, which does not reflect today's dam regulation.",
     "dTag": "Data & transparency",
     "dH": "Modeled, not measured.",
     "d1": "Built on HydroRIVERS, HydroATLAS and HydroBASINS, with IGN data for Argentine watercourses.",
-    "d2": "Discharge is a modeled natural average for 1971–2000 and does not reflect current dam regulation at El Chocón, Piedra del Águila, Alicurá and others. Population is a 2010 estimate.",
     "credit": "Imagery: EOxCloudless · Data: HydroSHEDS, GIRES, IGN, OSM",
     "open": "Open map",
-    "home": "Río Negro Basin Explorer, home",
     "card": {
       "title": "Open the explorer",
       "text": "Satellite imagery of the basin with rivers, tributaries and sub-basins, in one map.",
       "btn": "Open map",
       "quick": "Jump to",
-      "alt": "Satellite image of the Río Negro basin with its rivers highlighted in cyan",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
     }
   }

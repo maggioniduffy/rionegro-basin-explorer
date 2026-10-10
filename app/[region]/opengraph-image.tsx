@@ -1,14 +1,15 @@
 import { ImageResponse } from "next/og";
-import en from "@/messages/en.json";
-import es from "@/messages/es.json";
+import { messagesFor } from "@/i18n/messages";
 import { OG_MAP_BOX, OG_SIZE } from "@/lib/og";
 import { FLOW_STYLE, THEME_COLORS } from "@/lib/map/style";
 import shapes from "@/app/og-shapes.json";
-import { REGION_IDS } from "@/regions";
+import { DEFAULT_REGION, isRegionId, REGION_IDS } from "@/regions";
 
 // One static image for both languages: a shared link has no locale cookie, so the
 // card shows both titles (the site picks its language per visitor).
-export const alt = `${en.metadata.title} · ${es.metadata.title}`;
+// `alt` must be a constant export: it names the default region's title until a second region
+// needs its own (generateImageMetadata; DECISSIONS.md, Multi-region).
+export const alt = `${messagesFor(DEFAULT_REGION, "en").metadata.title} · ${messagesFor(DEFAULT_REGION, "es").metadata.title}`;
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
@@ -21,7 +22,15 @@ export function generateStaticParams() {
 const { mask, lake } = THEME_COLORS.dark;
 
 /** Basin, lakes and Strahler ≥ 4 rivers from rivers.pmtiles (scripts/og-shapes.ts). */
-export default function Image() {
+export default async function Image({
+  params,
+}: {
+  params: Promise<{ region: string }>;
+}) {
+  const { region: raw } = await params;
+  const region = isRegionId(raw) ? raw : DEFAULT_REGION;
+  const en = messagesFor(region, "en");
+  const es = messagesFor(region, "es");
   return new ImageResponse(
     <div
       style={{
