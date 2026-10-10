@@ -155,7 +155,7 @@ touching any file. Only the test runner falls back to `nqn`. Commands above alre
 - [ ] Any shell alias, script or note of yours that runs these without `--region nqn` needs it
       added.
 
-### Step 7 — `cba` stub: known to the pipeline, not served (this commit)
+### Step 7 — `cba` stub: known to the pipeline, not served (`e9b2918`)
 
 `regions/index.ts` now has `KNOWN_REGION_IDS` (`nqn`, `cba`: what `--region` accepts) and
 `REGION_IDS` (`nqn`: what the app serves). `cba.<any host>` answers 404 instead of showing
