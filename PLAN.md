@@ -164,10 +164,10 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10).
 ### Phase R0 — Decisions & inputs
 
 - [x] Option A (one app, region registry), subdomains, `nqn` = the current Río Negro basin, Córdoba = province + the interprovincial basins that reach it, endorheic basins split (one root per sink)
-- [ ] Domain for subdomains: wildcard on a custom domain (recurring cost, owner) vs one `*.vercel.app` alias per region (free); decide before R1's host routing
-- [ ] Córdoba scope rule: which crossing basins are whole and which are clipped (e.g. the Salí-Dulce reaches Mar Chiquita from Tucumán); list candidates with areas first
+- [x] Domain for subdomains: on Vercel, which kind of domain deferred (owner, 2026-10-10); R1 maps any host to a region through a config table, so the choice needs no code change
+- [x] Córdoba scope rule: R2 lists the candidate basins with their areas inside/outside the province, then the owner picks which are whole and which are clipped (e.g. the Salí-Dulce reaches Mar Chiquita from Tucumán)
 - [ ] Córdoba provincial layers (ArcGIS Experience "Cuencas y Unidades de Gestión"): owner exports or allows `arcgis.com` in the environment; license-checker before use; the shared link is a `draft=true` view, confirm the published one
-- **Done when:** the open items above are decided and recorded in DECISSIONS.md.
+- **Done when:** the open items above are decided and recorded in DECISSIONS.md. The ArcGIS item blocks R2's comparison only, not R1.
 
 ### Phase R1 — Region refactor, no behavior change
 
