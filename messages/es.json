@@ -184,7 +184,8 @@
       "endorheic": "Endorreico: drena hacia el interior y no llega al mar.",
       "ignName": "Nombre del IGN. Confianza de la coincidencia: {confidence, select, high {alta} medium {media} other {baja}}.",
       "ignNameReviewed": "Nombre del IGN, confirmado a mano.",
-      "showStream": "Mostrar todo el {stream}"
+      "showStream": "Mostrar todo el {stream}",
+      "ownerName": "Nombre asignado a mano; ninguna línea del IGN lo lleva."
     },
     "groups": {
       "course": "Recorrido",

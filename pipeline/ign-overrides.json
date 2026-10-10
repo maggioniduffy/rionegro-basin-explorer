@@ -977,6 +977,12 @@
       "action": "name",
       "name": "Río Varvarco",
       "note": "owner, 2026-10-02: IGN labels this reach Río Neuquén, but it is the last stretch of the Varvarco; the confluence is at its downstream end (town of Varvarco)"
+    },
+    {
+      "id": 61558421,
+      "action": "name",
+      "name": "Río Correntoso",
+      "note": "owner, 2026-10-10: this reach is the Río Correntoso. No IGN line carries the name here (IGN has only Arroyo Correntoso lines, 100+ km away); owner fact"
     }
   ],
   "riverNames": [],

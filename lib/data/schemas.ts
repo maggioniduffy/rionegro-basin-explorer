@@ -98,13 +98,14 @@ export const reachSchema = z.strictObject({
   bbox: bboxSchema,
   /**
    * IGN name matched to the reach (pipeline:ign-match); null when none is shown.
-   * confidence: coverage of the reach by the IGN lines of that name; `reviewed` is true
-   * when a hand decision (pipeline/ign-overrides.json) applies.
+   * confidence: coverage of the reach by the IGN lines of that name ("none" when no IGN
+   * line carries it: an owner-named reach); `reviewed` is true when a hand decision
+   * (pipeline/ign-overrides.json) applies.
    */
   ign: z
     .strictObject({
       name: z.string().min(1),
-      confidence: z.enum(["high", "medium", "low"]),
+      confidence: z.enum(["high", "medium", "low", "none"]),
       reviewed: z.boolean(),
     })
     .nullable(),

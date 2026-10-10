@@ -28,9 +28,11 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
         <p className="text-muted text-sm">{t("reach.id", { id: reach._id })}</p>
         {reach.ign && (
           <p className="text-muted text-xs">
-            {reach.ign.reviewed
-              ? t("reach.ignNameReviewed")
-              : t("reach.ignName", { confidence: reach.ign.confidence })}
+            {reach.ign.confidence === "none"
+              ? t("reach.ownerName")
+              : reach.ign.reviewed
+                ? t("reach.ignNameReviewed")
+                : t("reach.ignName", { confidence: reach.ign.confidence })}
           </p>
         )}
         {river && reach.riverName && (

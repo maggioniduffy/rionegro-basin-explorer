@@ -26,7 +26,7 @@
     "connected": 6949,
     "endorheic": 1067,
     "inNamedRivers": 990,
-    "withIgnName": 2208,
+    "withIgnName": 2209,
     "ignNameHiddenOffLine": 179,
     "notDrawnInsideLakes": 295,
     "orphans": 0
@@ -328,8 +328,8 @@
     }
   ],
   "streams": {
-    "streams": 452,
-    "reachesInStreams": 1193,
+    "streams": 453,
+    "reachesInStreams": 1194,
     "reachesOnStreamsAndRivers": 3,
     "uniqueValidIds": true,
     "everyReachExported": true,
@@ -347,7 +347,7 @@
       "lileo": 6,
       "chimehuin": 24,
       "alumine": 35,
-      "limay": 77,
+      "limay": 78,
       "nahueve": 22,
       "trocoman": 18,
       "catan-lil": 5,

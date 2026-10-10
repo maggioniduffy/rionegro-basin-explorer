@@ -184,7 +184,8 @@
       "endorheic": "Endorheic: drains inland and does not reach the sea.",
       "ignName": "Name from IGN. Match confidence: {confidence, select, high {high} medium {medium} other {low}}.",
       "ignNameReviewed": "Name from IGN, confirmed by hand.",
-      "showStream": "Show the whole {stream}"
+      "showStream": "Show the whole {stream}",
+      "ownerName": "Name set by hand; no IGN line carries it."
     },
     "groups": {
       "course": "Course",
