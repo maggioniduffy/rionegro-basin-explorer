@@ -48,7 +48,7 @@ The committed tiles moved to `public/tiles/nqn/` (byte-identical). Checked in th
       tile request to `/tiles/nqn/<hash>/…` returns 206 with the `immutable` header. The
       `DECISSIONS.md` Phase 8 note says this was never checked on Vercel.
 
-### Step 4 — one Mongo database per region (this commit)
+### Step 4 — one Mongo database per region (`8e968bd`)
 
 `nqn` keeps the `basin-explorer` database, so nothing needs reseeding and `.env.local` /
 Vercel keep `MONGODB_DB=basin-explorer` (now the base name). Other regions will use
