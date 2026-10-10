@@ -59,8 +59,39 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("endorheic land / zonas endorreicas");
   });
 
-  it("contains no numbers of three or more digits (no areas or lengths)", () => {
-    expect(prompt).not.toMatch(/\d{3,}/);
+  it("contains none of the seeded lengths or areas", () => {
+    const values = new Set<number>();
+    for (const doc of [...docs.rivers, ...docs.subbasins] as Array<{
+      lengthKm?: number;
+      areaKm2?: number;
+      mouth?: { uplandKm2?: number };
+    }>)
+      for (const v of [doc.lengthKm, doc.areaKm2, doc.mouth?.uplandKm2])
+        if (typeof v === "number" && v >= 100) values.add(v);
+    expect(values.size).toBeGreaterThan(0);
+    const bare = (text: string) => text.replace(/[\d.]*\d/g, (n) => ` ${n} `);
+    const numbers = new Set(
+      bare(prompt)
+        .split(/\s+/)
+        .filter((w) => /^[\d.]+$/.test(w)),
+    );
+    for (const v of values) {
+      expect(numbers.has(String(Math.round(v)))).toBe(false);
+      expect(numbers.has(v.toFixed(1))).toBe(false);
+    }
+  });
+
+  it("describes the four filter types with examples", () => {
+    for (const type of ["regime", "regulated", "within", "threshold"])
+      expect(prompt).toContain(`- ${type}:`);
+    expect(prompt).toContain('"filters":[{"type":"regime","value":"perennial"');
+    expect(prompt).toContain(
+      '{"type":"threshold","value":null,"slug":null,"metric":"length","op":"gt","number":100}',
+    );
+    expect(prompt).not.toMatch(
+      /permanente más corto" -> \{"action":"unsupported"/,
+    );
+    expect(prompt).toContain('"filters":null');
   });
 
   it("leaves streams out and names the language", () => {
