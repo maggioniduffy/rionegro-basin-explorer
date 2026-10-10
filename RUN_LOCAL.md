@@ -167,7 +167,7 @@ flag exactly the six per-region records listed in `regions/cba/README.md`.
 - [ ] Nothing to run. `npm run pipeline:<step> -- --region cba` fails fast for now: Córdoba's
       configs don't exist yet (Phase R2–R3).
 
-### Step 8 — docs (this commit)
+### Step 8 — docs (`baf332c`)
 
 `CLAUDE.md` has a "Regions" section (known vs served, routing, what is per region, the
 no-silent-fallback rule); both READMEs, `PLAN.md`'s layout and the `data-inspector` agent
