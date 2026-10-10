@@ -33,7 +33,7 @@ and the other region configs not yet committed must be redone in `regions/nqn/`.
   ```
 - [ ] `npm run check`: the two DuckDB `spatial` tests that fail in the cloud should pass here.
 
-### Step 3 — tiles per region in `public/tiles/<region>/` (this commit)
+### Step 3 — tiles per region in `public/tiles/<region>/` (`6c3f8c3`)
 
 The committed tiles moved to `public/tiles/nqn/` (byte-identical). Checked in the cloud with
 `next build` + `next start`: `/tiles/nqn/<hash>/rivers.pmtiles` answers 206 with
