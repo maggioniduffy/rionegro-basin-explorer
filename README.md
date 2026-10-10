@@ -24,9 +24,10 @@ Inspired by Amazon Basin Explorer.
 - IGN names and detail lines, lakes and reservoirs, dams, and OSM localities.
 - Search by name (typos and missing accents tolerated), or by a HydroRIVERS `HYRIV_ID`. Every
   view can be shared by its URL.
-- **Ask box:** type a question ("cuenca del Neuquén", "biggest tributary of the Limay") and the map
-  opens the river, sub-basin or stream it names. An LLM only picks an id from the catalog; it never
-  answers or shows numbers.
+- **Ask in the search bar:** type a question ("Which is longer, Caleufú or Agrio?", "longest
+  tributary of the Limay") and a card under the bar answers it with values read from the data, their
+  source and the modeled-data caveat. An LLM only picks the rivers and the measure; it never writes
+  numbers.
 - km/mi toggle, dark/light theme, minimap, PNG snapshot export, mobile bottom sheet.
 
 > **Modeled data.** HydroATLAS values are modeled estimates, each for its own period. Discharge is
@@ -131,9 +132,10 @@ interfaz está en español e inglés. Inspirado en Amazon Basin Explorer.
 - Nombres y líneas de detalle del IGN, lagos y embalses, represas y localidades de OSM.
 - Búsqueda por nombre (tolera errores de tipeo y tildes faltantes) o por `HYRIV_ID` de
   HydroRIVERS. Cada vista se puede compartir con su URL.
-- **Caja de preguntas:** escribí una pregunta ("cuenca del Neuquén", "el afluente más grande del
-  Limay") y el mapa abre el río, la subcuenca o el arroyo que nombra. Un LLM solo elige un id del
-  catálogo; nunca responde ni muestra números.
+- **Preguntas en la barra de búsqueda:** escribí una pregunta ("¿Qué río es más largo, Caleufú o
+  Agrio?", "el afluente más largo del Limay") y una tarjeta bajo la barra la responde con valores
+  leídos de los datos, su fuente y la advertencia de datos modelados. Un LLM solo elige los ríos y la
+  medida; nunca escribe números.
 - Unidades km/mi, tema oscuro/claro, minimapa, exportación a PNG y panel inferior en móvil.
 
 > **Datos modelados.** Los valores de HydroATLAS son estimaciones modeladas, cada una de su propio
