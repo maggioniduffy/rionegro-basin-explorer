@@ -65,7 +65,7 @@ Vercel keep `MONGODB_DB=basin-explorer` (now the base name). Other regions will 
       Give it `read@basin-explorer-cba` too (Atlas → Database Access → edit user), or switch it to
       Atlas's "Only read any database" role. Then run `npm run atlas:check -- --region cba`.
 
-### Step 5a — queries and the ask box take a region (this commit)
+### Step 5a — queries and the ask box take a region (`4e2d254`)
 
 Every data query, the ask catalog (one in-memory catalog per region) and the ask cache key
 (`ask:v2:<region>:…`) take a region; the routes still pass `nqn`. The cache key format
