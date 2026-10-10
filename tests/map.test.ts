@@ -116,6 +116,7 @@ describe("selectionFilter", () => {
 
 describe("buildStyle with the IGN layers", () => {
   const style = buildStyle({
+    region: "nqn",
     origin: "http://localhost",
     dataAttribution: "",
     theme: "dark",

@@ -3,7 +3,8 @@
 import { type GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
-import { mapConfig, toLngLatBounds } from "@/lib/map/config";
+import { useRegion } from "@/components/RegionProvider";
+import { mapConfigFor, toLngLatBounds } from "@/lib/map/config";
 import { initMaplibre } from "@/lib/map/init";
 import { onMainMap } from "@/lib/map/main-map";
 import {
@@ -26,16 +27,19 @@ import { useMapStore } from "@/lib/store";
 export default function Minimap() {
   const t = useTranslations("options.minimap");
   const container = useRef<HTMLDivElement>(null);
+  const region = useRegion();
 
   useEffect(() => {
     const el = container.current;
     if (!el) return;
     initMaplibre();
+    const mapConfig = mapConfigFor(region);
     let mini: MapLibreMap;
     try {
       mini = new MapLibreMap({
         container: el,
         style: buildMinimapStyle({
+          region,
           origin: window.location.origin,
           theme: useMapStore.getState().theme,
         }),
@@ -134,7 +138,7 @@ export default function Minimap() {
       main?.off("move", showView);
       mini.remove();
     };
-  }, []);
+  }, [region]);
 
   return (
     // MapLibre's CSS sets position: relative on its container and beats Tailwind's

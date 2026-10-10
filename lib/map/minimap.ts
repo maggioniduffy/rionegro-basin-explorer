@@ -1,5 +1,6 @@
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
-import { TILE_PATHS } from "./config";
+import type { RegionId } from "@/regions";
+import { tilePaths } from "./config";
 import { FLOW_STYLE, THEME_COLORS, type Theme } from "./style";
 
 export const MINIMAP_VIEW_SOURCE = "view";
@@ -120,6 +121,7 @@ export function viewPolygon(
  * No imagery, so it adds no requests to the imagery provider.
  */
 export function buildMinimapStyle(o: {
+  region: RegionId;
   origin: string;
   theme: Theme;
 }): StyleSpecification {
@@ -129,7 +131,7 @@ export function buildMinimapStyle(o: {
     sources: {
       rivers: {
         type: "vector",
-        url: `pmtiles://${o.origin}${TILE_PATHS.rivers}`,
+        url: `pmtiles://${o.origin}${tilePaths(o.region).rivers}`,
       },
       [MINIMAP_VIEW_SOURCE]: { type: "geojson", data: viewPolygon(null) },
     },

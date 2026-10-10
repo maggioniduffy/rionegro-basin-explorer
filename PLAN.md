@@ -173,7 +173,7 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run 
 
 - [~] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace) — configs moved to `regions/nqn/` with the registry `regions/index.ts` (step 1, 2026-10-10)
 - [x] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared (step 2, 2026-10-10; default `nqn`)
-- [~] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region — tiles moved, versioned per region, `tilePaths(region)` (step 3, 2026-10-10); callers still pass the default region until step 5, and `mapConfig` follows with the region provider
+- [x] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region — tiles moved and versioned per region (step 3); the map and minimap read `tilePaths(region)` and `mapConfigFor(region)` from the region provider (step 5c, 2026-10-10)
 - [x] Mongo: one database per region on the same cluster, `getDb(region)`; seed and `atlas:check` take `--region` (step 4, 2026-10-10; routes pass the default region until step 5)
 - [x] Routes and the ask catalog, LLM cache key and rate limit read the request's region — queries, catalog (one per region) and cache key take it (step 5a, 2026-10-10); the routes read it from `app/[region]` since 5b. The rate limit stays per IP across regions (one LLM quota)
 - [x] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn` (step 5b, 2026-10-10)

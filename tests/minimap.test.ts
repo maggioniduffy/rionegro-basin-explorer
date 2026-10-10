@@ -35,6 +35,7 @@ describe("viewPolygon", () => {
 
 describe("buildMinimapStyle", () => {
   const style = buildMinimapStyle({
+    region: "nqn",
     origin: "http://localhost:3000",
     theme: "dark",
   });

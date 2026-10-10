@@ -7,11 +7,12 @@ import type {
 import {
   IMAGERY_MAXZOOM,
   MASK_LEVEL_COUNT,
-  mapConfig,
-  TILE_PATHS,
+  mapConfigFor,
+  tilePaths,
 } from "./config";
 import type { LayerVisibility, ViewMode } from "../store";
 import type { Selection } from "../url-state";
+import type { RegionId } from "@/regions";
 import { maskLayerOpacities, maskOpacities } from "./mask";
 import { THEME_TOKENS, type Theme } from "../theme-tokens";
 
@@ -288,6 +289,8 @@ function reachWidth(scale: number, extra = 0): ExpressionSpecification {
 }
 
 export interface StyleOptions {
+  /** The region whose tiles and extent the map shows. */
+  region: RegionId;
   /** Absolute origin for the pmtiles:// URLs, e.g. window.location.origin. */
   origin: string;
   imageryUrl?: string;
@@ -306,7 +309,8 @@ export interface StyleOptions {
 export function buildStyle(o: StyleOptions): StyleSpecification {
   const { mask, outline, lake } = THEME_COLORS[o.theme];
   // Everything outside the basin is always masked, so no imagery is needed there.
-  const { xmin, ymin, xmax, ymax } = mapConfig.basinBbox;
+  const { xmin, ymin, xmax, ymax } = mapConfigFor(o.region).basinBbox;
+  const tiles = tilePaths(o.region);
   const opacities = maskLayerOpacities(o.visibleLand, MASK_LEVEL_COUNT);
 
   const layers: LayerSpecification[] = [
@@ -577,18 +581,18 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
         : {}),
       rivers: {
         type: "vector",
-        url: `pmtiles://${o.origin}${TILE_PATHS.rivers}`,
+        url: `pmtiles://${o.origin}${tiles.rivers}`,
         attribution: o.dataAttribution,
       },
-      mask: { type: "vector", url: `pmtiles://${o.origin}${TILE_PATHS.mask}` },
+      mask: { type: "vector", url: `pmtiles://${o.origin}${tiles.mask}` },
       subbasins: {
         type: "vector",
-        url: `pmtiles://${o.origin}${TILE_PATHS.subbasins}`,
+        url: `pmtiles://${o.origin}${tiles.subbasins}`,
       },
-      ign: { type: "vector", url: `pmtiles://${o.origin}${TILE_PATHS.ign}` },
+      ign: { type: "vector", url: `pmtiles://${o.origin}${tiles.ign}` },
       localities: {
         type: "vector",
-        url: `pmtiles://${o.origin}${TILE_PATHS.localities}`,
+        url: `pmtiles://${o.origin}${tiles.localities}`,
       },
     },
     layers,

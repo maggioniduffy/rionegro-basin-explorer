@@ -1,5 +1,6 @@
 import { z } from "zod";
-import raw from "../../regions/nqn/map.config.json";
+import { readFileSync } from "node:fs";
+import { regionFile } from "./paths";
 
 const byStrahler = z.record(z.string(), z.number());
 
@@ -39,8 +40,10 @@ const schema = z.object({
 
 export type MapConfig = z.infer<typeof schema>;
 
-/** regions/nqn/map.config.json, validated. */
-export const mapConfig: MapConfig = schema.parse(raw);
+/** regions/<region>/map.config.json of the step's --region, validated. */
+export const mapConfig: MapConfig = schema.parse(
+  JSON.parse(readFileSync(regionFile("map.config.json"), "utf8")),
+);
 
 /** Zoom at which a reach of this Strahler order first appears. */
 export function reachMinzoom(config: MapConfig, strahler: number): number {

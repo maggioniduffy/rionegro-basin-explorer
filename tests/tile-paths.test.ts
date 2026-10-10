@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { parseTilesVersions, tilePaths } from "@/lib/map/config";
+import {
+  MAP_CONFIG_REGIONS,
+  MASK_LEVEL_COUNT,
+  mapConfigFor,
+  parseTilesVersions,
+  tilePaths,
+} from "@/lib/map/config";
+import { REGION_IDS } from "@/regions";
 
 describe("tilePaths", () => {
   it("puts the region and its tiles version in the path", () => {
@@ -18,5 +25,15 @@ describe("parseTilesVersions", () => {
     expect(parseTilesVersions('{"nqn":"abc"}')).toEqual({ nqn: "abc" });
     expect(parseTilesVersions(undefined)).toEqual({});
     expect(parseTilesVersions("not json")).toEqual({});
+  });
+});
+
+describe("map configs", () => {
+  it("exist for every region, each with the shared number of Visible Land levels", () => {
+    expect([...MAP_CONFIG_REGIONS].sort()).toEqual([...REGION_IDS].sort());
+    for (const region of REGION_IDS)
+      expect(mapConfigFor(region).mask.baseHalfWidthKm.length + 1).toBe(
+        MASK_LEVEL_COUNT,
+      );
   });
 });

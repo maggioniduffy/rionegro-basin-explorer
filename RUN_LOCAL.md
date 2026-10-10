@@ -95,3 +95,19 @@ icons, tiles and the MapLibre worker untouched, the OG image is built per region
 - [ ] After the Vercel deploy: open the landing, the map, `/attributions` and a shared link
       such as `/?r=limay`; check `/api/health` returns `{"ok":true}`; share the landing URL
       in a link-preview tool (or check `og:image` in the page source) to see the OG image.
+
+### Step 5c — the map reads its region on the client (this commit)
+
+`app/[region]/layout.tsx` provides the region (`components/RegionProvider.tsx`); the main
+map and the minimap take their extent, bounds and tile URLs from it (`mapConfigFor`,
+`tilePaths`). `pipeline/lib/map-config.ts` now reads `regions/<--region>/map.config.json`.
+Every region must keep the same number of Visible Land levels (a test checks it).
+Not checked in a browser in the cloud (project rule: no Chromium runs unless asked).
+
+- [ ] `npm run dev`, open `/map`: the map opens on the basin, can't pan past the mask edge,
+      draws every layer, and the minimap (desktop, Display panel) shows the basin and follows
+      the view. The browser's Network tab shows tiles from `/tiles/nqn/<hash>/…` (`dev` in
+      place of the hash under `npm run dev` is expected only if `next.config.ts` didn't run;
+      normally it shows the hash).
+- [ ] `npm run pipeline:mask -- --region nqn` and `npm run pipeline:tiles -- --region nqn`
+      still run; `git status public/tiles` shows no change.

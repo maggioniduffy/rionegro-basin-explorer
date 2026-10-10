@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { RegionProvider } from "@/components/RegionProvider";
 import { isRegionId, REGION_IDS } from "@/regions";
 
 /**
@@ -15,6 +16,7 @@ export default async function RegionLayout({
   children,
   params,
 }: LayoutProps<"/[region]">) {
-  if (!isRegionId((await params).region)) notFound();
-  return children;
+  const { region } = await params;
+  if (!isRegionId(region)) notFound();
+  return <RegionProvider region={region}>{children}</RegionProvider>;
 }

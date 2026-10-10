@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   MAP_MAXZOOM,
   MASK_LEVEL_COUNT,
-  mapConfig,
+  mapConfigFor,
   toLngLatBounds,
 } from "@/lib/map/config";
 import { maskLayerOpacities } from "@/lib/map/mask";
@@ -56,6 +56,7 @@ import {
   THEME_COLORS,
   reachFeatureSelection,
 } from "@/lib/map/style";
+import { useRegion } from "@/components/RegionProvider";
 import { initMaplibre } from "@/lib/map/init";
 import { setMainMap } from "@/lib/map/main-map";
 import { SnapshotButton } from "./SnapshotButton";
@@ -320,6 +321,7 @@ export default function MapView() {
   // Read by the map-creating effect, which must not depend on `t`: `t` changes on a
   // locale switch, and the map should survive that (only its labels change).
   const tRef = useRef(t);
+  const region = useRegion();
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   // Client-only component (ssr: false), so document is available here.
@@ -337,6 +339,7 @@ export default function MapView() {
     if (!el || !supported) return;
     initMaplibre();
     const initial = useMapStore.getState();
+    const mapConfig = mapConfigFor(region);
     const link = (href: string, text: string) =>
       `<a href="${href}" target="_blank" rel="noopener">${escapeHtml(text)}</a>`;
 
@@ -345,6 +348,7 @@ export default function MapView() {
       map = new MapLibreMap({
         container: el,
         style: buildStyle({
+          region,
           origin: window.location.origin,
           imageryUrl: process.env.NEXT_PUBLIC_IMAGERY_TILE_URL || undefined,
           imageryAttribution: process.env.NEXT_PUBLIC_IMAGERY_ATTRIBUTION,
@@ -511,7 +515,7 @@ export default function MapView() {
       map.remove();
       mapRef.current = null;
     };
-  }, [supported]);
+  }, [supported, region]);
 
   if (!supported) {
     return (

@@ -1,8 +1,13 @@
-import config from "@/regions/nqn/map.config.json";
+import nqnMap from "@/regions/nqn/map.config.json";
 import { DEFAULT_REGION, type RegionId } from "@/regions";
 
-/** Shared with the pipeline (regions/nqn/map.config.json); see its $comment. */
-export const mapConfig = config;
+/** Each region's regions/<id>/map.config.json, shared with the pipeline; see its $comment. */
+const MAP_CONFIGS: Record<RegionId, typeof nqnMap> = { nqn: nqnMap };
+
+export const mapConfigFor = (region: RegionId) => MAP_CONFIGS[region];
+
+/** Ids of every region with a map config (for tests). */
+export const MAP_CONFIG_REGIONS = Object.keys(MAP_CONFIGS) as RegionId[];
 
 type Bbox = { xmin: number; ymin: number; xmax: number; ymax: number };
 export const toLngLatBounds = (
@@ -12,8 +17,13 @@ export const toLngLatBounds = (
   [b.xmax, b.ymax],
 ];
 
-/** Visible Land levels: one per buffer width, plus the whole basin. */
-export const MASK_LEVEL_COUNT = config.mask.baseHalfWidthKm.length + 1;
+/**
+ * Visible Land levels: one per buffer width, plus the whole basin. The slider and the mask
+ * layers are built once for every region, so every region has the same number of levels
+ * (widths may differ; tests/tile-paths.test.ts checks the count).
+ */
+export const MASK_LEVEL_COUNT =
+  MAP_CONFIGS[DEFAULT_REGION].mask.baseHalfWidthKm.length + 1;
 
 /**
  * Content hash of each region's public/tiles/<region>/, set at build time (next.config.ts).
@@ -48,9 +58,6 @@ export function tilePaths(region: RegionId, versions = TILES_VERSIONS) {
     localities: `${base}/localities.pmtiles`,
   } as const;
 }
-
-/** The default region's tiles, until the map reads its region (PLAN.md R1, step 5). */
-export const TILE_PATHS = tilePaths(DEFAULT_REGION);
 
 /** EOX Sentinel-2 tiles are ~10 m imagery; above this MapLibre overzooms. */
 export const IMAGERY_MAXZOOM = 15;
