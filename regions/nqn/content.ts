@@ -35,3 +35,5 @@ export const nqnContent: RegionContent = {
 "arroyo Foo" (not in the lists) -> {"action":"search","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":"arroyo Foo","filters":null}`,
   },
 };
+
+export default nqnContent;

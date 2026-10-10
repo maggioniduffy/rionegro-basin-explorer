@@ -27,8 +27,10 @@ export function proxy(request: NextRequest) {
       headers.set(REGION_HEADER, prefix);
       return NextResponse.next({ request: { headers } });
     }
-    const url = request.nextUrl.clone();
     const region = regionFromHost(request.headers.get("host"));
+    // A region that exists in the pipeline but has no app content yet (e.g. cba).
+    if (!isRegionId(region)) return new NextResponse(null, { status: 404 });
+    const url = request.nextUrl.clone();
     url.pathname = pathname === "/" ? `/${region}` : `/${region}${pathname}`;
     headers.set(REGION_HEADER, region);
     return NextResponse.rewrite(url, { request: { headers } });

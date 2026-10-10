@@ -1,9 +1,9 @@
 import path from "node:path";
 import {
   DEFAULT_REGION,
-  isRegionId,
-  REGION_IDS,
-  type RegionId,
+  isKnownRegionId,
+  KNOWN_REGION_IDS,
+  type KnownRegionId,
 } from "../../regions";
 
 /** Repo root, resolved from this file so steps work from any cwd. */
@@ -20,23 +20,23 @@ export const ROOT = path.resolve(import.meta.dirname, "../..");
 export function parseRegionArg(
   argv: readonly string[],
   env: Readonly<Record<string, string | undefined>> = process.env,
-): RegionId {
+): KnownRegionId {
   const i = argv.findIndex(
     (a) => a === "--region" || a.startsWith("--region="),
   );
   if (i === -1) {
     if (env.VITEST) return DEFAULT_REGION;
     throw new Error(
-      `pass --region <id> (one of ${REGION_IDS.join(", ")}), e.g. npm run <script> -- --region ${DEFAULT_REGION}`,
+      `pass --region <id> (one of ${KNOWN_REGION_IDS.join(", ")}), e.g. npm run <script> -- --region ${DEFAULT_REGION}`,
     );
   }
   const arg = argv[i] ?? "";
   const value = arg.includes("=")
     ? arg.slice(arg.indexOf("=") + 1)
     : argv[i + 1];
-  if (!isRegionId(value))
+  if (!isKnownRegionId(value))
     throw new Error(
-      `--region must be one of ${REGION_IDS.join(", ")} (got ${value ?? "nothing"})`,
+      `--region must be one of ${KNOWN_REGION_IDS.join(", ")} (got ${value ?? "nothing"})`,
     );
   return value;
 }

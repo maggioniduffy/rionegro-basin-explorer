@@ -17,10 +17,14 @@ describe("parseRegionArg", () => {
     expect(parseRegionArg(["node", "step.ts", "--region=nqn"])).toBe("nqn");
   });
 
+  it("accepts a region the app doesn't serve yet", () => {
+    expect(parseRegionArg(["node", "step.ts", "--region", "cba"])).toBe("cba");
+  });
+
   it("rejects unknown or missing ids", () => {
     expect(() =>
       parseRegionArg(["node", "step.ts", "--region", "xyz"]),
-    ).toThrow(/--region must be one of nqn/);
+    ).toThrow(/--region must be one of nqn, cba/);
     expect(() => parseRegionArg(["node", "step.ts", "--region"])).toThrow(
       /got nothing/,
     );

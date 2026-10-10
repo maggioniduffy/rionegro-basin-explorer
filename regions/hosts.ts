@@ -1,22 +1,24 @@
-import { DEFAULT_REGION, isRegionId, type RegionId } from "./index";
+import { DEFAULT_REGION, isKnownRegionId, type KnownRegionId } from "./index";
 
 /**
  * Hosts whose name doesn't start with a region id (e.g. a `*.vercel.app` alias per region,
  * decided later: DECISSIONS.md, Multi-region). Lowercase, without port.
  */
-const HOST_REGIONS: Readonly<Record<string, RegionId>> = {};
+const HOST_REGIONS: Readonly<Record<string, KnownRegionId>> = {};
 
 /**
- * The region a host serves: the table above, else a first label that is a region id
+ * The region a host asks for: the table above, else a first label that is a known region id
  * (`cba.example.com`, `cba.localhost:3000`), else the default region, so today's
  * rionegrobasinexplorer.vercel.app and plain localhost keep serving the Río Negro basin.
+ * A known region that isn't served yet (regions/index.ts REGION_IDS) is returned as is;
+ * proxy.ts answers 404 for it rather than showing another region.
  */
-export function regionFromHost(host: string | null): RegionId {
+export function regionFromHost(host: string | null): KnownRegionId {
   const name = (host ?? "").toLowerCase().replace(/:\d+$/, "");
   const mapped = HOST_REGIONS[name];
   if (mapped) return mapped;
   const label = name.split(".")[0];
-  return isRegionId(label) ? label : DEFAULT_REGION;
+  return isKnownRegionId(label) ? label : DEFAULT_REGION;
 }
 
 /**

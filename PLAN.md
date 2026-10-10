@@ -178,7 +178,9 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run 
 - [x] Routes and the ask catalog, LLM cache key and rate limit read the request's region — queries, catalog (one per region) and cache key take it (step 5a, 2026-10-10); the routes read it from `app/[region]` since 5b. The rate limit stays per IP across regions (one LLM quota)
 - [x] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn` (step 5b, 2026-10-10)
 - [x] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/` — strings (step 6a: `regions/nqn/messages/`) and content (step 6b: `regions/nqn/content.ts`, landing sample, OG shapes, landing image), 2026-10-10. The icon (Limay and Neuquén converging) stays the shared app logo
-- **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds.
+- [x] Stub `cba` region: accepted by `--region` (`KNOWN_REGION_IDS`), its own database name, not served (`cba.<host>` → 404); `regions/cba/README.md` lists what serving it needs (step 7, 2026-10-10)
+- [x] `--region` required on every pipeline step and data script (owner, 2026-10-10)
+- **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds. Cloud checks are done; the local ones (pipeline re-run, browser, e2e, Vercel) are in [RUN_LOCAL.md](RUN_LOCAL.md).
 
 ### Phase R2 — Córdoba gate
 

@@ -154,3 +154,15 @@ touching any file. Only the test runner falls back to `nqn`. Commands above alre
 
 - [ ] Any shell alias, script or note of yours that runs these without `--region nqn` needs it
       added.
+
+### Step 7 — `cba` stub: known to the pipeline, not served (this commit)
+
+`regions/index.ts` now has `KNOWN_REGION_IDS` (`nqn`, `cba`: what `--region` accepts) and
+`REGION_IDS` (`nqn`: what the app serves). `cba.<any host>` answers 404 instead of showing
+Río Negro. Checked in the cloud: `cba.localhost` and `cba.example.com` → 404 for pages and
+API, `localhost` and `nqn.localhost` → 200; adding `cba` to `REGION_IDS` makes TypeScript
+flag exactly the six per-region records listed in `regions/cba/README.md`.
+`npm run landing:sample -- --region nqn` still reproduces the committed file.
+
+- [ ] Nothing to run. `npm run pipeline:<step> -- --region cba` fails fast for now: Córdoba's
+      configs don't exist yet (Phase R2–R3).

@@ -7,6 +7,10 @@ describe("regionFromHost", () => {
     expect(regionFromHost("NQN.localhost:3000")).toBe("nqn");
   });
 
+  it("returns a known region that isn't served yet as is (proxy.ts answers 404)", () => {
+    expect(regionFromHost("cba.localhost:3000")).toBe("cba");
+  });
+
   it("serves the default region for any other host", () => {
     expect(regionFromHost("rionegrobasinexplorer.vercel.app")).toBe("nqn");
     expect(regionFromHost("localhost:3000")).toBe("nqn");
