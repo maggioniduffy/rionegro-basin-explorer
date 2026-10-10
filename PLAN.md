@@ -109,7 +109,7 @@ Decisions, figures and open points: [DECISSIONS.md](DECISSIONS.md#phase-5-2026-1
 
 Decisions, figures and the AIC comparison: [DECISSIONS.md](DECISSIONS.md#phase-6-2026-10-02).
 
-## Phase 7 — Extras ✅
+## Phase 7 — Extras
 
 - [x] km/mi toggle (panels and scale bar)
 - [x] Minimap (top of the Display panel; desktop only)
@@ -121,7 +121,12 @@ Decisions, figures and the AIC comparison: [DECISSIONS.md](DECISSIONS.md#phase-6
 - [x] Minimap follows the view: zooms in when the main map is close in, backs off when it is zoomed out past the basin
 - [x] Land hidden by the Visible Land mask shows dimmed (translucent mask) instead of disappearing; outside the basin stays opaque
 
+- [~] **Ask box (EN/ES):** a typed question resolves to a map action (select a river or sub-basin, or search). Fuzzy name match first (Fuse.js over an in-memory catalog, no LLM); otherwise one LLM call (Groq by default, `lib/llm.ts`) that may only return a catalog id, validated with Zod. `/api/ask` with a two-tier cache and a per-IP rate limit (Upstash Redis free tier). `AskBox` in the map header
+  - Code, tests and docs done (2026-10-10): 305 unit/route tests and `e2e/ask.spec.ts` (3 tests, fuzzy path) pass. Left for the owner: create the Upstash database and Groq key (check Upstash overage terms, Groq's training clause and free limits, turn on Zero Data Retention), set the env on Vercel, and try a few sentence questions live
+  - **Done when:** fuzzy search resolves typo/accent variants without calling the LLM; sentence-style queries ("show me the biggest tributary of the Limay") resolve to a valid slug or `unsupported`; an invented slug from the LLM can never reach the client; rate limit and cache verified by tests; `npm run check` and `npm run test:e2e` pass; all new strings exist in both locales.
+
 Decisions: [DECISSIONS.md](DECISSIONS.md#phase-7-2026-10-02).
+Ask box: [DECISSIONS.md](DECISSIONS.md#phase-7-ask-box-2026-10-10).
 
 ## Phase 8 — Release
 

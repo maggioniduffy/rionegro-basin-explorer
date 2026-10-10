@@ -18,6 +18,8 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 | OpenStreetMap                          | River name evidence (Phase 1); localities (Phase 7); reservoirs, dams (later) | ODbL 1.0                                                               | Yes (share-alike on the database)                  | 2026-09-30                                  | 2026-09-30 (Overpass, basin bbox) |
 | Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                                    | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license      | Only with an EOX commercial license                | 2026-09-29                                  | n/a (tiles)                       |
 | Imagery: Esri World Imagery            | Candidate satellite basemap                                                   | **Not verified** (Esri terms of use)                                   | Unknown                                            | —                                           | n/a (tiles)                       |
+| LLM: Groq (`openai/gpt-oss-20b`)       | Ask box: routes a question to an existing id (no data shown)                  | Groq terms (service, not data)                                         | n/a                                                | 2026-10-10 (training clause not verified)   | n/a (API)                         |
+| Rate limit/cache: Upstash Redis        | Ask box rate limit and shared cache                                           | Upstash terms (service, not data)                                      | n/a                                                | 2026-10-10 (overage terms not stated)       | n/a (API)                         |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
 
@@ -271,3 +273,41 @@ The tile URL comes from `NEXT_PUBLIC_IMAGERY_TILE_URL`, so the provider can be s
   credits.
 - To check: developers.arcgis.com basemap attribution docs and the service's terms of use, before
   Phase 2.
+
+## Services for the ask box (Phase 7, 2026-10-10)
+
+Not data sources: these services route a typed question to an id that already exists in Mongo.
+No value from them is ever shown. Terms were read on the providers' pages on 2026-10-10
+(license-checker agent); the points marked **not verified** need the owner's console.
+
+### Groq (default LLM, `LLM_PROVIDER=groq`, model `openai/gpt-oss-20b`)
+
+- Data: "By default, Groq does not retain customer data for inference requests." Logs are kept
+  up to 30 days only for reliability or abuse; Zero Data Retention can be turned on in Data
+  Controls (https://console.groq.com/docs/your-data). Data is stored in US GCP.
+- Training on API inputs: **not verified** (the privacy policy excludes data processed for
+  customers; the services agreement was not read). Check Groq's terms or Trust Center.
+- Free-plan limits: **not verified.** The rate-limits page shows 30 RPM / 1K RPD / 200K TPD for
+  `openai/gpt-oss-20b` under "Developer plan"; check https://console.groq.com/settings/limits.
+- Owner to do: confirm the two points above and turn on Zero Data Retention.
+
+### Google Gemini API (optional, `LLM_PROVIDER=gemini`, model `gemini-3.5-flash-lite`)
+
+- Free (unpaid) tier: Google "uses the content you submit to the Services and any generated
+  responses to provide, improve, and develop" its products, and human reviewers may read them
+  (https://ai.google.dev/gemini-api/terms).
+- **Not usable for this site on the free tier:** the same terms say "You may use only Paid
+  Services when making API Clients available to users in the European Economic Area" (also UK
+  and Switzerland). A public site gets EU visitors, so Gemini needs a paid key (recurring cost,
+  rule 8) or must stay off.
+- Free-tier RPM/RPD: **not verified** (only shown in Google AI Studio).
+
+### Upstash Redis (rate limit and shared cache for `/api/ask`)
+
+- Free tier: 250 MB, 500K commands per month, 1 database, 10 GB bandwidth
+  (https://upstash.com/pricing/redis). Writes are rejected when the store is full.
+- What happens past 500K commands, and whether the free plan needs a card: **not stated.** Check
+  in the console before creating the database. Vercel KV no longer exists; it moved to Upstash via
+  the Vercel Marketplace in December 2024 (https://vercel.com/docs/redis).
+- Stored: hashed client IPs (salted SHA-256) as rate-limit keys and hashed questions as cache keys,
+  never raw IPs or question text.

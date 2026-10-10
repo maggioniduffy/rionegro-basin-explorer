@@ -22,7 +22,11 @@ Inspired by Amazon Basin Explorer.
   order, discharge, flooded area, lakes, population and dam regulation.
 - Sub-basin hierarchy (levels 1–4) with a tree selector and breadcrumbs.
 - IGN names and detail lines, lakes and reservoirs, dams, and OSM localities.
-- Search by name, or by a HydroRIVERS `HYRIV_ID`. Every view can be shared by its URL.
+- Search by name (typos and missing accents tolerated), or by a HydroRIVERS `HYRIV_ID`. Every
+  view can be shared by its URL.
+- **Ask box:** type a question ("cuenca del Neuquén", "biggest tributary of the Limay") and the map
+  opens the river, sub-basin or stream it names. An LLM only picks an id from the catalog; it never
+  answers or shows numbers.
 - km/mi toggle, dark/light theme, minimap, PNG snapshot export, mobile bottom sheet.
 
 > **Modeled data.** HydroATLAS values are modeled estimates, each for its own period. Discharge is
@@ -101,6 +105,11 @@ Data comes from HydroSHEDS (HydroRIVERS, RiverATLAS, HydroBASINS), HydroLAKES, G
 site is **non-commercial**. Full licenses and citations are in
 [pipeline/SOURCES.md](pipeline/SOURCES.md) and on the app's `/attributions` page.
 
+The ask box uses Groq (`openai/gpt-oss-20b`) when `LLM_PROVIDER` is set, with Upstash Redis for the
+rate limit and cache. Free-tier prompts may be logged or used by the provider; Gemini's free tier
+uses prompts to improve Google's products and may not serve EEA/UK/CH users. Details in
+[pipeline/SOURCES.md](pipeline/SOURCES.md#services-for-the-ask-box-phase-7-2026-10-10).
+
 ---
 
 ## Español
@@ -120,7 +129,11 @@ interfaz está en español e inglés. Inspirado en Amazon Basin Explorer.
   de Strahler, caudal, área inundable, lagos, población y regulación por represas.
 - Jerarquía de subcuencas (niveles 1 a 4), con selector en árbol y breadcrumb.
 - Nombres y líneas de detalle del IGN, lagos y embalses, represas y localidades de OSM.
-- Búsqueda por nombre o por `HYRIV_ID` de HydroRIVERS. Cada vista se puede compartir con su URL.
+- Búsqueda por nombre (tolera errores de tipeo y tildes faltantes) o por `HYRIV_ID` de
+  HydroRIVERS. Cada vista se puede compartir con su URL.
+- **Caja de preguntas:** escribí una pregunta ("cuenca del Neuquén", "el afluente más grande del
+  Limay") y el mapa abre el río, la subcuenca o el arroyo que nombra. Un LLM solo elige un id del
+  catálogo; nunca responde ni muestra números.
 - Unidades km/mi, tema oscuro/claro, minimapa, exportación a PNG y panel inferior en móvil.
 
 > **Datos modelados.** Los valores de HydroATLAS son estimaciones modeladas, cada una de su propio
@@ -199,3 +212,9 @@ Los datos vienen de HydroSHEDS (HydroRIVERS, RiverATLAS, HydroBASINS), HydroLAKE
 (Argentina) y OpenStreetMap. Las imágenes satelitales son EOxCloudless 2024 (CC BY-NC-SA 4.0), por
 lo que el sitio es **no comercial**. Las licencias y citas completas están en
 [pipeline/SOURCES.md](pipeline/SOURCES.md) y en la página `/attributions` de la app.
+
+La caja de preguntas usa Groq (`openai/gpt-oss-20b`) cuando `LLM_PROVIDER` está definido, y Upstash
+Redis para el límite de pedidos y la caché. En los planes gratuitos, el proveedor puede registrar o
+usar las preguntas; el plan gratuito de Gemini las usa para mejorar los productos de Google y no
+puede atender a usuarios del EEE, Reino Unido o Suiza. Detalles en
+[pipeline/SOURCES.md](pipeline/SOURCES.md#services-for-the-ask-box-phase-7-2026-10-10).
