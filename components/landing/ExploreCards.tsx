@@ -1,10 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import sample from "@/app/landing-sample.json";
 import { Icon, type IconName } from "../Icon";
 import { SampleValue } from "./SampleValue";
-import basin from "@/public/landing/basin.png";
+import type { RegionId } from "@/regions";
+import { LANDING_SAMPLES } from "@/regions/generated";
+import { LANDING_IMAGES } from "@/regions/images";
 
 /** Chips shown before the "+N" overflow, as in the sub-basin panel. */
 const CHIPS = 4;
@@ -51,12 +52,13 @@ function MockRow({ label, children }: { label: string; children: ReactNode }) {
 const mockPanel =
   "bg-surface-raised border-line w-full rounded-[10px] border px-4 py-3.5 text-[13px]";
 
-export async function ExploreCards() {
+export async function ExploreCards({ region }: { region: RegionId }) {
+  const basin = LANDING_IMAGES[region];
   const t = await getTranslations("landing");
   const fields = await getTranslations("panel.fields");
   const panel = await getTranslations("panel");
   const controls = await getTranslations("controls");
-  const { river, subbasin } = sample;
+  const { river, subbasin } = LANDING_SAMPLES[region];
   const extra = subbasin.children.length - CHIPS;
 
   return (

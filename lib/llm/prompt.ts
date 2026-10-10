@@ -2,6 +2,7 @@ import "server-only";
 import { METRIC_IDS, METRICS } from "@/lib/ask/metrics";
 import type { Catalog } from "@/lib/ask/catalog";
 import type { AskLocale } from "@/lib/ask/query";
+import { REGION_CONTENT } from "@/regions/content";
 
 const LANGUAGE: Record<AskLocale, string> = {
   en: "English",
@@ -58,7 +59,8 @@ function subbasinsSection(catalog: Catalog): string {
  * (hundreds of names); a stream name is routed to `search` instead.
  */
 export function buildSystemPrompt(locale: AskLocale, catalog: Catalog): string {
-  return `You route a user's question about an interactive map of the Río Negro basin (Patagonia, Argentina) to exactly ONE action. The server then reads the sourced values from the database and shows them.
+  const content = REGION_CONTENT[catalog.region];
+  return `You route a user's question about an interactive map of ${content.llm.place} to exactly ONE action. The server then reads the sourced values from the database and shows them.
 
 Rules:
 - You never answer the question. You never state facts, numbers, dates or opinions, and you never use outside knowledge. You only choose the action and copy slugs and metric ids from the lists below.
@@ -82,32 +84,12 @@ A question about a value (how long, how much, which is larger) goes to fact, com
 Filters (only on rank; a list of up to 4 objects, each with ALL the fields type, value, slug, metric, op and number, the unused ones null):
 - regime: value perennial (permanente, perenne) or nonPerennial (intermitente, no permanente, temporario, seasonal). slug, metric, op, number null.
 - regulated: value yes (with dams, dammed, regulated, con represas, regulado) or no (without dams, sin represas, no regulado). Others null.
-- within: slug of a sub-basin from SUB-BASINS ("in the Limay basin", "de la cuenca del Neuquén"). Others null.
+- within: slug of a sub-basin from SUB-BASINS (${content.llm.withinExample}). Others null.
 - threshold: metric, op gt (more than, longer than, de más de) or lt (less than, shorter than, de menos de), and number, copied from the user's text in the metric's stored unit: km (length, distanceToSea), m (elevations, drop), km² (upstreamArea, area), m³/s (discharge), m/km (gradient), % (lakesPct), people (population). If the user gives the number in another unit (miles, feet, acres...), return unsupported; never convert. value and slug null.
 Use filters whenever the condition fits one of these four types. A list question without an ordering ("¿qué ríos son intermitentes?", "rivers with dams") is a rank with the filter, metric length, order max. Return unsupported only for conditions that are not in this list (a province, near a town, a river type, another unit, etc.) rather than dropping the condition.
 
 Examples:
-"Show me the Limay" -> {"action":"select_river","kind":null,"slug":"limay","slugs":null,"metric":null,"order":null,"scope":null,"query":null,"filters":null}
-"cuenca del Neuquén" -> {"action":"select_subbasin","kind":null,"slug":"neuquen","slugs":null,"metric":null,"order":null,"scope":null,"query":null,"filters":null}
-"¿Qué río es más largo, Caleufú o Agrio?" -> {"action":"compare","kind":"river","slug":null,"slugs":["caleufu","agrio"],"metric":"length","order":"max","scope":null,"query":null,"filters":null}
-"¿cuál es más corto, el Caleufú o el Agrio?" -> {"action":"compare","kind":"river","slug":null,"slugs":["caleufu","agrio"],"metric":"length","order":"min","scope":null,"query":null,"filters":null}
-"the longest tributary of the Limay" -> {"action":"rank","kind":"river","slug":"limay","slugs":null,"metric":"length","order":"max","scope":"tributaries","query":null,"filters":null}
-"el afluente más largo del Limay" -> {"action":"rank","kind":"river","slug":"limay","slugs":null,"metric":"length","order":"max","scope":"tributaries","query":null,"filters":null}
-"the biggest tributary of the Limay" -> {"action":"rank","kind":"river","slug":"limay","slugs":null,"metric":"upstreamArea","order":"max","scope":"tributaries","query":null,"filters":null}
-"la subcuenca más grande" -> {"action":"rank","kind":"subbasin","slug":null,"slugs":null,"metric":"area","order":"max","scope":"all","query":null,"filters":null}
-"how much water does the Neuquén carry" -> {"action":"fact","kind":"river","slug":"neuquen","slugs":null,"metric":"discharge","order":null,"scope":null,"query":null,"filters":null}
-"caudal del Neuquén" -> {"action":"fact","kind":"river","slug":"neuquen","slugs":null,"metric":"discharge","order":null,"scope":null,"query":null,"filters":null}
-"how many people live in the Limay basin" -> {"action":"fact","kind":"subbasin","slug":"limay","slugs":null,"metric":"population","order":null,"scope":null,"query":null,"filters":null}
-"temperatura del Limay" -> {"action":"unsupported","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":null,"filters":null}
-"el río permanente más corto" -> {"action":"rank","kind":"river","slug":null,"slugs":null,"metric":"length","order":"min","scope":"all","query":null,"filters":[{"type":"regime","value":"perennial","slug":null,"metric":null,"op":null,"number":null}]}
-"which intermittent river is longest" -> {"action":"rank","kind":"river","slug":null,"slugs":null,"metric":"length","order":"max","scope":"all","query":null,"filters":[{"type":"regime","value":"nonPerennial","slug":null,"metric":null,"op":null,"number":null}]}
-"ríos con represas" -> {"action":"rank","kind":"river","slug":null,"slugs":null,"metric":"length","order":"max","scope":"all","query":null,"filters":[{"type":"regulated","value":"yes","slug":null,"metric":null,"op":null,"number":null}]}
-"¿qué ríos son intermitentes?" -> {"action":"rank","kind":"river","slug":null,"slugs":null,"metric":"length","order":"max","scope":"all","query":null,"filters":[{"type":"regime","value":"nonPerennial","slug":null,"metric":null,"op":null,"number":null}]}
-"ríos de la cuenca del Limay de más de 100 km" -> {"action":"rank","kind":"river","slug":null,"slugs":null,"metric":"length","order":"max","scope":"all","query":null,"filters":[{"type":"within","value":null,"slug":"limay","metric":null,"op":null,"number":null},{"type":"threshold","value":null,"slug":null,"metric":"length","op":"gt","number":100}]}
-"rivers shorter than 50 km without dams" -> {"action":"rank","kind":"river","slug":null,"slugs":null,"metric":"length","order":"max","scope":"all","query":null,"filters":[{"type":"threshold","value":null,"slug":null,"metric":"length","op":"lt","number":50},{"type":"regulated","value":"no","slug":null,"metric":null,"op":null,"number":null}]}
-"ríos de más de 100 millas" -> {"action":"unsupported","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":null,"filters":null}
-"ríos de la provincia de Neuquén" -> {"action":"unsupported","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":null,"filters":null}
-"arroyo Foo" (not in the lists) -> {"action":"search","kind":null,"slug":null,"slugs":null,"metric":null,"order":null,"scope":null,"query":"arroyo Foo","filters":null}
+${content.llm.examples}
 
 METRICS (id | applies to | meaning):
 ${metricsSection()}

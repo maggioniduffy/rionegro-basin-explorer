@@ -30,6 +30,7 @@ vi.mock("@google/genai", () => ({
 const { isLlmEnabled, resolveIntent } = await import("@/lib/llm");
 
 const catalog = {
+  region: "nqn",
   docs: {
     rivers: [
       {

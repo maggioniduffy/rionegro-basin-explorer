@@ -8,6 +8,8 @@ vi.mock("server-only", () => ({}));
 const { buildCatalog } = await import("@/lib/ask/catalog");
 const { buildSystemPrompt } = await import("@/lib/llm/prompt");
 const { METRICS, METRIC_IDS } = await import("@/lib/ask/metrics");
+const { REGION_CONTENT } = await import("@/regions/content");
+const { REGION_IDS } = await import("@/regions");
 
 // The real seeded data: data/out is what `npm run seed` loads into Mongo.
 const ndjson = (file: string) =>
@@ -99,5 +101,42 @@ describe("buildSystemPrompt", () => {
     expect(prompt).not.toContain(stream.name);
     expect(buildSystemPrompt("es", catalog)).toContain("Spanish");
     expect(prompt).toContain("English");
+  });
+});
+
+describe("region prompt content", () => {
+  it.each(REGION_IDS)(
+    "%s examples are valid JSON with known slugs",
+    (region) => {
+      const read = (file: string) =>
+        readFileSync(`data/out/${region}/${file}.ndjson`, "utf8")
+          .split("\n")
+          .filter(Boolean)
+          .map((line) => (JSON.parse(line) as { _id: string })._id);
+      const known = new Set([...read("rivers"), ...read("subbasins")]);
+      const lines = REGION_CONTENT[region].llm.examples.split("\n");
+      expect(lines.length).toBeGreaterThan(0);
+      for (const line of lines) {
+        const json = line.slice(line.indexOf(" -> ") + 4);
+        const intent = JSON.parse(json) as {
+          slug: string | null;
+          slugs: string[] | null;
+          filters: { slug: string | null }[] | null;
+        };
+        const slugs = [
+          intent.slug,
+          ...(intent.slugs ?? []),
+          ...(intent.filters ?? []).map((f) => f.slug),
+        ].filter((s): s is string => s !== null);
+        for (const slug of slugs)
+          expect(known, `${slug} in ${line}`).toContain(slug);
+      }
+    },
+  );
+
+  it("names the region's place", () => {
+    expect(prompt).toContain(
+      `an interactive map of ${REGION_CONTENT.nqn.llm.place} to exactly ONE action`,
+    );
   });
 });

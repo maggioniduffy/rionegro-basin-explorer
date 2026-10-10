@@ -141,7 +141,7 @@ Ask box: [DECISSIONS.md](DECISSIONS.md#phase-7-ask-box-2026-10-10).
 - [x] Sample values sourced from `data/out` (`npm run landing:sample`)
 - [x] Map app restyled: header, glass panels, rows, breadcrumb and child chips, view toggle, Visible Land slider; attributions page
 - [x] Lighthouse a11y 1.0 and performance ≥ 0.9 on the landing (local build)
-- [ ] Regenerate `basin.png` from the real map before release
+- [ ] Regenerate `basin.png` (`public/landing/nqn/basin.png`) from the real map before release
 - [x] Restyled panels checked with live data (2026-10-06, after the read-only user was fixed)
 
 Decisions: [DECISSIONS.md](DECISSIONS.md#design-v3-landing-and-app-restyle-2026-10-06).
@@ -171,13 +171,13 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run 
 
 ### Phase R1 — Region refactor, no behavior change
 
-- [~] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace) — configs moved to `regions/nqn/` with the registry `regions/index.ts` (step 1, 2026-10-10)
+- [x] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace) — configs moved to `regions/nqn/` with the registry `regions/index.ts` (step 1, 2026-10-10)
 - [x] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared (step 2, 2026-10-10; default `nqn`)
 - [x] Tiles in `public/tiles/<region>/`; `TILE_PATHS` and `mapConfig` resolved from the region — tiles moved and versioned per region (step 3); the map and minimap read `tilePaths(region)` and `mapConfigFor(region)` from the region provider (step 5c, 2026-10-10)
 - [x] Mongo: one database per region on the same cluster, `getDb(region)`; seed and `atlas:check` take `--region` (step 4, 2026-10-10; routes pass the default region until step 5)
 - [x] Routes and the ask catalog, LLM cache key and rate limit read the request's region — queries, catalog (one per region) and cache key take it (step 5a, 2026-10-10); the routes read it from `app/[region]` since 5b. The rate limit stays per IP across regions (one LLM quota)
 - [x] `proxy.ts` maps host → region (rewrite to `/[region]/…`); local dev via `<region>.localhost`; old `rionegrobasinexplorer.vercel.app` URLs keep working as `nqn` (step 5b, 2026-10-10)
-- [~] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/` — strings done (step 6a, 2026-10-10: `regions/nqn/messages/`, merged per request)
+- [x] Río Negro-specific strings and code (landing, `MapAccessCard`, OG image, icon, LLM prompt examples) move into `regions/nqn/` — strings (step 6a: `regions/nqn/messages/`) and content (step 6b: `regions/nqn/content.ts`, landing sample, OG shapes, landing image), 2026-10-10. The icon (Limay and Neuquén converging) stays the shared app logo
 - **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds.
 
 ### Phase R2 — Córdoba gate

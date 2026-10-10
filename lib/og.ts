@@ -1,4 +1,4 @@
-/** Open Graph image layout, shared by app/opengraph-image.tsx and scripts/og-shapes.ts. */
+/** Open Graph image layout, shared by app/[region]/opengraph-image.tsx and scripts/og-shapes.ts. */
 export const OG_SIZE = { width: 1200, height: 630 };
 
 /** The box the basin map is fitted into, on the right of the image. */

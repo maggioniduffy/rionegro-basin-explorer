@@ -1,21 +1,23 @@
 /**
  * og-shapes — SVG paths of the basin, its lakes and its main rivers for the Open Graph
- * image (app/opengraph-image.tsx), read from public/tiles/nqn/rivers.pmtiles at one zoom.
+ * image (app/[region]/opengraph-image.tsx), read from public/tiles/<region>/rivers.pmtiles at one zoom.
  * No new data: the same tiles the map draws. Coordinates stay in Web Mercator, fitted
  * into the image's map box. Rerun after rebuilding the tiles:
  *
- *   npx tsx scripts/og-shapes.ts
+ *   npx tsx scripts/og-shapes.ts --region <id>    # default nqn
  *
- * Writes app/og-shapes.json and prints its size.
+ * Writes regions/<id>/og-shapes.json and prints its size.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import { VectorTile } from "@mapbox/vector-tile";
 import { PbfReader } from "pbf";
 import { PMTiles, type RangeResponse, type Source } from "pmtiles";
 import { OG_MAP_BOX } from "../lib/og";
+import { parseRegionArg } from "../pipeline/lib/paths";
 
-const TILES = "public/tiles/nqn/rivers.pmtiles";
-const OUT = "app/og-shapes.json";
+const REGION = parseRegionArg(process.argv);
+const TILES = `public/tiles/${REGION}/rivers.pmtiles`;
+const OUT = `regions/${REGION}/og-shapes.json`;
 const ZOOM = 5;
 /** Reaches of this Strahler order and up, as the minimap's overview (MINIMAP_MIN_STRAHLER is 5). */
 const MIN_STRAHLER = 4;

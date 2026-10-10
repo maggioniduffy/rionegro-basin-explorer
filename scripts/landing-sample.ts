@@ -1,22 +1,19 @@
 /**
  * landing-sample — the real values behind the landing's mock panels (components/landing),
  * read from the seed files, so the landing shows no invented numbers (CLAUDE.md rule 2).
- * Rerun after `pipeline:export` or `pipeline:subbasins` changes data/out/nqn (the sample
- * picks Río Negro rivers; per-region samples come with the region content, PLAN.md R1):
+ * Rerun after `pipeline:export` or `pipeline:subbasins` changes data/out/<region>:
  *
- *   npm run landing:sample
+ *   npm run landing:sample -- --region <id>    # default nqn
  *
- * Writes app/landing-sample.json; tests/landing-sample.test.ts fails while it is stale.
+ * The river and sub-basin come from regions/<id>/content.ts (landingSample). Writes
+ * regions/<id>/landing-sample.json; tests/landing-sample.test.ts fails while it is stale.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-
-const OUT = "app/landing-sample.json";
-/** The river in the "Rivers & tributaries" card and the hero card's chip. */
-const RIVER = "limay";
-/** The sub-basin in the "Sub-basins" card. */
-const SUBBASIN = "neuquen";
+import { parseRegionArg } from "../pipeline/lib/paths";
+import type { RegionId } from "../regions";
+import { REGION_CONTENT } from "../regions/content";
 
 interface RiverDoc {
   _id: string;
@@ -52,8 +49,8 @@ export interface LandingSample {
   };
 }
 
-function ndjson<T>(file: string): T[] {
-  return readFileSync(join(process.cwd(), "data/out/nqn", file), "utf8")
+function ndjson<T>(region: RegionId, file: string): T[] {
+  return readFileSync(join(process.cwd(), "data/out", region, file), "utf8")
     .split("\n")
     .filter((line) => line.trim() !== "")
     .map((line) => JSON.parse(line) as T);
@@ -65,9 +62,11 @@ function find<T extends { _id: string }>(docs: T[], id: string): T {
   return doc;
 }
 
-export function buildLandingSample(): LandingSample {
-  const rivers = ndjson<RiverDoc>("rivers.ndjson");
-  const subbasins = ndjson<SubbasinDoc>("subbasins.ndjson");
+export function buildLandingSample(region: RegionId): LandingSample {
+  const { river: RIVER, subbasin: SUBBASIN } =
+    REGION_CONTENT[region].landingSample;
+  const rivers = ndjson<RiverDoc>(region, "rivers.ndjson");
+  const subbasins = ndjson<SubbasinDoc>(region, "subbasins.ndjson");
   const river = find(rivers, RIVER);
   const mouth = find(rivers, river.flowsInto);
   const sub = find(subbasins, SUBBASIN);
@@ -97,6 +96,11 @@ export function buildLandingSample(): LandingSample {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
-  writeFileSync(OUT, `${JSON.stringify(buildLandingSample(), null, 2)}\n`);
+  const region = parseRegionArg(process.argv);
+  const OUT = `regions/${region}/landing-sample.json`;
+  writeFileSync(
+    OUT,
+    `${JSON.stringify(buildLandingSample(region), null, 2)}\n`,
+  );
   console.log(`wrote ${OUT}`);
 }

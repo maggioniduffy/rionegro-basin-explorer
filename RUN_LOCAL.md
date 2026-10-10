@@ -124,3 +124,24 @@ hero and `/attributions` in both languages are unchanged, and the OG image rende
       name a region go in every `regions/<id>/messages/` (a test checks every region has the
       same keys).
 - [ ] `npm run test:e2e`: the specs now read `messagesFor("nqn", …)`.
+
+### Step 6b — region content in `regions/<id>/` (this commit)
+
+Moved per region: the landing's featured rivers, sample values
+(`regions/nqn/landing-sample.json`), the OG drawing (`regions/nqn/og-shapes.json`) and
+subtitle, the landing image (`public/landing/nqn/basin.png`) and the ask box's prompt place
+and examples (`regions/nqn/content.ts`). Checked in the cloud: the system prompt is
+byte-identical to before in both languages, the OG image is byte-identical, and the landing
+links to `limay`, `neuquen` and `negro` as before. A new test checks that every slug in a
+region's prompt examples exists in its `data/out`.
+
+- [ ] Regenerating these now takes the region:
+  ```sh
+  npm run landing:sample -- --region nqn
+  npx tsx scripts/og-shapes.ts --region nqn
+  git status regions/nqn   # expected: no change
+  ```
+- [ ] `npm run dev`, open `/`: hero image, the three quick links and the sample cards look as
+      before.
+- [ ] The PLAN.md Design v3 item "Regenerate `basin.png`" now means
+      `public/landing/nqn/basin.png`.

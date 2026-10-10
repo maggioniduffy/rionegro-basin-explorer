@@ -5,8 +5,11 @@ import { HeroRivers } from "@/components/landing/HeroRivers";
 import { MapAccessCard } from "@/components/landing/MapAccessCard";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { DEFAULT_REGION, isRegionId } from "@/regions";
 
-export default async function LandingPage() {
+export default async function LandingPage({ params }: PageProps<"/[region]">) {
+  const { region: raw } = await params;
+  const region = isRegionId(raw) ? raw : DEFAULT_REGION;
   const t = await getTranslations("landing");
 
   return (
@@ -28,10 +31,10 @@ export default async function LandingPage() {
             </p>
           </div>
           <div className="relative mx-auto mt-[clamp(28px,5vw,56px)] max-w-[880px]">
-            <MapAccessCard />
+            <MapAccessCard region={region} />
           </div>
         </section>
-        <ExploreCards />
+        <ExploreCards region={region} />
         <DataNote />
       </main>
       <SiteFooter path="/" />

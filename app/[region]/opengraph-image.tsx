@@ -2,8 +2,9 @@ import { ImageResponse } from "next/og";
 import { messagesFor } from "@/i18n/messages";
 import { OG_MAP_BOX, OG_SIZE } from "@/lib/og";
 import { FLOW_STYLE, THEME_COLORS } from "@/lib/map/style";
-import shapes from "@/app/og-shapes.json";
 import { DEFAULT_REGION, isRegionId, REGION_IDS } from "@/regions";
+import { REGION_CONTENT } from "@/regions/content";
+import { OG_SHAPES } from "@/regions/generated";
 
 // One static image for both languages: a shared link has no locale cookie, so the
 // card shows both titles (the site picks its language per visitor).
@@ -31,6 +32,7 @@ export default async function Image({
   const region = isRegionId(raw) ? raw : DEFAULT_REGION;
   const en = messagesFor(region, "en");
   const es = messagesFor(region, "es");
+  const shapes = OG_SHAPES[region];
   return new ImageResponse(
     <div
       style={{
@@ -63,7 +65,7 @@ export default async function Image({
             color: FLOW_STYLE.perennial.color,
           }}
         >
-          Limay · Neuquén · Río Negro
+          {REGION_CONTENT[region].ogSubtitle}
         </div>
       </div>
       <svg

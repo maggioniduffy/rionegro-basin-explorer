@@ -1,25 +1,24 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
-import sample from "@/app/landing-sample.json";
 import { MAP_PATH, RIVER_PARAM } from "@/lib/url-state";
 import { Icon } from "../Icon";
 import { SampleValue } from "./SampleValue";
-import basin from "@/public/landing/basin.png";
-
-/** Quick links: river slugs from rivers.ndjson `_id`, as in the map's ?r= state. */
-const QUICK = [
-  { id: "limay", name: "Limay" },
-  { id: "neuquen", name: "Neuquén" },
-  { id: "negro", name: "Río Negro" },
-] as const;
+import type { RegionId } from "@/regions";
+import { REGION_CONTENT } from "@/regions/content";
+import { LANDING_SAMPLES } from "@/regions/generated";
+import { LANDING_IMAGES } from "@/regions/images";
 
 /**
  * The hero card: one link to the map, named by its own text (title, description, CTA)
  * and the image's alt. Hover zooms and brightens the image and nudges
  * the arrow; focus draws a 3px accent ring. CSS only (group-hover), no client state.
  */
-export async function MapAccessCard() {
+export async function MapAccessCard({ region }: { region: RegionId }) {
+  const sample = LANDING_SAMPLES[region];
+  const basin = LANDING_IMAGES[region];
+  /** Quick links: river slugs from rivers.ndjson `_id`, as in the map's ?r= state. */
+  const quick = REGION_CONTENT[region].featuredRivers;
   const t = await getTranslations("landing.card");
   const fields = await getTranslations("panel.fields");
   const { river } = sample;
@@ -89,7 +88,7 @@ export async function MapAccessCard() {
         <span className="text-secondary flex-none text-[13px]">
           {t("quick")}
         </span>
-        {QUICK.map((r) => (
+        {quick.map((r) => (
           <Link
             key={r.id}
             href={`${MAP_PATH}?${RIVER_PARAM}=${r.id}`}

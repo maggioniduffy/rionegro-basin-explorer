@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
-import sample from "../app/landing-sample.json";
+import { REGION_IDS } from "../regions";
+import { LANDING_SAMPLES } from "../regions/generated";
 import { buildLandingSample } from "../scripts/landing-sample";
 
 describe("landing sample", () => {
-  it("matches data/out (run npm run landing:sample if not)", () => {
-    expect(sample).toEqual(buildLandingSample());
-  });
+  it.each(REGION_IDS)(
+    "%s matches data/out (run npm run landing:sample -- --region <id> if not)",
+    (region) => {
+      expect(LANDING_SAMPLES[region]).toEqual(buildLandingSample(region));
+    },
+  );
 });
