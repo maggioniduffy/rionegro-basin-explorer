@@ -12,7 +12,7 @@ import type { CatalogDocs } from "@/lib/data/queries";
 
 // The real seeded names: data/out is what `npm run seed` loads into Mongo.
 const ndjson = (file: string) =>
-  readFileSync(`data/out/${file}.ndjson`, "utf8")
+  readFileSync(`data/out/nqn/${file}.ndjson`, "utf8")
     .split("\n")
     .filter(Boolean)
     .map((line) => JSON.parse(line) as unknown);

@@ -42,7 +42,7 @@ Inspired by Amazon Basin Explorer.
 Sources (HydroSHEDS, HydroLAKES, GIRES, IGN, OSM)
    │  pipeline/  — TS steps running DuckDB + tippecanoe, each writes a report.json
    ▼
-public/tiles/*.pmtiles (geometry)      data/out/*.ndjson → npm run seed → MongoDB Atlas (metadata)
+public/tiles/*.pmtiles (geometry)      data/out/<region>/*.ndjson → npm run seed → MongoDB Atlas (metadata)
    │ HTTP Range                                                           │
    ▼                                                                      ▼
 MapLibre GL in the browser ── click → feature id → /api/* route handlers (CDN-cached)
@@ -68,7 +68,7 @@ Requires Node 24.
 ```bash
 npm ci
 cp .env.example .env.local   # fill in MONGODB_URI, MONGODB_DB and the imagery variables
-npm run seed                 # loads data/out/*.ndjson into MongoDB (idempotent)
+npm run seed                 # loads data/out/<region>/*.ndjson into MongoDB (idempotent)
 npm run dev
 ```
 
@@ -150,7 +150,7 @@ interfaz está en español e inglés. Inspirado en Amazon Basin Explorer.
 Fuentes (HydroSHEDS, HydroLAKES, GIRES, IGN, OSM)
    │  pipeline/  — pasos en TS con DuckDB + tippecanoe; cada uno escribe un report.json
    ▼
-public/tiles/*.pmtiles (geometría)     data/out/*.ndjson → npm run seed → MongoDB Atlas (metadatos)
+public/tiles/*.pmtiles (geometría)     data/out/<region>/*.ndjson → npm run seed → MongoDB Atlas (metadatos)
    │ HTTP Range                                                           │
    ▼                                                                      ▼
 MapLibre GL en el navegador ── clic → id del feature → route handlers /api/* (con caché de CDN)
@@ -177,7 +177,7 @@ Requiere Node 24.
 ```bash
 npm ci
 cp .env.example .env.local   # completar MONGODB_URI, MONGODB_DB y las variables de imágenes
-npm run seed                 # carga data/out/*.ndjson en MongoDB (idempotente)
+npm run seed                 # carga data/out/<region>/*.ndjson en MongoDB (idempotente)
 npm run dev
 ```
 

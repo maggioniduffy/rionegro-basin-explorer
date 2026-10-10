@@ -1,13 +1,13 @@
 /**
- * npm run seed — load data/out/rivers.ndjson, reaches.ndjson, subbasins.ndjson and
- * streams.ndjson into Mongo.
+ * npm run seed — load rivers.ndjson, reaches.ndjson, subbasins.ndjson and streams.ndjson
+ * from data/out/<region>/ into Mongo (`npm run seed -- --region <id>`, default nqn).
  *
  * Idempotent: whole-document upserts keyed on _id, documents no longer in the files
  * are deleted, indexes are created only if missing. Re-run after the pipeline changes
- * data/out/. Needs a user with write access and MONGODB_DB, read from .env.local:
+ * data/out/<region>/. Needs a user with write access and MONGODB_DB, read from .env.local:
  * MONGODB_SEED_URI, or MONGODB_URI when it is not set. The deployed app's MONGODB_URI
  * is a read-only user (Phase 8), so the seed has its own. Writes
- * data/work/seed/report.json.
+ * data/work/<region>/seed/report.json.
  *
  * The ignNames collection (one document per IGN name, before streams) is dropped if found.
  *

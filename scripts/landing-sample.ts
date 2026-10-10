@@ -1,7 +1,8 @@
 /**
  * landing-sample — the real values behind the landing's mock panels (components/landing),
  * read from the seed files, so the landing shows no invented numbers (CLAUDE.md rule 2).
- * Rerun after `pipeline:export` or `pipeline:subbasins` changes data/out:
+ * Rerun after `pipeline:export` or `pipeline:subbasins` changes data/out/nqn (the sample
+ * picks Río Negro rivers; per-region samples come with the region content, PLAN.md R1):
  *
  *   npm run landing:sample
  *
@@ -52,7 +53,7 @@ export interface LandingSample {
 }
 
 function ndjson<T>(file: string): T[] {
-  return readFileSync(join(process.cwd(), "data/out", file), "utf8")
+  return readFileSync(join(process.cwd(), "data/out/nqn", file), "utf8")
     .split("\n")
     .filter((line) => line.trim() !== "")
     .map((line) => JSON.parse(line) as T);

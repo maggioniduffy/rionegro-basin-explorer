@@ -3,12 +3,18 @@
 TS scripts, run with `tsx`, that orchestrate DuckDB, GDAL/ogr2ogr and tippecanoe. Each step:
 
 - is idempotent;
-- reads from `data/raw/` or an earlier step's output in `data/work/`;
+- reads from `data/raw/` or an earlier step's output in `data/work/<region>/`;
 - writes a `report.json` (counts, total km, orphan segments, area checks) next to its output.
 
-Final artifacts: NDJSON for `npm run seed` in `data/out/`, and PMTiles for the map in `public/tiles/`
+Final artifacts: NDJSON for `npm run seed` in `data/out/<region>/`, and PMTiles for the map in `public/tiles/`
 (committed, because Vercel serves them from `/public` and tippecanoe does not run there).
 Licenses and citations for every input are in [SOURCES.md](./SOURCES.md).
+
+**Regions.** Every step works on one region: `npm run pipeline:<step> -- --region <id>` (or
+`--region=<id>`; default `nqn`, the Río Negro basin). Its configs are in `regions/<id>/`, its work
+and output files in `data/work/<region>/` and `data/out/<region>/`. `data/raw/` is shared. Work
+files from before regions (2026-10-10) move once: `mkdir -p data/work/nqn && mv data/work/* data/work/nqn/`
+(the `mv` warns that it can't move `nqn` into itself; that is expected).
 
 Status: Phase 1 is complete (`download` … `export`). Phase 2 adds `mask` and `tiles`; Phase 4 adds
 `subbasins` (run it after `export` and before `tiles`). Phase 5 adds `ign`, `ign-match` and `ign-layers`
@@ -57,8 +63,8 @@ review the change, then rerun with `-- --accept-new` to record the new checksum.
 
 ### `npm run pipeline:inspect`
 
-Writes one JSON file per layer to `data/work/inspect/`: columns and types, feature count, CRS, extent
-and three sample rows. `data/work/inspect/report.json` summarizes all layers. **Later steps only use
+Writes one JSON file per layer to `data/work/<region>/inspect/`: columns and types, feature count, CRS, extent
+and three sample rows. `data/work/<region>/inspect/report.json` summarizes all layers. **Later steps only use
 attribute names that appear there.**
 
 ### `npm run pipeline:basin`
@@ -69,7 +75,7 @@ Delineates the basin from HydroBASINS level 12. Configuration is in `regions/nqn
    `UPLAND_SKM` inside a search box and reports it with the runners-up.
 2. **Members.** Takes the level-12 polygon holding that reach plus everything upstream via
    `NEXT_DOWN`, and checks that this equals the `MAIN_BAS` group.
-3. **Dissolve and measure.** Writes `data/work/basin/basin.geojson` and `hybas_l12.parquet`.
+3. **Dissolve and measure.** Writes `data/work/<region>/basin/basin.geojson` and `hybas_l12.parquet`.
 
 Area has two definitions. HydroBASINS links some endorheic sinks to the surrounding basin through
 a "virtual" `NEXT_DOWN` (TechDoc v1c), and `UP_AREA` excludes those regions:
@@ -95,7 +101,7 @@ It then adds GIRES flow-intermittence predictions (`predprob1`, `predcat1`, `pre
 `predcat30`) with a left join. GIRES has no prediction for zero-flow reaches, which stay null.
 
 It also joins every RiverATLAS column by `HYRIV_ID`. The first run scans the global FileGDB (about
-3 minutes) and caches the basin subset to `data/work/rivers/riveratlas_basin.parquet`, keyed by a
+3 minutes) and caches the basin subset to `data/work/<region>/rivers/riveratlas_basin.parquet`, keyed by a
 hash of the reach IDs. After that the 7 GB FileGDB is only needed if the basin changes.
 
 The report checks:
@@ -113,14 +119,14 @@ Lists the major branches of the connected network so they can be named in `regio
 (HydroRIVERS has no names). A candidate is either the outlet reach, or a branch at a confluence where
 at least two branches drain ≥ 2,000 km² (`-- --min-area=<km²>` to change). Both branches of such a
 confluence are listed. Each candidate's segment runs up the largest branch to the next candidate
-confluence. Segments do not overlap. Writes `data/work/candidates/candidates.json`
+confluence. Segments do not overlap. Writes `data/work/<region>/candidates/candidates.json`
 (with OpenStreetMap links at each mouth) and `candidates.geojson` for a GIS viewer.
 
 ### `npm run pipeline:osm-names`
 
 Name evidence from OpenStreetMap (ODbL; see SOURCES.md). The step makes **one** Overpass request
 for the named waterways and water bodies in the basin bbox, cached in
-`data/work/osm-names/overpass.json`, so reruns send nothing. It retries on 429 and 504, which the
+`data/work/<region>/osm-names/overpass.json`, so reruns send nothing. It retries on 429 and 504, which the
 public instance returns when busy. Each candidate segment gets up to five sample points, matched
 locally to OSM lines within 750 m. `matches.json` lists the names per candidate, such as
 "Río Limay 5/5". A person reviews it to write `regions/nqn/names.json`.
@@ -129,8 +135,8 @@ locally to OSM lines within 750 m. `matches.json` lists the names per candidate,
 
 Cities, towns and villages from OpenStreetMap (ODbL; see SOURCES.md). One Overpass request for the
 named `place=city|town|village` nodes in the basin bbox, cached in
-`data/work/localities/overpass.json` (retries on 429 and 504). DuckDB keeps the nodes inside
-`data/work/basin/basin.geojson` and writes `data/work/tiles/localities.geojson` (id, name, place; no
+`data/work/<region>/localities/overpass.json` (retries on 429 and 504). DuckDB keeps the nodes inside
+`data/work/<region>/basin/basin.geojson` and writes `data/work/<region>/tiles/localities.geojson` (id, name, place; no
 population). Report: counts inside and outside the basin, per class; checks: unique ids, all named,
 all inside the basin. Places mapped only as areas are not included. Run it after `basin` and before
 `tiles`, which writes `public/tiles/localities.pmtiles` with a minzoom per class
@@ -159,7 +165,7 @@ carries the river's name (`ign-match/cover.parquet`; `traceAlongName` in `pipeli
 
 `source.kind` is `headwater` (no reach upstream), `lake` (its upstream end within `bufferM` of a lake)
 or `confluence`. Reaches cut off a river go back to the pool for `ign-streams`. The step writes
-`data/out/rivers.ndjson` (committed; seed input) and `data/work/named/river_reaches.parquet`
+`data/out/<region>/rivers.ndjson` (committed; seed input) and `data/work/<region>/named/river_reaches.parquet`
 (reach → river).
 
 Calibration of `line.minCoverage` (2026-10-09): on the approved rivers the trimmed sources are the same
@@ -190,7 +196,7 @@ cut at a lake, or a confluence of two IGN names). The report compares each river
 
 HydroLAKES v1.0 polygons that intersect the basin, clipped to it. The first run (of this step or
 `named`, `pipeline/lib/hydrolakes.ts`) scans the global shapefile once and caches its basin-bbox subset
-in `data/work/lakes/hydrolakes_bbox.parquet`.
+in `data/work/<region>/lakes/hydrolakes_bbox.parquet`.
 
 HydroRIVERS draws flow paths across lakes, and this step removes those lines from the map.
 
@@ -219,16 +225,16 @@ the mask hole and the `lakes` outline layer.
 
 Writes the Phase 1 artifacts:
 
-- `data/out/reaches.ndjson`: one document per reach (gitignored, about 3 MB). Each carries `stream`
+- `data/out/<region>/reaches.ndjson`: one document per reach (gitignored, about 3 MB). Each carries `stream`
   (its stream id from `ign-streams`, or null; it can be set together with `river`). `ign` is null for
   the reaches `ign-streams` dropped as off the IGN line (`dropped.json`).
-- `data/out/streams.ndjson`: one document per stream from `ign-streams` (replaces `ign-names.ndjson`):
+- `data/out/<region>/streams.ndjson`: one document per stream from `ign-streams` (replaces `ign-names.ndjson`):
   name, mouth reach, reach count, `lengthKm` (sum of `LENGTH_KM`), bbox, `subbasin` (first sub-basin
   mouth on the way down from the stream's mouth, see `streamDrainage`), `receivingRiver`, and the
   mouth-reach values with `modeled` and `provenance`, as in `rivers.ndjson`. Needs `ign-streams`
-  and `named` (`data/out/rivers.ndjson`) first.
-- `data/work/tiles/reaches.geojson` and `basin.geojson`: tippecanoe inputs for Phase 2.
-- `data/out/report.json`: the combined, committed report. It covers counts, km, orphans, the area
+  and `named` (`data/out/<region>/rivers.ndjson`) first.
+- `data/work/<region>/tiles/reaches.geojson` and `basin.geojson`: tippecanoe inputs for Phase 2.
+- `data/out/<region>/report.json`: the combined, committed report. It covers counts, km, orphans, the area
   check and the named rivers.
 
 Only RiverATLAS fields whose catalog units were checked are exported (`ele_mt_cmn`, `sgr_dk_rav`).
@@ -243,7 +249,7 @@ The buffers are unioned and clipped to the basin to make the visible "hole". The
 same `bounds` as the map's `maxBounds`, so the edge of the mask is never on screen. Lakes from
 `pipeline:lakes` are part of the visible hole at every level.
 
-Output: `data/work/tiles/mask.geojson`. The report lists each level's visible area, its % of the
+Output: `data/work/<region>/tiles/mask.geojson`. The report lists each level's visible area, its % of the
 basin and its vertex count. It checks that every geometry is valid, that the visible area grows
 with each level, and that the last level is the whole basin.
 
@@ -271,8 +277,8 @@ structure (levels, parents, no cycles) is checked before anything runs.
    no child exceeds its parent, that every node keeps some own area (so it can be clicked), and
    that each river node's connected area matches HydroRIVERS `UPLAND_SKM` at its mouth within 1%.
 
-Outputs: `data/out/subbasins.ndjson` (committed, seed input; each node carries its `path` from the
-root), `data/work/tiles/subbasins.geojson` (own areas, one feature per sub-basin, with the path as a
+Outputs: `data/out/<region>/subbasins.ndjson` (committed, seed input; each node carries its `path` from the
+root), `data/work/<region>/tiles/subbasins.geojson` (own areas, one feature per sub-basin, with the path as a
 `,negro,limay,…,` string so the map can match a subtree) and `subbasin_outlines.geojson` (each node's
 whole area, for the selected border).
 
@@ -296,7 +302,7 @@ the intermittent class in the proximity part.
 4. **Verdict.** The PLAN.md rule at 250 m (IGN km beyond the buffer is at least 20% of IGN perennial
    km and at least 10% of HydroRIVERS km), with the same figures at the other buffers.
 
-Output: `data/work/ign-gate/report.json`. Checks: IGN present, HydroRIVERS km equals the `rivers`
+Output: `data/work/<region>/ign-gate/report.json`. Checks: IGN present, HydroRIVERS km equals the `rivers`
 report, clipped km within bbox km, deduplication never adds features. The overlap figure (unioned vs
 summed length) is computed for the perennial class only.
 
@@ -307,7 +313,7 @@ basin: touching lines only, exact duplicate geometries dropped, clipped to the b
 cleaned (`pipeline/lib/names.ts`: NFC, spaces) and a stable `id` per line. A name is IGN's `fna` and
 nothing is inferred: no `fna`, no name. Intermittent lines are out of scope (DECISSIONS.md, gate).
 
-Output: `data/work/ign/lines.parquet`. Checks: unique ids, no empty geometry, clipped length within the
+Output: `data/work/<region>/ign/lines.parquet`. Checks: unique ids, no empty geometry, clipped length within the
 bbox, and the same 10,556 lines / 13,635.3 km as `ign-gate` (same inputs and rules). The report also lists
 spelling variants (names that differ only by accents, case or punctuation) and `nam` values that are not
 part of `fna`.
@@ -337,14 +343,14 @@ measured in Albers (approximate to a few percent). Settings: `regions/nqn/ign.co
 5. **Detail layer.** The part of each IGN line farther than `bufferM` from every reach, in pieces of at least
    `minDetailPieceM`. Name and length only.
 
-Outputs in `data/work/ign-match/`: `reach_ign.parquet`, `cover.parquet`, `detail.parquet`, `review.json`,
+Outputs in `data/work/<region>/ign-match/`: `reach_ign.parquet`, `cover.parquet`, `detail.parquet`, `review.json`,
 `proposed-overrides.json`, `report.json`. Checks: every reach once, coverage within 0..1, near + far km
 equal the IGN total, pieces not shorter than the minimum. The thresholds are provisional; see
 DECISSIONS.md (Phase 5) for how they were calibrated.
 
 ### `npm run pipeline:ign-streams`
 
-Splits each shown IGN name into real streams (detection only; `export` turns `streams.json` into `data/out/streams.ndjson`). Inputs:
+Splits each shown IGN name into real streams (detection only; `export` turns `streams.json` into `data/out/<region>/streams.ndjson`). Inputs:
 `rivers/reaches.parquet` (`HYRIV_ID`, `NEXT_DOWN`, `LENGTH_KM`, geometry for the bbox),
 `named/river_reaches.parquet` (`river`), `ign-match/reach_ign.parquet` (`name`, `name_key`, `display`)
 and `regions/nqn/names.json`. A reach carries an IGN name when `display` is true; approved river names and
@@ -363,7 +369,7 @@ stay only between two reaches on the line, and at a fork only the branches the l
 Pruning a mouth that joined two branches leaves two streams, like same-name siblings. A group with no
 reach on the line is dropped. Id: `<slug of the name key>-<mouth HYRIV_ID>`.
 
-Outputs in `data/work/ign-streams/`: `streams.json` (id, name, nameKey, mouthReach, reachIds,
+Outputs in `data/work/<region>/ign-streams/`: `streams.json` (id, name, nameKey, mouthReach, reachIds,
 absorbedReachIds, lengthKm, bbox), `dropped.json` (named reaches off every line; `export` hides their IGN
 name) and `report.json`: names considered and split, streams, reaches and km (named vs absorbed), the same
 counts for a gap tolerance of 0, 1 and 2, `line` (groups, groups split or lost, reaches dropped, and the
@@ -381,8 +387,8 @@ detail lines cut out of every lake, and dam points and walls. Dam points listed 
 `regions/nqn/ign-overrides.json` (by IGN `gid`, each with a note) are dropped: points checked against the
 imagery that mark no dam. Each feature gets `network` by the same rule as `pipeline:lakes`.
 
-Outputs: `data/work/tiles/ign_lakes.geojson`, `ign_lakes_extra.geojson`, `ign_detail.geojson`,
-`ign_dams.geojson`, `ign_dam_walls.geojson`; report in `data/work/ign-layers/`. Checks: one name per
+Outputs: `data/work/<region>/tiles/ign_lakes.geojson`, `ign_lakes_extra.geojson`, `ign_detail.geojson`,
+`ign_dams.geojson`, `ign_dam_walls.geojson`; report in `data/work/<region>/ign-layers/`. Checks: one name per
 lake, valid extra lakes, extra lakes outside HydroLAKES, detail lines outside lakes, no lake lost,
 every rejected dam point found (a stale `gid` fails the step).
 
@@ -423,7 +429,7 @@ Profiles one file without dumping it: columns and types, row count, DuckDB `SUMM
 %, min/max, approximate distinct values, mean), geometry types, extent and invalid count, and three
 sample rows without geometry. It reads Parquet, CSV, NDJSON and anything GDAL opens (GeoJSON,
 Shapefile, or a FileGDB with `--layer`). The full profile goes to
-`data/work/inspect/adhoc/<file>.json`. The `inspect-dataset` skill and the `data-inspector` agent
+`data/work/<region>/inspect/adhoc/<file>.json`. The `inspect-dataset` skill and the `data-inspector` agent
 (`.claude/`) use it.
 
 ### `npm run inspect:tiles -- <file.pmtiles> [--by=<prop>]`

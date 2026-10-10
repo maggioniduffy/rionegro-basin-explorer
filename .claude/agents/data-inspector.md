@@ -15,7 +15,7 @@ How to work:
 
 - Follow the preloaded `inspect-dataset` skill. Use `npm run -s inspect:file -- <path>`
   and `jq` on the profile it writes; for raw sources, read the existing
-  `data/work/inspect/*.json` profiles first.
+  `data/work/<region>/inspect/*.json` profiles first.
 - Never `cat` or `head` a geo file; never print coordinates or more than the 3 sample
   rows the tool keeps.
 - Quote attribute names exactly as the profile shows them. If the question needs a

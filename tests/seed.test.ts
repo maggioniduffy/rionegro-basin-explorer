@@ -104,7 +104,7 @@ describe("toRiverDoc", () => {
   it("adds search terms from name and short name", async () => {
     const { readFile } = await import("node:fs/promises");
     const [first] = parseNdjson(
-      await readFile("data/out/rivers.ndjson", "utf8"),
+      await readFile("data/out/nqn/rivers.ndjson", "utf8"),
       riverSchema,
     );
     expect(toRiverDoc(first!).searchTerms).toEqual(["rio negro", "negro"]);
@@ -120,7 +120,7 @@ describe("chunk", () => {
 describe("subbasinSchema", () => {
   it("accepts the committed pipeline output", async () => {
     const { readFile } = await import("node:fs/promises");
-    const text = await readFile("data/out/subbasins.ndjson", "utf8");
+    const text = await readFile("data/out/nqn/subbasins.ndjson", "utf8");
     const docs = parseNdjson(text, subbasinSchema);
     expect(docs.map((d) => d._id).slice(0, 4)).toEqual([
       "negro",

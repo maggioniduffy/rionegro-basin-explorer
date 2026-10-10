@@ -1,6 +1,6 @@
 ---
 name: pipeline-runner
-description: Runs Río Negro pipeline steps (npm run pipeline:<step>) in order, logs output to data/work/<step>/<step>.log, reads each step's report.json and returns a short verdict. Use after changing a pipeline step or config, or to rebuild tiles. Does not fix code.
+description: Runs Río Negro pipeline steps (npm run pipeline:<step>) in order, logs output to data/work/<region>/<step>/<step>.log, reads each step's report.json and returns a short verdict. Use after changing a pipeline step or config, or to rebuild tiles. Does not fix code.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
@@ -14,7 +14,7 @@ Rules:
 
 - Run only the steps you were asked for, in README order, one at a time (they depend
   on each other's outputs). Stop at the first failure.
-- Redirect output: `npm run pipeline:<step> > data/work/<step>/<step>.log 2>&1`
+- Redirect output: `npm run pipeline:<step> -- --region <id> > data/work/<region>/<step>/<step>.log 2>&1`
   (create the directory if needed). Never stream a full log into your answer; use
   `tail -n 30` on failure.
 - Before a long step (`rivers` on a cold cache, `mask`, `tiles`), say what it will

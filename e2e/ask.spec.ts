@@ -10,7 +10,7 @@ import { openMap } from "./map-helpers";
 
 /** lengthKm of a river as seeded (data/out/rivers.ndjson). */
 function riverLength(id: string): number {
-  for (const line of readFileSync("data/out/rivers.ndjson", "utf8").split(
+  for (const line of readFileSync("data/out/nqn/rivers.ndjson", "utf8").split(
     "\n",
   )) {
     if (!line.trim()) continue;
@@ -23,7 +23,7 @@ function riverLength(id: string): number {
 /** Perennial rivers as the ask server counts them: no orange and no unknown length. */
 function perennialRivers() {
   const rivers: { id: string; name: string; lengthKm: number }[] = [];
-  for (const line of readFileSync("data/out/rivers.ndjson", "utf8").split(
+  for (const line of readFileSync("data/out/nqn/rivers.ndjson", "utf8").split(
     "\n",
   )) {
     if (!line.trim()) continue;
