@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { Wordmark } from "@/components/landing/Wordmark";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
-import { AskBox } from "@/components/AskBox";
 import { BasinMap } from "@/components/map/BasinMap";
 import { Panels } from "@/components/Panels";
 import { SearchBox } from "@/components/SearchBox";
@@ -26,11 +25,8 @@ export default function MapPage() {
               <Wordmark compact />
             </Link>
           </h1>
-          <div className="pointer-events-auto min-w-40 flex-1 sm:w-full sm:max-w-64 sm:flex-none">
+          <div className="pointer-events-auto min-w-40 flex-1 sm:w-full sm:max-w-96 sm:flex-none">
             <SearchBox />
-          </div>
-          <div className="pointer-events-auto basis-full md:max-w-80 md:min-w-44 md:flex-1 md:basis-0">
-            <AskBox />
           </div>
         </div>
         <div className="bg-panel-glass border-line shadow-card pointer-events-auto flex min-h-11 items-center gap-2 rounded-[10px] border px-1.5 backdrop-blur-[6px]">

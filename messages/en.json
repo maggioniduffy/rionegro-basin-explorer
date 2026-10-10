@@ -104,26 +104,58 @@
     }
   },
   "ask": {
-    "label": "Ask about the basin",
-    "placeholder": "Ask: biggest tributary of the Limay",
-    "submit": "Ask",
+    "label": "Answer",
+    "close": "Close",
+    "open": "Open",
+    "openItem": "Open {name}",
     "loading": "Asking…",
     "noMatch": "Nothing on the map matches that question.",
     "unsupported": "The map cannot answer that question. Try naming a river or a basin.",
     "examplesTitle": "Try one of these",
     "examples": {
-      "0": "Collón Curá",
-      "1": "Neuquén basin",
-      "2": "Limay"
+      "0": "Which is longer, Caleufú or Agrio?",
+      "1": "Longest tributary of the Limay",
+      "2": "Neuquén basin"
     },
     "rateLimited": "Too many questions. Wait a moment and try again.",
-    "error": "The question could not be answered right now."
+    "error": "The question could not be answered right now.",
+    "noData": "The map has no data to answer that.",
+    "noValue": "No data",
+    "source": "Source: {provenance}",
+    "metric": {
+      "length": "length",
+      "discharge": "mean discharge",
+      "upstreamArea": "drainage area",
+      "area": "area",
+      "sourceElevation": "source elevation",
+      "mouthElevation": "mouth elevation",
+      "drop": "elevation drop",
+      "gradient": "mean gradient",
+      "distanceToSea": "distance to the sea",
+      "elevationMax": "highest elevation",
+      "elevationMin": "lowest elevation",
+      "population": "population",
+      "lakesPct": "lake cover"
+    },
+    "answer": {
+      "predicate": "{order, select, max {{word, select, longer {is longer} higher {is higher} larger {is larger} more {has more {metric}} steeper {is steeper} farther {is farther from the sea} other {is greater}}} other {{word, select, longer {is shorter} higher {is lower} larger {is smaller} more {has less {metric}} steeper {is gentler} farther {is closer to the sea} other {is smaller}}}}",
+      "direction": "{order, select, max {highest first} other {lowest first}}",
+      "compare": "{winner} {predicate}: {value}, compared with {others}.",
+      "only": "Only {winner} has a value: {value}.",
+      "tie": "{winners} tie on {metric}: {value}.",
+      "fact": "{name}, {metric}: {value}.",
+      "rank": {
+        "tributaries": "{parent}: {kind, select, river {tributaries} other {sub-basins}} by {metric} ({direction}): {winner} ({value}).",
+        "all": "All {kind, select, river {rivers} other {sub-basins}} by {metric} ({direction}): {winner} ({value})."
+      }
+    }
   },
   "search": {
-    "label": "Search rivers and streams",
-    "placeholder": "Search a river or stream",
     "noResults": "No river or stream found",
-    "error": "Search is not available right now."
+    "error": "Search is not available right now.",
+    "label": "Search a river or ask a question",
+    "placeholder": "Search a river or ask a question",
+    "ask": "Ask: «{text}»"
   },
   "panel": {
     "close": "Close",

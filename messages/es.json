@@ -104,26 +104,58 @@
     }
   },
   "ask": {
-    "label": "Preguntá sobre la cuenca",
-    "placeholder": "Preguntá: mayor afluente del Limay",
-    "submit": "Preguntar",
+    "label": "Respuesta",
+    "close": "Cerrar",
+    "open": "Ver",
+    "openItem": "Ver {name}",
     "loading": "Preguntando…",
     "noMatch": "Nada en el mapa coincide con esa pregunta.",
     "unsupported": "El mapa no puede responder esa pregunta. Probá nombrando un río o una cuenca.",
     "examplesTitle": "Probá con alguno de estos",
     "examples": {
-      "0": "Collón Curá",
-      "1": "Cuenca del Neuquén",
-      "2": "Limay"
+      "0": "¿Qué río es más largo, Caleufú o Agrio?",
+      "1": "El afluente más largo del Limay",
+      "2": "Cuenca del Neuquén"
     },
     "rateLimited": "Demasiadas preguntas. Esperá un momento y probá de nuevo.",
-    "error": "No se pudo responder la pregunta en este momento."
+    "error": "No se pudo responder la pregunta en este momento.",
+    "noData": "El mapa no tiene datos para responder eso.",
+    "noValue": "Sin datos",
+    "source": "Fuente: {provenance}",
+    "metric": {
+      "length": "longitud",
+      "discharge": "caudal medio",
+      "upstreamArea": "área de drenaje",
+      "area": "superficie",
+      "sourceElevation": "altitud de la naciente",
+      "mouthElevation": "altitud de la desembocadura",
+      "drop": "desnivel",
+      "gradient": "pendiente media",
+      "distanceToSea": "distancia al mar",
+      "elevationMax": "altitud máxima",
+      "elevationMin": "altitud mínima",
+      "population": "población",
+      "lakesPct": "cobertura de lagos"
+    },
+    "answer": {
+      "predicate": "{order, select, max {{word, select, longer {{kind, select, river {es más largo} other {tiene mayor longitud}}} higher {está a mayor altitud} larger {es de mayor tamaño} more {tiene más {metric}} steeper {tiene más pendiente} farther {está más lejos del mar} other {es mayor}}} other {{word, select, longer {{kind, select, river {es más corto} other {tiene menor longitud}}} higher {está a menor altitud} larger {es de menor tamaño} more {tiene menos {metric}} steeper {tiene menos pendiente} farther {está más cerca del mar} other {es menor}}}}",
+      "direction": "{order, select, max {de mayor a menor} other {de menor a mayor}}",
+      "compare": "{winner} {predicate}: {value}, frente a {others}.",
+      "only": "Solo {winner} tiene un valor: {value}.",
+      "tie": "{winners} empatan en {metric}: {value}.",
+      "fact": "{name}, {metric}: {value}.",
+      "rank": {
+        "tributaries": "{parent}: {kind, select, river {afluentes} other {subcuencas}} según {metric} ({direction}): {winner} ({value}).",
+        "all": "{kind, select, river {Todos los ríos} other {Todas las subcuencas}} según {metric} ({direction}): {winner} ({value})."
+      }
+    }
   },
   "search": {
-    "label": "Buscar ríos y arroyos",
-    "placeholder": "Buscar un río o arroyo",
     "noResults": "No se encontró ningún río o arroyo",
-    "error": "La búsqueda no está disponible en este momento."
+    "error": "La búsqueda no está disponible en este momento.",
+    "label": "Buscá un río o hacé una pregunta",
+    "placeholder": "Buscá un río o hacé una pregunta",
+    "ask": "Preguntar: «{text}»"
   },
   "panel": {
     "close": "Cerrar",
