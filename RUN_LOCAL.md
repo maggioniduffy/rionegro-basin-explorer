@@ -125,7 +125,7 @@ hero and `/attributions` in both languages are unchanged, and the OG image rende
       same keys).
 - [ ] `npm run test:e2e`: the specs now read `messagesFor("nqn", …)`.
 
-### Step 6b — region content in `regions/<id>/` (this commit)
+### Step 6b — region content in `regions/<id>/` (`76197a8`)
 
 Moved per region: the landing's featured rivers, sample values
 (`regions/nqn/landing-sample.json`), the OG drawing (`regions/nqn/og-shapes.json`) and
