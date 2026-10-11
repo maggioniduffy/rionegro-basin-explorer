@@ -185,10 +185,6 @@ Code and docs done in the cloud (2026-10-10, steps 1–8); waiting on the local 
 - [x] `--region` required on every pipeline step and data script (owner, 2026-10-10)
 - **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds. Cloud checks are done; the local ones (pipeline re-run, browser, e2e, Vercel) are in [RUN_LOCAL.md](RUN_LOCAL.md).
 
-### Pending for Rio Negro but for Cordoba too
-
-- [ ] Add some opacity to the sub-basin selected, and quit some opacity and width to the lines that divides basins.
-
 ### Phase R2 — Córdoba gate
 
 - [ ] Delineate candidate basins touching the province from HydroBASINS (sea/river outlets and endorheic sinks: Mar Chiquita, Salinas Grandes, Bañados del Quinto, …), report areas inside/outside the province
