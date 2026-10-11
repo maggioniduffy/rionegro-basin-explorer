@@ -54,7 +54,7 @@ describe("hiding the rest of the basin", () => {
     expect(subbasinFillOpacity("subbasins", sel)).toEqual([
       "case",
       ["any", ["in", ",limay,", ["get", "path"]]],
-      0.12,
+      0.25,
       0,
     ]);
     const outline = selectedOutlineFilter(sel);
