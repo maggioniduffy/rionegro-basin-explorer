@@ -18,8 +18,13 @@ export interface NamesConfig {
   aliasExcludeParentheses: string[];
   /** Share of an APRHI name's km an IGN name must run along to be its alias. */
   aliasMinShare: number;
-  /** Largest edit distance (on name keys) at which an IGN spelling corrects APRHI's. */
+  /** Largest edit distance (on name keys) at which an IGN spelling is proposed as a fix. */
   maxEditDistance: number;
+  /**
+   * Owner-approved spelling fixes (owner, 2026-10-12: no automatic fix). `from` is the expanded
+   * APRHI display name (compared by nameKey), `to` the name shown instead; `note` says why.
+   */
+  nameFixes: { from: string; to: string; note: string }[];
   /** Alias test buffer, metres (Albers). */
   bufferM: number;
 }
@@ -60,11 +65,7 @@ const LETTERS = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ";
 const DOTTED = new RegExp(`^([${LETTERS}]{1,4})\\.(.*)$`);
 
 /** Apply wordFixes to one word, keeping an all-capitals word in capitals. */
-function fixWord(
-  word: string,
-  cfg: NamesConfig,
-  rules: string[],
-): string {
+function fixWord(word: string, cfg: NamesConfig, rules: string[]): string {
   const m = /^([^\p{L}]*)(\p{L}+)([^\p{L}]*)$/u.exec(word);
   if (!m) return word;
   const [, pre = "", core = "", post = ""] = m;
@@ -137,11 +138,21 @@ export function parseAprhiName(
   const rules: string[] = [];
   const unexpanded: string[] = [];
   const parts = [...raw.matchAll(/\(([^)]*)\)/g)].map((m) => m[1] ?? "");
-  const main = raw.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  const main = raw
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   const unbalanced = /[()]/.test(main);
 
-  const display = expandWords(main, cfg, rules, unexpanded);
-  const first = display.split(" ")[0] ?? "";
+  // "A. Arroyo 630", "Q. Quebrada de Tellio": the source repeats the type word after its
+  // abbreviation; the expanded name keeps it once.
+  const words = expandWords(main, cfg, rules, unexpanded).split(" ");
+  if (words.length > 2 && nameKey(words[0] ?? "") === nameKey(words[1] ?? "")) {
+    words.splice(1, 1);
+    rules.push("repeatedType");
+  }
+  const display = words.join(" ");
+  const first = words[0] ?? "";
   const known = new Set(cfg.leadingWords.map(nameKey));
   if (!known.has(nameKey(first)))
     throw new UnknownPrefixError(raw, first || raw);
@@ -191,7 +202,10 @@ export function editDistance(a: string, b: string): number {
 
 /** An IGN name without its parenthesized part: "Río Tercero (Ctalamochita)" -> "Río Tercero". */
 export function ignMainName(name: string): string {
-  return name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  return name
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** The names inside the parentheses of an IGN name, "o" alternatives split, leading "o" dropped. */
@@ -220,7 +234,8 @@ export interface Correction {
 }
 
 /**
- * The IGN spelling that corrects a damaged APRHI name, or null. Candidates are the IGN names
+ * The IGN spelling proposed as a fix of a damaged APRHI name, or null (pipeline:line-names
+ * only lists it; a fix is applied when the owner adds it to nameFixes). Candidates are the IGN names
  * running along the APRHI name for at least `minShare`; the one taken has the same number of
  * words as the APRHI display name and a nameKey at edit distance 1..maxEditDistance (smallest
  * distance, then the largest share, then the name). No correction when some IGN name already
@@ -255,8 +270,7 @@ export function findCorrection(
       !best ||
       distance < best.distance ||
       (distance === best.distance &&
-        (c.share > best.share ||
-          (c.share === best.share && main < best.name)))
+        (c.share > best.share || (c.share === best.share && main < best.name)))
     )
       best = { name: main, share: c.share, distance };
   }

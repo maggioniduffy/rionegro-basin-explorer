@@ -141,6 +141,65 @@ describe("subbasinSchema", () => {
   });
 });
 
+describe("subbasinSchema, kind area", () => {
+  const area = {
+    _id: "carcarana",
+    kind: "area",
+    name: "Río Carcarañá",
+    level: 1,
+    parentId: "cordoba",
+    path: ["cordoba", "carcarana"],
+    childIds: [],
+    river: null,
+    areaKm2: 72774,
+    endorheicAreaKm2: 0,
+    reachCount: 3,
+    lengthKm: 10,
+    endorheicLengthKm: 0,
+    nonPerennialPct: 0,
+    unknownPct: 0,
+    elevationMinM: 1,
+    elevationMaxM: 2,
+    population: 0,
+    lakesPct: 0,
+    floodedMinPct: 0,
+    floodedMaxPct: 0,
+    outlet: null,
+    rivers: [],
+    bbox: [-65, -34, -62, -31],
+    modeled: [],
+    provenance: {},
+  };
+  it("accepts a named area without river or outlet", () => {
+    expect(subbasinSchema.safeParse(area).success).toBe(true);
+  });
+  it("rejects an area without a name or with a river", () => {
+    expect(subbasinSchema.safeParse({ ...area, name: null }).success).toBe(
+      false,
+    );
+    expect(
+      subbasinSchema.safeParse({ ...area, river: "tercero" }).success,
+    ).toBe(false);
+  });
+  it("still accepts null names for endorheic land", () => {
+    expect(
+      subbasinSchema.safeParse({ ...area, kind: "endorheic", name: null })
+        .success,
+    ).toBe(true);
+  });
+  it("accepts every line of the Córdoba output when it exists", async () => {
+    const { existsSync } = await import("node:fs");
+    const file = "data/out/cba/subbasins.ndjson";
+    if (!existsSync(file)) return;
+    const { readFile } = await import("node:fs/promises");
+    const docs = parseNdjson(await readFile(file, "utf8"), subbasinSchema);
+    expect(docs.length).toBe(112);
+    expect(docs.every((d) => d.kind === "area" && d.name !== null)).toBe(true);
+    expect(docs.filter((d) => d.level === 0)).toHaveLength(1);
+    expect(new Set(docs.map((d) => d._id)).size).toBe(docs.length);
+  });
+});
+
 describe("streams", () => {
   const stream = {
     _id: "arroyo-nireco-61533765",

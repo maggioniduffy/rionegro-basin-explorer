@@ -1,5 +1,6 @@
 /**
  * pipeline:lakes — HydroLAKES polygons in the basin, and river lines clipped out of them.
+ * A region with regions/<id>/lakes.config.json (cba) runs lib/lakes-reference.ts instead.
  *
  * HydroRIVERS draws flow paths across lakes. On the map those lines are removed inside
  * every lake, except in the reservoirs approved in regions/nqn/lakes.json, which keep the
@@ -26,9 +27,11 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { lengthSpheroidKm } from "../lib/geo";
 import { hydroLakesBbox } from "../lib/hydrolakes";
+import { runLakesReference } from "../lib/lakes-reference";
 import { requireInput } from "../lib/inputs";
 import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
+import { parseLakesConfig } from "../lib/water-pure";
 
 interface KeepEntry {
   hylakId: number;
@@ -44,6 +47,15 @@ const MIN_PIECE_M = 50;
 const KEEP_TOLERANCE_PCT = 0.5;
 
 async function main() {
+  // A region with lakes.config.json takes its water from APRHI > IGN > HydroLAKES (R3.6);
+  // one without it (nqn) runs the HydroLAKES path below.
+  const referenceFile = regionFile("lakes.config.json");
+  if (existsSync(referenceFile)) {
+    await runLakesReference(
+      parseLakesConfig(JSON.parse(await readFile(referenceFile, "utf8"))),
+    );
+    return;
+  }
   const basinFile = lit(requireInput(workPath("basin/basin.geojson")));
   const hybasFile = lit(requireInput(workPath("basin/hybas_l12.parquet")));
   const reachesFile = lit(requireInput(workPath("rivers/reaches.parquet")));

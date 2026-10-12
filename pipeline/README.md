@@ -204,10 +204,29 @@ all inside the basin. Places mapped only as areas are not included. Run it after
 `tiles`, which writes `public/tiles/<region>/localities.pmtiles` with a minzoom per class
 (`map.config.json`, `localities`).
 
+### Name source per region
+
+`named`, `ign-streams` and `export` read the names of the lines from `cover.parquet` and `reach_ign.parquet`
+(same columns and types) in one of two places, chosen by `namesFrom` in `regions/<id>/ign.config.json`
+(`pipeline/lib/name-source.ts`; never guessed from which files exist):
+
+- absent or `"ign-match"` (`nqn`): `data/work/<region>/ign-match/`, IGN lines only.
+- `"line-names"` (`cba`): `data/work/<region>/line-names/`, APRHI names inside the province and IGN names outside.
+
+The choice also sets the `name` provenance text of the river and stream documents (for `cba`: names from APRHI,
+FUENTE: Portal de Información Hídrica de Córdoba, inside the province and from IGN, FUENTE: Instituto
+Geográfico Nacional de la República Argentina, outside, via `pipeline:line-names` and `regions/cba/names.json`);
+the `nqn` texts are unchanged. Order for `cba`: `lines` → `line-names` → `named` → `ign-streams` → `export`
+(`export` also needs `lakes` (R3.6) and `regions/cba/subbasins.config.json` (R3.5)). Stream documents have no alias
+field, so the APRHI raw values and IGN aliases in `line-names/aliases.json` do not reach stream search yet (app
+contract, R3.7); river aliases come from `names.json`. `ign.config.json` may set `expectedSeaOutlets` (default 1):
+how many approved rivers flow into no other approved river (`named` check `oneRiverReachesTheSea`).
+
 ### `npm run pipeline:named`
 
 Traces every river in `regions/nqn/names.json`, a hand-approved list keyed by mouth reach, with OSM
-evidence for each name. Runs after `ign-match`. A river runs where its IGN name runs (owner rule,
+evidence for each name. Runs after the step that writes the region's line names (see "Name source per
+region" below): `ign-match` for `nqn`, `line-names` for `cba`. A river runs where its IGN name runs (owner rule,
 2026-10-09; IGN is the authority): from its mouth upstream it follows the reaches whose IGN line
 carries the river's name (`ign-match/cover.parquet`; `traceAlongName` in `pipeline/lib/name-trace.ts`).
 
@@ -249,7 +268,7 @@ reaches.
 
 Checks: unique IDs, no reach in two rivers, every river flows into a named river or the sea (walking
 through reaches on no river, which the report lists in `throughUnnamedToReceivingRiver`), exactly one
-river reaches the sea, every source (without an override) on its line, every mouth kept, and the
+river reaches the sea (`expectedSeaOutlets`, default 1), every source (without an override) on its line, every mouth kept, and the
 owner's source list agrees (`sourceCheck` in `names.json`: the outlet of a given HydroLAKES lake, not
 cut at a lake, or a confluence of two IGN names). The report compares each river with the area trace
 (`trace`: km, source reach, km trimmed, lakes at the source).
@@ -286,6 +305,8 @@ the mask hole and the `lakes` outline layer.
 ### `npm run pipeline:export`
 
 Writes the Phase 1 artifacts:
+
+Reads the names of the lines from the region's name source (see "Name source per region").
 
 - `data/out/<region>/reaches.ndjson`: one document per reach (gitignored, about 3 MB). Each carries `stream`
   (its stream id from `ign-streams`, or null; it can be set together with `river`). `ign` is null for
@@ -343,6 +364,36 @@ Outputs: `data/out/<region>/subbasins.ndjson` (committed, seed input; each node 
 root), `data/work/<region>/tiles/subbasins.geojson` (own areas, one feature per sub-basin, with the path as a
 `,negro,limay,…,` string so the map can match a subtree) and `subbasin_outlines.geojson` (each node's
 whole area, for the selected border).
+
+#### Reference mode (`"mode": "reference"`, `cba`, R3.5)
+
+A region whose management areas come from a reference agency sets `"mode": "reference"` in
+`regions/<id>/subbasins.config.json` (no `mode` = the HydroBASINS path above, unchanged; `nqn`'s outputs are
+byte-identical). Code: `pipeline/lib/subbasins-reference.ts` (pure helpers in `subbasins-reference-pure.ts`).
+Needs `basin`, `rivers` and `named` for the region. For `cba`: 1 region (`cordoba`) → 6 APRHI basins (the R3.1 roots)
+→ 25 subcuencas → 80 UGH, 112 nodes, all `kind: "area"`.
+
+- **Parents by geometry, not code.** A subcuenca belongs to the basin holding the largest share of its area, a UGH to
+  the subcuenca holding the largest share; each child is clipped to its parent (the report lists every clipped-off
+  area over 1 km² and every child whose geometric parent differs from its source code). The one UGH row without
+  geometry is dropped and reported. A node's own area is the node minus its children; the salar, the lagoon and the
+  parts of whole basins outside the province stay in the basin's own area. Areas are geodesic from the polygons, never
+  the layers' area fields.
+- **Ids.** `regions/cba/subbasin-ids.json` maps each source feature (basin code, subcuenca name, UGH `COD_SIST` or name)
+  to its id. It is created on the first run and then fixed: the step fails when a feature has no id or an id has no
+  feature. A slug taken by another node gets `-subcuenca` / `-ugh` (listed in the report). Names come from APRHI plus
+  the `nameFixes` of the config (Carcarañá, Río, whitespace).
+- **Reaches.** Each keeps its R3.2 `root`; within it the reach goes to the subcuenca holding at least `reachMinShare`
+  (50%) of its length (South America Albers), then the same for the UGH; otherwise it stays at the parent level.
+- **Metrics** as above, over the node and its descendants; `endorheicAreaKm2` is the `CATCH_SKM` of its endorheic reaches.
+- **Outlet.** None for the region. Level 1: `expectedExitReach` of `basin.config.json` (root 06 has none: the rule below).
+  Levels 2–3: the node's reach with the largest `UPLAND_SKM`, kept only if at least `outletMinShare` (90%) of the node's
+  stream km drain to it through the node's own reaches; otherwise `outlet` is `null` and the report lists the share.
+- **Checks** (the step fails if one is false): ids match features and are unique; 1 + 6 + 25 + 80 nodes; every child
+  within its parent and siblings not overlapping (≤ 1 km²); own areas + children = node and own areas = region within
+  0.1%; region area = the R3.1 outline, basin areas = `roots.json`; every reach in exactly one node, root kept; every node
+  has reaches; child metrics ≤ parent; outputs byte-identical to the previous run when inputs and code are unchanged
+  (the step runs DuckDB with one thread for this). `export` for `cba` still reads the HydroBASINS-style config (R3.8).
 
 ### `npm run pipeline:ign-gate`
 
@@ -442,6 +493,33 @@ connected high-order reaches with no piece, and the longest unmatched named line
 `data/work/<id>/lines/`: `report.json` and `lines.parquet` (pieceId, lineId, source, sourceId, name,
 class, status, root, reach, network, strahler, length_m, geometry).
 
+### `npm run pipeline:line-names -- --region <id>`
+
+R3.4 step 1: the names of the displayed lines, for a region with `regions/<id>/names.config.json`
+(`cba`). Needs `lines` first. It writes the same `cover.parquet` and `reach_ign.parquet` that
+`ign-match` writes for `nqn`, so `named`, `ign-streams` and `export` can read either. Runs in about
+15 seconds.
+
+- **Names.** APRHI `NOMBRE_COM` values are parsed by `pipeline/lib/line-names.ts`. Abbreviations are
+  expanded (`A.` Arroyo, `R.` Río, `C.`/`Cda.` Cañada, `Q.` Quebrada), "Rio"/"Rió" are fixed to "Río",
+  and a type word repeated after its abbreviation is kept once. Text in parentheses becomes an alias.
+  A name with `*` is blank. A name that starts with any other word stops the step.
+- **Fixes.** Only the owner's `nameFixes` are applied. IGN spellings a few edits from an APRHI name
+  (`maxEditDistance`) that run along it are listed in `review.json` (`fixCandidates`), not applied.
+- **Aliases.** An IGN name inside the province becomes an alias when it runs within `bufferM` of at
+  least `aliasMinShare` of an APRHI name's km. The raw APRHI value is always an alias.
+- **Reaches.** APRHI names inside the province, IGN names outside it; APRHI wins on a reach both
+  touch. Coverage is the share of the reach within the buffer of the name's lines in its own root, with
+  the buffers of `lines.config.json`. Confidence uses `regions/<id>/ign.config.json` (values copied
+  from `nqn`, provisional).
+
+Checks: one row per reach, every reach exists, `name_key` matches `name`, every cover key has a name,
+no starred name in the outputs, every APRHI name parsed and its km accounted for, every `nameFixes`
+entry used, and the same outputs as the previous run (a config change fails once; run it twice).
+Outputs in `data/work/<id>/line-names/`: `cover.parquet`, `reach_ign.parquet`, `aliases.json` (per
+name: display, raw values, parenthesized names, IGN aliases), `review.json` (starred names, fix
+candidates, names that look damaged, near misses) and `report.json`.
+
 ### `npm run pipeline:ign`
 
 IGN perennial watercourse lines (`data/raw/ign/`, Shapefile, ISO-8859-1), cleaned and clipped to the
@@ -488,8 +566,8 @@ DECISSIONS.md (Phase 5) for how they were calibrated.
 
 Splits each shown IGN name into real streams (detection only; `export` turns `streams.json` into `data/out/<region>/streams.ndjson`). Inputs:
 `rivers/reaches.parquet` (`HYRIV_ID`, `NEXT_DOWN`, `LENGTH_KM`, geometry for the bbox),
-`named/river_reaches.parquet` (`river`), `ign-match/reach_ign.parquet` (`name`, `name_key`, `display`)
-and `regions/nqn/names.json`. A reach carries an IGN name when `display` is true; approved river names and
+`named/river_reaches.parquet` (`river`), `<name source>/reach_ign.parquet` (`name`, `name_key`, `display`;
+`ign-match` or `line-names`, see "Name source per region") and `regions/<id>/names.json`. A reach carries an IGN name when `display` is true; approved river names and
 their aliases are left out, as in `export`.
 
 Two reaches with the same name key are one group when one lies downstream of the other (`NEXT_DOWN`) and
@@ -498,7 +576,7 @@ Those reaches are absorbed. A reach with another IGN name, or on an approved riv
 (`detectStreams` in `pipeline/lib/streams.ts`).
 
 A stream then keeps only the reaches the IGN line runs along (owner, 2026-10-09; `followIgnLines`): a
-named reach is on the line when its name's coverage (`ign-match/cover.parquet`) is at least
+named reach is on the line when its name's coverage (`<name source>/cover.parquet`) is at least
 `line.minCoverage` (0.5; calibration under `named`). Ends of a group that are not on the line (upstream
 ends and the mouth) are pruned until every end is; so reaches below the threshold, and absorbed gaps,
 stay only between two reaches on the line, and at a fork only the branches the line runs along stay.
@@ -555,7 +633,8 @@ level and every sub-basin is present at each checked zoom, and records file size
 
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `ign` →
 `ign-match` → `named` → `lakes` → `ign-streams` → `ign-layers` → `localities` → `export` → `mask` →
-`subbasins` → `tiles`.
+`subbasins` → `tiles`. For `cba` (R3.4): `lines` → `line-names` → `named` → `ign-streams` → `export`, and the
+rest as their phases land.
 
 ## Tools
 

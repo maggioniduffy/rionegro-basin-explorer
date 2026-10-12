@@ -5,8 +5,10 @@
  * Inputs, read as pipeline:export reads them:
  *   data/work/rivers/reaches.parquet       HYRIV_ID, NEXT_DOWN, LENGTH_KM, geom (bbox)
  *   data/work/named/river_reaches.parquet  HYRIV_ID → river (approved rivers, pipeline:named)
- *   data/work/ign-match/reach_ign.parquet  HYRIV_ID → name, name_key, display
- *   data/work/ign-match/cover.parquet      HYRIV_ID, name_key → coverage
+ *   data/work/<name source>/reach_ign.parquet  HYRIV_ID → name, name_key, display
+ *   data/work/<name source>/cover.parquet      HYRIV_ID, name_key → coverage
+ *       where <name source> is "ign-match" (default) or "line-names" (namesFrom in the
+ *       region's ign.config.json; lib/name-source.ts)
  *   regions/nqn/names.json                    approved river names and aliases (left out)
  *   regions/nqn/ign.config.json               line.minCoverage, line.maxGap
  *   regions/nqn/ign-overrides.json            reaches named by the owner ("name") count as on
@@ -30,6 +32,7 @@ import { nameKey } from "../lib/names";
 import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import type { MatchConfig } from "../lib/ign-match";
+import { loadNameSource, nameFile } from "../lib/name-source";
 import {
   type DetectResult,
   type LineReach,
@@ -64,8 +67,9 @@ interface Reach {
 async function main() {
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const mappingFile = requireInput(workPath("named/river_reaches.parquet"));
-  const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
-  const coverFile = requireInput(workPath("ign-match/cover.parquet"));
+  const nameSource = await loadNameSource();
+  const ignFile = requireInput(nameFile(nameSource, "reach_ign.parquet"));
+  const coverFile = requireInput(nameFile(nameSource, "cover.parquet"));
   const { line } = JSON.parse(
     await readFile(regionFile("ign.config.json"), "utf8"),
   ) as MatchConfig;

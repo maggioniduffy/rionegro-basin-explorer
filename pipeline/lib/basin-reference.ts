@@ -97,25 +97,26 @@ const sum = (xs: Iterable<number>) => {
   for (const x of xs) s += x;
   return s;
 };
-const ident = (s: string) => `"${s.replaceAll('"', '""')}"`;
+export const ident = (s: string) => `"${s.replaceAll('"', '""')}"`;
 const bigintList = (ids: Iterable<string>) =>
   `unnest([${[...ids].map((i) => BigInt(i)).join(",")}]::BIGINT[])`;
 
 /** SQL source for a layer path relative to data/raw; a .zip is read through GDAL /vsizip/. */
-const source = (relPath: string) => {
+export const source = (relPath: string) => {
   const file = requireInput(rawPath(relPath));
   return lit(file.endsWith(".zip") ? `/vsizip/${file}` : file);
 };
-const readOptions = (encoding?: string) =>
+export const readOptions = (encoding?: string) =>
   encoding ? `, open_options=['ENCODING=${encoding}']` : "";
 /** A geometry column as valid EPSG:4326 polygons (APRHI layers have invalid rings). */
-const wgs84 = (geom: string, srs: string) =>
+export const wgs84 = (geom: string, srs: string) =>
   `ST_CollectionExtract(ST_MakeValid(${
     srs === "EPSG:4326"
       ? geom
       : `ST_Transform(${geom}, ${lit(srs)}, 'EPSG:4326', always_xy := true)`
   }), 3)`;
-const polygons = (g: string) => `ST_CollectionExtract(ST_MakeValid(${g}), 3)`;
+export const polygons = (g: string) =>
+  `ST_CollectionExtract(ST_MakeValid(${g}), 3)`;
 
 export async function layerTable(
   db: Awaited<ReturnType<typeof openDb>>,

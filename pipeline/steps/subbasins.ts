@@ -21,6 +21,9 @@
  *    they must reproduce the upstream ("u") values at the mouth reach, whose units come
  *    from the catalog (see export.ts).
  *
+ * With "mode": "reference" in the region's subbasins.config.json the levels come from a
+ * reference agency's layers instead (R3.5, lib/subbasins-reference.ts).
+ *
  * Outputs: data/out/subbasins.ndjson (seed input, committed),
  * data/work/tiles/subbasins.geojson (own areas, with each node's ancestor path) and
  * subbasin_outlines.geojson (whole areas), both tippecanoe inputs; report.json.
@@ -32,6 +35,10 @@ import { difference, upstreamIndex, upstreamSet } from "../lib/graph";
 import { requireInput } from "../lib/inputs";
 import { regionFile, OUT_DIR, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
+import {
+  runReferenceSubbasins,
+  type ReferenceSubbasinsConfig,
+} from "../lib/subbasins-reference";
 import {
   ancestorPath,
   hierarchyProblems,
@@ -110,9 +117,13 @@ const ENDORHEIC_PROVENANCE = {
 };
 
 async function main() {
-  const { subbasins: nodes } = JSON.parse(
+  const config = JSON.parse(
     await readFile(regionFile("subbasins.config.json"), "utf8"),
-  ) as { subbasins: ConfigNode[] };
+  ) as { mode?: string; subbasins: ConfigNode[] };
+  // Reference mode (R3.5): areas come from a reference agency's layers, not HydroBASINS.
+  if (config.mode === "reference")
+    return runReferenceSubbasins(config as unknown as ReferenceSubbasinsConfig);
+  const { subbasins: nodes } = config;
   const structure = hierarchyProblems(nodes);
   if (structure.length > 0)
     throw new Error(`subbasins.config.json: ${structure.join("; ")}`);

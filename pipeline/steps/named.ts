@@ -1,6 +1,7 @@
 /**
- * pipeline:named — trace the named rivers of regions/nqn/names.json and aggregate
- * their metrics. Runs after pipeline:ign-match.
+ * pipeline:named — trace the named rivers of regions/<id>/names.json and aggregate
+ * their metrics. Runs after the step that writes the region's line names (namesFrom in
+ * ign.config.json, lib/name-source.ts): pipeline:ign-match, or pipeline:line-names for cba.
  *
  * A river runs where its IGN name runs (owner rule, 2026-10-09; IGN is the authority).
  * From its mouth reach upstream it follows the reaches whose IGN line carries the river's
@@ -55,8 +56,16 @@ import { ALBERS } from "../lib/ign";
 import type { MatchConfig } from "../lib/ign-match";
 import { requireInput } from "../lib/inputs";
 import { type ReachKind, traceAlongName } from "../lib/name-trace";
+import { loadNameSource, nameFile } from "../lib/name-source";
+import {
+  type NetworkReach,
+  mouthKinds,
+  terminalFlowsInto,
+} from "../lib/mouth-kind";
 import { nameKey, riverSlug } from "../lib/names";
 import { regionFile, OUT_DIR, rel, workPath } from "../lib/paths";
+import { isReferenceRegion } from "../lib/region-mode";
+import { MOUTH_KINDS } from "../../lib/data/mouth";
 import { writeReport } from "../lib/report";
 
 /** Summed drop vs source − mouth differences above this are listed for review. */
@@ -117,8 +126,15 @@ const PROVENANCE = {
   "mouth.regulationPct":
     "RiverATLAS v1.0 dor_pc_pva / 10 at the mouth reach: degree of regulation, reservoir storage of GRanD v1.1 dams upstream as a percent of the modeled natural annual flow (capped at 1000 %)",
   bbox: "HydroRIVERS v1.0 geometry extent of the traced reaches",
-  // Provenance text seeded to Mongo: the old config path stays until the next re-export (Phase R1).
-  name: "pipeline/names.json (hand-approved; IGN spelling, FUENTE: Instituto Geográfico Nacional de la República Argentina)",
+  // `name` is added per region in main() (lib/name-source.ts).
+};
+
+/** Provenance that differs in a reference region (R3.7): sinks have no distance to the sea. */
+const REFERENCE_PROVENANCE = {
+  "mouth.distanceToSeaKm":
+    "HydroRIVERS v1.0 DIST_DN_KM at the mouth reach; null when the flow path ends in an endorheic sink, where it would measure the distance to the sink, not to the sea",
+  mouthKind:
+    "End of the flow path from the mouth reach along NEXT_DOWN (pipeline:rivers, edited at the region's edge): region-edge = next_down_edit 'outside' (the reach flows on outside the mapped region); sink = HydroRIVERS ENDORHEIC = 1 or the endorheic network; sea otherwise",
 };
 
 async function main() {
@@ -129,12 +145,20 @@ async function main() {
   ).rivers;
   const cfg = JSON.parse(
     await readFile(regionFile("ign.config.json"), "utf8"),
-  ) as MatchConfig;
+  ) as MatchConfig & { expectedSeaOutlets?: number };
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const atlasFile = requireInput(workPath("rivers/riveratlas_basin.parquet"));
-  // IGN name coverage per reach (pipeline:ign-match); run it before this step.
-  const coverFile = requireInput(workPath("ign-match/cover.parquet"));
-  const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
+  // Name coverage per reach, from the step the region's ign.config.json names (namesFrom:
+  // pipeline:ign-match or pipeline:line-names); run it before this step.
+  const nameSource = await loadNameSource();
+  const coverFile = requireInput(nameFile(nameSource, "cover.parquet"));
+  const ignFile = requireInput(nameFile(nameSource, "reach_ign.parquet"));
+  const reference = await isReferenceRegion();
+  const provenance = {
+    ...PROVENANCE,
+    ...(reference ? REFERENCE_PROVENANCE : {}),
+    name: nameSource.riverNameProvenance,
+  };
   const outDir = workPath("named");
   await mkdir(outDir, { recursive: true });
   await mkdir(OUT_DIR, { recursive: true });
@@ -159,6 +183,25 @@ async function main() {
         nextDown: Number(r.NEXT_DOWN),
       })),
     );
+
+    // Reference regions (cba): where the water of each reach ends, from the edited flow
+    // network of pipeline:rivers. Absent for nqn, whose output stays as it was.
+    const kinds = reference
+      ? mouthKinds(
+          (
+            await db.all(`
+              SELECT HYRIV_ID, NEXT_DOWN, next_down_edit, ENDORHEIC, network
+              FROM ${lit(reachesFile)}`)
+          ).map((r): NetworkReach => ({
+            id: Number(r.HYRIV_ID),
+            nextDown: Number(r.NEXT_DOWN),
+            nextDownEdit:
+              r.next_down_edit == null ? null : String(r.next_down_edit),
+            endorheic: Number(r.ENDORHEIC) === 1,
+            network: String(r.network),
+          })),
+        )
+      : null;
 
     const missingMouths = names
       .filter((n) => !byId.has(n.mouthReach))
@@ -299,15 +342,21 @@ async function main() {
     // are trimmed to their IGN line, a mouth can drain into reaches on no river (a lake the
     // trimmed river no longer crosses, or IGN's own name running on below an approved
     // mouth); those are walked through and reported.
+    // A river that joins no other approved river ends in the sea ("sea", the only case in
+    // nqn) or, in a reference region (R3.7), in a sink or at the region's edge: the kind of
+    // the terminal reach of the walk (lib/mouth-kind.ts).
     const receiving = (mouth: number) => {
       const between: number[] = [];
+      let last = mouth;
       for (let id = num(mouth, "NEXT_DOWN"); ; id = num(id, "NEXT_DOWN")) {
-        if (id === 0) return { flowsInto: "sea", between };
+        if (id === 0)
+          return { flowsInto: terminalFlowsInto(kinds?.get(last)), between };
         const river = riverOf.get(id);
         if (river) return { flowsInto: river, between };
         if (!byId.has(id) || between.length > byId.size)
           return { flowsInto: "unnamed", between };
         between.push(id);
+        last = id;
       }
     };
     const throughUnnamed = traced.flatMap(({ n, slug, key }) => {
@@ -364,6 +413,7 @@ async function main() {
       );
       const unknownKm = lengthWhere((r) => r.predcat1 === null);
       const { flowsInto } = receiving(mouth);
+      const mouthKind = kinds?.get(mouth);
       const m = byId.get(mouth)!;
       const extent = (field: string, pick: (...v: number[]) => number) =>
         round(pick(...path.map((id) => num(id, field))), 5);
@@ -376,6 +426,7 @@ async function main() {
         aliases: n.aliases ?? [],
         nameConfidence: n.confidence,
         flowsInto,
+        ...(mouthKind ? { mouthKind } : {}),
         mouthReach: mouth,
         sourceReach: head,
         reachCount: path.length,
@@ -388,7 +439,9 @@ async function main() {
           elevationM: mouthElevation,
           dischargeM3s: round(Number(m.DIS_AV_CMS), 1),
           uplandKm2: round(Number(m.UPLAND_SKM)),
-          distanceToSeaKm: round(Number(m.DIST_DN_KM)),
+          // DIST_DN_KM measures to the end of the path: for a sink that is the sink, not the sea.
+          distanceToSeaKm:
+            mouthKind === "sink" ? null : round(Number(m.DIST_DN_KM)),
           strahler: Number(m.ORD_STRA),
           regulationPct: round(Number(m.dor_pc_pva) / 10),
         },
@@ -420,7 +473,7 @@ async function main() {
           "watershed.floodedMaxPct",
           "watershed.population",
         ],
-        provenance: PROVENANCE,
+        provenance,
       };
     });
 
@@ -466,6 +519,11 @@ async function main() {
             : null,
       };
     });
+    // An approved river's reaches count with its name in a confluence check, even where the
+    // reach shows no name (an ambiguous reach right above a confluence).
+    const riverKeyOf = new Map<number, string>();
+    for (const { n, path } of traced)
+      for (const id of path) riverKeyOf.set(id, nameKey(n.name));
     const sourceList = traced
       .filter(({ n }) => n.sourceCheck)
       .map(({ n, slug, path }) => {
@@ -483,7 +541,10 @@ async function main() {
         } else {
           expected = `confluence of ${c.confluence.join(" and ")}`;
           const upKeys = new Set(
-            (index.get(head) ?? []).map((id) => shownKey.get(id)),
+            (index.get(head) ?? []).flatMap((id) => [
+              shownKey.get(id),
+              riverKeyOf.get(id),
+            ]),
           );
           agrees = c.confluence.every((name) => upKeys.has(nameKey(name)));
         }
@@ -504,8 +565,14 @@ async function main() {
       everyRiverFlowsIntoNamedOrSea: docs.every(
         (d) => d.flowsInto !== "unnamed",
       ),
+      // nqn has one outlet (the Río Negro). A region with several drainage systems says how
+      // many rivers end in none of the others in ign.config.json "expectedSeaOutlets".
+      // (In a reference region a river that joins no other ends in a sink or at the region's
+      // edge as well as at the sea; all of them count.)
       oneRiverReachesTheSea:
-        docs.filter((d) => d.flowsInto === "sea").length === 1,
+        docs.filter((d) =>
+          (MOUTH_KINDS as readonly string[]).includes(d.flowsInto),
+        ).length === (cfg.expectedSeaOutlets ?? 1),
       // The IGN line rule: every river (without an override) ends on a reach on its line.
       everySourceOnTheLine: trace.every(
         (t) => t.override !== null || t.sourceOnTheLine,
@@ -529,6 +596,17 @@ async function main() {
         population: d.watershed.population,
       })),
       namedKm: round(docs.reduce((s, d) => s + d.lengthKm, 0)),
+      // Reference regions only: where each river's water ends (R3.7).
+      ...(kinds
+        ? {
+            mouthKinds: Object.fromEntries(
+              docs.map((d) => [
+                d._id,
+                { flowsInto: d.flowsInto, mouthKind: d.mouthKind },
+              ]),
+            ),
+          }
+        : {}),
       line: cfg.line,
       trace,
       ownerSourceList: sourceList,

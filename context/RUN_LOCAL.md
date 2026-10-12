@@ -197,3 +197,28 @@ Run on the owner's machine, on `cba`:
 - `npm run seed -- --region nqn`: ok, `basin-explorer`, every check true; 24 rivers, 8016 reaches,
   25 sub-basins, 453 streams matched, none upserted, modified or deleted.
 - Still for the owner: the browser checks, `npm run test:e2e` and the Vercel checks above.
+
+## Córdoba R3.4 step 1 — line names (2026-10-12)
+
+Run on the owner's machine (needs `data/work/cba/lines/` from R3.3 and `data/raw/CursosDeAgua_CPA.zip` plus the IGN line layers):
+
+- [x] `npm run pipeline:line-names -- --region cba` twice; the second run reports `identicalToPreviousRun: true` and every check true (about 15 s each).
+- [ ] Review `data/work/cba/line-names/review.json`: `fixCandidates` (10) and `unresolvedDamaged` (1). Copy the fixes you approve into `nameFixes` in `regions/cba/names.config.json` (with a note), then run the step twice again.
+
+## Córdoba R3.4 steps 3–4 — named, ign-streams, export (2026-10-12)
+
+Needs `data/work/cba/line-names/` (step 1), `data/work/cba/rivers/`, `basin/` and `data/raw` (HydroLAKES; `named` scans the global shapefile once, a few minutes, then caches `data/work/cba/lakes/hydrolakes_bbox.parquet`):
+
+- [x] `npm run pipeline:named -- --region cba` twice: `ok: true`, 13 rivers, 2,435.7 km (DECISSIONS.md "Córdoba R3.4 steps 2–4").
+- [x] `npm run pipeline:ign-streams -- --region cba` twice: `ok: true`, 704 streams.
+- [ ] `npm run pipeline:export -- --region cba`: in R3.8, once `subbasins` (R3.5) and `lakes` (R3.6) exist for `cba`.
+- [x] `nqn` unchanged (verified 2026-10-12 in the cloud session: ok true, reports equal apart from `generatedAt`, `data/out/nqn` identical): `npm run pipeline:named -- --region nqn`, then `ign-streams`, then `export`; `git status data/out/nqn` shows nothing and the reports equal the previous ones apart from timestamps.
+
+## Córdoba R3.5 — sub-basins (2026-10-12)
+
+Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjson` and `data/raw/Subcuencas_cpa.zip`, `UnidadesDeGestion_hidrica_CPA.zip`:
+
+- [x] `npm run pipeline:subbasins -- --region cba` twice (about 70 s each, one thread): `ok: true`, 112 nodes; the second run reports `previousRun: { identical: true }`.
+- [x] `nqn` unchanged: `npm run pipeline:subbasins -- --region nqn`; `data/out/nqn/subbasins.ndjson`, `subbasins.geojson` and `subbasin_outlines.geojson` have the same sha256 as before.
+- [ ] Review `regions/cba/subbasin-ids.json` (ids are the future URL slugs; `la-picasa-subcuenca` and `cerro-negro-ugh` were suffixed) and the report's `outlets.nodes` (86 nodes at levels 2–3, and root 06, have a null outlet by the 90% rule).
+- [ ] Tile size: `data/work/cba/tiles/subbasins.geojson` is 49 MB, `subbasin_outlines.geojson` 63 MB; check the PMTiles size in R3.8.

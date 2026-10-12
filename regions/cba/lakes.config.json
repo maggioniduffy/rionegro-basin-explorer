@@ -1,0 +1,47 @@
+{
+  "$comment": "Settings of pipeline:lakes and pipeline:ign-layers in reference mode (R3.6). A region with this file takes its water from APRHI > IGN > HydroLAKES (owner, 2026-10-12); a region without it (nqn) keeps the HydroLAKES + IGN path. The province edge is the union of basin.config.json's clippedLayer, the same one pipeline:basin and pipeline:lines use. aprhi: layers read from data/raw/ with the CRS the .prj declares (EPSG:22174, always_xy, UTF-8; do not use IGN's ISO-8859-1 option on them). natural = CuerposDeAguaNaturales (name field NCOMPLETO, 90% null); reservoirs = Embalses (Tipo Presa 26 / Azud 1; Area is in hectares and is only compared with the polygon; Ano_inicio uses 0 and -999 as 'no value'; the other numeric fields have 0 sentinels and unverified units and are not read). Inside the province the water is APRHI's: natural bodies and reservoirs (made valid; a null geometry is dropped and reported). A polygon crossing the edge (Mar Chiquita) is taken whole. Outside the province and inside the outline the water is IGN's (Embalse BH130 = reservoir, Espejo de agua perenne = lake), minus APRHI's: ign.dropCoveredShare is the share of an IGN polygon that APRHI must cover for it to count as the same water body and be dropped whole (it keeps IGN's larger 2010s outline of Mar Chiquita from adding a rim around APRHI's polygon); ign.minKm2 drops smaller remnants. HydroLAKES polygons (clipped to the outline) are added where APRHI and IGN polygons cover less than hydroLakes.maxCoveredShare of them, minus what those cover (Salinas Grandes has no APRHI or IGN polygon); hydroLakes.minKm2 drops smaller remnants. Where kept polygons still overlap, the one of higher precedence wins (reservoir, natural, IGN reservoir, IGN lake, HydroLAKES; inside a tier a named APRHI body first, then the larger, then the lower id) and parts smaller than minPartKm2 left by the cut are dropped. Names: APRHI's with abbreviations expanded (inventory of 2026-10-12: 'Lag.' 135 names, 'Lags.' 1, 'Cda.' 1, and 'Ing.' with the initials 'A.' 'B.' 'M.' in two reservoir names); keepDotted are dotted words left as written (the title 'Ing.' and initials), any other dotted word stops the step. A name containing blankMarker is blank (the source marks it unknown, as in names.config.json). An unnamed APRHI lake or a HydroLAKES lake takes the name of the IGN polygon covering at least nameMinOverlap of it (as nqn), HydroLAKES' own name last. Lines: minPieceM drops line pieces shorter than this left by cutting a lake (shoreline slivers at 15 arc-second resolution, as nqn's 50 m); conservationPct is the allowed difference between input km and kept + removed km; overlapMaxKm2 and outsideOutlineMaxKm2 are the tolerances of the polygon checks. damMatchM: an IGN dam point or wall within this distance (m) of an APRHI dam reservoir is reported as marking it.",
+  "mode": "reference",
+  "aprhi": {
+    "natural": {
+      "path": "CuerposDeAguaNaturales_CPA.zip",
+      "srs": "EPSG:22174",
+      "idField": "OGC_FID",
+      "nameField": "NCOMPLETO",
+      "globalIdField": "GlobalID"
+    },
+    "reservoirs": {
+      "path": "Embalses_CPA.zip",
+      "srs": "EPSG:22174",
+      "idField": "OGC_FID",
+      "nameField": "Nombre",
+      "globalIdField": "GlobalID",
+      "typeField": "Tipo",
+      "damTypes": ["Presa"],
+      "yearField": "Ano_inicio",
+      "yearNoValue": [0, -999],
+      "areaHaField": "Area"
+    }
+  },
+  "abbreviations": {
+    "lag": "Laguna",
+    "lags": "Lagunas",
+    "cda": "Cañada"
+  },
+  "keepDotted": ["ing", "a", "b", "m"],
+  "blankMarker": "*",
+  "ign": {
+    "dropCoveredShare": 0.5,
+    "minKm2": 0.01
+  },
+  "hydroLakes": {
+    "maxCoveredShare": 0.5,
+    "minKm2": 0.01
+  },
+  "nameMinOverlap": 0.5,
+  "minPartKm2": 0.001,
+  "overlapMaxKm2": 0.01,
+  "outsideOutlineMaxKm2": 0.001,
+  "minPieceM": 50,
+  "conservationPct": 0.01,
+  "damMatchM": 1000
+}

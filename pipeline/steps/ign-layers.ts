@@ -32,6 +32,7 @@ import { lengthSpheroidKm } from "../lib/geo";
 import {
   ALBERS,
   IGN_ST_READ_OPTIONS,
+  IGN_WATER_SHP,
   type WaterConfig,
   createNameMap,
 } from "../lib/ign";
@@ -43,20 +44,7 @@ import { writeReport } from "../lib/report";
 const num = (v: unknown) => Number(v ?? 0);
 const round = (v: number, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
 
-const SHP = {
-  reservoirs: rawPath(
-    "ign/areas_de_aguas_continentales_BH130/areas_de_aguas_continentales_BH130Polygon.shp",
-  ),
-  waterBodies: rawPath(
-    "ign/areas_de_aguas_continentales_perenne/areas_de_aguas_continentales_perennePolygon.shp",
-  ),
-  damPoints: rawPath(
-    "ign/puntos_de_aguas_continentales_BH051/puntos_de_aguas_continentales_BH051Point.shp",
-  ),
-  damWalls: rawPath(
-    "ign/lineas_de_aguas_continentales_BI020/lineas_de_aguas_continentales_BI020Line.shp",
-  ),
-};
+const SHP = IGN_WATER_SHP;
 /** A hand decision on an IGN dam point (BH051), keyed by its IGN `gid`. */
 interface DamOverride {
   gid: number;

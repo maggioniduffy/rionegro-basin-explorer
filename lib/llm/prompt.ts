@@ -2,6 +2,7 @@ import "server-only";
 import { METRIC_IDS, METRICS } from "@/lib/ask/metrics";
 import type { Catalog } from "@/lib/ask/catalog";
 import type { AskLocale } from "@/lib/ask/query";
+import { isMouthKind, type MouthKind } from "@/lib/data/mouth";
 import { REGION_CONTENT } from "@/regions/content";
 
 const LANGUAGE: Record<AskLocale, string> = {
@@ -11,19 +12,26 @@ const LANGUAGE: Record<AskLocale, string> = {
 
 const ENDORHEIC_LABEL = "endorheic land / zonas endorreicas";
 
+/** How a river that joins no other river is described to the model (lib/data/mouth.ts). */
+const MOUTH_TEXT: Record<MouthKind, string> = {
+  sea: "sea",
+  sink: "an endorheic sink (drains inland)",
+  "region-edge": "leaves the mapped region",
+};
+
 /**
- * One line per river, `slug | name | aliases | flows into: <name or "sea">`. Values and
- * orderings are not printed: rank / compare / fact read them from the data afterwards.
+ * One line per river, `slug | name | aliases | flows into: <name, "sea", an endorheic sink or
+ * "leaves the mapped region">`. Values and orderings are not printed: rank / compare / fact
+ * read them from the data afterwards.
  */
 function riversSection(catalog: Catalog): string {
   const { rivers } = catalog.docs;
   const nameOf = new Map(rivers.map((r) => [r._id, r.name]));
   return rivers
     .map((river) => {
-      const flowsInto =
-        river.flowsInto === "sea"
-          ? "sea"
-          : (nameOf.get(river.flowsInto) ?? river.flowsInto);
+      const flowsInto = isMouthKind(river.flowsInto)
+        ? MOUTH_TEXT[river.flowsInto]
+        : (nameOf.get(river.flowsInto) ?? river.flowsInto);
       return `${river._id} | ${river.name} | ${river.aliases.join(", ")} | flows into: ${flowsInto}`;
     })
     .join("\n");

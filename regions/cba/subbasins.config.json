@@ -1,0 +1,46 @@
+{
+  "$comment": "Inputs for pipeline:subbasins in reference mode (R3.5; owner decisions 2026-10-12). Hierarchy: level 0 = the region (id and name below), level 1 = the six APRHI basins exactly as the R3.1 roots in data/work/cba/basin/basins.geojson, level 2 = the 25 APRHI subcuencas, level 3 = the 80 APRHI unidades de gestión hídrica (UGH). Parents come from geometry, never from the source codes: a subcuenca's parent is the basin holding the largest share of its area, a UGH's parent the subcuenca holding the largest share; each child is clipped to its parent, and a parent's own area is the parent minus its children. The salar (Salinas Grandes) and the lagoon (Mar Chiquita) are not nodes: they stay in their basin's own area, as do the parts of whole basins outside the province. Layer paths are relative to data/raw/, read as the APRHI .prj files declare (EPSG:22174, always_xy; see gate.config.json). The UGH layer has one row without geometry (all attributes null); it is dropped and reported. Areas always come from the polygons (geodesic), never from the layers' area fields. Ids: regions/cba/subbasin-ids.json (created on the first run from rootSlugs and the source names, then fixed: the step fails when a feature has no id or an id has no feature). nameFixes are applied to every display name in order: 'exact' replaces a whole name, 'word' a word wherever it occurs. outletMinShare: a level-2/3 node has an outlet only if at least this share of its stream km drains to its largest-upland reach. reachMinShare: a reach goes to the subcuenca (then UGH) holding at least this share of its length, else it stays at the parent level. Level-1 outlets come from expectedExitReach in basin.config.json.",
+  "mode": "reference",
+  "region": { "id": "cordoba", "name": "Córdoba" },
+  "source": "Portal de Información Hídrica de Córdoba (APRHI)",
+  "rootSlugs": {
+    "01": "salinas-grandes",
+    "02": "mar-chiquita",
+    "03": "carcarana",
+    "04": "noroeste-llanura-pampeana",
+    "05": "la-picasa",
+    "06": "juramento-salado"
+  },
+  "subcuencaLayer": {
+    "path": "Subcuencas_cpa.zip",
+    "srs": "EPSG:22174",
+    "codeField": "COD_CUENCA",
+    "nameField": "SUBCUENCA",
+    "layerName": "Subcuencas"
+  },
+  "ughLayer": {
+    "path": "UnidadesDeGestion_hidrica_CPA.zip",
+    "srs": "EPSG:22174",
+    "codeField": "COD_CUENCA",
+    "nameField": "SISTEMA",
+    "systemField": "COD_SIST",
+    "layerName": "Unidades de Gestión Hídrica"
+  },
+  "nameFixes": [
+    {
+      "from": "Río Carcaraña",
+      "to": "Río Carcarañá",
+      "match": "exact",
+      "note": "The Cuencas layer writes Carcaraña; IGN and the subcuenca and UGH layers write Carcarañá."
+    },
+    {
+      "from": "Rio",
+      "to": "Río",
+      "match": "word",
+      "note": "Missing accent in 'Rio Juramento Salado' (Cuencas layer) and wherever else a name starts with 'Rio '."
+    }
+  ],
+  "counts": { "level1": 6, "level2": 25, "level3": 80 },
+  "outletMinShare": 0.9,
+  "reachMinShare": 0.5
+}

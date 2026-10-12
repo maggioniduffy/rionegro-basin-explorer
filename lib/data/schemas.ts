@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MOUTH_KINDS } from "./mouth";
 
 /**
  * Document shapes of data/out/*.ndjson (written by pipeline:named and pipeline:export)
@@ -20,8 +21,16 @@ export const riverSchema = z.strictObject({
   /** Former names that search still finds (regions/nqn/names.json). */
   aliases: z.array(z.string().min(1)),
   nameConfidence: z.enum(["strong", "weak"]),
-  /** Slug of the river it flows into, or "sea". */
+  /**
+   * Slug of the river it flows into, or, when it joins none, "sea" (nqn) or, for reference
+   * regions (R3.7), "sea" | "sink" | "region-edge" (lib/data/mouth.ts).
+   */
   flowsInto: z.string().min(1),
+  /**
+   * Where the whole downstream path from the mouth ends, even through other rivers
+   * (reference regions only; absent for nqn). A "sink" has no distance to the sea.
+   */
+  mouthKind: z.enum(MOUTH_KINDS).optional(),
   mouthReach: z.number().int(),
   sourceReach: z.number().int(),
   reachCount: z.number().int().positive(),
@@ -34,7 +43,8 @@ export const riverSchema = z.strictObject({
     elevationM: num,
     dischargeM3s: num,
     uplandKm2: num,
-    distanceToSeaKm: num,
+    /** Null when the flow ends in an endorheic sink (reference regions): no distance to the sea. */
+    distanceToSeaKm: num.nullable(),
     strahler: z.number().int(),
     regulationPct: num,
   }),
@@ -79,7 +89,8 @@ export const reachSchema = z.strictObject({
   nextDown: z.number().int(),
   mainRiv: z.number().int(),
   lengthKm: num,
-  distanceToSeaKm: num,
+  /** Null when the reach's flow ends in an endorheic sink (reference regions). */
+  distanceToSeaKm: num.nullable(),
   uplandKm2: num,
   strahler: z.number().int(),
   dischargeM3s: num,
@@ -109,6 +120,19 @@ export const reachSchema = z.strictObject({
       reviewed: z.boolean(),
     })
     .nullable(),
+  /**
+   * Reference regions only (R3.7): id of the level-1 sub-basin (basin) the reach belongs to,
+   * from its pipeline:rivers root. Absent for nqn.
+   */
+  root: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
+  /**
+   * Reference regions only: true when a displayed line piece matched to the reach is under
+   * review by the source agency (APRHI "en revisión"). Absent otherwise.
+   */
+  lineReview: z.boolean().optional(),
 });
 export type Reach = z.infer<typeof reachSchema>;
 
@@ -118,11 +142,15 @@ const slug = z.string().regex(/^[a-z0-9-]+$/);
  * data/out/subbasins.ndjson (pipeline:subbasins). The root (level 0) is the whole basin;
  * levels 1-3 nest inside it. Metrics cover the node's whole set (its children included).
  * A "river" node drains to its river's mouth; the "endorheic" node is the land that
- * drains to closed depressions, so it has no river, name or outlet.
+ * drains to closed depressions, so it has no river, name or outlet. An "area" node is a
+ * management area of a reference agency (Córdoba: APRHI basins, subcuencas and UGH,
+ * R3.5): it always has a name, no river, and an outlet only when one reach takes most of
+ * its stream km (null otherwise).
  */
-export const subbasinSchema = z.strictObject({
+export const subbasinSchema = z
+  .strictObject({
   _id: slug,
-  kind: z.enum(["river", "endorheic"]),
+  kind: z.enum(["river", "endorheic", "area"]),
   /** Proper noun of a river node; null for endorheic land (labelled per locale). */
   name: z.string().min(1).nullable(),
   level: z.number().int().nonnegative(),
@@ -159,7 +187,11 @@ export const subbasinSchema = z.strictObject({
   bbox: bboxSchema,
   modeled: z.array(z.string()),
   provenance: z.record(z.string(), z.string()),
-});
+})
+  .refine((d) => d.kind !== "area" || (d.name !== null && d.river === null), {
+    message: "an area has a name and no river",
+    path: ["name"],
+  });
 export type Subbasin = z.infer<typeof subbasinSchema>;
 
 /**
@@ -184,7 +216,8 @@ export const streamSchema = z.strictObject({
     elevationM: num,
     dischargeM3s: num,
     uplandKm2: num,
-    distanceToSeaKm: num,
+    /** Null when the flow ends in an endorheic sink (reference regions). */
+    distanceToSeaKm: num.nullable(),
     strahler: z.number().int(),
     regulationPct: num,
   }),
@@ -195,6 +228,12 @@ export const streamSchema = z.strictObject({
     population: z.number().int(),
   }),
   bbox: bboxSchema,
+  /**
+   * Other names the stream is searched by (reference regions only, R3.7): the source's raw
+   * spellings, names in parentheses and aliases from the other agency's lines, without the
+   * stream's own name. Absent for nqn.
+   */
+  aliases: z.array(z.string().min(1)).optional(),
   /** Dotted paths of modeled or estimated values (CLAUDE.md rule 4). */
   modeled: z.array(z.string()),
   provenance: z.record(z.string(), z.string()),

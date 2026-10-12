@@ -65,17 +65,18 @@ describe("parseAprhiName", () => {
       display: "Arroyo del Gato",
       parenthesized: ["Achiras"],
     });
-    expect(parseAprhiName("R. Junta (A. Santa Cruz)", cfg).parenthesized).toEqual([
-      "Arroyo Santa Cruz",
-    ]);
+    expect(
+      parseAprhiName("R. Junta (A. Santa Cruz)", cfg).parenthesized,
+    ).toEqual(["Arroyo Santa Cruz"]);
   });
 
   it("splits alternatives joined by o and drops a leading o", () => {
-    expect(parseAprhiName("A. La Totorilla (o Suyataco)", cfg).parenthesized).toEqual(
-      ["Suyataco"],
-    );
     expect(
-      parseAprhiName("A. Suncho Huaico ( Dulce o Santa María)", cfg).parenthesized,
+      parseAprhiName("A. La Totorilla (o Suyataco)", cfg).parenthesized,
+    ).toEqual(["Suyataco"]);
+    expect(
+      parseAprhiName("A. Suncho Huaico ( Dulce o Santa María)", cfg)
+        .parenthesized,
     ).toEqual(["Dulce", "Santa María"]);
   });
 
@@ -88,7 +89,11 @@ describe("parseAprhiName", () => {
   });
 
   it("blanks a name with a star and keeps the raw value", () => {
-    for (const raw of ["A. Bola*", "A. Seco *", "A. Las Petacas* (Viuda Lopez*)"]) {
+    for (const raw of [
+      "A. Bola*",
+      "A. Seco *",
+      "A. Las Petacas* (Viuda Lopez*)",
+    ]) {
       expect(parseAprhiName(raw, cfg)).toMatchObject({
         starred: true,
         display: null,
@@ -104,6 +109,18 @@ describe("parseAprhiName", () => {
       display: "BY PASS RÍO TERCERO",
       rules: ["fix:rio"],
     });
+  });
+
+  it("keeps a repeated type word once", () => {
+    expect(parseAprhiName("A. Arroyo 630", cfg)).toMatchObject({
+      display: "Arroyo 630",
+      rules: ["abbr:a", "repeatedType"],
+    });
+    expect(parseAprhiName("Q. Quebrada de Tellio", cfg).display).toBe(
+      "Quebrada de Tellio",
+    );
+    // Two words only: nothing to drop.
+    expect(parseAprhiName("Río Río", cfg).display).toBe("Río Río");
   });
 
   it("leaves a full name alone", () => {
@@ -131,7 +148,10 @@ describe("parseAprhiName", () => {
   });
 
   it("returns nothing for an empty value and flags unbalanced parentheses", () => {
-    expect(parseAprhiName("  ", cfg)).toMatchObject({ raw: null, display: null });
+    expect(parseAprhiName("  ", cfg)).toMatchObject({
+      raw: null,
+      display: null,
+    });
     expect(parseAprhiName(null, cfg).starred).toBe(false);
     expect(parseAprhiName("A. El Cimarr(n", cfg).unbalanced).toBe(true);
   });
@@ -150,7 +170,9 @@ describe("editDistance", () => {
 describe("IGN names", () => {
   it("splits the main and parenthesized parts", () => {
     expect(ignMainName("Río Tercero (Ctalamochita)")).toBe("Río Tercero");
-    expect(ignParenthesized("Río Tercero (Ctalamochita)")).toEqual(["Ctalamochita"]);
+    expect(ignParenthesized("Río Tercero (Ctalamochita)")).toEqual([
+      "Ctalamochita",
+    ]);
     expect(ignParenthesized("Arroyo X (o El Manso)")).toEqual(["El Manso"]);
     expect(ignParenthesized("Arroyo X")).toEqual([]);
   });
@@ -160,15 +182,25 @@ describe("findCorrection", () => {
   const conf = { aliasMinShare: 0.5, maxEditDistance: 2 };
   const none = new Set<string>();
 
-  it("takes the IGN spelling of a damaged name that runs along it", () => {
+  it("proposes the IGN spelling of a damaged name that runs along it", () => {
     expect(
-      findCorrection("Arroyo Anambn", [{ name: "Arroyo Anambé", share: 0.9 }], none, conf),
+      findCorrection(
+        "Arroyo Anambn",
+        [{ name: "Arroyo Anambé", share: 0.9 }],
+        none,
+        conf,
+      ),
     ).toEqual({ name: "Arroyo Anambé", share: 0.9, distance: 1 });
   });
 
   it("ignores IGN names that run along less than the threshold", () => {
     expect(
-      findCorrection("Arroyo Anambn", [{ name: "Arroyo Anambé", share: 0.4 }], none, conf),
+      findCorrection(
+        "Arroyo Anambn",
+        [{ name: "Arroyo Anambé", share: 0.4 }],
+        none,
+        conf,
+      ),
     ).toBeNull();
   });
 
@@ -199,10 +231,20 @@ describe("findCorrection", () => {
 
   it("needs the same number of words and a distance within the limit", () => {
     expect(
-      findCorrection("Arroyo Anambn", [{ name: "Arroyo Anambé Grande", share: 0.9 }], none, conf),
+      findCorrection(
+        "Arroyo Anambn",
+        [{ name: "Arroyo Anambé Grande", share: 0.9 }],
+        none,
+        conf,
+      ),
     ).toBeNull();
     expect(
-      findCorrection("Arroyo Abcdef", [{ name: "Arroyo Abxyzf", share: 0.9 }], none, conf),
+      findCorrection(
+        "Arroyo Abcdef",
+        [{ name: "Arroyo Abxyzf", share: 0.9 }],
+        none,
+        conf,
+      ),
     ).toBeNull();
   });
 

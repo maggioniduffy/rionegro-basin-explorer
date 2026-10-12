@@ -33,6 +33,25 @@ export const IGN_LINE_LAYERS = [
 
 export const IGN_ST_READ_OPTIONS = "open_options=['ENCODING=ISO-8859-1']";
 
+/**
+ * IGN water layers (same encoding): "Embalse" polygons (BH130), "Espejo de agua perenne"
+ * polygons, "Dique" points (BH051) and "Muro de embalse" lines (BI020).
+ */
+export const IGN_WATER_SHP = {
+  reservoirs: rawPath(
+    "ign/areas_de_aguas_continentales_BH130/areas_de_aguas_continentales_BH130Polygon.shp",
+  ),
+  waterBodies: rawPath(
+    "ign/areas_de_aguas_continentales_perenne/areas_de_aguas_continentales_perennePolygon.shp",
+  ),
+  damPoints: rawPath(
+    "ign/puntos_de_aguas_continentales_BH051/puntos_de_aguas_continentales_BH051Point.shp",
+  ),
+  damWalls: rawPath(
+    "ign/lineas_de_aguas_continentales_BI020/lineas_de_aguas_continentales_BI020Line.shp",
+  ),
+};
+
 /** Grid cell size (m) for the candidate-pair prefilter; any value >= the largest buffer works. */
 const CELL_M = 5000;
 

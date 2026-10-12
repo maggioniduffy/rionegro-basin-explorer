@@ -91,12 +91,8 @@ interface Entry {
   raw: Set<string>;
   parenthesized: Set<string>;
   ignAliases: { name: string; share: number }[];
-  correctedFrom: {
-    display: string;
-    ignName: string;
-    share: number;
-    distance: number;
-  } | null;
+  /** The APRHI spelling replaced by an owner-approved fix (names.config.json nameFixes). */
+  correctedFrom: { display: string; note: string } | null;
 }
 
 async function main() {
@@ -162,12 +158,17 @@ async function main() {
         parsed.set(raw, parseAprhiName(raw, cfg));
       } catch (e) {
         if (!(e instanceof UnknownPrefixError)) throw e;
-        unknownPrefixes.set(e.prefix, [...(unknownPrefixes.get(e.prefix) ?? []), raw]);
+        unknownPrefixes.set(e.prefix, [
+          ...(unknownPrefixes.get(e.prefix) ?? []),
+          raw,
+        ]);
       }
     }
     if (unknownPrefixes.size > 0) {
       const list = [...unknownPrefixes]
-        .map(([p, raws]) => `  "${p}" (${raws.length} names, e.g. "${raws[0]}")`)
+        .map(
+          ([p, raws]) => `  "${p}" (${raws.length} names, e.g. "${raws[0]}")`,
+        )
         .join("\n");
       throw new Error(
         `APRHI names start with a prefix that is neither an abbreviation nor a known full word:\n${list}\nCheck what each means, then add it to abbreviations or leadingWords in ${rel(namesFile)}.`,
@@ -313,7 +314,20 @@ async function main() {
     const allPreKeys = new Set(keyInfo.keys());
     const entries = new Map<string, Entry>();
     const remap = new Map<string, string>(); // pre-correction key -> final key
+    // Applied fixes: only the owner's (nameFixes). IGN spellings a few edits away are listed
+    // as candidates for the owner to approve (owner, 2026-10-12), never applied here.
+    const approvedFixes = new Map(
+      cfg.nameFixes.map((f) => [nameKey(f.from), f]),
+    );
+    const usedFixes = new Set<string>();
     const corrections: {
+      aprhi: string;
+      raw: string[];
+      to: string;
+      note: string;
+      km: number;
+    }[] = [];
+    const fixCandidates: {
       aprhi: string;
       raw: string[];
       ign: string;
@@ -328,13 +342,24 @@ async function main() {
         name: ignNames.get(c.ikey)?.name ?? c.ikey,
         share: c.share,
       }));
-      const fix: Correction | null = findCorrection(
+      const proposal: Correction | null = findCorrection(
         info.display,
         cands,
         allPreKeys,
         cfg,
       );
-      const display = fix ? fix.name : info.display;
+      const fix = approvedFixes.get(key);
+      if (fix) usedFixes.add(key);
+      else if (proposal)
+        fixCandidates.push({
+          aprhi: info.display,
+          raw: info.raws,
+          ign: proposal.name,
+          share: round(proposal.share, 4),
+          distance: proposal.distance,
+          km: round(info.km, 3),
+        });
+      const display = fix ? fix.to : info.display;
       const finalKey = nameKey(display);
       remap.set(key, finalKey);
       const entry = entries.get(finalKey) ?? {
@@ -352,18 +377,12 @@ async function main() {
           entry.parenthesized.add(p);
       }
       if (fix) {
-        entry.correctedFrom = {
-          display: info.display,
-          ignName: fix.name,
-          share: round(fix.share, 4),
-          distance: fix.distance,
-        };
+        entry.correctedFrom = { display: info.display, note: fix.note };
         corrections.push({
           aprhi: info.display,
           raw: info.raws,
-          ign: fix.name,
-          share: round(fix.share, 4),
-          distance: fix.distance,
+          to: fix.to,
+          note: fix.note,
           km: round(info.km, 3),
         });
       }
@@ -407,10 +426,13 @@ async function main() {
         const ign = ignNames.get(best.ikey);
         const ignKeys = new Set(
           ign
-            ? [ignMainName(ign.name), ...ignParenthesized(ign.name)].map(nameKey)
+            ? [ignMainName(ign.name), ...ignParenthesized(ign.name)].map(
+                nameKey,
+              )
             : [],
         );
-        if ([...known].some((k) => ignKeys.has(k))) agreement.agreeKm += info.km;
+        if ([...known].some((k) => ignKeys.has(k)))
+          agreement.agreeKm += info.km;
         else {
           agreement.disagreeKm += info.km;
           disagreements.push({
@@ -444,8 +466,7 @@ async function main() {
       if (!cur) ignOutKeys.set(key, { name, km });
       else {
         // Same key: the spelling with more km, then alphabetical.
-        if (km > cur.km || (km === cur.km && name < cur.name))
-          cur.name = name;
+        if (km > cur.km || (km === cur.km && name < cur.name)) cur.name = name;
         cur.km += km;
       }
     }
@@ -471,7 +492,9 @@ async function main() {
     for (const key of [...entries.keys()].sort()) {
       const e = entries.get(key);
       if (!e) continue;
-      e.ignAliases.sort((a, b) => b.share - a.share || a.name.localeCompare(b.name));
+      e.ignAliases.sort(
+        (a, b) => b.share - a.share || a.name.localeCompare(b.name),
+      );
       const aliases: string[] = [];
       const seen = new Set<string>([e.display]);
       const add = (s: string) => {
@@ -500,7 +523,7 @@ async function main() {
       JSON.stringify(
         {
           $comment:
-            "pipeline:line-names. Per name key (nameKey of the display name): display = the name the map shows; sources = which line sources carry it; raw = the APRHI values as the source writes them (kept as aliases); parenthesized = the names that were in parentheses; ignAliases = IGN names running along at least aliasMinShare of the APRHI name's km, with that share; aliases = every alternative the name is searched by, display excluded; correctedFrom = the expanded APRHI spelling replaced by the IGN one. Names ending or containing '*' are not here: they are blank.",
+            "pipeline:line-names. Per name key (nameKey of the display name): display = the name the map shows; sources = which line sources carry it; raw = the APRHI values as the source writes them (kept as aliases); parenthesized = the names that were in parentheses; ignAliases = IGN names running along at least aliasMinShare of the APRHI name's km, with that share; aliases = every alternative the name is searched by, display excluded; correctedFrom = the expanded APRHI spelling replaced by an owner-approved fix (names.config.json nameFixes), with its note. Names ending or containing '*' are not here: they are blank.",
           aliasMinShare: cfg.aliasMinShare,
           bufferM: cfg.bufferM,
           names: aliasNames,
@@ -650,7 +673,9 @@ async function main() {
     const starredKm = starredRows.reduce((s, r) => s + r.km, 0);
     const starredPieces = starredRows.reduce((s, r) => s + r.pieces, 0);
     const starEnding = starredRows.filter((r) => r.raw.endsWith("*")).length;
-    const starMid = starredRows.filter((r) => !r.raw.endsWith("*")).map((r) => r.raw);
+    const starMid = starredRows
+      .filter((r) => !r.raw.endsWith("*"))
+      .map((r) => r.raw);
 
     const correctedKeys = new Set(corrections.map((c) => nameKey(c.aprhi)));
     const correctedRaws = new Set(corrections.flatMap((c) => c.raw));
@@ -697,7 +722,10 @@ async function main() {
     nearMisses.sort((a, b) => b.km - a.km || a.aprhi.localeCompare(b.aprhi));
     const unexpanded = new Map<string, string[]>();
     const excluded = new Map<string, number>();
-    const ruleStats = new Map<string, { names: number; occurrences: number; km: number }>();
+    const ruleStats = new Map<
+      string,
+      { names: number; occurrences: number; km: number }
+    >();
     let withParentheses = 0;
     let parenAliases = 0;
     for (const [raw, p] of parsed) {
@@ -719,12 +747,20 @@ async function main() {
       JSON.stringify(
         {
           $comment:
-            "pipeline:line-names review lists. starred: APRHI values with '*' (the source marks the name as unknown), shown blank, longest first. correctedByIgn: damaged APRHI names whose spelling the IGN name replaced. unresolvedDamaged: names that look damaged (unbalanced parentheses, a capital inside a word, a replacement character) and were not corrected: a heuristic, characters lost without a trace cannot be found. nearMisses: names a few edits from an IGN name of the province that does not run along them (candidates only; nothing was changed). unexpandedAbbreviations: dotted words not in the abbreviation table.",
+            "pipeline:line-names review lists. starred: APRHI values with '*' (the source marks the name as unknown), shown blank, longest first. corrected: APRHI names replaced by an owner-approved fix (names.config.json nameFixes). fixCandidates: IGN spellings a few edits from an APRHI name that run along it; not applied, for the owner to approve or reject (owner, 2026-10-12: no automatic fix; the IGN spelling stays a search alias either way). unresolvedDamaged: names that look damaged (unbalanced parentheses, a capital inside a word, a replacement character) and were not corrected: a heuristic, characters lost without a trace cannot be found. nearMisses: names a few edits from an IGN name of the province that does not run along them (candidates only; nothing was changed). unexpandedAbbreviations: dotted words not in the abbreviation table.",
           starred: starredRows,
-          correctedByIgn: corrections.sort((a, b) => b.km - a.km || a.aprhi.localeCompare(b.aprhi)),
+          corrected: corrections.sort(
+            (a, b) => b.km - a.km || a.aprhi.localeCompare(b.aprhi),
+          ),
+          fixCandidates: fixCandidates.sort(
+            (a, b) => b.km - a.km || a.aprhi.localeCompare(b.aprhi),
+          ),
           unresolvedDamaged: unresolved,
           nearMisses,
-          unexpandedAbbreviations: [...unexpanded].map(([word, raws]) => ({ word, names: raws })),
+          unexpandedAbbreviations: [...unexpanded].map(([word, raws]) => ({
+            word,
+            names: raws,
+          })),
         },
         null,
         2,
@@ -761,11 +797,14 @@ async function main() {
         num(fileCheck?.reach_rows) === num(fileCheck?.reaches) &&
         num(fileCheck?.reach_ids) === num(fileCheck?.reaches),
       everyOutputReachExists:
-        num(fileCheck?.reach_unknown) === 0 && num(fileCheck?.cover_unknown) === 0,
+        num(fileCheck?.reach_unknown) === 0 &&
+        num(fileCheck?.cover_unknown) === 0,
       nameKeyMatchesName: outRows.every(
         (r) => r.name_key === nameKey(String(r.name)),
       ),
-      everyCoverKeyHasAName: coverKeys.every((r) => entries.has(String(r.name_key))),
+      everyCoverKeyHasAName: coverKeys.every((r) =>
+        entries.has(String(r.name_key)),
+      ),
       noStarredNameInOutputs:
         outRows.every((r) => !String(r.name).includes("*")) &&
         [...entries.values()].every(
@@ -775,22 +814,35 @@ async function main() {
             e.ignAliases.every((a) => !a.name.includes("*")),
         ) &&
         starredRows.every((s) => !finalKeyOfRaw.has(s.raw)),
-      everyAprhiNameParsed: everyAprhiNameAccounted && parsed.size === rawRows.length,
+      everyAprhiNameParsed:
+        everyAprhiNameAccounted && parsed.size === rawRows.length,
       aprhiKmAccounted: Math.abs(accounted - aprhiKm) <= 0.001 * aprhiKm,
+      // An approved fix that matches no APRHI name is stale (the source or the parser changed).
+      everyNameFixUsed: [...approvedFixes.keys()].every((k) =>
+        usedFixes.has(k),
+      ),
     };
-    const identicalToPreviousRun = previousSha === null ? null : previousSha === sha;
-    const ok = Object.values(checks).every(Boolean) && identicalToPreviousRun !== false;
+    const identicalToPreviousRun =
+      previousSha === null ? null : previousSha === sha;
+    const ok =
+      Object.values(checks).every(Boolean) && identicalToPreviousRun !== false;
 
     // 7. Statistics.
     const bySource = (s: "aprhi" | "ign") =>
       out.filter((o) => o.row.display && o.source === s);
     const confidence = (rows: typeof out) => {
       const c: Record<string, number> = { high: 0, medium: 0, low: 0, none: 0 };
-      for (const o of rows) c[o.row.confidence] = (c[o.row.confidence] ?? 0) + 1;
+      for (const o of rows)
+        c[o.row.confidence] = (c[o.row.confidence] ?? 0) + 1;
       return c;
     };
-    const kmOf = (rows: typeof out) => round(rows.reduce((s, o) => s + o.km, 0), 1);
-    const withCandidate = (s: "aprhi" | "ign") => out.filter((o) => o.source === s);
+    const kmOf = (rows: typeof out) =>
+      round(
+        rows.reduce((s, o) => s + o.km, 0),
+        1,
+      );
+    const withCandidate = (s: "aprhi" | "ign") =>
+      out.filter((o) => o.source === s);
     const distinctDisplay = new Set(
       out.filter((o) => o.row.display).map((o) => o.row.name_key),
     );
@@ -811,7 +863,12 @@ async function main() {
         largeMinStrahler: linesCfg.largeMinStrahler,
         source: "lines.config.json",
       },
-      thresholds: { source: "ign.config.json (copied from nqn, provisional)", high: matchCfg.high, medium: matchCfg.medium, low: matchCfg.low },
+      thresholds: {
+        source: "ign.config.json (copied from nqn, provisional)",
+        high: matchCfg.high,
+        medium: matchCfg.medium,
+        low: matchCfg.low,
+      },
       distanceNote:
         "distances and shares are in South America Albers (a few percent off); km in this report are spheroid km of lines.parquet unless marked albers",
       sha256: sha,
@@ -828,7 +885,9 @@ async function main() {
         starredEndingInStar: starEnding,
         starredWithStarElsewhere: starMid,
         namesAfterParsing: aprhiDisplayKeys.size,
-        namesAfterIgnCorrection: [...entries.values()].filter((e) => e.sources.has("aprhi")).length,
+        namesAfterIgnCorrection: [...entries.values()].filter((e) =>
+          e.sources.has("aprhi"),
+        ).length,
       },
       ign: {
         outsideProvince: {
@@ -842,9 +901,14 @@ async function main() {
       abbreviations: {
         note: "per rule: distinct raw names that use it, occurrences, and the km of those names (a name counts once per rule)",
         rules: Object.fromEntries(
-          [...ruleStats].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, { ...v, km: round(v.km, 1) }]),
+          [...ruleStats]
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([k, v]) => [k, { ...v, km: round(v.km, 1) }]),
         ),
-        unexpanded: [...unexpanded].map(([word, raws]) => ({ word, names: raws })),
+        unexpanded: [...unexpanded].map(([word, raws]) => ({
+          word,
+          names: raws,
+        })),
       },
       parentheses: {
         namesWithParentheses: withParentheses,
@@ -858,13 +922,15 @@ async function main() {
         note: "blank on the map; raw values in review.json (ask APRHI what '*' means)",
       },
       damagedNames: {
-        correctedByIgn: corrections.length,
+        correctedByOwner: corrections.length,
         corrections: corrections.slice(0, TOP),
+        fixCandidates: fixCandidates.length,
+        fixCandidateTop: fixCandidates.slice(0, TOP),
         unresolvedLookDamaged: unresolved.length,
         unresolved: unresolved.slice(0, TOP),
         nearMissesNotAlong: nearMisses.length,
         nearMissTop: nearMisses.slice(0, TOP),
-        note: "unresolved = heuristic (see review.json); nothing is fixed by hand",
+        note: "fixes come only from names.config.json nameFixes (owner); fixCandidates are IGN spellings proposed for review; unresolved = heuristic (see review.json)",
       },
       aliases: {
         namesWithAliases: namesWithAlias,
@@ -877,7 +943,10 @@ async function main() {
         agreeKm: round(agreement.agreeKm, 1),
         disagreeKm: round(agreement.disagreeKm, 1),
         noIgnNameAlongKm: round(agreement.noIgnKm, 1),
-        agreePctOfComparable: agreementTotal > 0 ? round((agreement.agreeKm / agreementTotal) * 100, 1) : null,
+        agreePctOfComparable:
+          agreementTotal > 0
+            ? round((agreement.agreeKm / agreementTotal) * 100, 1)
+            : null,
         topDisagreements: disagreements.slice(0, TOP),
       },
       reaches: {
@@ -888,8 +957,14 @@ async function main() {
           aprhi: bySource("aprhi").length,
           ign: bySource("ign").length,
         },
-        namedDisplayedKmBySource: { aprhi: kmOf(bySource("aprhi")), ign: kmOf(bySource("ign")) },
-        withCandidateBySource: { aprhi: withCandidate("aprhi").length, ign: withCandidate("ign").length },
+        namedDisplayedKmBySource: {
+          aprhi: kmOf(bySource("aprhi")),
+          ign: kmOf(bySource("ign")),
+        },
+        withCandidateBySource: {
+          aprhi: withCandidate("aprhi").length,
+          ign: withCandidate("ign").length,
+        },
         confidence: confidence(out),
         confidenceBySource: {
           aprhi: confidence(withCandidate("aprhi")),
@@ -897,25 +972,32 @@ async function main() {
         },
         ambiguous: out.filter((o) => o.row.ambiguous).length,
         displayedByStrahler: Object.fromEntries(
-          [...new Set(out.map((o) => o.strahler))].sort((a, b) => a - b).map((s) => [
-            s,
-            {
-              reaches: out.filter((o) => o.strahler === s).length,
-              displayed: out.filter((o) => o.strahler === s && o.row.display).length,
-            },
-          ]),
+          [...new Set(out.map((o) => o.strahler))]
+            .sort((a, b) => a - b)
+            .map((s) => [
+              s,
+              {
+                reaches: out.filter((o) => o.strahler === s).length,
+                displayed: out.filter((o) => o.strahler === s && o.row.display)
+                  .length,
+              },
+            ]),
         ),
         displayedByRoot: Object.fromEntries(
           [...new Set(out.map((o) => o.root))].sort().map((root) => [
             root,
             {
               reaches: out.filter((o) => o.root === root).length,
-              displayed: out.filter((o) => o.root === root && o.row.display).length,
+              displayed: out.filter((o) => o.root === root && o.row.display)
+                .length,
             },
           ]),
         ),
       },
-      outputs: [...Object.values(files).map(rel), rel(workPath("line-names/report.json"))],
+      outputs: [
+        ...Object.values(files).map(rel),
+        rel(workPath("line-names/report.json")),
+      ],
     });
     if (!ok)
       throw new Error(`line-names checks failed: ${JSON.stringify(checks)}`);

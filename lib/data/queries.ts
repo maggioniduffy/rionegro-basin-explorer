@@ -1,6 +1,7 @@
 import "server-only";
 import { getDb } from "@/lib/mongo";
 import type { RegionId } from "@/regions";
+import { isMouthKind } from "./mouth";
 import { parseReachId, searchPattern, SEARCH_LIMIT } from "./params";
 import type {
   Bbox,
@@ -29,6 +30,8 @@ export type StreamResponse = Stream & {
 export type ReachResponse = Reach & {
   riverName: string | null;
   streamName: string | null;
+  /** Reference regions only: the basin (level-1 sub-basin) the reach belongs to. */
+  rootRef?: SubbasinRef;
 };
 
 export interface NamedRef {
@@ -107,7 +110,8 @@ export async function subbasinRefs(
 }
 
 async function riverName(region: RegionId, id: string | null): Promise<string | null> {
-  if (!id || id === "sea") return null;
+  // "sea", "sink" and "region-edge" are not rivers (lib/data/mouth.ts).
+  if (!id || isMouthKind(id)) return null;
   const doc = await (await rivers(region)).findOne(
     { _id: id },
     { projection: { name: 1 } },
@@ -144,7 +148,7 @@ export async function getStream(region: RegionId, id: string): Promise<StreamRes
 export async function getReach(region: RegionId, id: number): Promise<ReachResponse | null> {
   const doc = await (await reaches(region)).findOne({ _id: id });
   if (!doc) return null;
-  const [river, stream] = await Promise.all([
+  const [river, stream, [rootRef]] = await Promise.all([
     riverName(region, doc.river),
     doc.stream
       ? (await streams(region)).findOne(
@@ -152,8 +156,14 @@ export async function getReach(region: RegionId, id: number): Promise<ReachRespo
           { projection: { name: 1 } },
         )
       : null,
+    subbasinRefs(region, doc.root ? [doc.root] : []),
   ]);
-  return { ...doc, riverName: river, streamName: stream?.name ?? null };
+  return {
+    ...doc,
+    riverName: river,
+    streamName: stream?.name ?? null,
+    ...(rootRef ? { rootRef } : {}),
+  };
 }
 
 export async function getSubbasin(

@@ -1,0 +1,147 @@
+{
+  "$comment": "Approved rivers of Córdoba (cba), keyed by mouth reach (HYRIV_ID). Precedence APRHI > IGN > HydroRIVERS (owner, 2026-10-12): names are the display names of pipeline:line-names (APRHI's NOMBRE_COM with abbreviations expanded, FUENTE: Portal de Información Hídrica de Córdoba, inside the province; IGN's name outside it, FUENTE: Instituto Geográfico Nacional de la República Argentina). The owner asked Claude to pick the rivers (2026-10-12): the larger rivers of each root whose name runs along at least about 50 km of reaches. `mouthReach` is the most downstream reach carrying the name (pipeline:line-names reach_ign.parquet, display = true), following the nqn rule that a river runs where its name runs; where the 15″ path leaves the mapped line before the river's real end (Mar Chiquita, the Bañados del Saladillo) the evidence says how far. `sourceReach` (with `sourceEvidence`) is set where the name runs further up the main stem than the line rule can follow (gaps of more than line.maxGap reaches where the 15″ path leaves the mapped channel); pipeline:named flags each one. `aliases` hold the native names APRHI gives in parentheses (search finds them). `slug` is the river's id and never changes once published. shortName/type are the name split at its first word. Roots 05 and 06 have no river (no named lines there).",
+  "rivers": [
+    {
+      "name": "Río Carcarañá",
+      "shortName": "Carcarañá",
+      "type": "Río",
+      "slug": "carcarana",
+      "aliases": [],
+      "mouthReach": 61489334,
+      "confidence": "strong",
+      "evidence": "Name on 228 km of reaches up to the region's exit to the Paraná (reach 61489334, next_down_edit 'outside'): APRHI 'R. Carcarañá' inside the province, IGN 'Río Carcarañá' outside (pipeline:line-names, 2026-10-12).",
+      "sourceCheck": {
+        "confluence": ["Río Tercero", "Río Saladillo"],
+        "evidence": "Starts where the Río Tercero (mouth 61493768) and the Río Saladillo (mouth 61493966) meet: both flow into reach 61493769 (APRHI lines, 2026-10-12)."
+      }
+    },
+    {
+      "name": "Río Tercero",
+      "shortName": "Tercero",
+      "type": "Río",
+      "slug": "tercero",
+      "aliases": ["Ctalamochita"],
+      "mouthReach": 61493768,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Tercero (Ctalamochita)' on 241 km of reaches; the next reach downstream carries the Río Carcarañá (pipeline:line-names, 2026-10-12).",
+      "sourceReach": 61486235,
+      "sourceEvidence": "APRHI 'R. Tercero (Ctalamochita)' runs along the main stem (largest upland from the mouth) up to reach 61486235: 47 of the first 57 reaches carry it (coverage ≥ 0.5), in runs separated by gaps of up to 6 reaches (25 km) where the 15″ path leaves APRHI's line on the plains; above 61486235 there is no Tercero coverage for 15 reaches (65 km). The line rule (line.maxGap 2) stops at 43.5 km (measured 2026-10-12). Main-stem source set by Claude at the owner's request to pick the rivers (2026-10-12)."
+    },
+    {
+      "name": "Río Cuarto",
+      "shortName": "Cuarto",
+      "type": "Río",
+      "slug": "cuarto",
+      "aliases": ["Chocancharava"],
+      "mouthReach": 61499049,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Cuarto (Chocancharava)' on 191 km of reaches. The name ends 44.7 km above the first Río Saladillo reach: across the Bañados del Saladillo the 15″ path leaves APRHI's line, so those reaches carry no name; R3.2's link override joins them to the Saladillo (pipeline:line-names, 2026-10-12)."
+    },
+    {
+      "name": "Río Saladillo",
+      "shortName": "Saladillo",
+      "type": "Río",
+      "slug": "saladillo",
+      "aliases": [],
+      "mouthReach": 61493966,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Saladillo' (root 03) on about 100 km of reaches down to reach 61493966 (Saladillo coverage 1.00), which flows into 61493769, the first Río Carcarañá reach, where the Río Tercero also joins (pipeline:line-names, 2026-10-12). Not the Río Saladillo of root 02 (a branch of the Río Dulce in Santiago del Estero), which is not an approved river."
+    },
+    {
+      "name": "Río Quinto",
+      "shortName": "Quinto",
+      "type": "Río",
+      "slug": "quinto",
+      "aliases": ["Popopis"],
+      "mouthReach": 61512430,
+      "confidence": "strong",
+      "evidence": "Name on 289 km of reaches up to root 04's exit sink (61512430, R3.1): APRHI 'R. Quinto (Popopis)' inside the province, IGN 'Río Quinto' in San Luis (pipeline:line-names, 2026-10-12).",
+      "sourceReach": 61496555,
+      "sourceEvidence": "APRHI 'R. Quinto (Popopis)' and IGN 'Río Quinto' run along the main stem up to reach 61496555 in three runs (8, 5 and 20 reaches) separated by gaps of 4–6 reaches (45–69 km) across the southern plains, where the 15″ path leaves the mapped channel; above it there is no Quinto coverage for 8 reaches. The line rule (line.maxGap 2) stops at 40.8 km (measured 2026-10-12). Main-stem source set by Claude at the owner's request to pick the rivers (2026-10-12)."
+    },
+    {
+      "name": "Río Dulce",
+      "shortName": "Dulce",
+      "type": "Río",
+      "slug": "dulce",
+      "aliases": [],
+      "mouthReach": 61462028,
+      "confidence": "strong",
+      "evidence": "Name on 342 km of reaches: IGN 'Río Dulce' in Santiago del Estero, APRHI 'R. Dulce' in Córdoba. The name ends 74 km above the modeled Mar Chiquita sink (61469489); the reaches between are 15″ paths across the bañados and the lagoon with no line along them (pipeline:line-names, 2026-10-12).",
+      "sourceReach": 61417704,
+      "sourceEvidence": "IGN 'Río Dulce' and APRHI 'R. Dulce' run along the main stem up to reach 61417704 (a run of 47 reaches, 233 km, in Santiago del Estero), the reach where the Río Salí's path joins the Dulce below the Río Hondo reservoir. Downstream, across the Bañados del Río Dulce, the name is broken by gaps of up to 22 reaches (72 km) where the 15″ path leaves the mapped channel. The line rule (line.maxGap 2) stops at 30.4 km (measured 2026-10-12). Main-stem source set by Claude at the owner's request to pick the rivers (2026-10-12)."
+    },
+    {
+      "name": "Río Salí",
+      "shortName": "Salí",
+      "type": "Río",
+      "slug": "sali",
+      "aliases": [],
+      "mouthReach": 61416980,
+      "confidence": "strong",
+      "evidence": "IGN 'Río Salí' (Tucumán) on 110 km of reaches; the Río Dulce starts 13.9 km downstream, below the Río Hondo reservoir (pipeline:line-names, 2026-10-12)."
+    },
+    {
+      "name": "Río Primero",
+      "shortName": "Primero",
+      "type": "Río",
+      "slug": "primero",
+      "aliases": ["Suquía"],
+      "mouthReach": 61472178,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Primero (Suquía)' on 160 km of reaches. The name ends 98 km above the modeled Mar Chiquita sink (61469489): on the plains the 15″ path leaves APRHI's line (pipeline:line-names, 2026-10-12).",
+      "sourceReach": 61476496,
+      "sourceEvidence": "APRHI 'R. Primero (Suquía)' runs along the main stem up to reach 61476496 (a run of 15 reaches, 124 km, through the city of Córdoba), after a 5-reach gap (32 km) on the plains; above it there is no Primero coverage for 12 reaches (the river starts at the San Roque dam). The line rule (line.maxGap 2) stops at 31 km (measured 2026-10-12). Main-stem source set by Claude at the owner's request to pick the rivers (2026-10-12)."
+    },
+    {
+      "name": "Río Segundo",
+      "shortName": "Segundo",
+      "type": "Río",
+      "slug": "segundo",
+      "aliases": ["Xanaes"],
+      "mouthReach": 61478520,
+      "confidence": "weak",
+      "evidence": "APRHI 'R. Segundo (Xanaes)' on 107 km of reaches. Weak: downstream APRHI names the lower course 'Arroyo Segundo' (a separate stream, mouth 61471092, 8 km from the Mar Chiquita sink), the 15″ path from this mouth runs 94 km to the Río Plujunta instead, and IGN's 'Río Segundo (Xanaes)' lies along APRHI's 'Arroyo de los Guevara' (98% of its km). The river ends where APRHI's name ends (pipeline:line-names, 2026-10-12)."
+    },
+    {
+      "name": "Río Jesús María",
+      "shortName": "Jesús María",
+      "type": "Río",
+      "slug": "jesus-maria",
+      "aliases": ["Guanusacate"],
+      "mouthReach": 61465124,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Jesús María (Guanusacate)' on 122 km of reaches; the name ends 132 km of modeled path above the Mar Chiquita sink (pipeline:line-names, 2026-10-12)."
+    },
+    {
+      "name": "Río Conlara",
+      "shortName": "Conlara",
+      "type": "Río",
+      "slug": "conlara",
+      "aliases": [],
+      "mouthReach": 61484752,
+      "confidence": "strong",
+      "evidence": "Name on 122 km of reaches: IGN 'Río Conlara' in San Luis, APRHI 'R. Conlara' in Córdoba (root 01) (pipeline:line-names, 2026-10-12)."
+    },
+    {
+      "name": "Río Cruz del Eje",
+      "shortName": "Cruz del Eje",
+      "type": "Río",
+      "slug": "cruz-del-eje",
+      "aliases": [],
+      "mouthReach": 61465013,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Cruz del Eje' on 57 km of reaches (root 01) (pipeline:line-names, 2026-10-12)."
+    },
+    {
+      "name": "Río Pichanas",
+      "shortName": "Pichanas",
+      "type": "Río",
+      "slug": "pichanas",
+      "aliases": [],
+      "mouthReach": 61468557,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Pichanas' on 55 km of reaches (root 01) (pipeline:line-names, 2026-10-12)."
+    }
+  ]
+}

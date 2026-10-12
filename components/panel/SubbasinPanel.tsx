@@ -150,7 +150,7 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
       <Group
         title={t("groups.land")}
         hint={
-          b.kind === "endorheic"
+          b.kind === "endorheic" || b.kind === "area"
             ? undefined
             : isRoot
               ? t("groups.landHintWhole")
@@ -206,7 +206,11 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
       {b.outlet && (
         <Group
           title={t("groups.outlet")}
-          hint={t("groups.outletHint", { river: b.name ?? "" })}
+          hint={
+            b.kind === "area"
+              ? undefined
+              : t("groups.outletHint", { river: b.name ?? "" })
+          }
         >
           <Row
             label={t("fields.discharge")}

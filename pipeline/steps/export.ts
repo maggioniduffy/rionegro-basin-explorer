@@ -18,11 +18,36 @@
  * The "upstream*" fields cover the whole watershed upstream of the reach's pour point.
  * `stream` on each reach (ndjson and tile GeoJSON) is its stream id from
  * pipeline:ign-streams, null when it is in none; it can be set together with `river`.
+ *
+ * Reference regions (cba, R3.7) add, and only they (nqn's output is unchanged):
+ *   - reach documents: `root` (level-1 sub-basin id of the reach's R3.2 root) and `lineReview`
+ *     (a displayed line piece matched to the reach is "en revisión" at APRHI);
+ *   - distanceToSeaKm null where the flow path ends in an endorheic sink (reaches, stream
+ *     mouths; lib/mouth-kind.ts);
+ *   - stream documents: `aliases` (pipeline:line-names aliases.json) and sub-basins placed
+ *     with data/work/<r>/subbasins/reach_node.parquet (the deepest node owning the mouth reach);
+ *   - tiles/reaches.geojson written from the display line pieces (ign.config.json
+ *     "mapLines": "pieces") joined with lakes/line_geom.parquet. A matched piece carries its
+ *     reach's id, river, stream, network, strahler, nonPerennial1d, uplandKm2 as a reach
+ *     does; every piece also `piece` (pieceId), `src` ("aprhi" | "ign"), `km` (the piece's
+ *     length before lake clipping), `name` (display name, absent when it has none) and
+ *     `review` = 1 when APRHI has the line under review. An unmatched piece has no id and no
+ *     strahler.
  */
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
-import { regionFile, OUT_DIR, rel, workPath } from "../lib/paths";
+import { loadMapLines } from "../lib/map-lines";
+import { type NetworkReach, mouthKinds } from "../lib/mouth-kind";
+import { loadNameSource, nameFile } from "../lib/name-source";
+import { regionFile, OUT_DIR, REGION_ID, rel, workPath } from "../lib/paths";
+import {
+  type AliasesFile,
+  pieceDisplayName,
+  rawNameIndex,
+  streamAliases,
+} from "../lib/piece-names";
+import { isReferenceRegion } from "../lib/region-mode";
 import { writeReport } from "../lib/report";
 import {
   type SubbasinNode,
@@ -72,7 +97,7 @@ const round = (x: number, digits = 1) => Number(x.toFixed(digits));
 const orNull = (v: unknown) => (v == null ? null : Number(v));
 
 const STREAM_PROVENANCE = {
-  name: "pipeline:ign-streams: most frequent IGN spelling of the stream's name (pipeline:ign-match)",
+  // `name` is added per region in main() (lib/name-source.ts).
   reachCount:
     "pipeline:ign-streams: named reaches plus the unnamed reaches absorbed between them",
   lengthKm: "HydroRIVERS v1.0 LENGTH_KM, summed over the stream's reaches",
@@ -110,31 +135,75 @@ const STREAM_MODELED = [
   "watershed.population",
 ];
 
+/** Provenance that differs or is added in a reference region (R3.7). */
+const REFERENCE_STREAM_PROVENANCE = {
+  subbasin:
+    "Deepest sub-basin node (pipeline:subbasins, reference mode) that owns the stream's mouth reach: the APRHI subcuenca or unidad de gestión hídrica holding at least the reach's reachMinShare of its length, else its basin",
+  "mouth.distanceToSeaKm":
+    "HydroRIVERS v1.0 DIST_DN_KM at the mouth reach; null when the flow path ends in an endorheic sink, where it would measure the distance to the sink, not to the sea",
+  aliases:
+    "pipeline:line-names aliases.json for the stream's name: the source's raw spellings, names in parentheses and names of the other agency's lines that run along it, without the name shown",
+};
+
 async function main() {
+  const reference = await isReferenceRegion();
+  const mapLines = await loadMapLines();
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const atlasFile = requireInput(workPath("rivers/riveratlas_basin.parquet"));
   const mappingFile = requireInput(workPath("named/river_reaches.parquet"));
-  const reachGeomFile = requireInput(workPath("lakes/reach_geom.parquet"));
-  // IGN names per reach (pipeline:ign-match); run it before this step.
-  const ignFile = requireInput(workPath("ign-match/reach_ign.parquet"));
+  // Map geometry clipped out of lakes by pipeline:lakes: per reach (nqn) or per line piece (cba).
+  const reachGeomFile =
+    mapLines === "reaches"
+      ? requireInput(workPath("lakes/reach_geom.parquet"))
+      : null;
+  const linesFile = reference
+    ? requireInput(workPath("lines/lines.parquet"))
+    : null;
+  const lineGeomFile =
+    mapLines === "pieces"
+      ? requireInput(workPath("lakes/line_geom.parquet"))
+      : null;
+  // Names per reach, from the step the region's ign.config.json names (namesFrom); run it
+  // before this step.
+  const nameSource = await loadNameSource();
+  const ignFile = requireInput(nameFile(nameSource, "reach_ign.parquet"));
   // Streams (pipeline:ign-streams) and the sub-basin / river inputs that place their mouths.
   const streamsFile = requireInput(workPath("ign-streams/streams.json"));
   // Named reaches off every IGN line (pipeline:ign-streams): their IGN name is not shown.
   const droppedFile = requireInput(workPath("ign-streams/dropped.json"));
   const riversNdjson = requireInput(`${OUT_DIR}/rivers.ndjson`);
   const streams = await readJson<StreamsFileEntry[]>(streamsFile);
-  const subbasinNodes = (
-    await readJson<{ subbasins: SubbasinNode[] }>(
-      regionFile("subbasins.config.json"),
-    )
-  ).subbasins;
-  const rivers = (await readFile(riversNdjson, "utf8"))
-    .split("\n")
-    .filter((l) => l.trim() !== "")
-    .map((l) => JSON.parse(l) as { _id: string; mouthReach: number });
-  const nodeByMouth = subbasinMouths(subbasinNodes, rivers);
+  // Sub-basins: the nodes of the config (nqn), or in reference mode (cba, R3.5) the nodes
+  // of data/out/<r>/subbasins.ndjson, which place a stream by the deepest node owning its
+  // mouth reach (subbasins/reach_node.parquet).
+  const subbasinsConfig = await readJson<{
+    mode?: string;
+    subbasins?: SubbasinNode[];
+  }>(regionFile("subbasins.config.json"));
+  const subbasinsFromReference = subbasinsConfig.mode === "reference";
+  const reachNodeFile = subbasinsFromReference
+    ? requireInput(workPath("subbasins/reach_node.parquet"))
+    : null;
+  if (!subbasinsFromReference && !subbasinsConfig.subbasins)
+    throw new Error(
+      `regions/${REGION_ID}/subbasins.config.json has no "subbasins" array and is not "mode": "reference"`,
+    );
+  const subbasinNodes = subbasinsConfig.subbasins ?? [];
+  const rivers = subbasinsFromReference
+    ? []
+    : (await readFile(riversNdjson, "utf8"))
+        .split("\n")
+        .filter((l) => l.trim() !== "")
+        .map((l) => JSON.parse(l) as { _id: string; mouthReach: number });
+  const nodeByMouth = subbasinsFromReference
+    ? new Map<number, string>()
+    : subbasinMouths(subbasinNodes, rivers);
   const endorheicNode =
     subbasinNodes.find((n) => n.kind === "endorheic")?.id ?? null;
+  const aliasesFile: AliasesFile | null =
+    nameSource.id === "line-names" && reference
+      ? await readJson<AliasesFile>(nameFile(nameSource, "aliases.json"))
+      : null;
   const tilesDir = workPath("tiles");
   await mkdir(tilesDir, { recursive: true });
   const db = await openDb();
@@ -153,6 +222,7 @@ async function main() {
     ),
   );
   let counts;
+  let pieceCounts: Record<string, unknown> | undefined;
   let streamsCheck: {
     streams: number;
     reachesInStreams: number;
@@ -167,11 +237,57 @@ async function main() {
     bySubbasin: Record<string, number>;
   } | null = null;
   try {
+    // Reference regions: per reach, the level-1 sub-basin of its root, where its water ends
+    // (lib/mouth-kind.ts) and whether a matched line piece is under review (APRHI).
+    if (reference) {
+      const ids = await readJson<{ level1: Record<string, string> }>(
+        regionFile("subbasin-ids.json"),
+      );
+      const rows = await db.all(`
+        SELECT HYRIV_ID, NEXT_DOWN, next_down_edit, ENDORHEIC, network, root
+        FROM read_parquet(${lit(reachesFile)})`);
+      const kinds = mouthKinds(
+        rows.map((r): NetworkReach => ({
+          id: Number(r.HYRIV_ID),
+          nextDown: Number(r.NEXT_DOWN),
+          nextDownEdit:
+            r.next_down_edit == null ? null : String(r.next_down_edit),
+          endorheic: Number(r.ENDORHEIC) === 1,
+          network: String(r.network),
+        })),
+      );
+      const refRows = rows.map((r) => {
+        const root = ids.level1[String(r.root)];
+        if (root === undefined)
+          throw new Error(
+            `reach ${r.HYRIV_ID}: root ${String(r.root)} is not in subbasin-ids.json level1`,
+          );
+        return {
+          HYRIV_ID: Number(r.HYRIV_ID),
+          root,
+          mouthKind: kinds.get(Number(r.HYRIV_ID)),
+        };
+      });
+      const refFile = workPath("export/reach_ref.json");
+      await writeFile(refFile, JSON.stringify(refRows));
+      await db.conn.run(`
+        CREATE TABLE ref AS
+        SELECT f.HYRIV_ID, f.root, f.mouthKind, (v.reach IS NOT NULL) AS lineReview
+        FROM read_json(${lit(refFile)},
+                       columns = {HYRIV_ID: 'BIGINT', root: 'VARCHAR', mouthKind: 'VARCHAR'}) f
+        LEFT JOIN (SELECT DISTINCT reach FROM read_parquet(${lit(linesFile!)})
+                   WHERE status = 'en-revision' AND reach IS NOT NULL) v
+          ON v.reach = f.HYRIV_ID`);
+    }
     await db.conn.run(`
       CREATE TABLE out AS
       SELECT r.HYRIV_ID AS _id, m.river, r.network,
              r.NEXT_DOWN AS nextDown, r.MAIN_RIV AS mainRiv,
-             round(r.LENGTH_KM::DOUBLE, 2) AS lengthKm, round(r.DIST_DN_KM, 1) AS distanceToSeaKm,
+             round(r.LENGTH_KM::DOUBLE, 2) AS lengthKm, ${
+               reference
+                 ? "CASE WHEN rf.mouthKind = 'sink' THEN NULL ELSE round(r.DIST_DN_KM, 1) END"
+                 : "round(r.DIST_DN_KM, 1)"
+             } AS distanceToSeaKm,
              round(r.UPLAND_SKM, 1) AS uplandKm2, r.ORD_STRA AS strahler,
              round(r.DIS_AV_CMS::DOUBLE, 3) AS dischargeM3s,
              a.ele_mt_cmn AS catchmentMinElevationM,
@@ -188,6 +304,7 @@ async function main() {
                   THEN {name: i.name, confidence: i.confidence, reviewed: i.reviewed}
              END AS ign,
              rs.stream AS stream,
+             ${reference ? "rf.root AS root, rf.lineReview AS lineReview, rf.mouthKind AS mouthKind," : ""}
              r.LENGTH_KM::DOUBLE AS length_raw,
              r.geom
       FROM ${lit(reachesFile)} r
@@ -199,22 +316,90 @@ async function main() {
         USING (HYRIV_ID)
       LEFT JOIN read_json(${lit(reachStreamFile)},
                           columns = {HYRIV_ID: 'BIGINT', stream: 'VARCHAR'}) rs
-        USING (HYRIV_ID)`);
+        USING (HYRIV_ID)
+      ${reference ? "LEFT JOIN ref rf ON rf.HYRIV_ID = r.HYRIV_ID" : ""}`);
     await db.conn.run(`
-      COPY (SELECT * EXCLUDE (geom, length_raw) FROM out ORDER BY _id)
+      COPY (SELECT * EXCLUDE (geom, length_raw${reference ? ", mouthKind" : ""}) FROM out ORDER BY _id)
       TO ${lit(reachesNdjson)} (FORMAT json)`);
     // Map geometry: reaches that cross a lake use the clipped line from pipeline:lakes;
     // those left with no line are not drawn (their data stays in reaches.ndjson).
-    await db.conn.run(`
-      COPY (SELECT o._id AS id, o.river, o.stream, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
-                   coalesce(g.geom, o.geom) AS geom
-            FROM out o LEFT JOIN read_parquet(${lit(reachGeomFile)}) g ON g.HYRIV_ID = o._id
-            WHERE g.geom IS NULL OR NOT ST_IsEmpty(g.geom))
-      TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
+    if (reachGeomFile !== null) {
+      await db.conn.run(`
+        COPY (SELECT o._id AS id, o.river, o.stream, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
+                     coalesce(g.geom, o.geom) AS geom
+              FROM out o LEFT JOIN read_parquet(${lit(reachGeomFile)}) g ON g.HYRIV_ID = o._id
+              WHERE g.geom IS NULL OR NOT ST_IsEmpty(g.geom))
+        TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
+    } else {
+      // Display line pieces (R3.7). A piece matched to a reach carries that reach's values;
+      // the geometry is the piece clipped out of lakes (lakes/line_geom.parquet), and a piece
+      // left with no line is not drawn. Names: the display name pipeline:line-names decided.
+      if (!aliasesFile || !linesFile || !lineGeomFile)
+        throw new Error(
+          'mapLines "pieces" needs namesFrom "line-names" and the display lines (pipeline:lines)',
+        );
+      const index = rawNameIndex(aliasesFile);
+      const pieceRows = await db.all(
+        `SELECT pieceId, source, name FROM read_parquet(${lit(linesFile)})`,
+      );
+      const pieceNames = pieceRows.flatMap((r) => {
+        const name = pieceDisplayName(
+          {
+            source: String(r.source),
+            name: r.name == null ? null : String(r.name),
+          },
+          index,
+        );
+        return name === null ? [] : [{ pieceId: String(r.pieceId), name }];
+      });
+      const pieceNameFile = workPath("export/piece_name.json");
+      await writeFile(pieceNameFile, JSON.stringify(pieceNames));
+      await db.conn.run(`
+        CREATE TABLE piece_name AS
+        SELECT * FROM read_json(${lit(pieceNameFile)},
+                                columns = {pieceId: 'VARCHAR', name: 'VARCHAR'})`);
+      await db.conn.run(`
+        CREATE TABLE pieces AS
+        SELECT l.pieceId, l.reach, l.source, l.status, l.length_m,
+               o._id AS reach_found,
+               o.river, o.stream, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
+               pn.name,
+               coalesce(ST_SetCRS(g.geom, 'EPSG:4326'), ST_SetCRS(l.geom, 'EPSG:4326')) AS geom,
+               coalesce(ST_IsEmpty(g.geom), false) AS not_drawn
+        FROM read_parquet(${lit(linesFile)}) l
+        LEFT JOIN out o ON o._id = l.reach
+        LEFT JOIN piece_name pn ON pn.pieceId = l.pieceId
+        LEFT JOIN read_parquet(${lit(lineGeomFile)}) g ON g.pieceId = l.pieceId`);
+      await db.conn.run(`
+        COPY (SELECT reach AS id, river, stream, network, strahler, uplandKm2, nonPerennial1d,
+                     pieceId AS piece, source AS src, round(length_m / 1000.0, 3) AS km, name,
+                     CASE WHEN status = 'en-revision' THEN 1 END AS review, geom
+              FROM pieces WHERE NOT not_drawn ORDER BY pieceId)
+        TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
+      [pieceCounts] = await db.all(`
+        SELECT count(*)::INT AS pieces,
+               sum((reach IS NOT NULL)::INT)::INT AS matched,
+               sum((reach IS NOT NULL AND reach_found IS NULL)::INT)::INT AS matched_missing,
+               sum(not_drawn::INT)::INT AS not_drawn,
+               sum((status = 'en-revision')::INT)::INT AS review,
+               sum((name IS NOT NULL)::INT)::INT AS named,
+               (SELECT count(*) FROM read_parquet(${lit(lineGeomFile)}))::INT AS line_geom_rows,
+               (SELECT count(*) FROM read_parquet(${lit(lineGeomFile)}) g
+                  WHERE g.pieceId NOT IN (SELECT pieceId FROM pieces))::INT AS line_geom_unknown,
+               round(sum(length_m) / 1000.0, 1) AS km,
+               round(sum(length_m) FILTER (reach IS NULL) / 1000.0, 1) AS unmatched_km,
+               round(sum(length_m) FILTER (source = 'aprhi') / 1000.0, 1) AS aprhi_km,
+               round(sum(length_m) FILTER (source = 'ign') / 1000.0, 1) AS ign_km
+        FROM pieces`);
+    }
     [counts] = await db.all(`
       SELECT count(*)::INT AS n, (SELECT count(*) FROM ${lit(reachesFile)})::INT AS source_n,
              sum((river IS NOT NULL)::INT)::INT AS named_n,
-             (SELECT count(*) FROM read_parquet(${lit(reachGeomFile)}) WHERE ST_IsEmpty(geom))::INT AS not_drawn_n,
+             ${
+               reachGeomFile !== null
+                 ? `(SELECT count(*) FROM read_parquet(${lit(reachGeomFile)}) WHERE ST_IsEmpty(geom))::INT`
+                 : "NULL::INT"
+             } AS not_drawn_n,
              sum((ign IS NOT NULL)::INT)::INT AS ign_named_n
       FROM out`);
 
@@ -248,14 +433,24 @@ async function main() {
       nodeByMouth,
       endorheicNode,
     };
+    // Reference mode: a stream belongs to the deepest sub-basin node that owns its mouth reach.
+    const ownerByReach = new Map<number, string>();
+    if (reachNodeFile !== null)
+      for (const r of await db.all(
+        `SELECT HYRIV_ID, node FROM read_parquet(${lit(reachNodeFile)})`,
+      ))
+        ownerByReach.set(Number(r.HYRIV_ID), String(r.node));
     const docs = streams.flatMap((s) => {
       const m = mouthById.get(s.mouthReach);
       const t = totalById.get(s.id);
       if (!m || !t) return [];
-      const { subbasin, receivingRiver } = streamDrainage(
-        s.mouthReach,
-        drainNet,
-      );
+      const drainage = streamDrainage(s.mouthReach, drainNet);
+      const receivingRiver = drainage.receivingRiver;
+      const subbasin =
+        reachNodeFile !== null
+          ? (ownerByReach.get(s.mouthReach) ?? null)
+          : drainage.subbasin;
+      const aliases = aliasesFile ? streamAliases(s.name, aliasesFile) : [];
       return [
         {
           _id: s.id,
@@ -285,8 +480,13 @@ async function main() {
             round(Number(t.east), 5),
             round(Number(t.north), 5),
           ],
+          ...(aliases.length > 0 ? { aliases } : {}),
           modeled: STREAM_MODELED,
-          provenance: STREAM_PROVENANCE,
+          provenance: {
+            name: nameSource.streamNameProvenance,
+            ...STREAM_PROVENANCE,
+            ...(reference ? REFERENCE_STREAM_PROVENANCE : {}),
+          },
         },
       ];
     });
@@ -337,7 +537,7 @@ async function main() {
   const b = await readJson<BasinReport>(workPath("basin/report.json"));
   const r = await readJson<RiversReport>(workPath("rivers/report.json"));
   const n = await readJson<NamedReport>(workPath("named/report.json"));
-  const { reference } = await readJson<{ reference: unknown }>(
+  const { reference: basinReference } = await readJson<{ reference: unknown }>(
     regionFile("basin.config.json"),
   );
 
@@ -354,6 +554,16 @@ async function main() {
       streamsCheck.mouthsInStreams,
     noReachInTwoStreams: streamsCheck?.reachesTaggedMatchFile === true,
     everyStreamHasSubbasin: streamsCheck?.everyStreamHasSubbasin === true,
+    // Display line pieces (mapLines "pieces"): every piece is drawn or inside a lake, every
+    // matched piece points at an exported reach, and the lake file knows only real pieces.
+    ...(pieceCounts
+      ? {
+          everyPieceDrawnOrInLake:
+            Number(pieceCounts.pieces) > 0 &&
+            Number(pieceCounts.line_geom_unknown) === 0,
+          everyMatchedPieceHasReach: Number(pieceCounts.matched_missing) === 0,
+        }
+      : {}),
   };
   const summary = {
     ok: Object.values(checks).every(Boolean),
@@ -361,7 +571,7 @@ async function main() {
     basin: {
       areaKm2: Math.round(b.areaKm2.polygonSpheroid),
       connectedAreaKm2: Math.round(b.areaKm2.connectedPolygonSpheroid),
-      reference,
+      reference: basinReference,
       vsReferencePct: Number(b.areaKm2.diffPct.vsReference.toFixed(2)),
     },
     reaches: {
@@ -373,7 +583,10 @@ async function main() {
       // IGN name not shown: off every IGN line (pipeline:ign-streams dropped.json).
       ignNameHiddenOffLine: (await readJson<unknown[]>(droppedFile)).length,
       // Entirely inside a lake, so not drawn on the map (pipeline:lakes); data kept.
-      notDrawnInsideLakes: counts?.not_drawn_n,
+      // (With map line pieces the count is of pieces, under `lines`.)
+      ...(reachGeomFile !== null
+        ? { notDrawnInsideLakes: counts?.not_drawn_n }
+        : {}),
       orphans: r.topology.orphans,
     },
     lengthKm: {
@@ -384,6 +597,23 @@ async function main() {
     },
     namedRivers: n.rivers,
     streams: streamsCheck,
+    ...(pieceCounts
+      ? {
+          lines: {
+            pieces: pieceCounts.pieces,
+            drawn: Number(pieceCounts.pieces) - Number(pieceCounts.not_drawn),
+            notDrawnInsideLakes: pieceCounts.not_drawn,
+            matchedToAReach: pieceCounts.matched,
+            unmatched: Number(pieceCounts.pieces) - Number(pieceCounts.matched),
+            underReview: pieceCounts.review,
+            withName: pieceCounts.named,
+            km: pieceCounts.km,
+            unmatchedKm: pieceCounts.unmatched_km,
+            aprhiKm: pieceCounts.aprhi_km,
+            ignKm: pieceCounts.ign_km,
+          },
+        }
+      : {}),
     intermittence: r.gires.byNetworkAndClass1Day,
   };
   const outReport = `${OUT_DIR}/report.json`;

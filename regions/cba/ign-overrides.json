@@ -1,0 +1,7 @@
+{
+  "$comment": "Hand decisions on name matches for cba (same shape as regions/nqn/ign-overrides.json: reaches with action accept/reject/name, riverNames, dams, lines). Empty on purpose: no owner decision exists for cba yet (R3.4 step 3); pipeline:ign-streams only reads the reaches with action \"name\".",
+  "reaches": [],
+  "riverNames": [],
+  "dams": [],
+  "lines": []
+}

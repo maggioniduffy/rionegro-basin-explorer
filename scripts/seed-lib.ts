@@ -26,7 +26,10 @@ export function toRiverDoc(river: River): RiverDoc {
 }
 
 export function toStreamDoc(stream: Stream): StreamDoc {
-  return { ...stream, searchTerms: searchTerms([stream.name]) };
+  return {
+    ...stream,
+    searchTerms: searchTerms([stream.name, ...(stream.aliases ?? [])]),
+  };
 }
 
 /**
