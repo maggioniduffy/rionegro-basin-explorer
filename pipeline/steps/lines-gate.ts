@@ -318,23 +318,26 @@ async function main() {
       CREATE TABLE lines_touch AS
       SELECT t.* FROM (${parts.join(" UNION ALL ")}) t, prov p
       WHERE ST_Intersects(t.geom, p.geom)`);
+    // Ids are not unique in every source (APRHI has repeated IDs), so the tie-break runs over
+    // every attribute: the same duplicate is kept on every run.
     await db.conn.run(`
       CREATE TABLE lines_dedup AS
       SELECT * EXCLUDE (rn) FROM (
         SELECT *, row_number() OVER (
-                 PARTITION BY source, ST_AsHEXWKB(geom) ORDER BY id) AS rn
+                 PARTITION BY source, ST_AsHEXWKB(geom)
+                 ORDER BY id, name NULLS LAST, class NULLS LAST, status NULLS LAST) AS rn
         FROM lines_touch) WHERE rn = 1`);
     const unclipped = await db.all(`
       SELECT source, count(*) AS features, sum(${lengthSpheroidKm("geom")}) AS km,
-             sum(attr_km) AS attr_km
+             sum(CAST(attr_km AS DECIMAL(18, 3))) AS attr_km
       FROM lines_dedup GROUP BY source`);
     const touching = await db.all(
       `SELECT source, count(*) AS features FROM lines_touch GROUP BY source`,
     );
     await db.conn.run(`
       CREATE TABLE lines AS
-      SELECT row_number() OVER (ORDER BY source, id) AS uid, * FROM (
-        SELECT l.source, l.id, l.name, l.class, l.status, l.ord,
+      SELECT row_number() OVER (ORDER BY source, id, wkb) AS uid, * EXCLUDE (wkb) FROM (
+        SELECT l.source, l.id, l.name, l.class, l.status, l.ord, ST_AsHEXWKB(l.geom) AS wkb,
                ST_CollectionExtract(ST_Intersection(l.geom, p.geom), 2) AS geom
         FROM lines_dedup l, prov p)
       WHERE NOT ST_IsEmpty(geom)`);
