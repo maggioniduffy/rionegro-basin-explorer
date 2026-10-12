@@ -50,8 +50,9 @@ Install notes:
 
 Disk: the global FileGDBs are large: RiverATLAS is 7 GB and GIRES is 3.3 GB extracted.
 `pipeline:rivers` caches the basin's rows from each to Parquet. After that, the FileGDB folders can be
-deleted; on the dev machine they have been. If the reach selection changes, the step asks for the
-source again: remove `data/raw/<id>/.source.json` and rerun `pipeline:download`.
+deleted, **together with their `.source.json` marker**, so a later `pipeline:download` refetches
+them instead of skipping a folder that is gone. If the reach selection changes, the step asks for
+the source again: remove `data/raw/<id>/.source.json` and rerun `pipeline:download`.
 
 ## Steps
 
@@ -62,6 +63,11 @@ the archive. SHA-256 of each archive is recorded in the committed `pipeline/chec
 (`downloadedAt` is a UTC date). Extracted folders carry a `.source.json` marker with the checksum, so
 reruns skip finished sources. If upstream re-uploads a file and its checksum changes, the step fails;
 review the change, then rerun with `-- --accept-new` to record the new checksum.
+
+If the fetch fails at once with `ETIMEDOUT` from `internalConnectMultiple` while `curl` reaches the
+same URL, Node's address auto-selection (250 ms per address) is timing out; turn it off:
+`NODE_OPTIONS=--no-network-family-autoselection npm run pipeline:download -- --region <id>`
+(needed on the dev machine, 2026-10-12).
 
 ### `npm run pipeline:inspect`
 
