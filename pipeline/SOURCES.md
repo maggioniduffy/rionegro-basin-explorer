@@ -278,12 +278,10 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   - `CursosDeAgua_CPA` (4,241 lines, 24,647 km, 77 % of km named, not a noded network, 49 % "En
     revisión"), `CuerposDeAguaNaturales_CPA` (1,611 polygons), `Embalses_CPA` (27 reservoirs),
     `Salinas` (Salinas Grandes, Salinas de Ambargasta), `Lineas_de_ribera` (250 riparian-line records).
-- **Not verified, provenance:** `CursosDeAgua_CPA`, `CuerposDeAguaNaturales_CPA` and `Embalses_CPA`
-  share their names with services in another ArcGIS account (`NGS_main_gengeo`, a 2025 student
-  course, archived 2025-07-24, no license) whose descriptions say they were re-derived from Landsat 8
-  and IGN 1:50,000 maps. The owner must confirm each zip's source URL; only APRHI's own items are
-  covered by the PIHC terms. `Lineas_de_ribera`, `Salinas`, `SubcuencasEmbalses_CPA` and the exact
-  `Cuencas_CPA` / `Subcuencas_cpa` items were not located in the catalogue search (not proof of absence).
+- **Provenance (owner, 2026-10-12):** every zip was exported from APRHI's own Experience above. Services with
+  the same names as `CursosDeAgua_CPA`, `CuerposDeAguaNaturales_CPA` and `Embalses_CPA` also exist in a
+  student account (`NGS_main_gengeo`, a 2025 course, re-derived from Landsat 8 and IGN maps, no license); they
+  are not the source.
 - Not hydrology: no discharge, population or upstream area per river. `Altura_*` attributes come from
   IGN's 30 m DEM (item description), so IGN's terms apply to them too.
 

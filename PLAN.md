@@ -186,12 +186,12 @@ Code and docs done in the cloud (2026-10-10, steps 1–8). Local checks passed (
 - [x] `--region` required on every pipeline step and data script (owner, 2026-10-10)
 - **Done when:** `npm run check` passes; re-running the pipeline for `nqn` reproduces the committed `data/out` and reports unchanged; the live `nqn` site behaves as before; a stub `cba` region builds. Cloud checks are done; the local ones (pipeline re-run, browser, e2e, Vercel) are in [RUN_LOCAL.md](RUN_LOCAL.md).
 
-### Phase R2 — Córdoba gate
+### Phase R2 — Córdoba gate ✅
 
-- [ ] Delineate candidate basins touching the province from HydroBASINS (sea/river outlets and endorheic sinks: Mar Chiquita, Salinas Grandes, Bañados del Quinto, …), report areas inside/outside the province
-- [ ] IGN gate for Córdoba (HydroRIVERS vs IGN km and % named); Sierras streams are short and steep, so 15″ HydroRIVERS may be too coarse
-- [ ] Compare with the provincial "Cuencas y Unidades de Gestión" layer (licensed; APRHI's six interprovincial basins and their areas per province are in DECISSIONS.md R0)
-- **Done when:** the owner picks the basin list and IGN's role from the report.
+- [x] Delineate candidate basins touching the province from HydroBASINS (sea/river outlets and endorheic sinks: Mar Chiquita, Salinas Grandes, Bañados del Quinto, …), report areas inside/outside the province — `pipeline:basin-gate`, matched to APRHI's six interprovincial basins (2026-10-12)
+- [x] IGN gate for Córdoba (HydroRIVERS vs IGN km and % named); Sierras streams are short and steep, so 15″ HydroRIVERS may be too coarse — `pipeline:lines-gate`, with APRHI's lines as a third source (2026-10-12)
+- [x] Compare with the provincial "Cuencas y Unidades de Gestión" layer (licensed; APRHI's six interprovincial basins and their areas per province are in DECISSIONS.md R0)
+- **Done when:** the owner picks the basin list and IGN's role from the report. Done 2026-10-12: precedence APRHI > IGN > HydroRIVERS; 01, 02, 03, 05 whole, 04 clipped plus the Río Quinto headwaters, 06 clipped ([DECISSIONS.md](DECISSIONS.md#córdoba-r2-gate-2026-10-12)).
 
 ### Phase R3 — Córdoba pipeline & app (Phases 1–6 reused)
 
