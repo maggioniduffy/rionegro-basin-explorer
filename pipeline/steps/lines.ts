@@ -13,8 +13,9 @@
  * 2. Root: a line is split at the root borders (data/work/<id>/basin/basins.geojson); each
  *    resulting linestring is a "line" (lineId = source:sourceId:part).
  * 3. Reaches: each line is cut into equal parts of about partM metres (South America Albers).
- *    A part takes the nearest reach of its own root within bufferM of its midpoint (ties by
- *    HYRIV_ID), else none. Consecutive parts with one reach become a piece; a piece shorter
+ *    A part takes the nearest reach of its own root within that reach's buffer of its midpoint
+ *    (ties by HYRIV_ID), else none: bufferM, or bufferLargeM for reaches of Strahler order
+ *    largeMinStrahler and up, whose 15″ paths drift further from the mapped channel. Consecutive parts with one reach become a piece; a piece shorter
  *    than minPieceM between two pieces of one reach joins them (lib/lines.ts).
  *
  * Output: data/work/<id>/lines/lines.parquet (pieceId, lineId, source, sourceId, name, class,
@@ -44,6 +45,8 @@ interface LinesConfig {
   ign: { classes: string[] };
   partM: number;
   bufferM: number;
+  bufferLargeM: number;
+  largeMinStrahler: number;
   minPieceM: number;
   edgeToleranceM: number;
   conservationPct: number;
@@ -277,25 +280,28 @@ async function main() {
       FROM (SELECT lineId, root, ga, n, unnest(range(n)) AS i FROM seg)`);
     await db.conn.run(`
       CREATE TABLE reach_a AS
-      SELECT HYRIV_ID, root, network, ORD_STRA, LENGTH_KM, ${albers("geom")} AS ga
+      SELECT HYRIV_ID, root, network, ORD_STRA, LENGTH_KM,
+             CASE WHEN ORD_STRA >= ${config.largeMinStrahler} THEN ${config.bufferLargeM}
+                  ELSE ${config.bufferM} END AS buf,
+             ${albers("geom")} AS ga
       FROM read_parquet(${lit(reachesFile)})`);
     const cell = (v: string) => `CAST(floor((${v}) / ${CELL_M}) AS BIGINT)`;
     await db.conn.run(`
       CREATE TABLE reach_cells AS
       SELECT HYRIV_ID, root, cx, unnest(range(y0, y1 + 1)) AS cy FROM (
-        SELECT HYRIV_ID, root, ${cell(`ST_YMin(ga) - ${config.bufferM}`)} AS y0,
-               ${cell(`ST_YMax(ga) + ${config.bufferM}`)} AS y1,
-               unnest(range(${cell(`ST_XMin(ga) - ${config.bufferM}`)},
-                            ${cell(`ST_XMax(ga) + ${config.bufferM}`)} + 1)) AS cx
+        SELECT HYRIV_ID, root, ${cell(`ST_YMin(ga) - buf`)} AS y0,
+               ${cell(`ST_YMax(ga) + buf`)} AS y1,
+               unnest(range(${cell(`ST_XMin(ga) - buf`)},
+                            ${cell(`ST_XMax(ga) + buf`)} + 1)) AS cx
         FROM reach_a)`);
     await db.conn.run(`
       CREATE TABLE cand AS
       SELECT * FROM (
-        SELECT p.lineId, p.idx, r.HYRIV_ID, ST_Distance(ST_Point(p.x, p.y), r.ga) AS d
+        SELECT p.lineId, p.idx, r.HYRIV_ID, r.buf, ST_Distance(ST_Point(p.x, p.y), r.ga) AS d
         FROM part p
         JOIN reach_cells c ON c.root = p.root AND c.cx = ${cell("p.x")} AND c.cy = ${cell("p.y")}
         JOIN reach_a r ON r.HYRIV_ID = c.HYRIV_ID)
-      WHERE d <= ${config.bufferM}`);
+      WHERE d <= buf`);
     await db.conn.run(`
       CREATE TABLE pm AS
       SELECT lineId, idx, HYRIV_ID FROM (
