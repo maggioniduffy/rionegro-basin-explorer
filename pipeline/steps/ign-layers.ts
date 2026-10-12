@@ -27,7 +27,7 @@
  * ign_detail.geojson, ign_dams.geojson, ign_dam_walls.geojson; data/work/ign-layers/report.json.
  */
 import { mkdir, readFile, rm, stat } from "node:fs/promises";
-import { lit, openDb } from "../lib/duckdb";
+import { lit, openDb, limitResources } from "../lib/duckdb";
 import { lengthSpheroidKm } from "../lib/geo";
 import {
   ALBERS,
@@ -87,9 +87,7 @@ async function main() {
   await mkdir(tilesDir, { recursive: true });
   await mkdir(outDir, { recursive: true });
   const db = await openDb();
-  await db.conn.run(
-    `SET memory_limit='8GB'; SET threads=4; SET temp_directory=${lit(`${outDir}/tmp`)}`,
-  );
+  await limitResources(db, `${outDir}/tmp`);
   const t0 = Date.now();
   const log = (msg: string) =>
     console.log(`[${Math.round((Date.now() - t0) / 1000)}s] ${msg}`);

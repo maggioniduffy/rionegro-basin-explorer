@@ -26,7 +26,7 @@ import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { layerTable, type LayerConfig } from "../lib/basin-reference";
-import { type Row, lit, openDb } from "../lib/duckdb";
+import { type Row, lit, openDb, limitResources } from "../lib/duckdb";
 import { envelope, lengthSpheroidKm } from "../lib/geo";
 import {
   ALBERS,
@@ -122,9 +122,7 @@ async function main() {
   const previousSha = existsSync(parquet) ? await sha256(parquet) : null;
 
   const db = await openDb();
-  await db.conn.run(
-    `SET memory_limit='8GB'; SET threads=4; SET temp_directory=${lit(`${outDir}/tmp`)}`,
-  );
+  await limitResources(db, `${outDir}/tmp`);
   const t0 = Date.now();
   const log = (msg: string) =>
     console.log(`[${Math.round((Date.now() - t0) / 1000)}s] ${msg}`);

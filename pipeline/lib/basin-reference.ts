@@ -36,7 +36,7 @@ import {
   withinPct,
 } from "./basin-reference-pure";
 import { type Box, assignLargestShare } from "./basin-gate";
-import { type Row, lit, openDb } from "./duckdb";
+import { type Row, lit, openDb, limitResources } from "./duckdb";
 import { areaAlbersKm2, areaSpheroidKm2, envelope } from "./geo";
 import { upstreamIndex, upstreamSet } from "./graph";
 import { INPUTS, requireInput } from "./inputs";
@@ -205,9 +205,7 @@ export async function runReference(config: ReferenceConfig) {
   const outDir = workPath("basin");
   await mkdir(outDir, { recursive: true });
   const db = await openDb();
-  await db.conn.run(
-    `SET memory_limit='8GB'; SET threads=4; SET temp_directory=${lit(`${outDir}/tmp`)}`,
-  );
+  await limitResources(db, `${outDir}/tmp`);
   const bbox = envelope(searchBbox);
   const codes = config.roots.map((r) => r.code);
 

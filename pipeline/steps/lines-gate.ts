@@ -35,7 +35,7 @@
  */
 import { existsSync } from "node:fs";
 import { mkdir, readFile } from "node:fs/promises";
-import { type Db, type Row, lit, openDb } from "../lib/duckdb";
+import { type Db, type Row, lit, openDb, limitResources } from "../lib/duckdb";
 import {
   areaAlbersKm2,
   areaSpheroidKm2,
@@ -253,9 +253,7 @@ async function main() {
   await mkdir(outDir, { recursive: true });
   const db = await openDb();
   // Bound memory and threads: the proximity steps are heavy on the intermittent layer.
-  await db.conn.run(
-    `SET memory_limit='8GB'; SET threads=4; SET temp_directory=${lit(`${outDir}/tmp`)}`,
-  );
+  await limitResources(db, `${outDir}/tmp`);
   const t0 = Date.now();
   const log = (msg: string) =>
     console.log(`[${Math.round((Date.now() - t0) / 1000)}s] ${msg}`);
