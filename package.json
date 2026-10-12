@@ -33,6 +33,7 @@
     "pipeline:ign-gate": "tsx pipeline/steps/ign-gate.ts",
     "pipeline:basin-gate": "tsx pipeline/steps/basin-gate.ts",
     "pipeline:lines-gate": "tsx pipeline/steps/lines-gate.ts",
+    "pipeline:lines": "tsx pipeline/steps/lines.ts",
     "pipeline:ign": "tsx pipeline/steps/ign.ts",
     "pipeline:ign-match": "tsx pipeline/steps/ign-match.ts",
     "pipeline:ign-streams": "tsx pipeline/steps/ign-streams.ts",

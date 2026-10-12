@@ -43,7 +43,7 @@ import { INPUTS, requireInput } from "./inputs";
 import { rawPath, rel, workPath } from "./paths";
 import { writeReport } from "./report";
 
-interface LayerConfig {
+export interface LayerConfig {
   path: string;
   srs: string;
   encoding?: string;
@@ -117,7 +117,7 @@ const wgs84 = (geom: string, srs: string) =>
   }), 3)`;
 const polygons = (g: string) => `ST_CollectionExtract(ST_MakeValid(${g}), 3)`;
 
-async function layerTable(
+export async function layerTable(
   db: Awaited<ReturnType<typeof openDb>>,
   table: string,
   layer: LayerConfig,

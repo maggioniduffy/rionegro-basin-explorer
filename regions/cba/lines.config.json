@@ -1,0 +1,14 @@
+{
+  "$comment": "Settings of pipeline:lines (R3.3), the lines the map displays. Precedence APRHI > IGN > HydroRIVERS (owner). Where the APRHI layer, its fields and the province edge are read from: gate.config.json (referenceLines) and basin.config.json (clippedLayer; the union of its polygons is the province edge, the same one pipeline:basin uses). aprhi.dropStatus: APRHI status values (case and accent insensitive) whose lines are dropped. aprhi.statusMap: status value -> status written on the piece; an empty status stays null; any other value stops the step. ign.classes: the IGN line layers kept outside the province edge, by class name (perennial, intermittent); both are listed because APRHI inside the edge includes intermittent arroyos, and a perennial-only outside would leave a visible break at the border. The IGN class is written as the piece class. partM: a line is cut into equal parts of about this length (m) for the reach match. bufferM: a part is given the nearest reach of its own root within this distance (m), measured from the part midpoint in South America Albers; the same 250 m as the gates. minPieceM: a piece shorter than this (m) lying between two pieces of the same reach joins them. edgeToleranceM: slack (m) when checking that APRHI pieces lie inside the province edge, IGN pieces outside it and every piece inside its root (the cut is exact; the slack covers the Albers round trip). conservationPct: allowed difference (%) between the clipped source km and the summed piece km. hiddenMinStrahler: connected HydroRIVERS reaches of at least this Strahler order with no displayed piece are listed in the report (modeled paths across the plains; they stay hidden).",
+  "aprhi": {
+    "dropStatus": ["Eliminado"],
+    "statusMap": { "vigente": "vigente", "en revisión": "en-revision" }
+  },
+  "ign": { "classes": ["perennial", "intermittent"] },
+  "partM": 100,
+  "bufferM": 250,
+  "minPieceM": 300,
+  "edgeToleranceM": 2,
+  "conservationPct": 0.1,
+  "hiddenMinStrahler": 4
+}
