@@ -3,7 +3,7 @@
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
 Amazon Basin Explorer. One app serves several **regions**, one per subdomain: `nqn` (the Río
-Negro basin, live) and `cba` (Córdoba, a stub, not served yet); see "Regions" below. See `PLAN.md` for phases and status, and `DECISSIONS.md` for the dated
+Negro basin, live) and `cba` (Córdoba, a stub, not served yet); see "Regions" below. See `PLAN.md` for open phases and status (completed phases are in `PLAN_ARCHIVE.md`; read it only when you need their history), and `DECISSIONS.md` for the dated
 decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `PLAN.md`).
 
 ## Stack
