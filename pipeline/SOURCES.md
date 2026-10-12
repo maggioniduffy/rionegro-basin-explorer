@@ -7,19 +7,21 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 
 ## Summary
 
-| Source                                 | Used for                                                                      | License                                                                | Commercial use                                     | Verified                                    | Downloaded                        |
-| -------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- | --------------------------------- |
-| HydroRIVERS v1.0                       | River network geometry, topology                                              | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
-| HydroBASINS v1c                        | Basin delineation, sub-basins                                                 | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution     | Yes                                                | 2026-09-29                                  | 2026-09-30                        |
-| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.)                                 | CC BY 4.0                                                              | Yes                                                | 2026-09-29                                  | 2026-09-30 (RiverATLAS only)      |
-| GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                            | CC BY 4.0 per figshare metadata (README wording ambiguous, see below)  | Yes, if CC BY                                      | 2026-09-30                                  | 2026-09-30                        |
-| HydroLAKES v1.0                        | Lake and reservoir polygons (line clipping, mask, outlines)                   | CC BY 4.0                                                              | Yes                                                | 2026-09-30                                  | 2026-09-30                        |
-| IGN Argentina — SIG layers             | Watercourse names, detail lines, lake names and extra lakes, dams (Phase 5)   | IGN "Términos y Condiciones" (custom, no named license; **not** CC BY) | Only for derived works; non-commercial use is fine | 2026-10-01 (terms read; layer metadata not) | — (local copy origin unknown)     |
-| OpenStreetMap                          | River name evidence (Phase 1); localities (Phase 7); reservoirs, dams (later) | ODbL 1.0                                                               | Yes (share-alike on the database)                  | 2026-09-30                                  | 2026-09-30 (Overpass, basin bbox) |
-| Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                                    | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license      | Only with an EOX commercial license                | 2026-09-29                                  | n/a (tiles)                       |
-| Imagery: Esri World Imagery            | Candidate satellite basemap                                                   | **Not verified** (Esri terms of use)                                   | Unknown                                            | —                                           | n/a (tiles)                       |
-| LLM: Groq (`openai/gpt-oss-20b`)       | Ask box: routes a question to an existing id (no data shown)                  | Groq terms (service, not data)                                         | n/a                                                | 2026-10-10 (training clause not verified)   | n/a (API)                         |
-| Rate limit/cache: Upstash Redis        | Ask box rate limit and shared cache                                           | Upstash terms (service, not data)                                      | n/a                                                | 2026-10-10 (overage terms not stated)       | n/a (API)                         |
+| Source                                 | Used for                                                                      | License                                                                 | Commercial use                                     | Verified                                     | Downloaded                        |
+| -------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------- | --------------------------------- |
+| HydroRIVERS v1.0                       | River network geometry, topology                                              | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution      | Yes                                                | 2026-09-29                                   | 2026-09-30                        |
+| HydroBASINS v1c                        | Basin delineation, sub-basins                                                 | HydroSHEDS v1 License Agreement (WWF), incl. Exhibit B attribution      | Yes                                                | 2026-09-29                                   | 2026-09-30                        |
+| HydroATLAS v1 (RiverATLAS, BasinATLAS) | River/basin attributes (discharge, pop, etc.)                                 | CC BY 4.0                                                               | Yes                                                | 2026-09-29                                   | 2026-09-30 (RiverATLAS only)      |
+| GIRES v1.0 (non-perennial rivers)      | Flow-intermittence class per reach                                            | CC BY 4.0 per figshare metadata (README wording ambiguous, see below)   | Yes, if CC BY                                      | 2026-09-30                                   | 2026-09-30                        |
+| HydroLAKES v1.0                        | Lake and reservoir polygons (line clipping, mask, outlines)                   | CC BY 4.0                                                               | Yes                                                | 2026-09-30                                   | 2026-09-30                        |
+| IGN Argentina — SIG layers             | Watercourse names, detail lines, lake names and extra lakes, dams (Phase 5)   | IGN "Términos y Condiciones" (custom, no named license; **not** CC BY)  | Only for derived works; non-commercial use is fine | 2026-10-01 (terms read; layer metadata not)  | — (local copy origin unknown)     |
+| IGN Argentina — Provincia              | Province boundary (Córdoba scope, R2)                                         | IGN "Términos y Condiciones" (same as above)                            | Only for derived works; non-commercial use is fine | 2026-10-11 (terms and layer metadata)        | 2026-10-12                        |
+| APRHI Córdoba (PIHC) water layers      | Córdoba basins, sub-basins, management units, streams, dams, lakes (R2–R3)    | PIHC "Términos y Condiciones" (custom, no named license; **not** CC BY) | Only for derived works; non-commercial use is fine | 2026-10-11 (terms PDF; per-layer origin not) | 2026-10-10 (owner, from the PIHC) |
+| OpenStreetMap                          | River name evidence (Phase 1); localities (Phase 7); reservoirs, dams (later) | ODbL 1.0                                                                | Yes (share-alike on the database)                  | 2026-09-30                                   | 2026-09-30 (Overpass, basin bbox) |
+| Imagery: EOX Sentinel-2 Cloudless      | Satellite basemap (chosen)                                                    | CC BY-NC-SA 4.0 (non-commercial); commercial needs an EOX license       | Only with an EOX commercial license                | 2026-09-29                                   | n/a (tiles)                       |
+| Imagery: Esri World Imagery            | Candidate satellite basemap                                                   | **Not verified** (Esri terms of use)                                    | Unknown                                            | —                                            | n/a (tiles)                       |
+| LLM: Groq (`openai/gpt-oss-20b`)       | Ask box: routes a question to an existing id (no data shown)                  | Groq terms (service, not data)                                          | n/a                                                | 2026-10-10 (training clause not verified)    | n/a (API)                         |
+| Rate limit/cache: Upstash Redis        | Ask box rate limit and shared cache                                           | Upstash terms (service, not data)                                       | n/a                                                | 2026-10-10 (overage terms not stated)        | n/a (API)                         |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
 
@@ -204,6 +206,86 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
   metadata PDFs or contacto@ign.gob.ar before a public launch.
 - **Date of the original data (clause 4): still open** (owner, 2026-10-01: later). The in-map credit and
   the panels carry the required "FUENTE: …" text and a no-endorsement note but no date yet.
+
+## IGN Argentina: Provincia (provincial boundaries)
+
+- URLs:
+  - Layer: https://www.ign.gob.ar/NuestrasActividades/InformacionGeoespacial/CapasSIG (Geodesia y
+    demarcación > Límites > Provincia)
+  - Download (the page's "Descargar Capa", Shapefile):
+    `https://dnsg.ign.gob.ar/apps/api/v1/capas-sig/Geodesia+y+demarcaci%C3%B3n/L%C3%ADmites/provincia/shp`
+    (the `/geojson` variant answered 500 on 2026-10-12)
+  - Metadata: https://www.ign.gob.ar/capas-sig/metadata/provincia.pdf (kept next to the zip)
+- License: the IGN terms above (https://www.ign.gob.ar/descargas/tyc1.html). The layer metadata adds,
+  verbatim: "Libre uso de la información, cumpliendo con la cita adecuada del Instituto Geográfico
+  Nacional." The stricter tyc1 clauses apply (credit, no endorsement, original data date, free sharing).
+- Required attribution: "FUENTE: Instituto Geográfico Nacional de la República Argentina".
+- Date of the original data (clause 4): metadata "Fecha de creación: 26-04-2019", "Última
+  actualización: 09-09-2019"; the files inside the zip are dated 2024-04-19.
+- Local copy: `data/raw/ign/provincia/provincia.zip` (24 polygons, WGS84, attributes in **UTF-8** per
+  the `.cpg`, unlike the older IGN layers; name field `fna`), downloaded 2026-10-12 (UTC),
+  sha256 `f7b6058cc754b59aabc6ddbec09ba5250f4570bb30b3c597c8b4d14048251223`. Not fetched by the
+  pipeline.
+- Use: the Córdoba polygon is the province boundary for the R2 inside/outside areas (164,670 km² in
+  EPSG:6933). Not drawn on the map so far (provincial boundaries were dropped for `nqn`, Phase 5).
+
+## APRHI Córdoba: Portal de Información Hídrica de Córdoba (PIHC) water layers
+
+- Provider: Administración Provincial de Recursos Hídricos de Córdoba (APRHI), Gobierno de la
+  Provincia de Córdoba. Published on ArcGIS under the account `APRHI_2018`, as part of the PIHC
+  (http://pihc.aprhi.gob.ar/, https://sihm-aprhi.opendata.arcgis.com/).
+  - Experience "Cuencas, Subcuencas y Unidades de Gestión Hídrica-Pública":
+    https://experience.arcgis.com/experience/95e75e89032d42898e91c31a3df99cda/
+  - Cuencas service (data date 24/10/2019, "FUENTE DEL DATO: Área de Manejo y Gestión Integral de las
+    Cuencas"): https://services1.arcgis.com/atxllciEI8CHWvwW/arcgis/rest/services/Cuencas_HidrográficasPUBLICA/FeatureServer
+  - Unidades de Gestión Hídrica (data date 23/12/2019, "PRODUCTOR: APRHI"):
+    https://services1.arcgis.com/atxllciEI8CHWvwW/arcgis/rest/services/UGHvista_pulica/FeatureServer
+  - "CPA" in the layer names: meaning not found.
+- License: the PIHC "Términos y Condiciones de uso de la información" (APRHI, PDF linked from each item
+  as "RESTRICCIONES: Restricciones de uso":
+  https://drive.google.com/file/d/15Y-D80ZX6puQtapwDAJ294jUYymjPYzx/view; read 2026-10-11 with
+  `pdftotext`). Its "Política de licenciamiento de datos" mirrors IGN's clause by clause. Verbatim:
+  1. "Debe citarse la fuente de los documentos objeto de la reutilización: "FUENTE: Portal de Información Hídrica de Córdoba"."
+  2. "Los datos descargados no deben alterarse."
+  3. "No se podrá indicar, insinuar o sugerir que la APRHI, participa, patrocina o apoya la utilización o reutilización de la misma."
+  4. "Deben conservarse, y por tanto no alterarse ni suprimirse los metadatos sobre la fecha de actualización y las condiciones de reutilización aplicables incluidos, en su caso, en el documento puesto a disposición para su utilización o reutilización."
+  5. "En el caso de que se generen productos derivados, deberá además mencionarse la fecha de los datos originales señalados en el PIHC."
+  6. "Los datos descargados deben compartirse de manera libre y gratuita."
+  7. "Se permite su uso comercial únicamente en el caso de obras derivadas en que la información sea utilizada como insumo para generar un nuevo producto."
+
+  Also: "La reutilización autorizada puede incluir la copia, difusión, modificación, adaptación,
+  extracción, reordenamiento y combinación de la información contenida en el sitio, siempre que su
+  utilización no desnaturalice el sentido de la información." The header adds: "Debe reconocerse la
+  autoría del material que se publica en él a la Administración Provincial de Recursos Hídricos de
+  Córdoba, salvo que se exprese lo contrario." Problems go to sig.aprhi@cba.gov.ar.
+
+- Reading: clause 2 ("no deben alterarse") sits next to an explicit permission to modify, adapt,
+  extract and combine. We read it as "don't misrepresent the data": clipping, simplifying into tiles
+  and joining to other sources keep the meaning. Not confirmed with APRHI; ask sig.aprhi@cba.gov.ar
+  before a public launch, together with the meaning of "CPA".
+- Commercial use: conditional (clause 7), as for IGN. The site is free and non-commercial.
+- **Required attribution:** "FUENTE: Portal de Información Hídrica de Córdoba", authorship to the
+  Administración Provincial de Recursos Hídricos de Córdoba (APRHI), the date of the original data
+  (clause 5) and a statement that APRHI does not endorse this product (clause 3). Add it to
+  `/attributions` (`lib/attributions.ts`) when `cba` is served.
+- Local copy (owner, 2026-10-10, zips in `data/raw/`, not fetched by the pipeline). CRS POSGAR 98
+  Argentina zone 4 (`.prj`; GDAL reports EPSG:22174, same projection to ~1e-9°), except `Salinas`
+  (POSGAR 94). The `.shp.xml` files carry no license or publisher, only dates (`mdDateSt` 20231201,
+  `CreaDate` 20251105).
+  - `Cuencas_CPA` (6 basins clipped to Córdoba, 164,709 km²), `CuencasInterprovinciales_CPA` (the same
+    6 unclipped, 620,325 km²), `Subcuencas_cpa` (25), `UnidadesDeGestion_hidrica_CPA` (80 units and 1
+    empty row), `SubcuencasEmbalses_CPA` (71 dam catchments).
+  - `CursosDeAgua_CPA` (4,241 lines, 24,647 km, 77 % of km named, not a noded network, 49 % "En
+    revisión"), `CuerposDeAguaNaturales_CPA` (1,611 polygons), `Embalses_CPA` (27 reservoirs),
+    `Salinas` (Salinas Grandes, Salinas de Ambargasta), `Lineas_de_ribera` (250 riparian-line records).
+- **Not verified, provenance:** `CursosDeAgua_CPA`, `CuerposDeAguaNaturales_CPA` and `Embalses_CPA`
+  share their names with services in another ArcGIS account (`NGS_main_gengeo`, a 2025 student
+  course, archived 2025-07-24, no license) whose descriptions say they were re-derived from Landsat 8
+  and IGN 1:50,000 maps. The owner must confirm each zip's source URL; only APRHI's own items are
+  covered by the PIHC terms. `Lineas_de_ribera`, `Salinas`, `SubcuencasEmbalses_CPA` and the exact
+  `Cuencas_CPA` / `Subcuencas_cpa` items were not located in the catalogue search (not proof of absence).
+- Not hydrology: no discharge, population or upstream area per river. `Altura_*` attributes come from
+  IGN's 30 m DEM (item description), so IGN's terms apply to them too.
 
 ## ALOS PALSAR RTC scene (ASF), local only
 

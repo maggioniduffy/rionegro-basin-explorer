@@ -162,12 +162,13 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#ign-streams-2026-10-09).
 One Next.js app serves every region (Option A, owner 2026-10-10); a region is a config folder, not a fork.
 Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run locally after each change: [RUN_LOCAL.md](RUN_LOCAL.md).
 
-### Phase R0 — Decisions & inputs
+### Phase R0 — Decisions & inputs ✅
 
 - [x] Option A (one app, region registry), subdomains, `nqn` = the current Río Negro basin, Córdoba = province + the interprovincial basins that reach it, endorheic basins split (one root per sink)
 - [x] Domain for subdomains: on Vercel, which kind of domain deferred (owner, 2026-10-10); R1 maps any host to a region through a config table, so the choice needs no code change
 - [x] Córdoba scope rule: R2 lists the candidate basins with their areas inside/outside the province, then the owner picks which are whole and which are clipped (e.g. the Salí-Dulce reaches Mar Chiquita from Tucumán)
-- [ ] Córdoba provincial layers (ArcGIS Experience "Cuencas y Unidades de Gestión"): owner exports or allows `arcgis.com` in the environment; license-checker before use; the shared link is a `draft=true` view, confirm the published one
+- [x] Córdoba provincial layers (ArcGIS Experience "Cuencas y Unidades de Gestión"): owner exported ten APRHI layers to `data/raw/`; license read (PIHC terms, IGN-like, usable); published Experience confirmed (2026-10-11). Open: source URL of three layers (possible student copies), see SOURCES.md
+- [x] Province boundary: IGN "Provincia" layer in `data/raw/ign/provincia/` (2026-10-12)
 - **Done when:** the open items above are decided and recorded in DECISSIONS.md. The ArcGIS item blocks R2's comparison only, not R1.
 
 ### Phase R1 — Region refactor, no behavior change ✅
@@ -189,7 +190,7 @@ Code and docs done in the cloud (2026-10-10, steps 1–8). Local checks passed (
 
 - [ ] Delineate candidate basins touching the province from HydroBASINS (sea/river outlets and endorheic sinks: Mar Chiquita, Salinas Grandes, Bañados del Quinto, …), report areas inside/outside the province
 - [ ] IGN gate for Córdoba (HydroRIVERS vs IGN km and % named); Sierras streams are short and steep, so 15″ HydroRIVERS may be too coarse
-- [ ] Compare with the provincial "Cuencas y Unidades de Gestión" layer (if licensed)
+- [ ] Compare with the provincial "Cuencas y Unidades de Gestión" layer (licensed; APRHI's six interprovincial basins and their areas per province are in DECISSIONS.md R0)
 - **Done when:** the owner picks the basin list and IGN's role from the report.
 
 ### Phase R3 — Córdoba pipeline & app (Phases 1–6 reused)
