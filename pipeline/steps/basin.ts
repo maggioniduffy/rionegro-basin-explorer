@@ -11,6 +11,7 @@
  * Outputs in data/work/basin/: basin.geojson, hybas_l12.parquet, report.json.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { type ReferenceConfig, runReference } from "../lib/basin-reference";
 import { lit, openDb } from "../lib/duckdb";
 import { areaAlbersKm2, areaSpheroidKm2, envelope, pctDiff } from "../lib/geo";
 import { difference, upstreamIndex, upstreamSet } from "../lib/graph";
@@ -33,7 +34,12 @@ const AREA_AGREEMENT_PCT = 1;
 async function main() {
   const config = JSON.parse(
     await readFile(regionFile("basin.config.json"), "utf8"),
-  ) as BasinConfig;
+  ) as BasinConfig & { mode?: string };
+  // Reference mode (a set of roots from a reference agency): see lib/basin-reference.ts.
+  if (config.mode === "reference") {
+    await runReference(config as unknown as ReferenceConfig);
+    return;
+  }
   const rivers = lit(requireInput(INPUTS.hydroRivers));
   const lev12 = lit(requireInput(INPUTS.hydroBasins(12)));
   const outDir = workPath("basin");

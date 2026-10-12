@@ -1,0 +1,38 @@
+{
+  "$comment": "Inputs for pipeline:basin in reference mode (R3.1). The region is a set of roots, one per APRHI basin (owner, 2026-10-12: precedence APRHI > IGN > HydroRIVERS; scope in DECISSIONS.md 'Córdoba R2'). 'whole' roots take the unclipped polygon from wholeLayer; 'clipped' roots take the Córdoba-clipped polygon from clippedLayer, whose union is also the province edge (APRHI's clip, not IGN's polygon). expectedExitReach is the HydroRIVERS reach where the root ends, read from data/work/cba/basin-gate/report.json (2026-10-12); it must be one of the root's exit candidates, and the report also shows the largest-upland candidate. For 04 they differ on purpose: its largest sink (61509423, 12,495 km²) collects the southern arroyos (Santa Catalina, del Gato, Chucul) that APRHI assigns to 03, reconnected in R3.2, so 04 ends at the Río Quinto sink 61512430 (9,149 km²; HydroRIVERS path from Villa Mercedes checked 2026-10-12). headwaters (root 04): the Río Quinto rises in San Luis, outside the clipped polygon; the step walks its main stem upstream from mouthReach (the Río Quinto sink reach, 61512430) to the first reach outside the province, then adds the HydroBASINS level-12 drainage upstream of it, minus the province and the other roots. A clipped root is its wholeLayer polygon cut by the province edge, so every internal border comes from one layer. sliverMaxKm2: interior rings smaller than this in the outline and root polygons are filled (gaps between APRHI polygons, not real enclaves); larger outline holes go to the root whose wholeLayer polygon covers at least half of them (reported in slivers.holesGivenToRoots). Paths are relative to data/raw/.",
+  "mode": "reference",
+  "regionName": "Córdoba",
+  "wholeLayer": {
+    "path": "CuencasInterprovinciales_CPA.zip",
+    "srs": "EPSG:22174",
+    "codeField": "COD_CUENCA",
+    "nameField": "CUENCA"
+  },
+  "clippedLayer": {
+    "path": "Cuencas_CPA.zip",
+    "srs": "EPSG:22174",
+    "codeField": "COD_CUENCA",
+    "nameField": "CUENCA"
+  },
+  "roots": [
+    { "code": "01", "scope": "whole", "expectedExitReach": 61457180 },
+    { "code": "02", "scope": "whole", "expectedExitReach": 61469489 },
+    { "code": "03", "scope": "whole", "expectedExitReach": 61489334 },
+    {
+      "code": "04",
+      "scope": "clipped",
+      "expectedExitReach": 61512430,
+      "headwaters": { "name": "Río Quinto", "mouthReach": 61512430 }
+    },
+    { "code": "05", "scope": "whole", "expectedExitReach": 61508438 },
+    { "code": "06", "scope": "clipped", "expectedExitReach": null }
+  ],
+  "assignMinShare": 0.5,
+  "sliverMaxKm2": 1,
+  "searchBbox": { "xmin": -68.5, "ymin": -38.0, "xmax": -59.5, "ymax": -23.5 },
+  "reference": {
+    "areaKm2": null,
+    "source": "No single official figure for this region: the per-root APRHI areas are the reference, checked in the report.",
+    "tolerancePct": 3
+  }
+}

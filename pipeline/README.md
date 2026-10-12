@@ -94,6 +94,26 @@ a "virtual" `NEXT_DOWN` (TechDoc v1c), and `UP_AREA` excludes those regions:
 The report compares the outlet's `UP_AREA`, the sums of `SUB_AREA`, and the dissolved polygon's
 geodesic and Albers areas. It also checks the result against `reference.areaKm2` ± `tolerancePct`.
 
+**Reference mode** (`"mode": "reference"`, used by `cba`). The region is a set of roots, one per
+basin polygon of an official layer (APRHI for Córdoba), instead of one outlet:
+
+- A `whole` root takes its polygon from `wholeLayer`. A `clipped` root takes the same polygon cut
+  by the province edge (the union of `clippedLayer`), so every internal border comes from one layer.
+  Overlaps go to the first root in config order.
+- Each root's exit is the HydroRIVERS reach `expectedExitReach`, which must be one of the root's exit
+  candidates (`exitsAreCandidates`). The report also lists the largest-upland candidate.
+- `headwaters` walks a root's main stem upstream from `mouthReach` to the first reach outside the
+  province, then adds the level-12 drainage upstream of it, minus the province and the other roots.
+- Interior rings smaller than `sliverMaxKm2` are filled. An interior ring of the outline that is not
+  a sliver is given to the root whose `wholeLayer` polygon covers the largest share of it (at least
+  50%). It is listed in `slivers.holesGivenToRoots`. A ring that no root covers by half stays a hole
+  and is reported.
+- Each level-12 polygon goes to the root that covers the largest share of it (`assignMinShare`). The
+  member area must match the root area within max(`tolerancePct`, 2× the median level-12 polygon
+  area).
+- Outputs: `basin.geojson` (the outline), `basins.geojson` (one feature per root), `hybas_l12.parquet`
+  (same columns as outlet mode), `lev12_roots.parquet` and `roots.json`.
+
 ### `npm run pipeline:rivers`
 
 Selects every HydroRIVERS reach whose `HYBAS_L12` is a basin member and tags each one with a
