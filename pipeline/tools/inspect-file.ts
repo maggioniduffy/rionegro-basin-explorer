@@ -110,7 +110,12 @@ export async function inspectFile(
 async function main() {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
-    options: { layer: { type: "string" }, samples: { type: "string" } },
+    // --region is read by ../lib/paths (output under data/work/<region>/); listed so parseArgs accepts it.
+    options: {
+      layer: { type: "string" },
+      samples: { type: "string" },
+      region: { type: "string" },
+    },
   });
   const file = positionals[0];
   if (!file)

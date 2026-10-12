@@ -1,0 +1,31 @@
+{
+  "$comment": "Settings of pipeline:line-names (R3.4 step 1): the names of the displayed lines. Built only from what the APRHI NOMBRE_COM field holds (inventory of 2026-10-11, 1,911 distinct names). abbreviations: a dotted word (lower case, without the dot) -> the full word it stands for, expanded wherever it appears in a name ('A.' arroyo, 'R.' río, 'Cda.' cañada, 'Q.' quebrada seen at the start or inside the name; 'C.' is read as cañada: 8 names, and the one IGN line next to any of them, 'C. del Manantial', is 'Cañada del Manantial' there; the owner is asked to confirm). Any other dotted word is left as it is and listed in the report (seen only in starred names: 'Pto.'). dotlessAbbreviations: abbreviations from the table that are also expanded without the dot ('Cda de los Duendes'); kept to this list because single letters such as 'A' or 'R' can be real words. leadingWords: the full words a name may start with after the abbreviations are expanded (compared without accents or case); a name starting with anything else stops the step, so a new form is looked at before it is displayed. wordFixes: misspelled word (lower case) -> the right word, for spellings that are the same word (Rio, Rió -> Río; an all-capitals word is fixed in capitals). aliasExcludeParentheses: text in parentheses that is a qualifier and not a name (lower case); it is not offered as an alias. aliasMinShare: an IGN name becomes a search alias of an APRHI name when it runs within bufferM of at least this share of the APRHI name's km (owner, 2026-10-11). maxEditDistance: an IGN name with the same number of words as an APRHI name and a nameKey that differs by at most this many edits, running along it for at least aliasMinShare, corrects the APRHI spelling (source characters were damaged in the R2 download; the IGN spelling wins); every damaged name that stays unresolved goes to the report and review.json, none is fixed by hand. bufferM: the buffer (m, South America Albers) of the alias test, the same 250 m as pipeline:lines-gate. The buffer of the reach coverage is not set here: it is lines.config.json bufferM / bufferLargeM / largeMinStrahler. A name ending or containing '*' is blank: the source marks it as unknown (owner, 2026-10-11; to be asked of APRHI).",
+  "abbreviations": {
+    "a": "Arroyo",
+    "r": "Río",
+    "c": "Cañada",
+    "cda": "Cañada",
+    "q": "Quebrada"
+  },
+  "dotlessAbbreviations": ["cda"],
+  "leadingWords": [
+    "Arroyo",
+    "Río",
+    "Cañada",
+    "Quebrada",
+    "Vertiente",
+    "Brazo",
+    "Paleocauce",
+    "Bajo",
+    "Cárcava",
+    "BY"
+  ],
+  "wordFixes": {
+    "rio": "Río",
+    "rió": "Río"
+  },
+  "aliasExcludeParentheses": ["brazo", "brazo/paleocauce"],
+  "aliasMinShare": 0.5,
+  "maxEditDistance": 2,
+  "bufferM": 250
+}
