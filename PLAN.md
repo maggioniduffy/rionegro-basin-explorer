@@ -195,6 +195,20 @@ Code and docs done in the cloud (2026-10-10, steps 1–8). Local checks passed (
 
 ### Phase R3 — Córdoba pipeline & app (Phases 1–6 reused)
 
+Plan approved 2026-10-12 ([DECISSIONS.md](DECISSIONS.md#córdoba-r3-plan-2026-10-12)): precedence APRHI > IGN > HydroRIVERS, same app contract, HydroRIVERS as the hidden network.
+
+- [~] R3.0 Inputs: re-download RiverATLAS and GIRES; delete them again (with their markers) after R3.2 caches the `cba` subsets
+- [ ] R3.1 Region outline (APRHI polygons) and typed roots; Río Quinto headwaters from HydroBASINS
+- [ ] R3.2 Hidden network: reaches per root, RiverATLAS/GIRES, `network-overrides.json` (Río Cuarto → Carcarañá, southern plains → 03)
+- [ ] R3.3 Displayed lines: APRHI inside the province (no "Eliminado", "En revisión" flagged), IGN outside, each matched to a reach
+- [ ] R3.4 Rivers and streams from APRHI names (`names.json`), IGN names as aliases
+- [ ] R3.5 Sub-basins from APRHI: region → 6 basins → 25 subcuencas → 80 UGH
+- [ ] R3.6 Lakes and dams: APRHI > IGN > HydroLAKES; caveat names Córdoba's dams
+- [ ] R3.7 App contract: sink and region-edge mouths, root per reach, line source and status (no change for `nqn`)
+- [ ] R3.8 Localities, mask, map config, tiles, export, seed `basin-explorer-cba`
+
+Original items:
+
 - [ ] Basin step supports several roots: river outlets and endorheic sinks, each its own top-level node (no grouped endorheic node)
 - [ ] Rivers that end in wetlands or sinks: the "mouth" is the terminal reach, flagged; no sea distance
 - [ ] Names, IGN match/streams, sub-basins, localities, tiles, seed for `cba`; caveats name Córdoba's dams (San Roque, Los Molinos, Río Tercero, …)
