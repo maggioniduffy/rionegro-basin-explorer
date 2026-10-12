@@ -197,4 +197,3 @@ Run on the owner's machine, on `cba`:
 - `npm run seed -- --region nqn`: ok, `basin-explorer`, every check true; 24 rivers, 8016 reaches,
   25 sub-basins, 453 streams matched, none upserted, modified or deleted.
 - Still for the owner: the browser checks, `npm run test:e2e` and the Vercel checks above.
-

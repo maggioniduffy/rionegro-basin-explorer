@@ -308,6 +308,56 @@ Output: `data/work/<region>/ign-gate/report.json`. Checks: IGN present, HydroRIV
 report, clipped km within bbox km, deduplication never adds features. The overlap figure (unioned vs
 summed length) is computed for the perennial class only.
 
+### `npm run pipeline:basin-gate -- --region <id>`
+
+Gate R2 for a region with several basins (`cba`): which reference basins (APRHI's for `cba`) to
+include, and how well HydroBASINS level 12 reproduces them. Read-only; the one output R3 reuses is
+the level-12 → basin assignment. Reads `regions/<id>/gate.config.json` (province polygon, reference
+basins and sub-basins), HydroBASINS level 12 and HydroRIVERS. Runs in under a minute.
+
+- **Assignment.** A level-12 polygon joins the reference basin holding the largest share of its area
+  if that share is at least `assignMinShare` (ties to the lowest code); the rest stay unassigned.
+- **Per basin.** APRHI area and share inside the province; HydroBASINS area, IoU with the APRHI
+  polygon, the APRHI part not covered and the HydroBASINS part outside it; ENDO counts.
+- **Roots.** The group's terminal polygons: `sea`, `sink` (ENDO 2, NEXT_DOWN 0), `virtual-sink`
+  (ENDO 2 with a HydroBASINS virtual NEXT_DOWN) or `flows-out` into another group (`intoCode`).
+  Roots of 100 km² UP_AREA or more are listed. `upstreamOutsideKm2` is the SUB_AREA upstream of the
+  roots that lies outside the group: where the reference outline cuts a HydroBASINS drainage.
+- **HydroRIVERS.** Reaches, km and endorheic km per group, and the largest exit reaches
+  (`disAvCmsModeled`: modeled natural average discharge, 1971–2000).
+- **Coverage.** Province area covered by assigned polygons; per sub-basin IoU (median, and those
+  below 0.6).
+
+Areas in South America Albers. Checks (the step throws after writing the report if any fails):
+province found, reference basins inside `searchBbox`, no overlap among them, each level-12 polygon
+assigned at most once, SUB_AREA within 2% of polygon area per group, at least 98% of the province
+covered. Outputs in `data/work/<id>/basin-gate/`: `report.json`, `lev12_groups.parquet` (HYBAS_ID,
+code, share, areaKm2, inProvinceKm2) and `groups.geojson` (dissolved per basin, for viewing).
+
+### `npm run pipeline:lines-gate -- --region <id>`
+
+Gate R2: what each line source adds inside the region's province. Compares HydroRIVERS, IGN
+perennial (`ign_perennial`), IGN perennial plus intermittent (`ign_all`) and the provincial lines
+(`referenceLines` in `gate.config.json`, label `aprhi` for `cba`). Read-only; runs in about a minute.
+
+- **Clip.** Each source clipped to the province, exact duplicates dropped and counted. Per source:
+  features, spheroid km, named km, distinct names, self-overlap (summed vs unioned km), km by class
+  and status (reference lines) and by Strahler order (HydroRIVERS).
+- **Proximity** (Albers, approximate) at 100, 250 and 500 m: for every ordered pair (A, B), the km of
+  A farther than the buffer from every line of B, split by Strahler order when A is HydroRIVERS. In
+  the `ign_all` vs `ign_perennial` cell only the intermittent lines count.
+- **Names** at `bufferM`: HydroRIVERS km within the buffer of a named line of each source. Name
+  agreement between reference-line and IGN names where they coincide: strict `nameKey`; with
+  abbreviations (A., R., C., Cda., Q.) and parenthesised alternatives expanded; and lenient (also
+  ignoring articles); plus the 15 largest disagreeing pairs.
+- **Verdict** per candidate (`ign_perennial`, `ign_all`, reference lines) with the `ign-gate` rule at
+  `bufferM`, and the other buffers as sensitivity.
+
+`LINES_GATE_SKIP=ign_intermittent` (comma list of source ids) leaves sources out of the proximity
+part. Checks: province found, every source non-empty, clipped km never above unclipped, deduplication
+never adds features, far km never above total. Outputs in `data/work/<id>/lines-gate/`:
+`report.json` and `lines_province.parquet` (source, id, name, class, status, ORD_STRA, km, geometry).
+
 ### `npm run pipeline:ign`
 
 IGN perennial watercourse lines (`data/raw/ign/`, Shapefile, ISO-8859-1), cleaned and clipped to the

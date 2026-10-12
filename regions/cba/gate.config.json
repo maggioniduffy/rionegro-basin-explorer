@@ -1,0 +1,36 @@
+{
+  "$comment": "Inputs for the R2 gate steps (pipeline:basin-gate, pipeline:lines-gate). Paths are relative to data/raw/; a .zip holding one shapefile is read through GDAL /vsizip/. srs is the layer's CRS as GDAL should read it (EPSG:22174, POSGAR 98 / Argentina 4, as the APRHI .prj files declare; read with always_xy, checked 2026-10-11). The province polygon is the scope for inside/outside areas and for the line comparison. searchBbox bounds the HydroBASINS/HydroRIVERS reads; it must contain every reference basin (the step checks it). assignMinShare: a HydroBASINS level-12 polygon joins the reference basin holding at least this share of its area. bufferM: the line-comparison distance, the same 250 m as the nqn IGN gate.",
+  "province": {
+    "path": "ign/provincia/provincia.zip",
+    "srs": "EPSG:4326",
+    "encoding": "UTF-8",
+    "nameField": "fna",
+    "name": "Provincia de Córdoba"
+  },
+  "referenceBasins": {
+    "path": "CuencasInterprovinciales_CPA.zip",
+    "srs": "EPSG:22174",
+    "codeField": "COD_CUENCA",
+    "nameField": "CUENCA",
+    "source": "APRHI (PIHC), Cuencas interprovinciales"
+  },
+  "referenceSubbasins": {
+    "path": "Subcuencas_cpa.zip",
+    "srs": "EPSG:22174",
+    "codeField": "COD_CUENCA",
+    "nameField": "SUBCUENCA",
+    "source": "APRHI (PIHC), Subcuencas"
+  },
+  "referenceLines": {
+    "path": "CursosDeAgua_CPA.zip",
+    "srs": "EPSG:22174",
+    "nameField": "NOMBRE_COM",
+    "classField": "TIPO",
+    "statusField": "Estado_de_",
+    "label": "aprhi",
+    "source": "APRHI (PIHC), Cursos de agua 2021"
+  },
+  "searchBbox": { "xmin": -68.5, "ymin": -38.0, "xmax": -59.5, "ymax": -23.5 },
+  "assignMinShare": 0.5,
+  "bufferM": 250
+}
