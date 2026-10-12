@@ -99,7 +99,7 @@ export function subbasinFillOpacity(
 ): ExpressionSpecification | number {
   const id = selectedSubbasin(sel);
   if (mode === "basin" || !id) return 0;
-  return ["case", inSubtrees([id]), 0.12, 0];
+  return ["case", inSubtrees([id]), 0.25, 0];
 }
 
 /**
@@ -122,7 +122,12 @@ export function subbasinFilter(
 export const basinOutlineOpacity = (isolatedIds: string[] | null) =>
   isolatedIds ? 0 : 1;
 
+/** Borders between sub-basins are kept faint; the selected outline stands out. */
 export function subbasinLineOpacity(mode: ViewMode): number {
+  return mode === "basin" ? 0 : 0.5;
+}
+
+export function subbasinSelectedLineOpacity(mode: ViewMode): number {
   return mode === "basin" ? 0 : 0.9;
 }
 
@@ -458,7 +463,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     paint: {
       "line-color": SUBBASIN_COLOR,
       "line-opacity": subbasinLineOpacity(o.viewMode),
-      "line-width": 1.5,
+      "line-width": 1,
     },
   });
   layers.push({
@@ -470,7 +475,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     layout: { "line-join": "round" },
     paint: {
       "line-color": SUBBASIN_COLOR,
-      "line-opacity": subbasinLineOpacity(o.viewMode),
+      "line-opacity": subbasinSelectedLineOpacity(o.viewMode),
       "line-width": 3,
     },
   });

@@ -51,6 +51,7 @@ import {
   SUBBASIN_HIDE_LAYER_ID,
   hiddenSubbasinsFilter,
   subbasinLineOpacity,
+  subbasinSelectedLineOpacity,
   selectedOutlineFilter,
   SUBBASIN_SELECTED_LAYER_ID,
   THEME_COLORS,
@@ -301,8 +302,16 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
       "fill-opacity",
       subbasinFillOpacity(s.viewMode, s.selection),
     );
-    for (const id of [SUBBASIN_LINE_LAYER_ID, SUBBASIN_SELECTED_LAYER_ID])
-      map.setPaintProperty(id, "line-opacity", subbasinLineOpacity(s.viewMode));
+    map.setPaintProperty(
+      SUBBASIN_LINE_LAYER_ID,
+      "line-opacity",
+      subbasinLineOpacity(s.viewMode),
+    );
+    map.setPaintProperty(
+      SUBBASIN_SELECTED_LAYER_ID,
+      "line-opacity",
+      subbasinSelectedLineOpacity(s.viewMode),
+    );
   }
   if (!prev || s.theme !== prev.theme) {
     const { mask, outline, lake } = THEME_COLORS[s.theme];
