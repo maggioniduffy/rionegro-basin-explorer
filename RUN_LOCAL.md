@@ -53,7 +53,7 @@ The committed tiles moved to `public/tiles/nqn/` (byte-identical). Checked in th
 Vercel keep `MONGODB_DB=basin-explorer` (now the base name). Other regions will use
 `basin-explorer-<id>`.
 
-- [ ] Check the seed still targets the same database without writing anything new: the
+- [x] Check the seed still targets the same database without writing anything new: the
       report names it.
   ```sh
   npm run seed -- --region nqn
@@ -194,7 +194,7 @@ Run on the owner's machine, on `cba`:
 - `npm run check` passes (386 tests). `npm run atlas:check -- --region nqn`: ok, `basin-explorer`.
 - `npm run dev` + `curl`: `/api/health` up, search `limai` → Limay, `/api/rivers/limay` 200, ask
   `limai` → `limay` (fuzzy); `localhost` and `nqn.localhost` 200, `cba.localhost` 404 (pages and API).
-- Not run: `npm run seed -- --region nqn` (blocked by the session's permission rules; `data/out/nqn`
-  is unchanged, so it would rewrite the same documents). Still for the owner: the browser checks,
-  `npm run test:e2e` and the Vercel checks above.
+- `npm run seed -- --region nqn`: ok, `basin-explorer`, every check true; 24 rivers, 8016 reaches,
+  25 sub-basins, 453 streams matched, none upserted, modified or deleted.
+- Still for the owner: the browser checks, `npm run test:e2e` and the Vercel checks above.
 
