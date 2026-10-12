@@ -170,9 +170,9 @@ Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run 
 - [ ] Córdoba provincial layers (ArcGIS Experience "Cuencas y Unidades de Gestión"): owner exports or allows `arcgis.com` in the environment; license-checker before use; the shared link is a `draft=true` view, confirm the published one
 - **Done when:** the open items above are decided and recorded in DECISSIONS.md. The ArcGIS item blocks R2's comparison only, not R1.
 
-### Phase R1 — Region refactor, no behavior change
+### Phase R1 — Region refactor, no behavior change ✅
 
-Code and docs done in the cloud (2026-10-10, steps 1–8); waiting on the local checks in [RUN_LOCAL.md](RUN_LOCAL.md) before it counts as done.
+Code and docs done in the cloud (2026-10-10, steps 1–8). Local checks passed (2026-10-11): the `nqn` pipeline re-run reproduces `data/out` and the reports, `npm run check` passes, the API answers per host. Left for the owner: browser, e2e and Vercel checks in [RUN_LOCAL.md](RUN_LOCAL.md).
 
 - [x] `regions/<id>/`: pipeline configs (basin, map, subbasins, names, lakes, ign-overrides), `region.ts` (title keys, featured rivers, OG text, LLM few-shot examples, data caveats such as the regulated-rivers text), messages (`region.*` namespace) — configs moved to `regions/nqn/` with the registry `regions/index.ts` (step 1, 2026-10-10)
 - [x] Pipeline steps take `--region`; `data/work/<region>/`, `data/out/<region>/`; `data/raw/` and checksums stay shared (step 2, 2026-10-10; default `nqn`)

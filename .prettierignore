@@ -7,6 +7,6 @@ test-results/
 playwright-report/
 e2e/**/*-snapshots/
 public/maplibre/
-app/og-shapes.json
+regions/*/og-shapes.json
 # Design handoff bundle (generated, not committed)
 /Rio Negro Landing v3.html
