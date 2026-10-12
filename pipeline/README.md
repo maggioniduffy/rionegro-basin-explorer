@@ -48,6 +48,11 @@ Install notes:
   and copy the three binaries to `~/.local/bin`. `pipeline:tiles` uses `tippecanoe` from PATH,
   or `$TIPPECANOE`.
 
+Memory: the heavy steps (`basin` reference mode, the gates, `lines`, `ign-match`, `ign-layers`) cap DuckDB
+at 4 GB and spill to `data/work/<id>/<step>/tmp/` beyond it. On a machine with more RAM (a cloud
+session), set `PIPELINE_MEMORY_LIMIT` (e.g. `PIPELINE_MEMORY_LIMIT=12GB`) to keep more in memory;
+the output does not change.
+
 Disk: the global FileGDBs are large: RiverATLAS is 7 GB and GIRES is 3.3 GB extracted.
 `pipeline:rivers` caches the basin's rows from each to Parquet. After that, the FileGDB folders can be
 deleted, **together with their `.source.json` marker**, so a later `pipeline:download` refetches
@@ -412,6 +417,30 @@ perennial (`ign_perennial`), IGN perennial plus intermittent (`ign_all`) and the
 part. Checks: province found, every source non-empty, clipped km never above unclipped, deduplication
 never adds features, far km never above total. Outputs in `data/work/<id>/lines-gate/`:
 `report.json` and `lines_province.parquet` (source, id, name, class, status, ORD_STRA, km, geometry).
+
+### `npm run pipeline:lines -- --region <id>`
+
+R3.3: the lines the map displays, for a region with `regions/<id>/lines.config.json` (`cba`). Needs
+`basin` and `rivers` first. APRHI lines (`referenceLines` in `gate.config.json`) inside the province edge
+(the union of `clippedLayer` in `basin.config.json`), IGN perennial and intermittent outside it but
+inside the outline. Statuses in `aprhi.dropStatus` are dropped, those in `aprhi.statusMap` are mapped,
+and any other status stops the step. Runs in about three minutes.
+
+- **Cut.** Exact duplicate geometries dropped; lines cut exactly at the edge and split at the root
+  borders, giving one `lineId` (`source:id:part`) per linestring.
+- **Match.** Each line is cut into parts of about `partM` metres. A part takes the nearest reach of its
+  root within `bufferM`, or `bufferLargeM` for reaches of Strahler order `largeMinStrahler` and up.
+  Runs of one reach become pieces (`pieceId` = `lineId#k`); a run shorter than `minPieceM` between
+  two runs of one reach joins them (`pipeline/lib/lines.ts`).
+
+Checks (the step throws after writing the report if any fails): km conserved per source within
+`conservationPct`, every piece inside its root, APRHI pieces inside the edge and IGN pieces outside it
+(`edgeToleranceM` slack), no overlapping pieces within a line, matched reaches in the piece's root,
+unique ids, and the same file as the previous run (null on a first run; a config change fails once,
+so run the step twice). The report also lists km by source, root, status and Strahler order, the
+connected high-order reaches with no piece, and the longest unmatched named lines. Outputs in
+`data/work/<id>/lines/`: `report.json` and `lines.parquet` (pieceId, lineId, source, sourceId, name,
+class, status, root, reach, network, strahler, length_m, geometry).
 
 ### `npm run pipeline:ign`
 

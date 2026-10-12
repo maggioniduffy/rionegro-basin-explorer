@@ -101,7 +101,7 @@ scripts/      seed, Atlas check, OG shapes
 public/tiles/<region>/ PMTiles archives (committed)
 ```
 
-Project docs: [PLAN.md](PLAN.md) (phases and status) and [DECISSIONS.md](DECISSIONS.md) (dated
+Project docs: [PLAN.md](context/PLAN.md) (phases and status) and [DECISSIONS.md](context/DECISSIONS.md) (dated
 decisions).
 
 ### Data and licenses
@@ -215,7 +215,7 @@ scripts/      seed, chequeo de Atlas, formas para la imagen OG
 public/tiles/<region>/ archivos PMTiles (commiteados)
 ```
 
-Documentación del proyecto: [PLAN.md](PLAN.md) (fases y estado) y [DECISSIONS.md](DECISSIONS.md)
+Documentación del proyecto: [PLAN.md](context/PLAN.md) (fases y estado) y [DECISSIONS.md](context/DECISSIONS.md)
 (decisiones fechadas).
 
 ### Datos y licencias

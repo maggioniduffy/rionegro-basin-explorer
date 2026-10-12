@@ -33,7 +33,7 @@ and a strip of land around it is visible, with river panels and a sub-basin view
 /pipeline            TS steps + README.md + SOURCES.md
 /data                raw/ (shared) work/<region>/ (gitignored) · out/<region>/ (NDJSON)
 /scripts             seed.ts
-CLAUDE.md  PLAN.md  PLAN_ARCHIVE.md  DECISSIONS.md
+CLAUDE.md  context/ (PLAN.md  PLAN_ARCHIVE.md  DECISSIONS.md  RUN_LOCAL.md  PENDING.md  DESIGN.md)
 .claude/             agents/ and skills/ (committed)
 ```
 
@@ -103,12 +103,12 @@ Plan approved 2026-10-12 ([DECISSIONS.md](DECISSIONS.md#córdoba-r3-plan-2026-10
 - [x] R3.0 Inputs: re-download RiverATLAS and GIRES; delete them again (with their markers) after R3.2 caches the `cba` subsets — subsets cached in `data/work/cba/rivers/`, FileGDBs and markers deleted (2026-10-12)
 - [x] R3.1 Region outline (APRHI polygons) and typed roots; Río Quinto headwaters from HydroBASINS — `pipeline:basin` reference mode, outline 291,118 km², headwaters 6,628 km² (2026-10-12)
 - [x] R3.2 Hidden network: reaches per root, RiverATLAS/GIRES, `network-overrides.json` — cross-root edges cut; overrides need an APRHI line: Río Quinto main stem → 04, Río Cuarto → Saladillo → Carcarañá; southern arroyos stay endorheic in 03 (no APRHI link) (2026-10-12). Local preview: `npm run preview:map -- --region cba`
-- [ ] R3.3 Displayed lines: APRHI inside the province (no "Eliminado", "En revisión" flagged), IGN outside, each matched to a reach
+- [x] R3.3 Displayed lines: APRHI inside the province (no "Eliminado", "En revisión" flagged), IGN outside, each matched to a reach — `pipeline:lines`, 25,401 pieces, 44% of km matched (main rivers 62–84%), buffer 250 m / 1 km by Strahler order (2026-10-11). APRHI has no lines in 05 and 06 and 331 km in 04 (layer coverage; see [PENDING.md](PENDING.md)). Heavy steps cap DuckDB at 4 GB, `PIPELINE_MEMORY_LIMIT` raises it on a larger machine
 - [ ] R3.4 Rivers and streams from APRHI names (`names.json`), IGN names as aliases
 - [ ] R3.5 Sub-basins from APRHI: region → 6 basins → 25 subcuencas → 80 UGH
 - [ ] R3.6 Lakes and dams: APRHI > IGN > HydroLAKES; caveat names Córdoba's dams
 - [ ] R3.7 App contract: sink and region-edge mouths, root per reach, line source and status (no change for `nqn`)
-- [ ] R3.8 Localities, mask, map config, tiles, export, seed `basin-explorer-cba`
+- [ ] R3.8 Localities, mask, map config, tiles, export, seed `basin-explorer-cba`; the map style matches Río Negro's (same layers, colours and widths; owner, 2026-10-11)
 
 Original items:
 

@@ -3,8 +3,8 @@
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
 Amazon Basin Explorer. One app serves several **regions**, one per subdomain: `nqn` (the Río
-Negro basin, live) and `cba` (Córdoba, a stub, not served yet); see "Regions" below. See `PLAN.md` for open phases and status (completed phases are in `PLAN_ARCHIVE.md`; read it only when you need their history), and `DECISSIONS.md` for the dated
-decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `PLAN.md`).
+Negro basin, live) and `cba` (Córdoba, a stub, not served yet); see "Regions" below. See `context/PLAN.md` for open phases and status (completed phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
+decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `context/PLAN.md`).
 
 ## Stack
 
@@ -44,7 +44,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 7. **Pipeline steps must be idempotent** and write a `report.json` (counts, total km, orphan segments, area checks). Read the report to verify results instead of judging by eye.
 8. **Cost-conscious:** prefer free tiers (Atlas M0, Vercel hobby, PMTiles over tile servers). Flag anything that could add recurring cost.
 9. **Licenses and attribution:** keep `/pipeline/SOURCES.md` updated (source, URL, license, required citation, download date). Check the license before adding any new data source or imagery provider.
-10. **Workflow:** work one phase at a time from `PLAN.md`, in plan mode first. Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `DECISSIONS.md`.
+10. **Workflow:** work one phase at a time from `context/PLAN.md`, in plan mode first. Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
 11. Dismiss visual and chromium tests unless called for
 12. Execute plan's steps one at a time.
 
@@ -54,7 +54,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 - **Routing.** `proxy.ts` maps the host to a region (`regions/hosts.ts`: host table, then a region-id first label, else `nqn`) and rewrites to `app/[region]`; public URLs carry no region. Server code gets the region from route params (or the `x-basin-region` header in `i18n/request.ts`); client code from `useRegion()`.
 - **Per region:** pipeline configs and `--region` (required), Mongo database (`regionDbName`: `nqn` keeps `basin-explorer`, others append `-<id>`), tiles (`public/tiles/<id>/`, versioned per region), UI strings that name the region, `content.ts` (featured rivers, landing sample picks, OG subtitle, ask prompt place and examples). Everything else is shared.
 - **Never** let a region's code path fall back to another region's data silently: no default region in pipeline commands, and tests check that every served region defines the same message keys and valid prompt slugs.
-- Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in `RUN_LOCAL.md` after each change.
+- Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in `context/RUN_LOCAL.md` after each change.
 
 ## Sub-agents, skills and background work
 
