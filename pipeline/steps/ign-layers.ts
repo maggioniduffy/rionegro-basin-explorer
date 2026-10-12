@@ -1,6 +1,7 @@
 /**
  * pipeline:ign-layers — IGN lakes, dams and the detail lines, as inputs for the tiles
- * (Phase 5, after pipeline:ign-match).
+ * (Phase 5, after pipeline:ign-match). A region with regions/<id>/lakes.config.json (cba)
+ * runs lib/ign-layers-reference.ts instead.
  *
  * Inputs: IGN water polygons ("Embalse" BH130 and "Espejo de agua perenne"), dam points
  * (BH051 "Dique") and dam-wall lines (BI020 "Muro de embalse") in data/raw/ign/, the
@@ -26,6 +27,7 @@
  * Outputs: data/work/tiles/ign_lakes.geojson (HydroLAKES, named), ign_lakes_extra.geojson,
  * ign_detail.geojson, ign_dams.geojson, ign_dam_walls.geojson; data/work/ign-layers/report.json.
  */
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat } from "node:fs/promises";
 import { lit, openDb, limitResources } from "../lib/duckdb";
 import { lengthSpheroidKm } from "../lib/geo";
@@ -38,8 +40,10 @@ import {
 } from "../lib/ign";
 import type { MatchConfig } from "../lib/ign-match";
 import { requireInput } from "../lib/inputs";
-import { regionFile, rawPath, rel, workPath } from "../lib/paths";
+import { regionFile, rel, workPath } from "../lib/paths";
+import { runIgnLayersReference } from "../lib/ign-layers-reference";
 import { writeReport } from "../lib/report";
+import { parseLakesConfig } from "../lib/water-pure";
 
 const num = (v: unknown) => Number(v ?? 0);
 const round = (v: number, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
@@ -56,6 +60,15 @@ const read = (shp: string) =>
   `ST_Read(${lit(requireInput(shp))}, ${IGN_ST_READ_OPTIONS})`;
 
 async function main() {
+  // A region with lakes.config.json (cba) publishes the water pipeline:lakes decided on;
+  // one without it (nqn) runs the HydroLAKES + IGN path below.
+  const referenceFile = regionFile("lakes.config.json");
+  if (existsSync(referenceFile)) {
+    await runIgnLayersReference(
+      parseLakesConfig(JSON.parse(await readFile(referenceFile, "utf8"))),
+    );
+    return;
+  }
   const cfg = JSON.parse(
     await readFile(regionFile("ign.config.json"), "utf8"),
   ) as MatchConfig & { water: WaterConfig };

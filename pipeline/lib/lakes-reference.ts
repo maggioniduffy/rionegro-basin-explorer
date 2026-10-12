@@ -504,7 +504,7 @@ export async function runLakesReference(config: LakesConfig) {
     // 5. Names: own name, else the IGN polygon covering most of the lake, else HydroLAKES'.
     log("names, areas, network…");
     await db.conn.run(`ALTER TABLE lk0 ADD COLUMN area_km2 DOUBLE`);
-    await db.conn.run(`UPDATE lk0 SET area_km2 = round(${sph("geom")}, 3)`);
+    await db.conn.run(`UPDATE lk0 SET area_km2 = round(${sph("geom")}, 4)`);
     await db.conn.run(`
       CREATE TABLE ign_named AS
       SELECT i.layer, i.sid, m.name, m.name_key, i.geom

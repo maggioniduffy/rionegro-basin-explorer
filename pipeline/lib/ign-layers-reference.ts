@@ -20,7 +20,12 @@ import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { limitResources, lit, openDb } from "./duckdb";
-import { IGN_ST_READ_OPTIONS, IGN_WATER_SHP, ALBERS, createNameMap } from "./ign";
+import {
+  IGN_ST_READ_OPTIONS,
+  IGN_WATER_SHP,
+  ALBERS,
+  createNameMap,
+} from "./ign";
 import { requireInput } from "./inputs";
 import { regionFile, rel, workPath } from "./paths";
 import { writeReport } from "./report";
@@ -28,7 +33,6 @@ import { assignNetwork, createHybasNetwork } from "./water-network";
 import type { LakesConfig } from "./water-pure";
 
 const num = (v: unknown) => Number(v ?? 0);
-const round = (v: number, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
 const plain = (g: string) => `ST_GeomFromWKB(ST_AsWKB(${g}))`;
 const sha256 = async (file: string) =>
   createHash("sha256")
@@ -169,9 +173,9 @@ export async function runIgnLayersReference(config: LakesConfig) {
       : Object.entries(previous).every(([k, s]) => s === shas[k]);
 
     // 4. Report and checks.
-    const written = JSON.parse(
-      await readFile(targets.ign_lakes, "utf8"),
-    ) as { features: { properties: Record<string, unknown> }[] };
+    const written = JSON.parse(await readFile(targets.ign_lakes, "utf8")) as {
+      features: { properties: Record<string, unknown> }[];
+    };
     const writtenIds = written.features.map((f) => String(f.properties.id));
     const [lakeCounts] = await db.all(`
       SELECT count(*)::INT AS n, count(DISTINCT id)::INT AS distinct_ids,
@@ -205,6 +209,17 @@ export async function runIgnLayersReference(config: LakesConfig) {
       (r) => num(r.nearest_ign_dam_m) <= config.damMatchM,
     ).length;
 
+    const emptyLayers = await Promise.all(
+      (["ign_lakes_extra", "ign_detail"] as const).map(
+        async (k) =>
+          (
+            JSON.parse(await readFile(targets[k], "utf8")) as {
+              features: unknown[];
+            }
+          ).features.length,
+      ),
+    );
+
     const checks = {
       everyLakeWritten:
         writtenIds.length === num(lakeCounts?.n) &&
@@ -215,7 +230,7 @@ export async function runIgnLayersReference(config: LakesConfig) {
       // A stale override (gid no longer among the outline's IGN points) fails the step.
       everyDamRejectFound:
         num(damCounts?.points_rejected) === rejectedGids.length,
-      emptyLayersAreEmpty: true,
+      emptyLayersAreEmpty: emptyLayers.every((n) => n === 0),
       identicalToPreviousRun: identical !== false,
     };
     const ok = Object.values(checks).every(Boolean);
@@ -247,7 +262,11 @@ export async function runIgnLayersReference(config: LakesConfig) {
         of: marked.length,
         reservoirs: marked,
       },
-      network: { polygons: net.polygons, fromReaches: net.fromReaches, fromEndoField: net.fromEndoField },
+      network: {
+        polygons: net.polygons,
+        fromReaches: net.fromReaches,
+        fromEndoField: net.fromEndoField,
+      },
       geojsonBytes: sizes,
       sha256: shas,
       identicalToPreviousRun: identical,

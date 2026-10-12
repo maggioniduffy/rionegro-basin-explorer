@@ -302,6 +302,36 @@ The report checks:
 It also lists the km removed and the largest lakes. The step writes `lakes.geojson`, which is used for
 the mask hole and the `lakes` outline layer.
 
+#### Reference mode (`cba`)
+
+A region with `regions/<id>/lakes.config.json` (`"mode": "reference"`) takes its water in precedence
+APRHI > IGN > HydroLAKES (owner, 2026-10-12); `nqn` has no such file and keeps the HydroLAKES + IGN path.
+Needs `basin`, `rivers`, `named` and `lines`. Code: `pipeline/lib/lakes-reference.ts`, rules in
+`pipeline/lib/water-pure.ts`.
+
+- **Polygons.** Inside the province edge (the union of `basin.config.json` `clippedLayer`): APRHI natural
+  water bodies and reservoirs, made valid; a feature crossing the edge (Mar Chiquita) is taken whole.
+  Outside it: IGN Embalse (BH130, reservoir) and Espejo de agua perenne (lake), minus APRHI; an IGN polygon
+  APRHI covers at least `ign.dropCoveredShare` is dropped as the same water. HydroLAKES is added where APRHI
+  and IGN cover less than `hydroLakes.maxCoveredShare` of it, minus what they cover. Remaining overlaps go
+  to the higher rank: APRHI reservoir, APRHI natural (named first, then larger), IGN reservoir, IGN lake,
+  HydroLAKES.
+- **Names.** APRHI's, with `abbreviations` expanded; names with `*` are blank; a dotted word not in the
+  table or `keepDotted` stops the step. An unnamed APRHI or HydroLAKES polygon takes the name of the IGN
+  polygon covering at least `nameMinOverlap` of it; HydroLAKES' own name comes last. Ids are source layer
+  plus source id (`aprhi-nat-1582`, `hydrolakes-84`).
+- **`network`.** The R3.2 flag of the HydroBASINS level-12 polygon holding the water (connected when at
+  least half of its reach km are connected); HydroBASINS `ENDO` alone is not used, since it marks most
+  polygons endorheic.
+- **Lines.** Display pieces (`line_geom.parquet`, `pieceId` → clipped geometry, empty = drawn nowhere) and
+  HydroRIVERS reaches (`reach_geom.parquet`) are cut inside natural lakes; inside reservoirs only those of an
+  approved river (`named/river_reaches.parquet`) stay. Pieces shorter than `minPieceM` are dropped.
+
+Checks: unique ids, valid polygons, no overlap above 0.01 km², polygons inside the outline, km conserved
+for both line files, no kept line left inside the water it was cut from, every APRHI feature accounted
+for, same outputs as the previous run. The report also lists the HydroLAKES polygons added and the dam
+caveat list (APRHI reservoirs with Tipo = Presa, area, `Ano_inicio` with 0 and -999 as null).
+
 ### `npm run pipeline:export`
 
 Writes the Phase 1 artifacts:
@@ -605,6 +635,13 @@ Outputs: `data/work/<region>/tiles/ign_lakes.geojson`, `ign_lakes_extra.geojson`
 `ign_dams.geojson`, `ign_dam_walls.geojson`; report in `data/work/<region>/ign-layers/`. Checks: one name per
 lake, valid extra lakes, extra lakes outside HydroLAKES, detail lines outside lakes, no lake lost,
 every rejected dam point found (a stale `gid` fails the step).
+
+**Reference mode (`cba`, `lakes.config.json` present):** publishes what `pipeline:lakes` decided, in the
+file names and layer shapes `tiles` reads: `ign_lakes.geojson` holds every water polygon (`id, name,
+nameSource, kind, areaKm2, network, source`), `ign_lakes_extra.geojson` and `ign_detail.geojson` are empty
+by design (IGN polygons are already in `lakes`; the display lines already include IGN), and
+`ign_dams.geojson` / `ign_dam_walls.geojson` hold the IGN dams and walls touching the outline (IGN is their
+only source). The report lists the APRHI Presa reservoirs with an IGN dam within `damMatchM`.
 
 ### `npm run pipeline:tiles`
 

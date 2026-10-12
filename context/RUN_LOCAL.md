@@ -222,3 +222,8 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 - [x] `nqn` unchanged: `npm run pipeline:subbasins -- --region nqn`; `data/out/nqn/subbasins.ndjson`, `subbasins.geojson` and `subbasin_outlines.geojson` have the same sha256 as before.
 - [ ] Review `regions/cba/subbasin-ids.json` (ids are the future URL slugs; `la-picasa-subcuenca` and `cerro-negro-ugh` were suffixed) and the report's `outlets.nodes` (86 nodes at levels 2–3, and root 06, have a null outlet by the 90% rule).
 - [ ] Tile size: `data/work/cba/tiles/subbasins.geojson` is 49 MB, `subbasin_outlines.geojson` 63 MB; check the PMTiles size in R3.8.
+
+## Córdoba R3.6 — lakes and dams (2026-10-12)
+
+- [x] `npm run pipeline:lakes -- --region cba` twice, then `npm run pipeline:ign-layers -- --region cba` twice: `ok: true`, identical outputs.
+- [x] `nqn` unchanged: `pipeline:lakes` and `pipeline:ign-layers` for `nqn`, 9 outputs byte-identical.
