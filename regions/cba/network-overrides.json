@@ -1,0 +1,25 @@
+{
+  "$comment": "Manual network edits for pipeline:rivers in reference mode (R3.2). Rule: every entry needs an APRHI line as evidence (precedence APRHI > IGN > HydroRIVERS); systems without that evidence stay endorheic in their APRHI root. 'rootOverrides' reassign a reach to another root BEFORE the cross-root cut, so the HydroRIVERS edges between it and that root are kept (used where the HydroRIVERS path of an APRHI river crosses level-12 polygons assigned to another root). Each needs reach, root, reason, evidence; the reach must be selected and the root must exist. 'overrides' set NEXT_DOWN of a terminal reach (after the cuts) to another reach of the same root (from, to, reason, evidence); pipeline:rivers fails if one is invalid: both reaches selected, same root, `from` a terminal after the cuts, no cycle. 'reason' says why; 'evidence' cites the APRHI line name and distances.",
+  "rootOverrides": [
+    {
+      "reach": 61506350,
+      "root": "04",
+      "reason": "Río Quinto main stem: HydroRIVERS path 61506035 → 61506350 → 61506654 → 61507255 crosses two level-12 polygons assigned to 03.",
+      "evidence": "APRHI CursosDeAgua 'R. Quinto (Popopis)' within 0 m of 61506035 and 61507255; both reaches are on that path (HR_NEXT_DOWN), 17.2 km."
+    },
+    {
+      "reach": 61506654,
+      "root": "04",
+      "reason": "Río Quinto main stem: HydroRIVERS path 61506035 → 61506350 → 61506654 → 61507255 crosses two level-12 polygons assigned to 03.",
+      "evidence": "APRHI CursosDeAgua 'R. Quinto (Popopis)' within 0 m of 61506035 and 61507255; both reaches are on that path (HR_NEXT_DOWN), 17.2 km."
+    }
+  ],
+  "overrides": [
+    {
+      "from": 61498951,
+      "to": 61497869,
+      "reason": "Río Cuarto → Saladillo → Carcarañá: HydroRIVERS ends the Río Cuarto in a sink near the Bañados del Saladillo (UPLAND 13,824 km²).",
+      "evidence": "APRHI CursosDeAgua 'R. Saladillo' is within 500 m of the sink 61498951 and of connected 03 reach 61497869, 16.8 km downstream, the nearest connected reach on that line."
+    }
+  ]
+}

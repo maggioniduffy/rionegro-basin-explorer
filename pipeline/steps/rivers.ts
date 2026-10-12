@@ -18,10 +18,11 @@
  * because the global scan takes minutes), report.json.
  */
 import { mkdir, readFile } from "node:fs/promises";
+import { runReference } from "../lib/rivers-reference";
 import { lit, openDb } from "../lib/duckdb";
 import { lengthSpheroidKm, pctDiff } from "../lib/geo";
 import { INPUTS, requireInput } from "../lib/inputs";
-import { rel, workPath } from "../lib/paths";
+import { regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 import { cachedSubset, idsHash } from "../lib/subset";
 
@@ -43,6 +44,14 @@ const FLOAT_FIELDS = new Set(["LENGTH_KM", "UPLAND_SKM"]);
 const FLOAT_REL_TOLERANCE = 1e-6;
 
 async function main() {
+  const basinConfig = JSON.parse(
+    await readFile(regionFile("basin.config.json"), "utf8"),
+  ) as { mode?: string };
+  // Reference mode (cba): roots from a reference agency, see lib/rivers-reference.ts.
+  if (basinConfig.mode === "reference") {
+    await runReference();
+    return;
+  }
   const rivers = lit(requireInput(INPUTS.hydroRivers));
   const basinDir = workPath("basin");
   const members = requireInput(`${basinDir}/hybas_l12.parquet`);

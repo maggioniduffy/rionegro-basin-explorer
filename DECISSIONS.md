@@ -287,3 +287,19 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 - **Level-12 tolerance.** The member area must match the root area within max(3%, 2× the median level-12 polygon area). Root 06 (1,999 km², 12 polygons) is −229 km² against a tolerance of 320 km². The gap comes from level-12 polygons straddling its thin corner and affects attribute values only, since the outline is APRHI's.
 - **Result:** outline 291,118 km², one valid polygon. Roots: 01 62,489, 02 126,961, 03 72,774, 04 21,626 (14,880 in Córdoba plus the Río Quinto headwaters, 6,628 km² entering at reach 61504752), 05 5,260, 06 1,999 km². Río Negro outputs are byte-identical.
 - **For R3.2 (`network-overrides.json`).** HydroBASINS sends about 18,000 km² of 03 into 04 (reaches 61506884 and 61506654), and one 04 reach (61506035) into 03. 06's exit (61469144) flows into 02, but APRHI routes it to the Salado. The Río Cuarto ends in a virtual sink near the Bañados del Saladillo.
+
+## Córdoba R3.2: hidden network (2026-10-12)
+
+- **Reaches belong to the APRHI root of their level-12 polygon.** An edge into another root is cut (`next_down_edit = 'cut'`, original link kept in `HR_NEXT_DOWN`). An edge leaving the selection becomes a terminal (`'outside'`; 27 reaches, including 03's exit). Root 06 ends at 61469144 instead of flowing into Mar Chiquita, as APRHI routes it to the Salado.
+- **Overrides need an APRHI line as evidence** (`regions/cba/network-overrides.json`; precedence APRHI > IGN > HydroRIVERS). Two were applied:
+  - Root override: the Río Quinto main stem crosses two level-12 polygons of 03 (61506350, 61506654, 17.3 km). APRHI's R. Quinto line runs along them, so they move to 04, which connects the Quinto and its San Luis headwaters to 04's exit.
+  - Link override: the Río Cuarto sink 61498951 (13,824 km² upstream) now links to 61497869 on the Saladillo, the nearest connected 03 reach on APRHI's R. Saladillo line (16.8 km). This joins the Río Cuarto to the Carcarañá.
+- **Systems with no APRHI evidence stay endorheic within their APRHI root.** Example: the southern arroyos of 03 (largest system 3,337 km), which HydroBASINS sends to 04's sinks, have no APRHI line within 500 m of their terminal and stay endorheic in 03. They belong to 03 by outline but are not shown flowing into the Carcarañá.
+- **Result:** 12,921 reaches, 79,308 km; RiverATLAS 1:1, GIRES covers every reach with flow. Connected / endorheic km per root:
+  - 01: 18,301 / 70
+  - 02: 32,043 / 1,944
+  - 03: 11,809 / 7,444
+  - 04: 2,555 / 3,478
+  - 05: 1,134 / 103
+  - 06: 201 / 227
+- **Local preview** (`npm run preview:map -- --region cba`): a self-contained HTML file in `data/work/cba/preview/` with the APRHI layers and the hidden network over EOX imagery, so the region can be checked before the app serves it. `esbuild` is pinned as a dev dependency because MapLibre ships only ES modules, which a file:// page can't load.

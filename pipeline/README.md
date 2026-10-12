@@ -141,6 +141,35 @@ The report checks:
 - a 1:1 join with matching shared fields (float32 tolerance for `LENGTH_KM` and `UPLAND_SKM`);
 - `LENGTH_KM` against geodesic length.
 
+**Reference mode** (`"mode": "reference"` in `basin.config.json`, used by `cba`). The roots come from
+`pipeline:basin`; HydroRIVERS is a hidden network that supplies topology and the RiverATLAS / GIRES values:
+
+- Selects every reach whose `HYBAS_L12` is in `hybas_l12.parquet` and gives it a `root` from
+  `lev12_roots.parquet`.
+- `HR_NEXT_DOWN` keeps the HydroRIVERS value. `NEXT_DOWN` is the effective downstream reach, and
+  `next_down_edit` says how it changed: `cut` (the edge went into another root, so it becomes 0),
+  `outside` (the edge went to a reach outside the selection, i.e. the reach leaves the region; 0) or
+  `override` (set from `regions/<id>/network-overrides.json`; otherwise null). Two kinds of manual
+  edit live in that file, and each needs an APRHI line as evidence (APRHI > IGN > HydroRIVERS);
+  systems without that evidence stay endorheic in their APRHI root:
+  - `rootOverrides` (`reach`, `root`, `reason`, `evidence`) reassign a reach to another root before
+    the cuts, so its HydroRIVERS edges into that root are kept. The reach must be selected and the
+    root must exist. The report lists each with its km (`rootOverrides`).
+  - `overrides` (`from`, `to`, `reason`, `evidence`) set `NEXT_DOWN` of a terminal. The step fails if
+    one is invalid: both reaches selected, same root, `from` a terminal after the cuts, no cycle.
+- `network` is `connected` when the effective path reaches the root's exit (`roots.json`), else
+  `endorheic`. Root 06's exit is the reach the basin step recorded (its HydroRIVERS edge into 02 is
+  cut, so APRHI's routing to the Salado holds).
+- The RiverATLAS and GIRES joins are unchanged; the `NEXT_DOWN` checks compare `HR_NEXT_DOWN`.
+- Checks: zero orphans, each root's exit selected and connected, no connected reach into an endorheic
+  one, no effective edge across roots, length vs geodesic, 1:1 joins with matching shared fields,
+  GIRES coverage. The spatial cross-check (share of km whose midpoint is in another root's polygon) is
+  reported only.
+- Sections to choose overrides from: `leavesSelectionByRoot` (the `outside` reaches), `cuts` (every cut edge with its upland area and endpoint),
+  `endorheicSystems.byRoot` (terminals other than the exit that drain at least 50 km, with the nearest
+  connected reach of the root and the APRHI line names within 500 m, and whether a line of that name
+  also passes within 500 m of a connected reach) and `totalsByRoot`.
+
 ### `npm run pipeline:candidates`
 
 Lists the major branches of the connected network so they can be named in `regions/nqn/names.json`
