@@ -12,7 +12,7 @@ hold what only the owner can do. CLAUDE.md rules always win over this file.
 | **Scout**           | Haiku  | `.claude/agents/scout.md`           | Large-but-simple reading: `node_modules/next/dist/docs/`, library `.d.ts`/docs, codebase sweeps ("find every X"), test/log digests, i18n key audits, PR description drafts from `git log`  | Edits the repo; makes design decisions                               |
 | **Data inspector**  | Haiku  | `.claude/agents/data-inspector.md`  | Schema, nulls, ranges, geometry of any `data/` file (a scout for data)                                                                                                                     | Edits; runs pipeline steps                                           |
 | **License checker** | Sonnet | `.claude/agents/license-checker.md` | License / attribution text for `pipeline/SOURCES.md`                                                                                                                                       | Edits SOURCES.md itself                                              |
-| **Builder**         | Sonnet | `.claude/agents/builder.md`         | Implements one WP per brief (app or pipeline code), writes its tests, runs `npm run check`                                                                                                 | Commits, pushes, widens scope, runs heavy pipeline steps             |
+| **Builder**         | Sonnet | `.claude/agents/builder.md`         | Implements one WP per brief (app or pipeline code), adds tests only where the brief asks (§2 Tests), runs `npm run check` once at the end                                                  | Commits, pushes, widens scope, runs heavy pipeline steps             |
 | **Pipeline runner** | Sonnet | `.claude/agents/pipeline-runner.md` | Runs pipeline steps for one region, reads each `report.json`, returns a verdict                                                                                                            | Fixes code                                                           |
 | **Reviewer**        | Opus   | `.claude/agents/reviewer.md`        | Independent check of a WP diff or a phase gate; runs the acceptance commands                                                                                                               | Fixes what it finds                                                  |
 
@@ -32,7 +32,7 @@ Opus: read CLAUDE.md + PLAN.md phase + the DECISSIONS.md sections it links
   │
 Opus (plan mode): write WP briefs (template §3), order them → owner approves the plan
   │
-  ├─► builder (Sonnet), one WP at a time → code + tests, `npm run check` green, report
+  ├─► builder (Sonnet), one WP at a time → code (+ the few tests the brief asks for), `npm run check` green, report
   ├─► pipeline runner (Sonnet) when the WP changes data → reports read, verdict
   │
 Opus: read the report + diff; small fixes inline; otherwise re-brief the builder
@@ -52,8 +52,18 @@ Rules of the loop
 - A builder report that says "deviated" or "blocked" goes back through Opus before anything else runs.
 - Scout output that contradicts PLAN.md or a library assumption is written into DECISSIONS.md (dated, under the
   phase). PLAN.md keeps the goal; DECISSIONS.md wins on facts.
-- Every WP ends green: `npm run check`. E2E / Playwright / screenshots only when the phase gate or the owner asks
-  (Rule 11).
+- Every WP ends green: `npm run check`, run once when the WP is done (CLAUDE.md requires it before a commit).
+  Between rounds of the same WP, run only the touched test file (`npx vitest run <file>`) and `npm run typecheck`.
+  E2E / Playwright / screenshots only when the phase gate or the owner asks (Rule 11).
+- **Tests: keep them few (owner, 2026-10-13).** The app is small and the suite is already heavy.
+  - Add a test only for pure logic whose bug would corrupt data or routing silently: pipeline lib functions,
+    region isolation, `/api/ask` validation. One or two cases per behaviour (the main case and the edge that
+    broke), not a matrix.
+  - No new tests for styles, layout, copy, panels or i18n parity beyond the existing suites. For data steps,
+    the step's `report.json` checks are the test.
+  - Update an existing test only when the change breaks it. Don't add tests for findings a review calls minor.
+  - The brief's Acceptance checks name the tests to add, if any; the builder adds no others, and the reviewer
+    doesn't ask for more unless a blocking finding has none.
 - Branch per phase: `phase-<id>-<slug>` (e.g. `phase-r5-cba-ugh`), PR into `main`, commits per WP. One-off fixes
   outside a phase: branch `fix-<slug>`; skip scouts and briefs when the fix is trivial, keep the review step.
 - Commits follow the repo style (`feat(cba): …`, `fix: …`, `docs: …`, `chore: …`), English, small.
@@ -72,7 +82,7 @@ Constraints: <CLAUDE.md rules that matter here (i18n in both locales, no invente
 Acceptance checks:
 
 - [ ] npm run check
-- [ ] <unit/route test or report.json check that must pass>
+- [ ] <report.json check, or the one test to add (only per §2 Tests); omit when none>
 - [ ] <observable behavior>
       Out of scope: <things a builder might be tempted to do>
 ```
@@ -129,5 +139,10 @@ Stop and ask me only for owner actions (PENDING.md / RUN_LOCAL.md) or a decision
 
 Non-blocking findings from reviews and gates. Each names the WP or phase where it lands; remove the row once fixed.
 
-| Finding | Found in | Fix in |
-| ------- | -------- | ------ |
+| Finding                                                                                                                                                                                  | Found in    | Fix in |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------ |
+| `river-lines`: any earlier river's held piece can cut a course, not only the receiver's (`river-lines.ts:400-403`); limit cut targets to the receiver or flag a cut that doesn't meet it | R5.1 review | R5.2   |
+| `river-lines`: chained arm breaks have no total limit (Dulce 63, Conlara 51); report each arm's distance to the course or cap it                                                         | R5.1 review | R5.2   |
+| `river-lines`: an attachment nearest an extension piece is dropped (`river-lines.ts:410-418` vs `river-course.ts:847-853`); pass only main pieces as targets                             | R5.1 review | R5.2   |
+| `river-course.ts:860-864` attachment comparator returns 1 for equal ids; return 0                                                                                                        | R5.1 review | R5.2   |
+| Cuarto's 39.8 km arm may be its lower course to the Saladillo; check it when R5.2 closes `receiverNotReached` (Cuarto 24.9 km, Salí 11.9 km)                                             | R5.1 review | R5.2   |

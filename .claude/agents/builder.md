@@ -1,6 +1,6 @@
 ---
 name: builder
-description: Implements one work package (WP) from an orchestrator brief — app code (Next.js, React, MapLibre, Mongo route handlers, i18n) or pipeline code — with its tests, and runs npm run check. Does not commit, push, widen scope or run heavy pipeline steps.
+description: Implements one work package (WP) from an orchestrator brief — app code (Next.js, React, MapLibre, Mongo route handlers, i18n) or pipeline code — adds only the tests the brief asks for, and runs npm run check. Does not commit, push, widen scope or run heavy pipeline steps.
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: sonnet
 ---
@@ -21,12 +21,14 @@ While coding:
   region's `regions/<id>/messages/`); no invented data (unsourced values stay null); HydroATLAS caveats with
   the right period; `MONGODB_URI` server-only; pipeline steps idempotent with a `report.json`; never a
   silent fallback to another region.
-- Match the surrounding code's style, naming and comment density. Write or update tests for the behaviour.
+- Match the surrounding code's style, naming and comment density. Add only the tests the brief's Acceptance
+  checks name (`context/orchestration.md` §2 Tests); update an existing test only if your change breaks it.
+  Between rounds run only the touched test file (`npx vitest run <file>`) and `npm run typecheck`.
 - Never `cat` geo files; never run long pipeline steps (`rivers`, `mask`, `tiles`, large ogr2ogr/DuckDB jobs)
   — say which ones need running and the orchestrator sends the pipeline runner.
 - Don't commit, push, change branches, or edit `context/` docs unless the brief says so.
 
-Finish by running `npm run check` and report:
+Finish by running `npm run check` once and report:
 
 - Status: done / deviated / blocked.
 - Files changed (one line each, what changed).

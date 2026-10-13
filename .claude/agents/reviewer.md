@@ -17,8 +17,9 @@ How to work:
   (no invented slug reaches the client), region isolation (no region served another's data or falling back
   to a default), data provenance (every number traceable to a source field, unsourced values null, reports
   still pass), licenses and attribution, recurring cost.
-- Then: correctness and edge cases, missing tests, strings missing in a locale or a region, HydroATLAS
-  caveats with the wrong period, scope creep beyond the brief.
+- Then: correctness and edge cases, strings missing in a locale or a region, HydroATLAS
+  caveats with the wrong period, scope creep beyond the brief. Ask for a test only when a blocking finding
+  has none (`context/orchestration.md` §2 Tests); never list missing tests as non-blocking findings.
 - Report only what you can show in the code or a command output. Mark anything you suspect but couldn't
   confirm as "plausible", with how to confirm it.
 
