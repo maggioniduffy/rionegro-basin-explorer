@@ -69,5 +69,13 @@ export function tilePaths(region: RegionId, versions = TILES_VERSIONS) {
 
 /** EOX Sentinel-2 tiles are ~10 m imagery; above this MapLibre overzooms. */
 export const IMAGERY_MAXZOOM = 15;
+/**
+ * OpenStreetMap's standard tiles, the "Mapa" base (owner, 2026-10-12). No key. Their tile usage
+ * policy: normal viewing only, no bulk or offline use, may be blocked if it degrades the service
+ * (pipeline/SOURCES.md). Attribution is shown whenever this base is on.
+ */
+export const BASEMAP_TILE_URL =
+  "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+export const BASEMAP_MAXZOOM = 19;
 /** HydroRIVERS is 15 arc-second data; closer than this the lines drift off the imagery. */
 export const MAP_MAXZOOM = 13;

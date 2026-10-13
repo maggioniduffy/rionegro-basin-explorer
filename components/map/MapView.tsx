@@ -29,6 +29,7 @@ import {
   IGN_DETAIL_LAYER_ID,
   IGN_LAKE_FILL_LAYER_ID,
   IGN_LAKE_LINE_LAYER_ID,
+  BASEMAP_LAYER_ID,
   IMAGERY_LAYER_ID,
   LAKE_HIT_LAYER_ID,
   LAKE_LAYER_ID,
@@ -61,6 +62,7 @@ import {
   reachOrder,
 } from "@/lib/map/style";
 import { useRegion } from "@/components/RegionProvider";
+import { useAdoptSavedBaseLayer } from "@/lib/use-saved-base-layer";
 import { initMaplibre } from "@/lib/map/init";
 import { setMainMap } from "@/lib/map/main-map";
 import { SnapshotButton } from "./SnapshotButton";
@@ -249,6 +251,19 @@ type State = ReturnType<typeof useMapStore.getState>;
 
 /** Push store state into an already-loaded map. */
 function applyState(map: MapLibreMap, s: State, prev?: State) {
+  if (!prev || s.baseLayer !== prev.baseLayer) {
+    // Satellite and the OpenStreetMap base are one layer each; only the chosen one shows.
+    for (const [id, base] of [
+      [IMAGERY_LAYER_ID, "satellite"],
+      [BASEMAP_LAYER_ID, "map"],
+    ] as const)
+      if (map.getLayer(id))
+        map.setLayoutProperty(
+          id,
+          "visibility",
+          s.baseLayer === base ? "visible" : "none",
+        );
+  }
   const landChanged = !prev || s.visibleLand !== prev.visibleLand;
   const endoChanged = !prev || s.hideEndorheic !== prev.hideEndorheic;
   if (landChanged) {
@@ -343,6 +358,8 @@ export default function MapView() {
   // locale switch, and the map should survive that (only its labels change).
   const tRef = useRef(t);
   const region = useRegion();
+  // Before the map is created below (effects run in order), so it starts on the saved base.
+  useAdoptSavedBaseLayer();
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   // Client-only component (ssr: false), so document is available here.
@@ -373,6 +390,7 @@ export default function MapView() {
           origin: window.location.origin,
           imageryUrl: process.env.NEXT_PUBLIC_IMAGERY_TILE_URL || undefined,
           imageryAttribution: process.env.NEXT_PUBLIC_IMAGERY_ATTRIBUTION,
+          baseLayer: initial.baseLayer,
           dataAttribution: [
             link("https://www.hydrosheds.org", t("attribution.hydrosheds")),
             link(
@@ -447,11 +465,12 @@ export default function MapView() {
     map.on("idle", () => setIdle(true));
     map.on("error", (e) => console.error(e.error));
 
-    // Reveal the imagery only once the mask can cover it.
+    // Reveal the base maps only once the mask can cover them.
     const revealImagery = () => {
-      if (!map.getLayer(IMAGERY_LAYER_ID) || !map.isSourceLoaded("mask"))
+      if (!map.getLayer(BASEMAP_LAYER_ID) || !map.isSourceLoaded("mask"))
         return;
-      map.setPaintProperty(IMAGERY_LAYER_ID, "raster-opacity", 1);
+      for (const id of [IMAGERY_LAYER_ID, BASEMAP_LAYER_ID])
+        if (map.getLayer(id)) map.setPaintProperty(id, "raster-opacity", 1);
       map.off("sourcedata", revealImagery);
     };
     map.on("sourcedata", revealImagery);
@@ -519,7 +538,8 @@ export default function MapView() {
         s.selection === prev.selection &&
         s.viewMode === prev.viewMode &&
         s.isolatedIds === prev.isolatedIds &&
-        s.layers === prev.layers
+        s.layers === prev.layers &&
+        s.baseLayer === prev.baseLayer
       )
         return;
       setIdle(false);

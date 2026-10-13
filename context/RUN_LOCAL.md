@@ -282,3 +282,9 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 
 - [x] `named`, `export` (twice) for cba: ok; `export` nqn: `data/out/nqn` identical. Río Segundo nonPerennialPct 41.6 (was 100).
 - [x] `npm run seed -- --region cba` (rivers changed): ok; API `/cordoba/api/rivers/segundo` 223.6 km, 0 % non-perennial.
+
+## Base map: Satelital / Mapa (2026-10-12)
+
+- [x] `npm run check` (574 tests); style tests for both bases; messages en/es parity.
+- [ ] Browser, both regions: Visualización → Satelital / Mapa switches the base; the choice survives a reload; the credit shows; the rivers are readable on Mapa (if not, propose a dark casing for Mapa only). Phone sheet too.
+- [ ] Check the OSM tile load in the Network tab (no 403/429) after a few minutes of use.

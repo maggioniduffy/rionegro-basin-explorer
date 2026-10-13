@@ -41,6 +41,12 @@
       "naturalLakes": "Lagos naturales",
       "artificialLakes": "Embalses y lagos regulados",
       "localities": "Ciudades, pueblos y parajes"
+    },
+    "baseLayer": {
+      "label": "Mapa base",
+      "satellite": "Satelital",
+      "map": "Mapa",
+      "note": "Teselas del mapa © colaboradores de OpenStreetMap."
     }
   },
   "sheet": {
@@ -338,7 +344,7 @@
         "terms": "La APRHI no participa, patrocina ni avala esta aplicación. Los datos derivados de las capas de la APRHI se comparten de forma libre y gratuita."
       },
       "osm": {
-        "usedFor": "Ciudades, pueblos y localidades; evidencia para los nombres de ríos.",
+        "usedFor": "Base de mapa (\"Mapa\"): teselas estándar de tile.openstreetmap.org, bajo la máscara de la cuenca. Solo para uso normal (política de uso de teselas: operations.osmfoundation.org/policies/tiles).",
         "terms": "Los datos de OpenStreetMap están disponibles bajo la Open Database License."
       },
       "eox": {

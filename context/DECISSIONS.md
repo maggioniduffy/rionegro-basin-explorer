@@ -440,3 +440,10 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 - **Owner's choice: measure on the river's own IGN lines.** `pipeline:named` (cba) takes a river's `nonPerennialPct` as the intermittent share of the IGN-classed display-line length on the river's reaches (pipeline:line-flow). Where no line on the river is classed, it keeps GIRES's share of reach length (modeled). Río Segundo: 100 % (GIRES) → 0 % (its IGN lines are all perennial). Tercero 18.7 → 3.7 %, Cuarto 0 → 0.3 %, Quinto 24.3 %, Primero 17 → 0 %.
 - Provenance text says which source applies. `nqn` unchanged (its named output has no line-flow file).
 - Seed run (cba, 2026-10-12): ok; `basin-explorer-cba` rivers modified 13.
+
+## Base map: Satelital or Mapa (2026-10-12)
+
+- **Two bases in both regions (owner):** Satelital (EOX Sentinel-2 Cloudless, as before) and Mapa (OpenStreetMap standard tiles, `BASEMAP_TILE_URL`, no key). The choice is in Visualización (`BaseLayerToggle`, the desktop panel and the phone sheet), saved per viewer in `localStorage` (`baseLayer`), and kept out of the URL: a display preference, not a selection.
+- **No Relieve for now (owner).** OSM has no relief layer; the other candidates (MapTiler, Stadia) need a key and a licence check first.
+- **OSM tile policy (checked 2026-10-12):** normal viewing with no key is allowed; bulk and offline use are not; OSM may block without notice if usage degrades the service, and gives no SLA. This is a known risk for a public app: if it bites, switch Mapa to an OSM-derived provider. Recorded in pipeline/SOURCES.md and the attributions page.
+- Both bases stay under the same mask, so Visible Land and sub-basin tint work the same. Not yet checked on the map: river colours on the light OSM background (see the plan's open items).

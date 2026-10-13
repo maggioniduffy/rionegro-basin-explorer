@@ -1,3 +1,4 @@
+import { BASEMAP_TILE_URL } from "@/lib/map/config";
 import { describe, expect, it } from "vitest";
 import { MASK_LEVEL_COUNT } from "../lib/map/config";
 import {
@@ -25,6 +26,8 @@ import {
   unmatchedFilter,
   reachLayerId,
   PROVINCE_LAYER_ID,
+  BASEMAP_LAYER_ID,
+  IMAGERY_LAYER_ID,
   reachFeatureSelection,
   reachOrder,
   selectionFilter,
@@ -121,6 +124,7 @@ describe("buildStyle with the IGN layers", () => {
   const style = buildStyle({
     region: "nqn",
     origin: "http://localhost",
+    baseLayer: "satellite",
     dataAttribution: "",
     theme: "dark",
     hideEndorheic: false,
@@ -162,6 +166,7 @@ describe("buildStyle with the IGN layers", () => {
 describe("buildStyle with the province outline (cba)", () => {
   const options = {
     origin: "http://localhost",
+    baseLayer: "satellite",
     dataAttribution: "",
     theme: "dark",
     hideEndorheic: false,
@@ -338,5 +343,65 @@ describe("reachOrder", () => {
         undefined,
       ),
     ).toBeNull();
+  });
+});
+
+describe("buildStyle with the base map (satellite or OpenStreetMap)", () => {
+  const options = {
+    region: "nqn",
+    origin: "http://localhost",
+    dataAttribution: "",
+    theme: "dark",
+    hideEndorheic: false,
+    visibleLand: 3,
+    selection: null,
+    viewMode: "basin",
+    isolatedIds: null,
+    layers: DEFAULT_LAYERS,
+  } as const;
+  const withBase = (baseLayer: "satellite" | "map") =>
+    buildStyle({
+      ...options,
+      baseLayer,
+      imageryUrl: "https://imagery.example/{z}/{x}/{y}.jpg",
+    });
+  const layer = (style: ReturnType<typeof withBase>, id: string) =>
+    style.layers.find((l) => l.id === id);
+
+  it("is a valid style with both bases", () => {
+    expect(validateStyleMin(withBase("satellite"))).toEqual([]);
+    expect(validateStyleMin(withBase("map"))).toEqual([]);
+  });
+
+  it("shows only the chosen base", () => {
+    const sat = withBase("satellite");
+    expect(layer(sat, BASEMAP_LAYER_ID)?.layout).toEqual({
+      visibility: "none",
+    });
+    expect(layer(sat, IMAGERY_LAYER_ID)?.layout).toEqual({
+      visibility: "visible",
+    });
+    const map = withBase("map");
+    expect(layer(map, BASEMAP_LAYER_ID)?.layout).toEqual({
+      visibility: "visible",
+    });
+    expect(layer(map, IMAGERY_LAYER_ID)?.layout).toEqual({
+      visibility: "none",
+    });
+  });
+
+  it("draws the OpenStreetMap base under the mask, with its credit", () => {
+    const style = withBase("map");
+    const basemap = style.sources.basemap as {
+      tiles: string[];
+      attribution: string;
+    };
+    expect(basemap.tiles).toEqual([BASEMAP_TILE_URL]);
+    expect(basemap.attribution).toContain("OpenStreetMap");
+    const i = style.layers.findIndex((l) => l.id === BASEMAP_LAYER_ID);
+    expect(i).toBeGreaterThan(-1);
+    expect(i).toBeLessThan(
+      style.layers.findIndex((l) => l.id === maskLayerId(0)),
+    );
   });
 });

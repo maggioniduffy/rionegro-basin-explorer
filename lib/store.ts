@@ -9,6 +9,15 @@ import type { Selection } from "./url-state";
 export const UNITS_STORAGE_KEY = "units";
 /** localStorage key for the overview map's show/hide; read on mount by OptionsPanel. */
 export const MINIMAP_STORAGE_KEY = "minimap";
+/** localStorage key for the base map (satellite or map); read on mount (use-saved-base-layer). */
+export const BASE_LAYER_STORAGE_KEY = "baseLayer";
+
+/**
+ * The base under the mask: satellite imagery (EOX) or OpenStreetMap's standard map. Display
+ * preference only, so it is kept out of the URL.
+ */
+export const BASE_LAYERS = ["satellite", "map"] as const;
+export type BaseLayer = (typeof BASE_LAYERS)[number];
 
 /**
  * Display toggles for the map's water layers (Display panel). Rivers are the
@@ -81,6 +90,8 @@ interface MapState {
   /** km/mi; panels and the scale bar follow it, independently of the locale. */
   units: UnitSystem;
   setUnits: (u: UnitSystem) => void;
+  baseLayer: BaseLayer;
+  setBaseLayer: (b: BaseLayer) => void;
   /** Overview map at the top of the Display panel. */
   showMinimap: boolean;
   setShowMinimap: (v: boolean) => void;
@@ -127,6 +138,8 @@ export const useMapStore = create<MapState>()((set) => ({
   setOptionsOpen: (optionsOpen) => set({ optionsOpen }),
   units: "metric",
   setUnits: (units) => set({ units }),
+  baseLayer: "satellite",
+  setBaseLayer: (baseLayer) => set({ baseLayer }),
   showMinimap: true,
   setShowMinimap: (showMinimap) => set({ showMinimap }),
   layers: DEFAULT_LAYERS,

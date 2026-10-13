@@ -41,6 +41,12 @@
       "naturalLakes": "Natural lakes",
       "artificialLakes": "Reservoirs and regulated lakes",
       "localities": "Cities, towns and villages"
+    },
+    "baseLayer": {
+      "label": "Base map",
+      "satellite": "Satellite",
+      "map": "Map",
+      "note": "Map tiles © OpenStreetMap contributors."
     }
   },
   "sheet": {
@@ -338,7 +344,7 @@
         "terms": "APRHI does not take part in, sponsor or endorse this application. Data derived from APRHI layers is shared free of charge."
       },
       "osm": {
-        "usedFor": "Cities, towns and villages; evidence for river names.",
+        "usedFor": "Map base (\"Mapa\"): standard tiles from tile.openstreetmap.org, under the basin mask. Normal viewing only (tile usage policy: operations.osmfoundation.org/policies/tiles).",
         "terms": "OpenStreetMap data is available under the Open Database License."
       },
       "eox": {

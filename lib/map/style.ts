@@ -5,13 +5,15 @@ import type {
   StyleSpecification,
 } from "@maplibre/maplibre-gl-style-spec";
 import {
+  BASEMAP_MAXZOOM,
+  BASEMAP_TILE_URL,
   IMAGERY_MAXZOOM,
   MASK_LEVEL_COUNT,
   hasProvinceOutline,
   mapConfigFor,
   tilePaths,
 } from "./config";
-import type { LayerVisibility, ViewMode } from "../store";
+import type { BaseLayer, LayerVisibility, ViewMode } from "../store";
 import type { Selection } from "../url-state";
 import type { RegionId } from "@/regions";
 import { maskLayerOpacities, maskOpacities } from "./mask";
@@ -231,6 +233,8 @@ export function localityFilter(show: boolean): FilterSpecification {
 export const IGN_DETAIL_COLOR = "#67e8f9";
 
 export const IMAGERY_LAYER_ID = "imagery";
+/** OpenStreetMap's standard tiles, the "Mapa" base (BASEMAP_TILE_URL); under the mask. */
+export const BASEMAP_LAYER_ID = "basemap";
 export const BACKGROUND_LAYER_ID = "background";
 /** Halo under the selected river, stream or reach, drawn below the flow-class lines. */
 export const SELECTED_LAYER_ID = "reaches-selected";
@@ -370,6 +374,8 @@ export interface StyleOptions {
   origin: string;
   imageryUrl?: string;
   imageryAttribution?: string;
+  /** Which base is shown under the mask (the other stays loaded, hidden). */
+  baseLayer: BaseLayer;
   /** HTML for the rivers source credit (HydroSHEDS, GIRES). */
   dataAttribution: string;
   theme: Theme;
@@ -395,11 +401,21 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       paint: { "background-color": mask },
     },
   ];
+  // The OpenStreetMap base, hidden unless chosen (owner, 2026-10-12). Like the imagery it is
+  // transparent until the mask has loaded.
+  layers.push({
+    id: BASEMAP_LAYER_ID,
+    type: "raster",
+    source: "basemap",
+    layout: { visibility: o.baseLayer === "map" ? "visible" : "none" },
+    paint: { "raster-opacity": 0, "raster-fade-duration": 0 },
+  });
   if (o.imageryUrl) {
     layers.push({
       id: IMAGERY_LAYER_ID,
       type: "raster",
       source: "imagery",
+      layout: { visibility: o.baseLayer === "satellite" ? "visible" : "none" },
       // Transparent until the mask has loaded (MapView fades it in), so the imagery
       // outside the basin never shows on first load or after a locale switch.
       // No cross-fade between zoom levels: fading draws parent and child tiles
@@ -670,6 +686,15 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
   return {
     version: 8,
     sources: {
+      basemap: {
+        type: "raster",
+        tiles: [BASEMAP_TILE_URL],
+        tileSize: 256,
+        maxzoom: BASEMAP_MAXZOOM,
+        bounds: [xmin, ymin, xmax, ymax],
+        attribution:
+          '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>',
+      },
       ...(o.imageryUrl
         ? {
             imagery: {

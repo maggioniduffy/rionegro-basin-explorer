@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useMapStore } from "@/lib/store";
+import { BaseLayerToggle } from "./BaseLayerToggle";
 import { Icon } from "./Icon";
 import { LayerToggles } from "./LayerToggles";
 import { MinimapSection } from "./Minimap";
@@ -57,6 +58,7 @@ export function DisplayOptionsContent({ minimap }: { minimap: boolean }) {
   return (
     <>
       {minimap && <MinimapSection />}
+      <BaseLayerToggle />
       <UnitsToggle />
       <LayerToggles />
     </>
