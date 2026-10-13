@@ -9,13 +9,23 @@ import { useRegion } from "../RegionProvider";
  * locale. `compact` (the map header) keeps only the mark below 640px; the name stays for
  * screen readers.
  */
-export function Wordmark({ compact = false }: { compact?: boolean }) {
+export function Wordmark({
+  compact = false,
+  large = false,
+  phoneMark = false,
+}: {
+  compact?: boolean;
+  /** Below 640px, the mark only (the name stays for screen readers). */
+  phoneMark?: boolean;
+  /** The footer's 17px name. */
+  large?: boolean;
+}) {
   const region = useRegion();
   return (
     <span className="flex items-center gap-2.5">
       <Logomark width={34} className="shrink-0" />
       <span
-        className={`font-display font-medium tracking-[-0.01em] ${compact ? "text-[15px] max-sm:sr-only" : "text-base"}`}
+        className={`font-sans font-medium tracking-[-0.01em] ${compact ? "text-[15px]" : large ? "text-[17px]" : "text-base"} ${compact || phoneMark ? "max-sm:sr-only" : ""}`}
       >
         {REGION_BRANDS[region]}
       </span>

@@ -63,7 +63,7 @@ export function Row({
           </abbr>
         )}
       </dt>
-      <dd className="text-text text-right font-semibold tabular-nums">
+      <dd className="text-text text-right font-mono font-medium tabular-nums">
         {children}
       </dd>
     </div>

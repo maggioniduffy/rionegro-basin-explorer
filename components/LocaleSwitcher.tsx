@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useId, useTransition } from "react";
 import {
   isLocale,
   LOCALE_COOKIE,
@@ -10,7 +10,6 @@ import {
   LOCALES,
   type Locale,
 } from "@/i18n/config";
-import { Icon } from "./Icon";
 
 /** Persist the choice; i18n/request.ts reads it on the next server render. */
 function saveLocale(locale: Locale) {
@@ -22,6 +21,7 @@ export function LocaleSwitcher() {
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const labelId = useId();
 
   // No navigation: save the choice and re-render server components with the new
   // messages. Client state (the map, the slider) and the URL stay as they are.
@@ -32,19 +32,15 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <div
-      className="text-secondary flex items-center gap-2 text-[13px]"
-      title={t("label")}
-    >
-      <Icon name="language" />
-      <span id="locale-switcher-label" className="sr-only">
+    <div title={t("label")}>
+      <span id={labelId} className="sr-only">
         {t("label")}
       </span>
       {/* Two locales: a segmented toggle, one click on the other language switches. */}
       <div
         role="group"
-        aria-labelledby="locale-switcher-label"
-        className="border-line flex overflow-hidden rounded-md border"
+        aria-labelledby={labelId}
+        className="bg-surface-active flex gap-0.5 rounded-full p-[3px] text-xs font-semibold"
       >
         {LOCALES.map((l) => {
           const active = l === locale;
@@ -57,10 +53,8 @@ export function LocaleSwitcher() {
               title={t("locale", { locale: l })}
               disabled={isPending}
               onClick={() => !active && onChange(l)}
-              className={`min-h-9 px-3 font-semibold transition-colors ${
-                active
-                  ? "bg-accent text-on-accent"
-                  : "text-strong-muted hover:text-text"
+              className={`min-h-7 rounded-full px-2.5 transition-colors ${
+                active ? "bg-cta text-on-cta" : "text-secondary hover:text-text"
               }`}
             >
               {t("short", { locale: l })}

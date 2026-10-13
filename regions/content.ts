@@ -13,6 +13,8 @@ export interface RegionContent {
   featuredRivers: readonly { id: string; name: string }[];
   /** The river and sub-basin the landing's sample cards show (scripts/landing-sample.ts). */
   landingSample: { river: string; subbasin: string };
+  /** The landing's "built on" row: data sources, proper nouns, so not translated. */
+  landingSources: readonly string[];
   /** The OG image's line under the titles. Proper nouns only, so not translated. */
   ogSubtitle: string;
   llm: {

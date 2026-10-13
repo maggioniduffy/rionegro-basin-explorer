@@ -22,6 +22,6 @@ export const THEME_TOKENS: Record<
   Theme,
   { bg: string; text: string; textRgb: string }
 > = {
-  dark: { bg: "#05070a", text: "#e8edf2", textRgb: "232, 237, 242" },
-  light: { bg: "#f5f6f4", text: "#0b0f14", textRgb: "11, 15, 20" },
+  dark: { bg: "#0b1320", text: "#eef0e8", textRgb: "238, 240, 232" },
+  light: { bg: "#f5f7f4", text: "#13233d", textRgb: "19, 35, 61" },
 };

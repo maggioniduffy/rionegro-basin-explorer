@@ -105,7 +105,9 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
   return (
     <>
       <header className="flex flex-col gap-1 pr-8">
-        <h2 className="text-base leading-tight font-semibold">{label(b)}</h2>
+        <h2 className="font-display text-[26px] leading-tight font-normal">
+          {label(b)}
+        </h2>
         {b.kind === "area" && (
           <p className="text-muted text-xs">
             {t("subbasin.areaLevel", { level: b.level })}

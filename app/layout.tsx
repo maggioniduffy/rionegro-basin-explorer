@@ -1,6 +1,10 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
-import { Figtree, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import {
+  Instrument_Sans,
+  Instrument_Serif,
+  JetBrains_Mono,
+} from "next/font/google";
 import { cookies } from "next/headers";
 import {
   isTheme,
@@ -23,11 +27,11 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
-// The wordmark only.
-const figtree = Figtree({
-  variable: "--font-figtree",
+// Headlines and panel titles (the display face).
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
   subsets: ["latin"],
-  weight: ["500"],
+  weight: "400",
 });
 
 // Runs only when no theme cookie is set: follow the system preference (dark is the
@@ -44,7 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang={locale}
-      className={`${instrumentSans.variable} ${jetbrainsMono.variable} ${figtree.variable} h-full antialiased`}
+      className={`${instrumentSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} h-full antialiased`}
       data-theme={theme === "light" ? "light" : undefined}
       // Without a cookie, the theme script may set data-theme before React hydrates.
       suppressHydrationWarning

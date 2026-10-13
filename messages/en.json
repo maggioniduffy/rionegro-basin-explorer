@@ -366,20 +366,20 @@
     "f2h": "Sub-basins",
     "f3h": "Visible land",
     "f3p": "Slide from rivers only to the whole basin, revealing the satellite imagery around the water.",
-    "sample": "* Modeled: natural mean discharge for 1971–2000, which does not reflect today's dam regulation.",
     "dTag": "Data & transparency",
     "dH": "Modeled, not measured.",
     "d1": "Built on HydroRIVERS, HydroATLAS and HydroBASINS, with IGN data for Argentine watercourses.",
-    "credit": "Imagery: EOxCloudless · Data: HydroSHEDS, GIRES, IGN, OSM",
     "open": "Open map",
     "card": {
-      "title": "Open the explorer",
-      "text": "Satellite imagery of the basin with rivers, tributaries and sub-basins, in one map.",
-      "btn": "Open map",
       "quick": "Jump to",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
     },
-    "hub": "All regions"
+    "hub": "All regions",
+    "built": "Built on open hydrographic data",
+    "credit": "Imagery: EOxCloudless · Data: HydroSHEDS, GIRES, IGN, OSM",
+    "fExplore": "Explore",
+    "fData": "Data",
+    "fLang": "Language"
   },
   "hub": {
     "metadata": {
@@ -391,5 +391,9 @@
     "sub": "Each explorer maps one region's rivers, streams and sub-basins on satellite imagery, with values traced to their sources.",
     "regions": "Regions",
     "open": "Open the explorer"
+  },
+  "menu": {
+    "open": "Open menu",
+    "close": "Close menu"
   }
 }

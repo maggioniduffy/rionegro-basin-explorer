@@ -8,7 +8,7 @@ import { renderSnapshot, snapshotFileName } from "@/lib/map/snapshot";
 import { THEME_COLORS } from "@/lib/map/style";
 import { useMapStore } from "@/lib/store";
 
-const TEXT_COLOR = { dark: "#e6e8ea", light: "#1f2328" } as const;
+const TEXT_COLOR = { dark: "#eef0e8", light: "#13233d" } as const;
 
 /** Saves the current view as a PNG, attribution included. */
 export function SnapshotButton() {

@@ -288,3 +288,17 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 - [x] `npm run check` (574 tests); style tests for both bases; messages en/es parity.
 - [ ] Browser, both regions: Visualización → Satelital / Mapa switches the base; the choice survives a reload; the credit shows; the rivers are readable on Mapa (if not, propose a dark casing for Mapa only). Phone sheet too.
 - [ ] Check the OSM tile load in the Network tab (no 403/429) after a few minutes of use.
+
+## Design v6: landing and restyle (2026-10-13)
+
+- [x] `npm run check` (574 tests).
+- [ ] Browser, `localhost:3000/rionegro`, `/cordoba` and `/`: EN and ES, light and dark, at 1440 and 390 px. Check the hero image and its chip, the sources row, the three explore columns, the data note overlapping the footer, the footer art (light: paper vanishes; dark: faint blue lines), the grain (not too strong), the locale pill, and the hub cards. Also `/rionegro/attributions` (footer without overlap) and the map (serif panel titles, mono values, locale pill).
+- [ ] `npx playwright test --update-snapshots`, then review the new baselines (home-en, home-es, light-theme and the rest) before committing them.
+
+## Design v6 round 2: hub language, footer art, hamburger menu (2026-10-13)
+
+- [x] `npm run check` (575 tests, including the 307 + no-store locale redirect).
+- [ ] Browser, `localhost:3000/`: switch EN to ES to EN several times (also after clearing nothing: the 308 may be cached from before, so clear the cache or use a private window once); the hub text follows each time.
+- [ ] Footer, both regions and `/rionegro/attributions`, light and dark: wordmark, credit and the three columns are readable above the art; no grey rectangle, no hard top or side edge; on the landing the data note overlaps the footer without hiding its text.
+- [ ] Menu at 390 px on the landing, the hub and the map: the button opens and closes the dropdown (Escape returns focus to the button, an outside click and a link close it); the landing shows wordmark mark, "Open map" and the button on one line; on the map the search box still fits at 360 and 390 px and the dropdown sits above the panels.
+- [ ] Map at 390 px: the menu panel sits inside the viewport (16px sides), above the right-hand controls, and its items (Attributions, theme, language) are full-width rows.

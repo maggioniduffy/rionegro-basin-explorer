@@ -33,7 +33,9 @@ export function StreamPanel({ stream }: { stream: StreamResponse }) {
   return (
     <>
       <header className="flex flex-col gap-1 pr-8">
-        <h2 className="text-base leading-tight font-semibold">{stream.name}</h2>
+        <h2 className="font-display text-[26px] leading-tight font-normal">
+          {stream.name}
+        </h2>
         <p className="text-muted text-sm">{t("stream.title")}</p>
         {stream.receivingRiverRef && (
           <p className="text-muted text-sm">

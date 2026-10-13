@@ -1,7 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { regionPath, type RegionId } from "@/regions";
-import { Icon } from "../Icon";
 
 /** "Modeled, not measured": the rule 4 caveat, before anyone opens the map. */
 export async function DataNote({ region }: { region: RegionId }) {
@@ -9,27 +8,26 @@ export async function DataNote({ region }: { region: RegionId }) {
   return (
     <section
       aria-labelledby="data-note-title"
-      className="mx-auto max-w-[1280px] px-[clamp(16px,4vw,40px)] pb-[clamp(40px,7vw,96px)]"
+      className="relative z-3 px-[clamp(12px,2vw,24px)]"
     >
-      <div className="border-line grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-x-12 gap-y-6 border-y py-8">
+      <div className="bg-note-bg text-note-text border-note-border mx-auto grid max-w-[1320px] grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] items-end gap-x-16 gap-y-7 rounded-[clamp(16px,2vw,28px)] border px-[clamp(24px,6vw,96px)] py-[clamp(40px,7vw,96px)]">
         <div>
-          <p className="text-accent flex items-center gap-2 font-mono text-xs tracking-[.14em] uppercase">
-            <Icon name="info" size={24} className="shrink-0" />
+          <p className="text-note-tag font-mono text-xs tracking-[.14em] uppercase">
             {t("dTag")}
           </p>
           <h2
             id="data-note-title"
-            className="mt-3 text-[clamp(22px,2.6vw,30px)] font-medium tracking-[-0.02em] text-balance"
+            className="font-display mt-4 text-[clamp(36px,5vw,64px)] leading-none font-normal tracking-[-0.015em] text-balance"
           >
             {t("dH")}
           </h2>
         </div>
-        <div className="text-body text-[15px] leading-[1.6]">
+        <div className="text-note-body text-[15px] leading-[1.65]">
           <p className="text-pretty">{t("d1")}</p>
           <p className="mt-3 text-pretty">{t("d2")}</p>
           <Link
             href={regionPath(region, "/attributions#modeled")}
-            className="text-accent hover:text-accent-soft mt-3.5 inline-block min-h-11 leading-[44px]"
+            className="text-note-link hover:text-note-link-hover mt-3.5 inline-flex min-h-11 items-center font-medium"
           >
             {t("attr")} →
           </Link>

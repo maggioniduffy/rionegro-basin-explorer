@@ -3,7 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { Logomark } from "@/components/Icon";
+import { Grain } from "@/components/landing/Grain";
 import { LocaleLinks } from "@/components/landing/SiteHeader";
+import { MobileMenu } from "@/components/MobileMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isLocale } from "@/i18n/config";
 import { messagesFor } from "@/i18n/messages";
@@ -36,33 +38,39 @@ export default async function HubPage() {
   const locale = isLocale(raw) ? raw : "en";
 
   return (
-    <div className="bg-bg text-text flex min-h-full w-full flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 px-[clamp(16px,4vw,40px)] py-4">
+    <div className="bg-bg text-text relative flex min-h-full w-full flex-col overflow-x-clip">
+      <Grain />
+      <header className="relative z-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-[clamp(20px,5vw,64px)] py-[18px]">
         <span className="flex min-h-11 items-center gap-2.5">
           <Logomark width={34} className="shrink-0" />
-          <span className="font-display text-base font-medium tracking-[-0.01em]">
+          <span className="font-sans text-base font-medium tracking-[-0.01em]">
             {t("metadata.title")}
           </span>
         </span>
-        <nav className="flex flex-wrap items-center gap-x-[clamp(12px,3vw,28px)] gap-y-2 text-sm">
+        <nav className="hidden flex-wrap items-center gap-x-5 gap-y-2 text-sm sm:flex">
           <ThemeToggle />
           <LocaleLinks path="/" />
         </nav>
+        <MobileMenu>
+          <ThemeToggle className="min-h-11! w-full justify-start" />
+          <LocaleLinks path="/" />
+        </MobileMenu>
       </header>
-      <main className="mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-10 px-[clamp(16px,4vw,40px)] pt-[clamp(32px,6vw,80px)] pb-16">
+      <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-[clamp(40px,6vw,72px)] px-[clamp(20px,5vw,64px)] pt-[clamp(48px,9vw,96px)] pb-[clamp(56px,8vw,112px)]">
         <div className="text-center">
-          <p className="text-accent font-mono text-xs tracking-[.14em] uppercase">
+          <div className="border-line-strong text-secondary inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[13px]">
+            <i aria-hidden className="bg-dot size-1.5 rounded-full" />
             {t("eyebrow")}
-          </p>
-          <h1 className="mx-auto mt-[18px] max-w-[16em] text-[clamp(32px,5vw,64px)] leading-[1.05] font-medium tracking-[-0.03em] text-balance">
+          </div>
+          <h1 className="font-display mx-auto mt-6 max-w-[14em] text-[clamp(44px,6.4vw,88px)] leading-none font-normal tracking-[-0.02em] text-balance">
             {t("h1")}
           </h1>
-          <p className="text-body mx-auto mt-[18px] max-w-[36em] text-[clamp(16px,1.6vw,19px)] leading-[1.55] text-pretty">
+          <p className="text-secondary mx-auto mt-[22px] max-w-[34em] text-[clamp(16px,1.5vw,19px)] leading-[1.55] text-pretty">
             {t("sub")}
           </p>
         </div>
         <section aria-label={t("regions")}>
-          <ul className="grid gap-6 sm:grid-cols-2">
+          <ul className="grid gap-x-8 gap-y-12 sm:grid-cols-2">
             {REGION_IDS.map((id) => {
               const m = messagesFor(id, locale);
               const image = LANDING_IMAGES[id];
@@ -70,24 +78,25 @@ export default async function HubPage() {
                 <li key={id} className="flex">
                   <Link
                     href={regionPath(id)}
-                    className="group bg-surface border-line shadow-card hover:border-accent hover:shadow-card-hover focus-visible:border-accent flex w-full flex-col overflow-hidden rounded-[14px] border text-inherit transition-[border-color,box-shadow] duration-250 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-(--accent)"
+                    className="group flex w-full flex-col gap-5 text-inherit"
                   >
-                    <div className="relative aspect-video overflow-hidden bg-black">
+                    <div className="bg-note-bg shadow-hero relative aspect-[14/9] overflow-hidden rounded-[20px]">
                       {image && (
                         <Image
                           src={image}
                           alt={m.landing.card.alt}
                           fill
-                          sizes="(max-width: 640px) calc(100vw - 32px), 520px"
-                          className="object-cover transition-[transform,filter] duration-[800ms,400ms] group-hover:scale-105 group-hover:brightness-[1.18]"
+                          sizes="(max-width: 640px) calc(100vw - 40px), 540px"
+                          className="object-cover transition-transform duration-[800ms] ease-[cubic-bezier(.2,.7,.2,1)] group-hover:scale-[1.03]"
                         />
                       )}
-                      <div className="text-secondary absolute bottom-3 left-3.5 font-mono text-[11px]">
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/45 to-transparent" />
+                      <div className="absolute bottom-3 left-3.5 font-mono text-[11px] text-white/90">
                         {card("credit")}
                       </div>
                     </div>
-                    <div className="flex flex-1 flex-col gap-2 px-[22px] py-5">
-                      <h2 className="text-xl font-semibold tracking-[-0.01em]">
+                    <div className="flex flex-1 flex-col gap-2">
+                      <h2 className="font-display text-[28px] leading-tight font-normal tracking-[-0.01em]">
                         {m.metadata.title}
                       </h2>
                       <p className="text-secondary text-[15px] leading-normal text-pretty">

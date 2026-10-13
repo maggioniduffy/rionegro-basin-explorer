@@ -8,6 +8,13 @@ export const nqnContent: RegionContent = {
     { id: "negro", name: "Río Negro" },
   ],
   landingSample: { river: "limay", subbasin: "neuquen" },
+  landingSources: [
+    "HydroRIVERS",
+    "HydroATLAS",
+    "HydroBASINS",
+    "IGN",
+    "EOxCloudless",
+  ],
   ogSubtitle: "Limay · Neuquén · Río Negro",
   llm: {
     place: "the Río Negro basin (Patagonia, Argentina)",

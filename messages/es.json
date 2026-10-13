@@ -366,20 +366,20 @@
     "f2h": "Subcuencas",
     "f3h": "Tierra visible",
     "f3p": "Deslizá desde solo los ríos hasta toda la cuenca y descubrí la imagen satelital alrededor del agua.",
-    "sample": "* Modelado: caudal medio natural de 1971–2000, que no refleja la regulación actual de las represas.",
     "dTag": "Datos y transparencia",
     "dH": "Modelado, no medido.",
     "d1": "Construido sobre HydroRIVERS, HydroATLAS y HydroBASINS, con datos del IGN para los cursos de agua argentinos.",
-    "credit": "Imágenes: EOxCloudless · Datos: HydroSHEDS, GIRES, IGN, OSM",
     "open": "Abrir mapa",
     "card": {
-      "title": "Abrir el explorador",
-      "text": "Imágenes satelitales de la cuenca, con ríos, afluentes y subcuencas. Todo en un mapa.",
-      "btn": "Abrir mapa",
       "quick": "Ir directo a",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
     },
-    "hub": "Todas las regiones"
+    "hub": "Todas las regiones",
+    "built": "Construido con datos hidrográficos abiertos",
+    "credit": "Imágenes: EOxCloudless · Datos: HydroSHEDS, GIRES, IGN, OSM",
+    "fExplore": "Explorar",
+    "fData": "Datos",
+    "fLang": "Idioma"
   },
   "hub": {
     "metadata": {
@@ -391,5 +391,9 @@
     "sub": "Cada explorador muestra los ríos, arroyos y subcuencas de una región sobre imágenes satelitales, con valores trazables hasta sus fuentes.",
     "regions": "Regiones",
     "open": "Abrir el explorador"
+  },
+  "menu": {
+    "open": "Abrir menú",
+    "close": "Cerrar menú"
   }
 }

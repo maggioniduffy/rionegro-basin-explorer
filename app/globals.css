@@ -1,35 +1,51 @@
 @import "tailwindcss";
 
-/* Design tokens (Landing v3, DESIGN.md). Dark is the default theme; the server renders
-   data-theme="light" from the theme cookie (app/layout.tsx). The hex values MapLibre needs
-   are mirrored in lib/theme-tokens.ts (tests/theme-tokens.test.ts keeps them in sync). */
+/* Design tokens (Landing v6). Dark is the default theme (a navy counterpart of the v6
+   design, which only has a light variant); the server renders data-theme="light" from the
+   theme cookie (app/layout.tsx). The hex values MapLibre needs are mirrored in
+   lib/theme-tokens.ts (tests/theme-tokens.test.ts keeps them in sync). */
 :root {
-  --bg: #05070a;
-  --text: #e8edf2;
+  --bg: #0b1320;
+  --text: #eef0e8;
   --accent: #22b8ff;
-  /* River flow strokes in the hero. */
   --accent-soft: #8fd8ff;
   --on-accent: #021018;
-  --text-secondary: #9aa4af;
-  --text-body: #a8b1bb;
-  --text-strong-muted: #c5ccd4;
-  --text-tertiary: #7c8793;
-  --text-footer: #8a95a1;
-  --surface: #0b0f14;
-  --surface-raised: #0f1318;
-  --surface-active: #1d232b;
+  --text-secondary: #a3adba;
+  --text-body: #aab4c0;
+  --text-strong-muted: #c3cad6;
+  --text-tertiary: #8f9aa8;
+  --text-footer: #8f9aa8;
+  --surface: #101b2b;
+  --surface-raised: #13233d;
+  --surface-active: #24395c;
   /* Separators and decorative icons only: below 4.5:1, never for text that carries meaning. */
-  --icon-muted: #5c6670;
-  --track: #2a323c;
-  --stage: #000;
+  --icon-muted: #5c6a7e;
+  --track: #2a3a52;
+  --stage: #060b14;
   /* For borders and overlays: rgba(var(--fg-rgb), .09–.16). */
-  --fg-rgb: 255, 255, 255;
-  --bg-rgb: 5, 7, 10;
-  --panel-glass: rgba(15, 19, 24, 0.94);
-  --chip-glass: rgba(10, 14, 19, 0.86);
-  --image-fade: rgba(11, 15, 20, 0.9);
+  --fg-rgb: 238, 240, 232;
+  --bg-rgb: 11, 19, 32;
+  --panel-glass: rgba(19, 35, 61, 0.94);
+  --chip-glass: rgba(15, 26, 43, 0.88);
+  --image-fade: rgba(11, 19, 32, 0.9);
   --card-shadow: 0 20px 60px -30px rgba(0, 0, 0, 0.8);
   --card-shadow-hover: 0 20px 60px -20px rgba(34, 184, 255, 0.35);
+  --hero-shadow: 0 40px 80px -40px rgba(34, 184, 255, 0.28);
+  /* Primary pill buttons and the active locale: inverted against the page. */
+  --cta: #eef0e8;
+  --cta-hover: #ffffff;
+  --on-cta: #13233d;
+  /* The "Modeled, not measured" block: navy in both themes. The border keeps it visible
+     on the dark page. */
+  --note-bg: #13233d;
+  --note-text: #eef0e8;
+  --note-body: #c3cad6;
+  --note-tag: #8fd8ff;
+  --note-link: #b4bf85;
+  --note-link-hover: #d6deaa;
+  --note-border: rgba(var(--fg-rgb), 0.12);
+  /* The eyebrow's dot. */
+  --dot: #22b8ff;
   --warning: #fcd34d;
   color-scheme: dark;
 
@@ -48,30 +64,35 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #f5f6f4;
-  --text: #0b0f14;
-  /* 4.9:1 on --bg, 5.3:1 on --surface; not used as text on --surface-active or --stage. */
+  --bg: #f5f7f4;
+  --text: #13233d;
+  /* 5.0:1 on --bg, 5.4:1 on --surface; not used as text on --surface-active or --stage. */
   --accent: #0071a8;
   --accent-soft: #4fb3e8;
   --on-accent: #ffffff;
-  --text-secondary: #4f5964;
-  --text-body: #4a545e;
-  --text-strong-muted: #2f3842;
-  --text-tertiary: #5c6670;
-  --text-footer: #5c6670;
+  --text-secondary: #55606e;
+  --text-body: #55606e;
+  --text-strong-muted: #24395c;
+  --text-tertiary: #55606e;
+  --text-footer: #55606e;
   --surface: #ffffff;
   --surface-raised: #ffffff;
-  --surface-active: #e6ebf0;
+  --surface-active: #e6eae4;
   --icon-muted: #9aa4af;
   --track: #d5dbe1;
   --stage: #e4e8ec;
-  --fg-rgb: 11, 15, 20;
-  --bg-rgb: 245, 246, 244;
+  --fg-rgb: 19, 35, 61;
+  --bg-rgb: 245, 247, 244;
   --panel-glass: rgba(255, 255, 255, 0.95);
-  --chip-glass: rgba(255, 255, 255, 0.92);
-  --image-fade: rgba(245, 246, 244, 0);
-  --card-shadow: 0 16px 40px -28px rgba(11, 15, 20, 0.35);
+  --chip-glass: rgba(244, 243, 238, 0.94);
+  --image-fade: rgba(245, 247, 244, 0);
+  --card-shadow: 0 16px 40px -28px rgba(19, 35, 61, 0.35);
   --card-shadow-hover: 0 20px 50px -24px rgba(0, 113, 168, 0.45);
+  --hero-shadow: 0 40px 80px -40px rgba(0, 113, 168, 0.45);
+  --cta: #13233d;
+  --cta-hover: #24395c;
+  --on-cta: #f5f7f4;
+  --note-border: transparent;
   --warning: #92400e;
   color-scheme: light;
 }
@@ -82,6 +103,17 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-on-accent: var(--on-accent);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-on-cta: var(--on-cta);
+  --color-note-bg: var(--note-bg);
+  --color-note-text: var(--note-text);
+  --color-note-body: var(--note-body);
+  --color-note-tag: var(--note-tag);
+  --color-note-link: var(--note-link);
+  --color-note-link-hover: var(--note-link-hover);
+  --color-note-border: var(--note-border);
+  --color-dot: var(--dot);
   --color-secondary: var(--text-secondary);
   --color-body: var(--text-body);
   --color-strong-muted: var(--text-strong-muted);
@@ -106,9 +138,10 @@
   --color-warning: var(--warning);
   --font-sans: var(--font-instrument-sans), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
-  --font-display: var(--font-figtree), var(--font-instrument-sans), sans-serif;
+  --font-display: var(--font-instrument-serif), Georgia, serif;
   --shadow-card: var(--card-shadow);
   --shadow-card-hover: var(--card-shadow-hover);
+  --shadow-hero: var(--hero-shadow);
 }
 
 body {
@@ -183,22 +216,47 @@ body {
   display: none;
 }
 
-/* Landing hero: water flowing along the river strokes (components/landing/HeroRivers). */
-@keyframes rn-flow {
-  to {
-    stroke-dashoffset: -240;
-  }
+/* Film grain over the landing and the hub (the v6 design). Light: navy noise, multiplied.
+   Dark: light noise, overlaid and faint, so it does not turn the navy to mud. */
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .93 0 0 0 0 .94 0 0 0 0 .91 0 0 0 .4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  opacity: 0.18;
 }
-.rn-flow {
-  stroke-dasharray: 60 180;
-  animation: rn-flow 14s linear infinite;
+:root[data-theme="light"] .grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .07 0 0 0 0 .14 0 0 0 0 .24 0 0 0 .4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+  opacity: 0.9;
 }
-@media (prefers-reduced-motion: reduce) {
-  .rn-flow {
-    animation: none;
-    stroke-dasharray: none;
-    opacity: 0.5;
-  }
+
+/* The footer is the artwork alone: blue line art on near-white paper. The band's mask
+   fades its top and its sides into the page; the blend is on the masked box so it reaches
+   the page. Light: the image's paper is pushed to white and multiplied, so it vanishes into
+   the page. Dark: inverted (paper black, lines still blue) and screened faintly. */
+.footer-art {
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  mask-image:
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.5) 30%, black 60%),
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      black 10%,
+      black 90%,
+      transparent 100%
+    );
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}
+.footer-art-img {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.15);
+}
+:root[data-theme="light"] .footer-art {
+  mix-blend-mode: multiply;
+  opacity: 1;
+}
+:root[data-theme="light"] .footer-art-img {
+  filter: brightness(1.06) contrast(1.08);
 }
 
 /* Visible Land slider: 4px rail in --track, accent fill up to --fill (set inline), 16px

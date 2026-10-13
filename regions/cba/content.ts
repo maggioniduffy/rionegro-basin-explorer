@@ -12,6 +12,14 @@ export const cbaContent: RegionContent = {
     { id: "quinto", name: "Río Quinto" },
   ],
   landingSample: { river: "tercero", subbasin: "mar-chiquita" },
+  landingSources: [
+    "APRHI",
+    "IGN",
+    "HydroRIVERS",
+    "HydroATLAS",
+    "HydroBASINS",
+    "EOxCloudless",
+  ],
   ogSubtitle: "Primero · Segundo · Tercero · Cuarto · Quinto · Mar Chiquita",
   llm: {
     place:
