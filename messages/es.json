@@ -67,8 +67,7 @@
       "expand": "Mostrar las subcuencas del {name}",
       "collapse": "Ocultar las subcuencas del {name}",
       "error": "No se pudo cargar la lista de subcuencas."
-    },
-    "ignDetail": "Curso del IGN que no está en HydroRIVERS"
+    }
   },
   "theme": {
     "toLight": "Tema claro",

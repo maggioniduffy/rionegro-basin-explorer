@@ -50,5 +50,8 @@
         "note": "Outline from HydroLAKES (Messager et al., 2016) or from IGN; the name is IGN's where it has one."
       }
     }
+  },
+  "legend": {
+    "ignDetail": "IGN stream not in HydroRIVERS"
   }
 }

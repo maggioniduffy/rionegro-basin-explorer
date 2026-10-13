@@ -67,8 +67,7 @@
       "expand": "Show the sub-basins of {name}",
       "collapse": "Hide the sub-basins of {name}",
       "error": "The sub-basin list could not be loaded."
-    },
-    "ignDetail": "IGN stream not in HydroRIVERS"
+    }
   },
   "theme": {
     "toLight": "Light theme",

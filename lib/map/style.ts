@@ -196,7 +196,12 @@ export function waterFilter(
     ["in", ["get", "kind"], ["literal", kinds]],
   ];
 }
-export const REACH_LAYER_IDS = FLOW_CLASSES.map(reachLayerId);
+/** Display line pieces no HydroRIVERS reach matched (cba): no flow model, own colour. */
+export const UNMATCHED_LAYER_ID = "reaches-unmatched";
+export const REACH_LAYER_IDS = [
+  UNMATCHED_LAYER_ID,
+  ...FLOW_CLASSES.map(reachLayerId),
+];
 export const OUTLINE_LAYER_ID = "basin-outline";
 export const LAKE_LAYER_ID = "lake-outline";
 /** Invisible fill over every lake, so a click inside a lake finds it. */
@@ -216,7 +221,10 @@ export function localityFilter(show: boolean): FilterSpecification {
   return show ? ["literal", true] : ["boolean", false];
 }
 
-/** Colour of the IGN detail lines, also used by the legend. */
+/**
+ * Colour of the IGN detail lines (nqn) and of the line pieces no reach matched (cba), also
+ * used by the legend: both are mapped courses with no HydroRIVERS reach (owner, 2026-10-12).
+ */
 export const IGN_DETAIL_COLOR = "#67e8f9";
 
 export const IMAGERY_LAYER_ID = "imagery";
@@ -258,12 +266,37 @@ export function reachFeatureSelection(
   return Number.isSafeInteger(id) && id > 0 ? { kind: "reach", id } : null;
 }
 
-// tippecanoe omits null attributes, so "no GIRES prediction" is a missing property.
+/**
+ * A display line piece (it has `piece`) with no matched reach (no `strahler`); nqn tiles have
+ * no pieces. tippecanoe omits null attributes, so a null value is a missing property.
+ */
+const UNMATCHED: ExpressionSpecification = [
+  "all",
+  ["has", "piece"],
+  ["!", ["has", "strahler"]],
+];
+
+// "No GIRES prediction" is a missing property too; unmatched pieces have their own layer.
 const CLASS_FILTER: Record<FlowClass, ExpressionSpecification> = {
   perennial: ["==", ["get", "nonPerennial1d"], 0],
   nonPerennial: ["==", ["get", "nonPerennial1d"], 1],
-  unknown: ["!", ["has", "nonPerennial1d"]],
+  unknown: ["all", ["!", ["has", "nonPerennial1d"]], ["!", UNMATCHED]],
 };
+
+const notEndorheic: ExpressionSpecification = [
+  "!=",
+  ["get", "network"],
+  "endorheic",
+];
+
+/** Unmatched line pieces; hidden with all rivers. */
+export function unmatchedFilter(
+  hideEndorheic: boolean,
+  layers: Pick<LayerVisibility, "rivers">,
+): FilterSpecification {
+  if (!layers.rivers) return ["boolean", false];
+  return hideEndorheic ? ["all", UNMATCHED, notEndorheic] : UNMATCHED;
+}
 
 /** One flow class's reaches; hidden with all rivers or by its own toggle. */
 export function reachFilter(
@@ -273,7 +306,7 @@ export function reachFilter(
 ): FilterSpecification {
   if (!layers.rivers || !layers.flow[c]) return ["boolean", false];
   return hideEndorheic
-    ? ["all", CLASS_FILTER[c], ["!=", ["get", "network"], "endorheic"]]
+    ? ["all", CLASS_FILTER[c], notEndorheic]
     : CLASS_FILTER[c];
 }
 
@@ -508,6 +541,19 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       "line-opacity": 0.9,
       "line-width": reachWidth(1, 5),
       "line-blur": 1,
+    },
+  });
+  layers.push({
+    id: UNMATCHED_LAYER_ID,
+    type: "line",
+    source: "rivers",
+    "source-layer": "reaches",
+    filter: unmatchedFilter(o.hideEndorheic, o.layers),
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: {
+      "line-color": IGN_DETAIL_COLOR,
+      "line-opacity": 0.85,
+      "line-width": reachWidth(FLOW_STYLE.unknown.widthScale),
     },
   });
   // Drawn smallest class first so perennial rivers sit on top.

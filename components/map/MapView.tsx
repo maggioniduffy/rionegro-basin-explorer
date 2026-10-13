@@ -41,6 +41,8 @@ import {
   reachFilter,
   waterFilter,
   reachLayerId,
+  UNMATCHED_LAYER_ID,
+  unmatchedFilter,
   SELECTED_LAYER_ID,
   selectionFilter,
   SUBBASIN_FILL_LAYER_ID,
@@ -267,6 +269,10 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
   if (endoChanged || layersChanged) {
     for (const c of FLOW_CLASSES)
       map.setFilter(reachLayerId(c), reachFilter(c, s.hideEndorheic, s.layers));
+    map.setFilter(
+      UNMATCHED_LAYER_ID,
+      unmatchedFilter(s.hideEndorheic, s.layers),
+    );
     for (const id of [
       LAKE_LAYER_ID,
       LAKE_HIT_LAYER_ID,

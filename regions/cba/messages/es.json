@@ -50,5 +50,8 @@
         "note": "Contorno de la APRHI dentro de Córdoba y del IGN fuera de ella, o de HydroLAKES (Messager et al., 2016) donde ninguno lo tiene."
       }
     }
+  },
+  "legend": {
+    "ignDetail": "Curso de APRHI o del IGN que no está en HydroRIVERS"
   }
 }

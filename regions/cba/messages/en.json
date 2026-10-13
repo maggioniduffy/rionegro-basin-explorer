@@ -50,5 +50,8 @@
         "note": "Outline from APRHI inside Córdoba and from IGN outside it, or from HydroLAKES (Messager et al., 2016) where neither has one."
       }
     }
+  },
+  "legend": {
+    "ignDetail": "APRHI or IGN stream not in HydroRIVERS"
   }
 }

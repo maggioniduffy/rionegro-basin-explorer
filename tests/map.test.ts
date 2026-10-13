@@ -22,6 +22,7 @@ import {
   lakeFilter,
   maskLayerId,
   reachFilter,
+  unmatchedFilter,
   reachLayerId,
   reachFeatureSelection,
   reachOrder,
@@ -217,6 +218,27 @@ describe("reachFilter with the Display toggles", () => {
       false,
     );
     expect(keeps(reachFilter("unknown", false, layers), {})).toBe(false);
+    expect(keeps(unmatchedFilter(false, layers), { piece: "aprhi:1#0" })).toBe(
+      false,
+    );
+  });
+
+  it("draws unmatched line pieces on their own layer, not as 'no prediction'", () => {
+    const unmatched = { piece: "aprhi:1#0", network: "endorheic" };
+    const matched = { piece: "aprhi:2#0", strahler: 3 };
+    expect(keeps(unmatchedFilter(false, DEFAULT_LAYERS), unmatched)).toBe(true);
+    expect(keeps(unmatchedFilter(true, DEFAULT_LAYERS), unmatched)).toBe(false);
+    expect(keeps(unmatchedFilter(false, DEFAULT_LAYERS), matched)).toBe(false);
+    expect(
+      keeps(reachFilter("unknown", false, DEFAULT_LAYERS), unmatched),
+    ).toBe(false);
+    expect(keeps(reachFilter("unknown", false, DEFAULT_LAYERS), matched)).toBe(
+      true,
+    );
+    // nqn reaches have no `piece`: "no prediction" as before.
+    expect(
+      keeps(reachFilter("unknown", false, DEFAULT_LAYERS), { strahler: 1 }),
+    ).toBe(true);
   });
 });
 
