@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import type { MouthKind } from "@/lib/data/mouth";
 import Link from "next/link";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { useMapStore } from "@/lib/store";
@@ -24,6 +25,21 @@ export function useFormat() {
   const locale = useLocale();
   const units = useMapStore((s) => s.units);
   return (q: Quantity, v: number) => formatQuantity(locale, q, v, units);
+}
+
+/**
+ * The distance-to-the-sea cell: the value, or, when the data has none (reference regions),
+ * why: the water ends in an endorheic sink, or the path has no sourced distance.
+ */
+export function useSeaDistance() {
+  const t = useTranslations("panel");
+  const f = useFormat();
+  return (km: number | null, mouthKind: MouthKind | undefined) =>
+    km !== null
+      ? f("km", km)
+      : mouthKind === "sink"
+        ? t("fields.distanceToSeaNone")
+        : t("fields.distanceToSeaUnknown");
 }
 
 export function Row({

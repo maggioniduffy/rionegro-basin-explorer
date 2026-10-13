@@ -117,10 +117,12 @@ function idsOf(intent: AnswerIntent, catalog: Catalog): string[] {
 
 function parentOf(intent: AnswerIntent, catalog: Catalog): AskAnswer["parent"] {
   if (intent.action !== "rank" || intent.scope !== "tributaries") return null;
-  const docs: Array<{ _id: string; name: string | null }> =
-    intent.kind === "river" ? catalog.docs.rivers : catalog.docs.subbasins;
-  const doc = docs.find((d) => d._id === intent.slug);
-  return doc ? { id: doc._id, name: doc.name } : null;
+  if (intent.kind === "river") {
+    const doc = catalog.docs.rivers.find((d) => d._id === intent.slug);
+    return doc ? { id: doc._id, name: doc.name } : null;
+  }
+  const doc = catalog.docs.subbasins.find((d) => d._id === intent.slug);
+  return doc ? { id: doc._id, name: doc.name, subbasinKind: doc.kind } : null;
 }
 
 /**
@@ -157,9 +159,15 @@ export async function computeAnswer(
   const limit = filters.length > 0 ? FILTERED_RANK_LIMIT : RANK_LIMIT;
   const shown = intent.action === "rank" ? sorted.slice(0, limit) : sorted;
   const byRegime = filters.some((f) => f.type === "regime");
+  const subbasinKind = new Map(
+    intent.kind === "subbasin"
+      ? catalog.docs.subbasins.map((s) => [s._id, s.kind])
+      : [],
+  );
   const items: AnswerItem[] = shown.map((d) => ({
     id: d.id,
     name: d.name,
+    ...(subbasinKind.has(d.id) ? { subbasinKind: subbasinKind.get(d.id) } : {}),
     value: d.value,
     modeled: d.modeled,
     ...(byRegime ? { nonPerennialPct: d.values[NON_PERENNIAL] ?? null } : {}),

@@ -3,7 +3,14 @@
 import { useTranslations } from "next-intl";
 import type { StreamResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
-import { CAVEAT_BY_PATH, Caveats, Group, Row, useFormat } from "./parts";
+import {
+  CAVEAT_BY_PATH,
+  Caveats,
+  Group,
+  Row,
+  useFormat,
+  useSeaDistance,
+} from "./parts";
 import { useSubbasinLabel } from "./subbasin-label";
 
 /**
@@ -13,6 +20,7 @@ import { useSubbasinLabel } from "./subbasin-label";
 export function StreamPanel({ stream }: { stream: StreamResponse }) {
   const t = useTranslations("panel");
   const f = useFormat();
+  const seaDistance = useSeaDistance();
   const label = useSubbasinLabel();
   const select = useMapStore((s) => s.select);
   const modeled = (path: string) => stream.modeled.includes(path);
@@ -68,7 +76,7 @@ export function StreamPanel({ stream }: { stream: StreamResponse }) {
         <Row label={t("fields.length")}>{f("km", stream.lengthKm)}</Row>
         <Row label={t("fields.reachCount")}>{stream.reachCount}</Row>
         <Row label={t("fields.distanceToSea")}>
-          {f("km", stream.mouth.distanceToSeaKm)}
+          {seaDistance(stream.mouth.distanceToSeaKm, stream.mouthKind)}
         </Row>
         <Row label={t("fields.mouthElevation")}>
           {f("m", stream.mouth.elevationM)}

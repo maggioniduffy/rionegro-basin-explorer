@@ -277,9 +277,26 @@ export function reachFilter(
     : CLASS_FILTER[c];
 }
 
-/** Line width in px, by Strahler order (1–7) and zoom, plus `extra` px. */
+/**
+ * The order a line is drawn at: its Strahler order, or, for a display line piece (cba), the
+ * tile's `rank` (pipeline:tiles: the matched reach's Strahler order, or a display-only order
+ * from the line's class when no reach matched). nqn tiles have no `rank`.
+ */
+export const REACH_ORDER: ExpressionSpecification = [
+  "coalesce",
+  ["get", "rank"],
+  ["get", "strahler"],
+];
+
+/** The same order read from a rendered feature's properties (click ranking). */
+export function reachOrder(properties: Record<string, unknown>): number {
+  const n = Number(properties.rank ?? properties.strahler);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Line width in px, by order (1–7, REACH_ORDER) and zoom, plus `extra` px. */
 function reachWidth(scale: number, extra = 0): ExpressionSpecification {
-  const s: ExpressionSpecification = ["get", "strahler"];
+  const s = REACH_ORDER;
   return [
     "interpolate",
     ["linear"],

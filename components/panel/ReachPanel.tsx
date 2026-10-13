@@ -3,7 +3,8 @@
 import { useTranslations } from "next-intl";
 import type { ReachResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
-import { Caveats, Group, Row, useFormat } from "./parts";
+import { Caveats, Group, Row, useFormat, useSeaDistance } from "./parts";
+import { useSubbasinLabel } from "./subbasin-label";
 
 function flowRegime(r: ReachResponse) {
   if (r.nonPerennial1d === null) return "unknown";
@@ -13,6 +14,8 @@ function flowRegime(r: ReachResponse) {
 export function ReachPanel({ reach }: { reach: ReachResponse }) {
   const t = useTranslations("panel");
   const f = useFormat();
+  const seaDistance = useSeaDistance();
+  const label = useSubbasinLabel();
   const select = useMapStore((s) => s.select);
   const river = reach.river;
   const stream = reach.stream;
@@ -55,6 +58,26 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
             {t("reach.showStream", { stream: reach.streamName })}
           </button>
         )}
+        {reach.rootRef && (
+          <p className="text-muted text-sm">
+            {t("reach.inBasin")}{" "}
+            <button
+              type="button"
+              className="underline decoration-dotted underline-offset-2 hover:text-(--foreground)"
+              onClick={() =>
+                select(
+                  { kind: "subbasin", id: reach.rootRef!.id },
+                  { fit: true },
+                )
+              }
+            >
+              {label(reach.rootRef)}
+            </button>
+          </p>
+        )}
+        {reach.lineReview && (
+          <p className="text-warning text-xs">{t("reach.lineReview")}</p>
+        )}
         {reach.network === "endorheic" && (
           <p className="text-warning text-xs">{t("reach.endorheic")}</p>
         )}
@@ -63,7 +86,7 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
       <Group title={t("groups.reach")}>
         <Row label={t("fields.length")}>{f("km", reach.lengthKm)}</Row>
         <Row label={t("fields.distanceToSea")}>
-          {f("km", reach.distanceToSeaKm)}
+          {seaDistance(reach.distanceToSeaKm, reach.mouthKind)}
         </Row>
         <Row label={t("fields.catchmentMinElevation")}>
           {f("m", reach.catchmentMinElevationM)}

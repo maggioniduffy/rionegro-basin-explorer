@@ -148,6 +148,7 @@
       "regime": "{value, select, perennial {perennial} other {intermittent}}",
       "regulated": "{value, select, yes {regulated} other {not regulated}}",
       "within": "in the {name} basin",
+      "withinArea": "in {name}",
       "withinEndorheic": "in the endorheic areas",
       "withinUnknown": "in a sub-basin",
       "threshold": "{metric} {op, select, gt {over} other {under}} {value}"
@@ -170,13 +171,15 @@
       "label": "River details",
       "flowsInto": "Flows into",
       "sea": "the sea",
-      "weakName": "This river's name is less certain than the others."
+      "weakName": "This river's name is less certain than the others.",
+      "sink": "an endorheic sink (it drains inland)",
+      "regionEdge": "a course outside the mapped region",
+      "endsInSink": "Downstream, its water ends in an endorheic sink and does not reach the sea.",
+      "endsAtEdge": "Downstream, its water leaves the mapped region."
     },
     "stream": {
       "label": "Stream details",
-      "title": "IGN stream",
-      "inSubbasin": "In",
-      "nameNote": "Name from IGN. The stream joins the reaches that share this name along the flow network."
+      "inSubbasin": "In"
     },
     "reach": {
       "label": "Stream details",
@@ -185,10 +188,9 @@
       "id": "HydroRIVERS reach {id}",
       "showRiver": "Show the whole {river}",
       "endorheic": "Endorheic: drains inland and does not reach the sea.",
-      "ignName": "Name from IGN. Match confidence: {confidence, select, high {high} medium {medium} other {low}}.",
-      "ignNameReviewed": "Name from IGN, confirmed by hand.",
       "showStream": "Show the whole {stream}",
-      "ownerName": "Name set by hand; no IGN line carries it."
+      "inBasin": "In",
+      "lineReview": "The line drawn here is marked as under review by the agency that publishes it."
     },
     "groups": {
       "course": "Course",
@@ -231,7 +233,9 @@
       "rangeValue": "{min} to {max}",
       "streamLength": "Total stream length",
       "endorheicLength": "Endorheic streams",
-      "reachCount": "HydroRIVERS reaches"
+      "reachCount": "HydroRIVERS reaches",
+      "distanceToSeaNone": "None: drains to an endorheic sink",
+      "distanceToSeaUnknown": "Not available: part of the path to the sea is a link with no modeled channel"
     },
     "caveat": {
       "title": "Values marked * are modeled or estimated:",
@@ -247,6 +251,8 @@
       "label": "Basin details",
       "title": "{name} basin",
       "wholeBasin": "The whole basin.",
+      "areaLevel": "{level, select, 0 {Region} 1 {Basin} 2 {Sub-basin} other {Water management unit}}",
+      "wholeRegion": "The whole region.",
       "children": "Sub-basins:",
       "endorheicTitle": "Endorheic areas",
       "endorheicNote": "Land that drains to closed depressions and reaches no river. HydroBASINS links some of it to the river network virtually; here it is kept apart.",
@@ -267,7 +273,7 @@
         "kind": "{kind, select, lake {Lake} reservoir {Reservoir} controlledLake {Regulated lake} other {Water body}}",
         "areaHydrolakes": "Area (HydroLAKES, approximate)",
         "areaIgn": "Area (IGN polygon, approximate)",
-        "note": "Outline from HydroLAKES (Messager et al., 2016) or from IGN; the name is IGN's where it has one."
+        "areaAprhi": "Area (APRHI polygon, approximate)"
       },
       "dam": {
         "title": "Dam",
@@ -285,7 +291,14 @@
         "length": "Length"
       },
       "source": "Source: FUENTE: Instituto Geográfico Nacional de la República Argentina. IGN does not endorse or sponsor this application.",
-      "group": "Details"
+      "sourceAprhi": "Source: FUENTE: Portal de Información Hídrica de Córdoba (Administración Provincial de Recursos Hídricos de Córdoba). APRHI does not endorse or sponsor this application.",
+      "group": "Details",
+      "line": {
+        "title": "Mapped watercourse",
+        "unnamed": "Unnamed watercourse",
+        "note": "This line is not matched to a HydroRIVERS reach, so no modeled values (discharge, drainage area, flow regime) are shown for it.",
+        "review": "Marked as under review by the agency that publishes it."
+      }
     }
   },
   "attributions": {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toPicked } from "../lib/map/picked";
+import { toPicked, toPickedLine } from "../lib/map/picked";
 import {
   DAM_LAYER_ID,
   DAM_WALL_LAYER_ID,
@@ -62,6 +62,52 @@ describe("toPicked", () => {
   it("rejects a water body of an unknown kind and any other layer", () => {
     expect(toPicked(LAKE_HIT_LAYER_ID, { kind: "swamp" })).toBeNull();
     expect(toPicked("reaches-perennial", { name: "x" })).toBeNull();
+  });
+});
+
+describe("lake source and line pieces (R3.7)", () => {
+  it("reads who drew a lake from its source property, where the layer mixes sources", () => {
+    const props = { kind: "lake", areaKm2: 5577.5, name: "Mar Chiquita" };
+    expect(
+      toPicked(LAKE_HIT_LAYER_ID, { ...props, source: "aprhi" }),
+    ).toMatchObject({ areaSource: "aprhi" });
+    expect(
+      toPicked(LAKE_HIT_LAYER_ID, { ...props, source: "ign" }),
+    ).toMatchObject({ areaSource: "ign" });
+    expect(
+      toPicked(LAKE_HIT_LAYER_ID, { ...props, source: "other" }),
+    ).toMatchObject({ areaSource: "hydrolakes" });
+  });
+
+  it("reads a line piece no reach matched from its tile properties", () => {
+    expect(
+      toPickedLine({
+        piece: "a-12-0",
+        src: "aprhi",
+        km: 1.25,
+        name: "Arroyo Seco",
+        review: 1,
+      }),
+    ).toEqual({
+      kind: "line",
+      name: "Arroyo Seco",
+      source: "aprhi",
+      km: 1.25,
+      review: true,
+    });
+    expect(toPickedLine({ piece: "i-3-1", src: "ign", km: 0.4 })).toEqual({
+      kind: "line",
+      name: null,
+      source: "ign",
+      km: 0.4,
+      review: false,
+    });
+  });
+
+  it("is null for a reach (no piece) or a piece without source or length", () => {
+    expect(toPickedLine({ strahler: 3, network: "connected" })).toBeNull();
+    expect(toPickedLine({ piece: "x", src: "osm", km: 1 })).toBeNull();
+    expect(toPickedLine({ piece: "x", src: "ign" })).toBeNull();
   });
 });
 

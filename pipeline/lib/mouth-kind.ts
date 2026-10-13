@@ -93,3 +93,55 @@ export function mouthKinds(
 export function terminalFlowsInto(kind: MouthKind | undefined): MouthKind {
   return kind ?? "sea";
 }
+
+/**
+ * Reaches whose downstream path (themselves included) crosses a link added by
+ * network-overrides.json (`next_down_edit = 'override'`). HydroRIVERS DIST_DN_KM on such a
+ * path measures to the end HydroRIVERS had (e.g. the Río Cuarto's virtual sink), not along
+ * the edited path, and the link itself is not a channel, so no source field gives the
+ * distance. Assumes a valid network (mouthKinds has already thrown on cycles).
+ */
+export function overridePaths(
+  reaches: readonly Pick<NetworkReach, "id" | "nextDown" | "nextDownEdit">[],
+): Set<number> {
+  const byId = new Map(reaches.map((r) => [r.id, r]));
+  const known = new Map<number, boolean>();
+  for (const start of reaches) {
+    const path: number[] = [];
+    let crosses = false;
+    for (
+      let at: (typeof reaches)[number] | undefined = start;
+      at;
+      at = byId.get(at.nextDown)
+    ) {
+      const k = known.get(at.id);
+      if (k !== undefined) {
+        crosses = k;
+        break;
+      }
+      path.push(at.id);
+      if (at.nextDownEdit === "override") {
+        crosses = true;
+        break;
+      }
+      if (at.nextDown === 0 || path.length > byId.size) break;
+    }
+    for (const id of path) known.set(id, crosses);
+  }
+  return new Set([...known].filter(([, c]) => c).map(([id]) => id));
+}
+
+/**
+ * The distance to the sea shown for a reach or a mouth: null when the water ends in an
+ * endorheic sink (no sea) or when its path crosses an override link (no sourced distance);
+ * otherwise HydroRIVERS DIST_DN_KM (which, at the region's edge, goes on outside the region
+ * along the unedited HydroRIVERS path).
+ */
+export function seaDistance(
+  kind: MouthKind | undefined,
+  crossesOverride: boolean,
+  distDnKm: number,
+): number | null {
+  if (kind === "sink" || crossesOverride) return null;
+  return distDnKm;
+}

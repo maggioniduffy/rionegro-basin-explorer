@@ -227,3 +227,9 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 
 - [x] `npm run pipeline:lakes -- --region cba` twice, then `npm run pipeline:ign-layers -- --region cba` twice: `ok: true`, identical outputs.
 - [x] `nqn` unchanged: `pipeline:lakes` and `pipeline:ign-layers` for `nqn`, 9 outputs byte-identical.
+
+## Córdoba R3.7 — app contract (2026-10-12)
+
+- [x] `npm run pipeline:named -- --region cba` twice: `ok: true`, `rivers.ndjson` identical; Río Cuarto `mouth.distanceToSeaKm` null (path crosses the R3.2 override).
+- [x] `nqn` unchanged: `pipeline:export` and `pipeline:tiles -- --region nqn`; `data/out/nqn` and `tiles/reaches.geojson` byte-identical, PMTiles tile data identical (only embedded metadata paths differ from the committed builds, which were kept).
+- [ ] Browser (after R3.8 serves `cba`): river panel of the Dulce ("an endorheic sink") and Tercero (joins the Carcarañá, "leaves the mapped region"); a reach in the Cuarto system shows "Not available" for distance to the sea; a reach panel links to its basin; an unmatched APRHI line opens the line panel; an "en revisión" reach shows the warning; Mar Chiquita shows the APRHI area and credit; La Picasa at three levels shows its level.

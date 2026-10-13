@@ -34,5 +34,21 @@
     "card": {
       "alt": "Imagen satelital de la cuenca del Río Negro con sus ríos resaltados en celeste"
     }
+  },
+  "panel": {
+    "reach": {
+      "ignName": "Nombre del IGN. Confianza de la coincidencia: {confidence, select, high {alta} medium {media} other {baja}}.",
+      "ignNameReviewed": "Nombre del IGN, confirmado a mano.",
+      "ownerName": "Nombre asignado a mano; ninguna línea del IGN lo lleva."
+    },
+    "stream": {
+      "title": "Curso de agua del IGN",
+      "nameNote": "Nombre del IGN. El curso une los tramos que comparten este nombre a lo largo de la red de drenaje."
+    },
+    "feature": {
+      "water": {
+        "note": "Contorno de HydroLAKES (Messager et al., 2016) o del IGN; el nombre es el del IGN cuando lo tiene."
+      }
+    }
   }
 }

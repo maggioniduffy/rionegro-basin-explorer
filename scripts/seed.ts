@@ -169,6 +169,12 @@ async function main() {
           (st.subbasin === null || subbasinIds.has(st.subbasin)) &&
           (st.receivingRiver === null || riverIds.has(st.receivingRiver)),
       ),
+      // Reference regions: the reach panel links to the reach's basin (level 1).
+      everyReachRootIsABasin: reaches.every(
+        (r) =>
+          r.root === undefined ||
+          subbasins.some((b) => b._id === r.root && b.level === 1),
+      ),
       subbasinsCountMatchesFile: subbasinResult.count === subbasins.length,
       everySubbasinRiverExists: subbasins.every((b) =>
         [...(b.river === null ? [] : [b.river]), ...b.rivers].every((id) =>

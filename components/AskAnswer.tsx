@@ -1,7 +1,12 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import type { AnswerItem, AskAnswer, AskResult } from "@/lib/ask/contract";
+import type {
+  AnswerItem,
+  AskAnswer,
+  AskResult,
+  SubbasinKind,
+} from "@/lib/ask/contract";
 import type { Filter } from "@/lib/ask/intent";
 import { METRICS } from "@/lib/ask/metrics";
 import type { SubbasinTreeNode } from "@/lib/data/queries";
@@ -142,9 +147,7 @@ function AnswerBody({ answer }: { answer: AskAnswer }) {
                 key={item.id}
                 className="flex items-center justify-between gap-2 py-1"
               >
-                <span className="min-w-0 flex-1 truncate">
-                  {name(item.name)}
-                </span>
+                <span className="min-w-0 flex-1 truncate">{name(item)}</span>
                 {regimeFilter &&
                   item.nonPerennialPct != null &&
                   item.nonPerennialPct > 0 && (
@@ -161,7 +164,7 @@ function AnswerBody({ answer }: { answer: AskAnswer }) {
                 </span>
                 <button
                   type="button"
-                  aria-label={t("openItem", { name: name(item.name) })}
+                  aria-label={t("openItem", { name: name(item) })}
                   onClick={() =>
                     select({ kind: answer.kind, id: item.id }, { fit: true })
                   }
@@ -184,19 +187,29 @@ function AnswerBody({ answer }: { answer: AskAnswer }) {
   );
 }
 
-/** Display name of a river or sub-basin of an answer; no name = the endorheic areas. */
+/**
+ * Display name of a river or sub-basin of an answer; no name = the endorheic areas. A
+ * sub-basin's kind comes with the answer (an "area" is labelled by its name).
+ */
 function useItemName(kind: AskAnswer["kind"]) {
   const subbasinLabel = useSubbasinLabel();
-  return (name: string | null): string =>
+  return (item: {
+    name: string | null;
+    subbasinKind?: SubbasinKind;
+  }): string =>
     kind === "subbasin"
-      ? subbasinLabel({ kind: name === null ? "endorheic" : "river", name })
-      : (name ?? "—");
+      ? subbasinLabel({
+          kind:
+            item.subbasinKind ?? (item.name === null ? "endorheic" : "river"),
+          name: item.name,
+        })
+      : (item.name ?? "—");
 }
 
 /** The sentence of the answer, or null when no item has a value. */
 function useSentence(
   answer: AskAnswer,
-  name: (n: string | null) => string,
+  name: (item: { name: string | null; subbasinKind?: SubbasinKind }) => string,
 ): string | null {
   const t = useTranslations("ask");
   const locale = useLocale();
@@ -219,7 +232,7 @@ function useSentence(
 
   if (winners.length > 1) {
     return t("answer.tie", {
-      winners: list.format(winners.map((i) => name(i.name))),
+      winners: list.format(winners.map((i) => name(i))),
       metric,
       value,
     });
@@ -227,7 +240,7 @@ function useSentence(
 
   const order = answer.order ?? "max";
   if (answer.type === "fact") {
-    return t("answer.fact", { name: name(first.name), metric, value });
+    return t("answer.fact", { name: name(first), metric, value });
   }
   if (answer.type === "rank") {
     const direction = t("answer.direction", { order });
@@ -235,12 +248,12 @@ function useSentence(
       kind: answer.kind,
       metric,
       direction,
-      winner: name(first.name),
+      winner: name(first),
       value,
     };
     const adjectives = filterAdjectives(answer, t);
     if (answer.parent) {
-      const parent = name(answer.parent.name);
+      const parent = name(answer.parent);
       return adjectives
         ? t("answer.rank.tributariesFiltered", {
             ...common,
@@ -259,10 +272,10 @@ function useSentence(
     (i) => i.id !== first.id && i.value !== null,
   );
   if (others.length === 0) {
-    return t("answer.only", { winner: name(first.name), value });
+    return t("answer.only", { winner: name(first), value });
   }
   return t("answer.compare", {
-    winner: name(first.name),
+    winner: name(first),
     predicate: t("answer.predicate", {
       order,
       word: METRICS[answer.metric].word,
@@ -270,7 +283,7 @@ function useSentence(
       metric,
     }),
     value,
-    others: list.format(others.map((i) => `${name(i.name)} (${show(i)})`)),
+    others: list.format(others.map((i) => `${name(i)} (${show(i)})`)),
   });
 }
 
@@ -310,7 +323,9 @@ function useFilterLine(answer: AskAnswer): string | null {
         if (!node) return t("filters.withinUnknown");
         return node.kind === "endorheic" || node.name === null
           ? t("filters.withinEndorheic")
-          : t("filters.within", { name: node.name });
+          : node.kind === "area"
+            ? t("filters.withinArea", { name: node.name })
+            : t("filters.within", { name: node.name });
       }
       case "threshold":
         return t("filters.threshold", {

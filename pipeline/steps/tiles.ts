@@ -2,7 +2,9 @@
  * pipeline:tiles — PMTiles for the map, via tippecanoe.
  *
  *   public/tiles/<region>/rivers.pmtiles  layers `reaches` (per-feature minzoom by Strahler order,
- *                                map.config.json), `basin` (outline) and `lakes`
+ *                                map.config.json; with mapLines "pieces" the display line
+ *                                pieces, keyed by `piece`, with `rank` = the matched reach's
+ *                                order or pieceOrderByClass), `basin` (outline) and `lakes`
  *                                (HydroLAKES polygons from pipeline:lakes, for outlines)
  *   public/tiles/<region>/mask.pmtiles    layers `mask` (Visible Land levels) and `endorheic` (land
  *                                visible only because of endorheic drainage, per level),
@@ -28,7 +30,13 @@ import { spawn } from "node:child_process";
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { requireInput } from "../lib/inputs";
-import { mapConfig, reachMinzoom, stepMinzoom } from "../lib/map-config";
+import {
+  mapConfig,
+  pieceOrder,
+  reachMinzoom,
+  stepMinzoom,
+} from "../lib/map-config";
+import { loadMapLines } from "../lib/map-lines";
 import { REGION_ID, ROOT, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
@@ -66,6 +74,12 @@ const REACH_PROPS = [
   "strahler",
   "nonPerennial1d",
 ] as const;
+
+/**
+ * Display line pieces (mapLines "pieces", cba) also carry what the panel of a piece no reach
+ * matched shows (lib/map/picked.ts toPickedLine) and `rank`, the order they are drawn at.
+ */
+const PIECE_PROPS = ["piece", "src", "name", "km", "review", "rank"] as const;
 
 function run(cmd: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -195,18 +209,29 @@ async function main() {
   const fc = JSON.parse(await readFile(reachesIn, "utf8")) as {
     features: Feature[];
   };
+  // Pieces are keyed by `piece`: several pieces share a matched reach's id, and a piece
+  // no reach matched has none.
+  const pieces = (await loadMapLines()) === "pieces";
+  const key = pieces ? "piece" : "id";
+  const props: readonly string[] = pieces
+    ? [...REACH_PROPS, ...PIECE_PROPS]
+    : REACH_PROPS;
   const minzoomById = new Map<string, number>();
   const spanById = new Map<string, number>();
   const features = fc.features.map((f): Feature => {
-    const strahler = Number(f.properties.strahler);
-    const minzoom = reachMinzoom(mapConfig, strahler);
-    minzoomById.set(String(f.properties.id), minzoom);
-    spanById.set(String(f.properties.id), spanUnitsZ0(f.geometry));
+    const rank = pieces ? pieceOrder(mapConfig, f.properties) : undefined;
+    const minzoom = reachMinzoom(
+      mapConfig,
+      rank ?? Number(f.properties.strahler),
+    );
+    const k = String(f.properties[key]);
+    if (minzoomById.has(k)) throw new Error(`duplicate reach ${key} ${k}`);
+    minzoomById.set(k, minzoom);
+    spanById.set(k, spanUnitsZ0(f.geometry));
+    const values: Record<string, unknown> = { ...f.properties, rank };
     return {
       type: "Feature",
-      properties: Object.fromEntries(
-        REACH_PROPS.map((k) => [k, f.properties[k] ?? null]),
-      ),
+      properties: Object.fromEntries(props.map((p) => [p, values[p] ?? null])),
       geometry: f.geometry,
       tippecanoe: { minzoom },
     };
@@ -313,6 +338,12 @@ async function main() {
       ids.add(String(f.properties.id));
       return { ...f, tippecanoe: { minzoom: l.minzoom(f) } };
     });
+    // A region may have no feature in a layer (cba: no IGN detail lines or extra lakes,
+    // pipeline:ign-layers reference mode); the layer is then left out of the file.
+    if (out.length === 0) {
+      ignExpected.set(l.layer, { ids, minzoom: 0 });
+      continue;
+    }
     const withZoom = workPath(`tiles/${l.file}.minzoom.geojson`);
     await writeFile(
       withZoom,
@@ -393,7 +424,9 @@ async function main() {
   // 3. Decode back: reach ids per zoom vs the expected set; mask levels per zoom.
   const reachesByZoom = [];
   for (let z = 0; z <= maxzoom; z++) {
-    const got = await decodeDistinct(riversOut, "reaches", z, "id");
+    const got = pieces
+      ? await decodeDistinctString(riversOut, "reaches", z, key)
+      : await decodeDistinct(riversOut, "reaches", z, key);
     const expected = [...minzoomById].filter(([, mz]) => mz <= z);
     const missingIds = expected
       .filter(([id]) => !got.has(id))

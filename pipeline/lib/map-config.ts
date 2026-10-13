@@ -20,6 +20,15 @@ const schema = z.object({
   minzoom: z.number().int(),
   maxzoom: z.number().int(),
   reachMinzoomByStrahler: byStrahler,
+  /**
+   * Display line pieces only (mapLines "pieces", cba): the order a piece no reach matched is
+   * drawn at, by `<source>:<class>` of pipeline:lines, with "*" for every other class. It
+   * picks the minzoom and width only; the piece has no Strahler order and none is shown.
+   */
+  pieceOrderByClass: z
+    .record(z.string(), z.number().int().positive())
+    .refine((r) => "*" in r, { message: 'pieceOrderByClass needs a "*" entry' })
+    .optional(),
   ign: z.object({
     detailMinzoomByKm: z.array(step),
     extraLakeMinzoomByKm2: z.array(step),
@@ -51,6 +60,26 @@ export function reachMinzoom(config: MapConfig, strahler: number): number {
   if (z === undefined)
     throw new Error(`no minzoom for Strahler order ${strahler}`);
   return z;
+}
+
+/**
+ * The order a display line piece is drawn at (tile property `rank`): the Strahler order of
+ * its matched reach, else `pieceOrderByClass` by its source and class (see the schema).
+ */
+export function pieceOrder(
+  config: Pick<MapConfig, "pieceOrderByClass">,
+  props: { strahler?: unknown; src?: unknown; cls?: unknown },
+): number {
+  if (typeof props.strahler === "number") return props.strahler;
+  const table = config.pieceOrderByClass;
+  if (!table)
+    throw new Error(
+      'map.config.json: pieceOrderByClass is required with mapLines "pieces"',
+    );
+  const order =
+    table[`${String(props.src)}:${String(props.cls)}`] ?? table["*"];
+  if (order === undefined) throw new Error('pieceOrderByClass has no "*"');
+  return order;
 }
 
 /**

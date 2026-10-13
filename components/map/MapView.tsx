@@ -17,7 +17,7 @@ import {
   toLngLatBounds,
 } from "@/lib/map/config";
 import { maskLayerOpacities } from "@/lib/map/mask";
-import { type Picked, toPicked } from "@/lib/map/picked";
+import { type Picked, toPicked, toPickedLine } from "@/lib/map/picked";
 import {
   BACKGROUND_LAYER_ID,
   buildStyle,
@@ -56,6 +56,7 @@ import {
   SUBBASIN_SELECTED_LAYER_ID,
   THEME_COLORS,
   reachFeatureSelection,
+  reachOrder,
 } from "@/lib/map/style";
 import { useRegion } from "@/components/RegionProvider";
 import { initMaplibre } from "@/lib/map/init";
@@ -131,7 +132,7 @@ function hitAt(map: MapLibreMap, x: number, y: number): Hit | null {
   const dam = hitFeature(map, x, y, [DAM_LAYER_ID, DAM_WALL_LAYER_ID]);
   if (dam) return { type: "picked", picked: dam };
   const reach = hitReach(map, x, y);
-  if (reach) return { type: "selection", selection: reach };
+  if (reach) return reach;
   const feature = hitFeature(map, x, y, [
     IGN_DETAIL_LAYER_ID,
     LAKE_HIT_LAYER_ID,
@@ -217,7 +218,11 @@ function hitSubbasin(map: MapLibreMap, x: number, y: number): Selection | null {
   return typeof id === "string" && id ? { kind: "subbasin", id } : null;
 }
 
-function hitReach(map: MapLibreMap, x: number, y: number): Selection | null {
+/**
+ * The line under a point, preferring the largest river: its river, stream or reach, or, for
+ * a line piece that no reach matched (cba), the piece itself from its tile properties.
+ */
+function hitReach(map: MapLibreMap, x: number, y: number): Hit | null {
   const r = HIT_TOLERANCE_PX;
   const features = map.queryRenderedFeatures(
     [
@@ -228,13 +233,14 @@ function hitReach(map: MapLibreMap, x: number, y: number): Selection | null {
   );
   const best = features.reduce<(typeof features)[number] | undefined>(
     (a, f) =>
-      !a || Number(f.properties.strahler) > Number(a.properties.strahler)
-        ? f
-        : a,
+      !a || reachOrder(f.properties) > reachOrder(a.properties) ? f : a,
     undefined,
   );
   if (!best) return null;
-  return reachFeatureSelection(best.properties, best.id);
+  const selection = reachFeatureSelection(best.properties, best.id);
+  if (selection) return { type: "selection", selection };
+  const line = toPickedLine(best.properties);
+  return line ? { type: "picked", picked: line } : null;
 }
 
 type State = ReturnType<typeof useMapStore.getState>;

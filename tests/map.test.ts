@@ -24,6 +24,7 @@ import {
   reachFilter,
   reachLayerId,
   reachFeatureSelection,
+  reachOrder,
   selectionFilter,
   waterFilter,
 } from "../lib/map/style";
@@ -242,5 +243,22 @@ describe("reachFeatureSelection", () => {
     });
     expect(reachFeatureSelection({}, undefined)).toBeNull();
     expect(reachFeatureSelection({}, 0)).toBeNull();
+  });
+});
+
+describe("reachOrder", () => {
+  it("prefers a piece's rank, then the Strahler order, else 0", () => {
+    expect(reachOrder({ rank: 3, strahler: 5 })).toBe(3);
+    expect(reachOrder({ strahler: 5 })).toBe(5);
+    expect(reachOrder({ piece: "a-1-0" })).toBe(0);
+  });
+
+  it("leaves a piece no reach matched to the line panel (no selection)", () => {
+    expect(
+      reachFeatureSelection(
+        { piece: "a-1-0", src: "aprhi", rank: 1 },
+        undefined,
+      ),
+    ).toBeNull();
   });
 });

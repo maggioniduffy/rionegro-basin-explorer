@@ -140,3 +140,66 @@ describe("region prompt content", () => {
     );
   });
 });
+
+describe("buildSystemPrompt for reference-region nodes (R3.7)", () => {
+  const sub = docs.subbasins as Array<Record<string, unknown>>;
+  const root = sub.find((s) => s.parentId === null)!;
+  const area = (id: string, parentId: string, name: string) => ({
+    ...root,
+    _id: id,
+    kind: "area",
+    name,
+    river: null,
+    parentId,
+  });
+  const extra = {
+    ...docs,
+    rivers: [
+      ...docs.rivers,
+      {
+        ...(docs.rivers[0] as object),
+        _id: "dulce",
+        name: "Río Dulce",
+        aliases: [],
+        flowsInto: "sink",
+      },
+      {
+        ...(docs.rivers[0] as object),
+        _id: "carcarana",
+        name: "Río Carcarañá",
+        aliases: [],
+        flowsInto: "region-edge",
+      },
+    ],
+    subbasins: [
+      ...sub,
+      area("la-picasa", String(root._id), "La Picasa"),
+      area("la-picasa-subcuenca", "la-picasa", "La Picasa"),
+      area("la-picasa-ugh", "la-picasa-subcuenca", "La Picasa"),
+    ],
+  } as CatalogDocs;
+  const text = buildSystemPrompt("en", buildCatalog("nqn", extra));
+
+  it("describes a river ending in a sink or at the region's edge", () => {
+    expect(text).toContain(
+      "dulce | Río Dulce |  | flows into: an endorheic sink (drains inland)",
+    );
+    expect(text).toContain(
+      "carcarana | Río Carcarañá |  | flows into: leaves the mapped region",
+    );
+  });
+
+  it("tells same-name areas apart by level, and leaves river nodes unchanged", () => {
+    expect(text).toContain("la-picasa | La Picasa | parent: ");
+    expect(text).toMatch(
+      /la-picasa \| La Picasa \| parent: [^\n]* \| level: basin\n/,
+    );
+    expect(text).toContain(
+      "la-picasa-subcuenca | La Picasa | parent: La Picasa | level: sub-basin",
+    );
+    expect(text).toContain(
+      "la-picasa-ugh | La Picasa | parent: La Picasa | level: water management unit",
+    );
+    expect(prompt).not.toContain("| level:");
+  });
+});

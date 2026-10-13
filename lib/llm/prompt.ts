@@ -46,17 +46,33 @@ function metricsSection(): string {
   }).join("\n");
 }
 
-/** One line per sub-basin, `slug | name | parent`. */
+/** What each depth of an "area" tree is (management areas of a reference agency, R3.5). */
+const AREA_LEVEL = ["region", "basin", "sub-basin", "water management unit"];
+
+/**
+ * One line per sub-basin, `slug | name | parent`. Area nodes add `| level: <word>`: their
+ * names repeat across levels (a basin, its sub-basin and its unit can share one name).
+ */
 function subbasinsSection(catalog: Catalog): string {
   const { subbasins } = catalog.docs;
-  const nameOf = new Map(subbasins.map((s) => [s._id, s.name]));
+  const byId = new Map(subbasins.map((s) => [s._id, s]));
+  const depth = (id: string | null): number => {
+    let d = -1;
+    for (let at = id ? byId.get(id) : undefined; at; d++)
+      at = at.parentId ? byId.get(at.parentId) : undefined;
+    return d;
+  };
   return subbasins
     .map((s) => {
       const name = s.kind === "endorheic" ? ENDORHEIC_LABEL : (s.name ?? s._id);
       const parent = s.parentId
-        ? (nameOf.get(s.parentId) ?? s.parentId)
+        ? (byId.get(s.parentId)?.name ?? s.parentId)
         : "none";
-      return `${s._id} | ${name} | parent: ${parent}`;
+      const level =
+        s.kind === "area"
+          ? ` | level: ${AREA_LEVEL[Math.min(depth(s._id), AREA_LEVEL.length - 1)]}`
+          : "";
+      return `${s._id} | ${name} | parent: ${parent}${level}`;
     })
     .join("\n");
 }

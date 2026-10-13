@@ -16,6 +16,14 @@ export const WATER_KINDS = [
 ] as const;
 export type WaterKind = (typeof WATER_KINDS)[number];
 
+/** Who drew a water body's outline (pipeline:lakes `source`; nqn tiles have none). */
+export const WATER_SOURCES = ["aprhi", "ign", "hydrolakes"] as const;
+export type WaterSource = (typeof WATER_SOURCES)[number];
+
+/** Who drew a displayed line piece (pipeline:lines `source`, tile property `src`). */
+export const LINE_SOURCES = ["aprhi", "ign"] as const;
+export type LineSource = (typeof LINE_SOURCES)[number];
+
 /** OSM place classes the localities layer carries (pipeline:localities). */
 export const PLACE_KINDS = ["city", "town", "village"] as const;
 export type PlaceKind = (typeof PLACE_KINDS)[number];
@@ -31,8 +39,23 @@ export type Picked =
       name: string | null;
       waterKind: WaterKind;
       areaKm2: number | null;
-      /** Where the area comes from: HydroLAKES polygons, or IGN for the extra lakes. */
-      areaSource: "hydrolakes" | "ign";
+      /**
+       * Who drew the outline (and so the area): the tile's `source` property where the lakes
+       * layer mixes sources (cba: APRHI > IGN > HydroLAKES); otherwise the layer says it
+       * (nqn: HydroLAKES polygons, IGN for the extra lakes).
+       */
+      areaSource: WaterSource;
+    }
+  /**
+   * A displayed line piece matched to no HydroRIVERS reach (mapLines "pieces", R3.7): it has
+   * no reach document, so only what the tile carries (name, source, length, review status).
+   */
+  | {
+      kind: "line";
+      name: string | null;
+      source: LineSource;
+      km: number;
+      review: boolean;
     }
   | { kind: "dam" | "wall"; name: string | null }
   | { kind: "locality"; name: string; place: PlaceKind };
@@ -85,10 +108,30 @@ export function toPicked(
         name,
         waterKind,
         areaKm2: positive(props.areaKm2),
-        areaSource: layerId === LAKE_HIT_LAYER_ID ? "hydrolakes" : "ign",
+        areaSource:
+          WATER_SOURCES.find((k) => k === props.source) ??
+          (layerId === LAKE_HIT_LAYER_ID ? "hydrolakes" : "ign"),
       };
     }
     default:
       return null;
   }
+}
+
+/**
+ * The panel content for a clicked line piece that no reach matched (no feature id): null
+ * when the feature is not a piece (a nqn reach always has an id and no `piece`).
+ */
+export function toPickedLine(props: Record<string, unknown>): Picked | null {
+  if (text(props.piece) === null) return null;
+  const source = LINE_SOURCES.find((k) => k === props.src);
+  const km = positive(props.km);
+  if (!source || km === null) return null;
+  return {
+    kind: "line",
+    name: text(props.name),
+    source,
+    km,
+    review: Number(props.review) === 1,
+  };
 }

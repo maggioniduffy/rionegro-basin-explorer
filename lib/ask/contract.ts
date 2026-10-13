@@ -10,6 +10,9 @@ import type { MetricId, MetricKind } from "./metrics";
  */
 export type AskSource = "fuzzy" | "llm" | "cache";
 
+/** Kind of a sub-basin node (lib/data/schemas.ts subbasinSchema). */
+export type SubbasinKind = "river" | "endorheic" | "area";
+
 export type SelectKind = "river" | "subbasin" | "stream";
 
 /** One river or sub-basin of an answer, with the value read from its Mongo document. */
@@ -17,6 +20,8 @@ export interface AnswerItem {
   id: string;
   /** Null for the endorheic sub-basin (the client labels it). */
   name: string | null;
+  /** Sub-basin answers only: the node's kind, so the client labels an "area" by its name. */
+  subbasinKind?: SubbasinKind;
   /** The stored value, in the metric's stored unit; null when the document has none (rule 2). */
   value: number | null;
   /** The document lists this field in `modeled` (show the caveat). */
@@ -40,7 +45,11 @@ export interface AskAnswer {
   /** compare / rank only. */
   order: "max" | "min" | null;
   /** rank with scope tributaries: the parent river or sub-basin. */
-  parent: { id: string; name: string | null } | null;
+  parent: {
+    id: string;
+    name: string | null;
+    subbasinKind?: SubbasinKind;
+  } | null;
   /** Best first (by `order`); items without a value last. rank: at most 5, 10 with filters. */
   items: AnswerItem[];
   /** Ids sharing the best value (more than one on a tie); empty when no item has a value. */

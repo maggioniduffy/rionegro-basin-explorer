@@ -34,5 +34,21 @@
     "card": {
       "alt": "Satellite image of the Río Negro basin with its rivers highlighted in cyan"
     }
+  },
+  "panel": {
+    "reach": {
+      "ignName": "Name from IGN. Match confidence: {confidence, select, high {high} medium {medium} other {low}}.",
+      "ignNameReviewed": "Name from IGN, confirmed by hand.",
+      "ownerName": "Name set by hand; no IGN line carries it."
+    },
+    "stream": {
+      "title": "IGN stream",
+      "nameNote": "Name from IGN. The stream joins the reaches that share this name along the flow network."
+    },
+    "feature": {
+      "water": {
+        "note": "Outline from HydroLAKES (Messager et al., 2016) or from IGN; the name is IGN's where it has one."
+      }
+    }
   }
 }

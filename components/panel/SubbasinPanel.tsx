@@ -106,6 +106,11 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
     <>
       <header className="flex flex-col gap-1 pr-8">
         <h2 className="text-base leading-tight font-semibold">{label(b)}</h2>
+        {b.kind === "area" && (
+          <p className="text-muted text-xs">
+            {t("subbasin.areaLevel", { level: b.level })}
+          </p>
+        )}
         {b.ancestors.length > 0 ? (
           <nav aria-label={t("subbasin.breadcrumb")}>
             <ol className="text-secondary flex flex-wrap items-center gap-x-1 text-sm">
@@ -125,7 +130,11 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
             </ol>
           </nav>
         ) : (
-          <p className="text-muted text-sm">{t("subbasin.wholeBasin")}</p>
+          <p className="text-muted text-sm">
+            {b.kind === "area"
+              ? t("subbasin.wholeRegion")
+              : t("subbasin.wholeBasin")}
+          </p>
         )}
         {b.kind === "endorheic" && (
           <p className="text-warning text-xs">{t("subbasin.endorheicNote")}</p>
@@ -158,8 +167,8 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
         }
       >
         <Row label={t("fields.area")}>{f("km2", b.areaKm2)}</Row>
-        {/* Only the whole basin mixes river and endorheic land. */}
-        {b.kind === "river" && b.endorheicAreaKm2 > 0 && (
+        {/* Only the whole basin mixes river and endorheic land; an area mixes them at any level. */}
+        {b.kind !== "endorheic" && b.endorheicAreaKm2 > 0 && (
           <Row label={t("fields.endorheicArea")}>
             {f("km2", b.endorheicAreaKm2)}
           </Row>
@@ -184,7 +193,7 @@ export function SubbasinPanel({ subbasin: b }: { subbasin: SubbasinResponse }) {
 
       <Group title={t("groups.streams")}>
         <Row label={t("fields.streamLength")}>{f("km", b.lengthKm)}</Row>
-        {b.kind === "river" && b.endorheicLengthKm > 0 && (
+        {b.kind !== "endorheic" && b.endorheicLengthKm > 0 && (
           <Row label={t("fields.endorheicLength")}>
             {f("km", b.endorheicLengthKm)}
           </Row>

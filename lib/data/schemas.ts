@@ -43,7 +43,7 @@ export const riverSchema = z.strictObject({
     elevationM: num,
     dischargeM3s: num,
     uplandKm2: num,
-    /** Null when the flow ends in an endorheic sink (reference regions): no distance to the sea. */
+    /** Null (reference regions) when the flow ends in an endorheic sink or crosses a network-overrides link: no sourced distance to the sea. */
     distanceToSeaKm: num.nullable(),
     strahler: z.number().int(),
     regulationPct: num,
@@ -89,7 +89,10 @@ export const reachSchema = z.strictObject({
   nextDown: z.number().int(),
   mainRiv: z.number().int(),
   lengthKm: num,
-  /** Null when the reach's flow ends in an endorheic sink (reference regions). */
+  /**
+   * Null in reference regions when the reach's flow ends in an endorheic sink, or when its
+   * path crosses a network-overrides link (no sourced distance; see mouthKind).
+   */
   distanceToSeaKm: num.nullable(),
   uplandKm2: num,
   strahler: z.number().int(),
@@ -133,6 +136,11 @@ export const reachSchema = z.strictObject({
    * review by the source agency (APRHI "en revisión"). Absent otherwise.
    */
   lineReview: z.boolean().optional(),
+  /**
+   * Reference regions only: where the reach's water ends (lib/data/mouth.ts). Tells a null
+   * distanceToSeaKm of a sink from one that has no sourced value (a network-overrides link).
+   */
+  mouthKind: z.enum(MOUTH_KINDS).optional(),
 });
 export type Reach = z.infer<typeof reachSchema>;
 
@@ -216,7 +224,7 @@ export const streamSchema = z.strictObject({
     elevationM: num,
     dischargeM3s: num,
     uplandKm2: num,
-    /** Null when the flow ends in an endorheic sink (reference regions). */
+    /** Null (reference regions) when the flow ends in an endorheic sink or crosses a network-overrides link. */
     distanceToSeaKm: num.nullable(),
     strahler: z.number().int(),
     regulationPct: num,
@@ -228,6 +236,8 @@ export const streamSchema = z.strictObject({
     population: z.number().int(),
   }),
   bbox: bboxSchema,
+  /** Reference regions only: where the water of the stream's mouth reach ends. */
+  mouthKind: z.enum(MOUTH_KINDS).optional(),
   /**
    * Other names the stream is searched by (reference regions only, R3.7): the source's raw
    * spellings, names in parentheses and aliases from the other agency's lines, without the

@@ -1,13 +1,22 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { isMouthKind } from "@/lib/data/mouth";
 import type { RiverResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
-import { CAVEAT_BY_PATH, Caveats, Group, Row, useFormat } from "./parts";
+import {
+  CAVEAT_BY_PATH,
+  Caveats,
+  Group,
+  Row,
+  useFormat,
+  useSeaDistance,
+} from "./parts";
 
 export function RiverPanel({ river }: { river: RiverResponse }) {
   const t = useTranslations("panel");
   const f = useFormat();
+  const seaDistance = useSeaDistance();
   const select = useMapStore((s) => s.select);
   const modeled = (path: string) => river.modeled.includes(path);
   const caveats = CAVEAT_BY_PATH.filter(([path]) => modeled(path)).map(
@@ -22,6 +31,10 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
           {t("river.flowsInto")}{" "}
           {river.flowsInto === "sea" ? (
             t("river.sea")
+          ) : river.flowsInto === "sink" ? (
+            t("river.sink")
+          ) : river.flowsInto === "region-edge" ? (
+            t("river.regionEdge")
           ) : (
             <button
               type="button"
@@ -34,6 +47,12 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
             </button>
           )}
         </p>
+        {!isMouthKind(river.flowsInto) && river.mouthKind === "sink" && (
+          <p className="text-muted text-xs">{t("river.endsInSink")}</p>
+        )}
+        {!isMouthKind(river.flowsInto) && river.mouthKind === "region-edge" && (
+          <p className="text-muted text-xs">{t("river.endsAtEdge")}</p>
+        )}
         {river.nameConfidence === "weak" && (
           <p className="text-warning text-xs">{t("river.weakName")}</p>
         )}
@@ -42,7 +61,7 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
       <Group title={t("groups.course")}>
         <Row label={t("fields.length")}>{f("km", river.lengthKm)}</Row>
         <Row label={t("fields.distanceToSea")}>
-          {f("km", river.mouth.distanceToSeaKm)}
+          {seaDistance(river.mouth.distanceToSeaKm, river.mouthKind)}
         </Row>
         <Row
           label={

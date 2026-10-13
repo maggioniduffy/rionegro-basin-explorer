@@ -20,10 +20,11 @@
  * pipeline:ign-streams, null when it is in none; it can be set together with `river`.
  *
  * Reference regions (cba, R3.7) add, and only they (nqn's output is unchanged):
- *   - reach documents: `root` (level-1 sub-basin id of the reach's R3.2 root) and `lineReview`
- *     (a displayed line piece matched to the reach is "en revisión" at APRHI);
- *   - distanceToSeaKm null where the flow path ends in an endorheic sink (reaches, stream
- *     mouths; lib/mouth-kind.ts);
+ *   - reach documents: `root` (level-1 sub-basin id of the reach's R3.2 root), `lineReview`
+ *     (a displayed line piece matched to the reach is "en revisión" at APRHI) and `mouthKind`
+ *     (where its water ends; stream documents too, from the mouth reach);
+ *   - distanceToSeaKm null where the flow path ends in an endorheic sink or crosses a
+ *     network-overrides.json link (reaches, stream mouths; lib/mouth-kind.ts seaDistance);
  *   - stream documents: `aliases` (pipeline:line-names aliases.json) and sub-basins placed
  *     with data/work/<r>/subbasins/reach_node.parquet (the deepest node owning the mouth reach);
  *   - tiles/reaches.geojson written from the display line pieces (ign.config.json
@@ -38,7 +39,12 @@ import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
 import { loadMapLines } from "../lib/map-lines";
-import { type NetworkReach, mouthKinds } from "../lib/mouth-kind";
+import {
+  type NetworkReach,
+  mouthKinds,
+  overridePaths,
+  seaDistance,
+} from "../lib/mouth-kind";
 import { loadNameSource, nameFile } from "../lib/name-source";
 import { regionFile, OUT_DIR, REGION_ID, rel, workPath } from "../lib/paths";
 import {
@@ -140,7 +146,9 @@ const REFERENCE_STREAM_PROVENANCE = {
   subbasin:
     "Deepest sub-basin node (pipeline:subbasins, reference mode) that owns the stream's mouth reach: the APRHI subcuenca or unidad de gestión hídrica holding at least the reach's reachMinShare of its length, else its basin",
   "mouth.distanceToSeaKm":
-    "HydroRIVERS v1.0 DIST_DN_KM at the mouth reach; null when the flow path ends in an endorheic sink, where it would measure the distance to the sink, not to the sea",
+    "HydroRIVERS v1.0 DIST_DN_KM at the mouth reach; null when the flow path ends in an endorheic sink (it would measure the distance to the sink, not to the sea) or crosses a link of regions/<id>/network-overrides.json (it would measure to the end HydroRIVERS had, and the link is not a channel)",
+  mouthKind:
+    "End of the flow path from the mouth reach along NEXT_DOWN (pipeline:rivers, edited at the region's edge and by network-overrides.json): region-edge = next_down_edit 'outside'; sink = HydroRIVERS ENDORHEIC = 1 or the endorheic network; sea otherwise",
   aliases:
     "pipeline:line-names aliases.json for the stream's name: the source's raw spellings, names in parentheses and names of the other agency's lines that run along it, without the name shown",
 };
@@ -244,37 +252,46 @@ async function main() {
         regionFile("subbasin-ids.json"),
       );
       const rows = await db.all(`
-        SELECT HYRIV_ID, NEXT_DOWN, next_down_edit, ENDORHEIC, network, root
+        SELECT HYRIV_ID, NEXT_DOWN, next_down_edit, ENDORHEIC, network, root, DIST_DN_KM
         FROM read_parquet(${lit(reachesFile)})`);
-      const kinds = mouthKinds(
-        rows.map((r): NetworkReach => ({
-          id: Number(r.HYRIV_ID),
-          nextDown: Number(r.NEXT_DOWN),
-          nextDownEdit:
-            r.next_down_edit == null ? null : String(r.next_down_edit),
-          endorheic: Number(r.ENDORHEIC) === 1,
-          network: String(r.network),
-        })),
-      );
+      const network = rows.map((r): NetworkReach => ({
+        id: Number(r.HYRIV_ID),
+        nextDown: Number(r.NEXT_DOWN),
+        nextDownEdit:
+          r.next_down_edit == null ? null : String(r.next_down_edit),
+        endorheic: Number(r.ENDORHEIC) === 1,
+        network: String(r.network),
+      }));
+      const kinds = mouthKinds(network);
+      const overridden = overridePaths(network);
       const refRows = rows.map((r) => {
         const root = ids.level1[String(r.root)];
         if (root === undefined)
           throw new Error(
             `reach ${r.HYRIV_ID}: root ${String(r.root)} is not in subbasin-ids.json level1`,
           );
+        const id = Number(r.HYRIV_ID);
+        const mouthKind = kinds.get(id);
         return {
-          HYRIV_ID: Number(r.HYRIV_ID),
+          HYRIV_ID: id,
           root,
-          mouthKind: kinds.get(Number(r.HYRIV_ID)),
+          mouthKind,
+          distanceToSeaKm: seaDistance(
+            mouthKind,
+            overridden.has(id),
+            Number(r.DIST_DN_KM),
+          ),
         };
       });
       const refFile = workPath("export/reach_ref.json");
       await writeFile(refFile, JSON.stringify(refRows));
       await db.conn.run(`
         CREATE TABLE ref AS
-        SELECT f.HYRIV_ID, f.root, f.mouthKind, (v.reach IS NOT NULL) AS lineReview
+        SELECT f.HYRIV_ID, f.root, f.mouthKind, f.distanceToSeaKm,
+               (v.reach IS NOT NULL) AS lineReview
         FROM read_json(${lit(refFile)},
-                       columns = {HYRIV_ID: 'BIGINT', root: 'VARCHAR', mouthKind: 'VARCHAR'}) f
+                       columns = {HYRIV_ID: 'BIGINT', root: 'VARCHAR', mouthKind: 'VARCHAR',
+                                  distanceToSeaKm: 'DOUBLE'}) f
         LEFT JOIN (SELECT DISTINCT reach FROM read_parquet(${lit(linesFile!)})
                    WHERE status = 'en-revision' AND reach IS NOT NULL) v
           ON v.reach = f.HYRIV_ID`);
@@ -285,7 +302,7 @@ async function main() {
              r.NEXT_DOWN AS nextDown, r.MAIN_RIV AS mainRiv,
              round(r.LENGTH_KM::DOUBLE, 2) AS lengthKm, ${
                reference
-                 ? "CASE WHEN rf.mouthKind = 'sink' THEN NULL ELSE round(r.DIST_DN_KM, 1) END"
+                 ? "round(rf.distanceToSeaKm, 1)"
                  : "round(r.DIST_DN_KM, 1)"
              } AS distanceToSeaKm,
              round(r.UPLAND_SKM, 1) AS uplandKm2, r.ORD_STRA AS strahler,
@@ -319,7 +336,7 @@ async function main() {
         USING (HYRIV_ID)
       ${reference ? "LEFT JOIN ref rf ON rf.HYRIV_ID = r.HYRIV_ID" : ""}`);
     await db.conn.run(`
-      COPY (SELECT * EXCLUDE (geom, length_raw${reference ? ", mouthKind" : ""}) FROM out ORDER BY _id)
+      COPY (SELECT * EXCLUDE (geom, length_raw) FROM out ORDER BY _id)
       TO ${lit(reachesNdjson)} (FORMAT json)`);
     // Map geometry: reaches that cross a lake use the clipped line from pipeline:lakes;
     // those left with no line are not drawn (their data stays in reaches.ndjson).
@@ -360,7 +377,7 @@ async function main() {
                                 columns = {pieceId: 'VARCHAR', name: 'VARCHAR'})`);
       await db.conn.run(`
         CREATE TABLE pieces AS
-        SELECT l.pieceId, l.reach, l.source, l.status, l.length_m,
+        SELECT l.pieceId, l.reach, l.source, l.class, l.status, l.length_m,
                o._id AS reach_found,
                o.river, o.stream, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
                pn.name,
@@ -372,7 +389,8 @@ async function main() {
         LEFT JOIN read_parquet(${lit(lineGeomFile)}) g ON g.pieceId = l.pieceId`);
       await db.conn.run(`
         COPY (SELECT reach AS id, river, stream, network, strahler, uplandKm2, nonPerennial1d,
-                     pieceId AS piece, source AS src, round(length_m / 1000.0, 3) AS km, name,
+                     pieceId AS piece, source AS src, class AS cls,
+                     round(length_m / 1000.0, 3) AS km, name,
                      CASE WHEN status = 'en-revision' THEN 1 END AS review, geom
               FROM pieces WHERE NOT not_drawn ORDER BY pieceId)
         TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
@@ -408,6 +426,7 @@ async function main() {
     const mouthIds = streams.map((s) => s.mouthReach);
     const mouthRows = await db.all(`
       SELECT _id, catchmentMinElevationM, dischargeM3s, uplandKm2, distanceToSeaKm, strahler,
+             ${reference ? "mouthKind," : ""}
              regulationPct, upstreamFloodedMinPct, upstreamFloodedMaxPct,
              upstreamLakesPct, upstreamPopulation
       FROM out WHERE _id IN (${mouthIds.length ? mouthIds.join(",") : "NULL"})`);
@@ -460,6 +479,7 @@ async function main() {
           lengthKm: round(Number(t.km)),
           subbasin,
           receivingRiver,
+          ...(reference ? { mouthKind: String(m.mouthKind) } : {}),
           mouth: {
             elevationM: orNull(m.catchmentMinElevationM),
             dischargeM3s: orNull(m.dischargeM3s),

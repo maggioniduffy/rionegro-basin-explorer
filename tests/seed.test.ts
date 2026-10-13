@@ -256,3 +256,79 @@ describe("streams", () => {
     expect(() => parseNdjson(JSON.stringify(untagged), reachSchema)).toThrow();
   });
 });
+
+describe("reference-region fields (R3.7)", () => {
+  it("accepts a reach's root, line review and a null distance to the sea", () => {
+    const ref = { ...reach, root: "mar-chiquita", lineReview: true };
+    expect(parseNdjson(JSON.stringify(ref), reachSchema)).toEqual([ref]);
+    const sink = { ...reach, distanceToSeaKm: null };
+    expect(parseNdjson(JSON.stringify(sink), reachSchema)).toEqual([sink]);
+    expect(() =>
+      parseNdjson(
+        JSON.stringify({ ...reach, root: "Mar Chiquita" }),
+        reachSchema,
+      ),
+    ).toThrow();
+  });
+
+  it("accepts a river's mouth kind and a null distance only through the schema's enum", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const [river] = parseNdjson(
+      await readFile("data/out/nqn/rivers.ndjson", "utf8"),
+      riverSchema,
+    );
+    for (const mouthKind of ["sea", "sink", "region-edge"]) {
+      const doc = { ...river!, mouthKind };
+      expect(parseNdjson(JSON.stringify(doc), riverSchema)).toEqual([doc]);
+    }
+    const sink = {
+      ...river!,
+      flowsInto: "sink",
+      mouthKind: "sink",
+      mouth: { ...river!.mouth, distanceToSeaKm: null },
+    };
+    expect(parseNdjson(JSON.stringify(sink), riverSchema)).toEqual([sink]);
+    expect(() =>
+      parseNdjson(
+        JSON.stringify({ ...river!, mouthKind: "lake" }),
+        riverSchema,
+      ),
+    ).toThrow();
+  });
+
+  it("searches a stream by its aliases too, accent-free", () => {
+    const stream = {
+      _id: "rio-tercero-61500000",
+      name: "Río Tercero",
+      mouthReach: 61500000,
+      reachCount: 3,
+      lengthKm: 10,
+      subbasin: "carcarana",
+      receivingRiver: null,
+      mouth: {
+        elevationM: 100,
+        dischargeM3s: 1,
+        uplandKm2: 100,
+        distanceToSeaKm: null,
+        strahler: 4,
+        regulationPct: 0,
+      },
+      watershed: {
+        floodedMinPct: 0,
+        floodedMaxPct: 1,
+        lakesPct: 0,
+        population: 10,
+      },
+      bbox: [-64, -33, -63, -32] as [number, number, number, number],
+      aliases: ["Ctalamochita", "R. Tercero"],
+      modeled: [],
+      provenance: {},
+    };
+    const [doc] = parseNdjson(JSON.stringify(stream), streamSchema);
+    expect(toStreamDoc(doc!).searchTerms).toEqual([
+      "rio tercero",
+      "ctalamochita",
+      "r. tercero",
+    ]);
+  });
+});

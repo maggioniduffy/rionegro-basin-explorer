@@ -148,6 +148,7 @@
       "regime": "{value, select, perennial {permanentes} other {intermitentes}}",
       "regulated": "{value, select, yes {{kind, select, river {regulados} other {reguladas}}} other {{kind, select, river {no regulados} other {no reguladas}}}}",
       "within": "en la cuenca del {name}",
+      "withinArea": "en {name}",
       "withinEndorheic": "en las áreas endorreicas",
       "withinUnknown": "en una subcuenca",
       "threshold": "{metric} {op, select, gt {mayor a} other {menor a}} {value}"
@@ -170,13 +171,15 @@
       "label": "Detalles del río",
       "flowsInto": "Desemboca en",
       "sea": "el mar",
-      "weakName": "El nombre de este río es menos seguro que el de los demás."
+      "weakName": "El nombre de este río es menos seguro que el de los demás.",
+      "sink": "una cuenca endorreica (drena hacia el interior)",
+      "regionEdge": "un curso fuera de la región del mapa",
+      "endsInSink": "Aguas abajo, su agua termina en una cuenca endorreica y no llega al mar.",
+      "endsAtEdge": "Aguas abajo, su agua sale de la región del mapa."
     },
     "stream": {
       "label": "Detalles del curso de agua",
-      "title": "Curso de agua del IGN",
-      "inSubbasin": "En",
-      "nameNote": "Nombre del IGN. El curso une los tramos que comparten este nombre a lo largo de la red de drenaje."
+      "inSubbasin": "En"
     },
     "reach": {
       "label": "Detalles del curso",
@@ -185,10 +188,9 @@
       "id": "Tramo HydroRIVERS {id}",
       "showRiver": "Ver todo el {river}",
       "endorheic": "Endorreico: drena hacia el interior y no llega al mar.",
-      "ignName": "Nombre del IGN. Confianza de la coincidencia: {confidence, select, high {alta} medium {media} other {baja}}.",
-      "ignNameReviewed": "Nombre del IGN, confirmado a mano.",
       "showStream": "Mostrar todo el {stream}",
-      "ownerName": "Nombre asignado a mano; ninguna línea del IGN lo lleva."
+      "inBasin": "En",
+      "lineReview": "La línea dibujada aquí está marcada como en revisión por el organismo que la publica."
     },
     "groups": {
       "course": "Recorrido",
@@ -231,7 +233,9 @@
       "rangeValue": "{min} a {max}",
       "streamLength": "Longitud total de cursos",
       "endorheicLength": "Cursos endorreicos",
-      "reachCount": "Tramos HydroRIVERS"
+      "reachCount": "Tramos HydroRIVERS",
+      "distanceToSeaNone": "Ninguna: drena a una cuenca endorreica",
+      "distanceToSeaUnknown": "No disponible: parte del recorrido hasta el mar es un enlace sin cauce modelado"
     },
     "caveat": {
       "title": "Los valores marcados con * son modelados o estimados:",
@@ -247,6 +251,8 @@
       "label": "Detalles de la cuenca",
       "title": "Cuenca del {name}",
       "wholeBasin": "La cuenca completa.",
+      "areaLevel": "{level, select, 0 {Región} 1 {Cuenca} 2 {Subcuenca} other {Unidad de gestión hídrica}}",
+      "wholeRegion": "Toda la región.",
       "children": "Subcuencas:",
       "endorheicTitle": "Áreas endorreicas",
       "endorheicNote": "Tierras que drenan hacia depresiones cerradas y no llegan a ningún río. HydroBASINS vincula parte de ellas a la red de ríos de forma virtual; aquí se muestran aparte.",
@@ -267,7 +273,7 @@
         "kind": "{kind, select, lake {Lago} reservoir {Embalse} controlledLake {Lago regulado} other {Espejo de agua}}",
         "areaHydrolakes": "Superficie (HydroLAKES, aproximada)",
         "areaIgn": "Superficie (polígono del IGN, aproximada)",
-        "note": "Contorno de HydroLAKES (Messager et al., 2016) o del IGN; el nombre es el del IGN cuando lo tiene."
+        "areaAprhi": "Superficie (polígono de APRHI, aproximada)"
       },
       "dam": {
         "title": "Presa",
@@ -285,7 +291,14 @@
         "length": "Longitud"
       },
       "source": "Fuente: FUENTE: Instituto Geográfico Nacional de la República Argentina. El IGN no avala ni patrocina esta aplicación.",
-      "group": "Datos"
+      "sourceAprhi": "Fuente: FUENTE: Portal de Información Hídrica de Córdoba (Administración Provincial de Recursos Hídricos de Córdoba). La APRHI no avala ni patrocina esta aplicación.",
+      "group": "Datos",
+      "line": {
+        "title": "Curso de agua mapeado",
+        "unnamed": "Curso de agua sin nombre",
+        "note": "Esta línea no coincide con ningún tramo de HydroRIVERS, por lo que no se muestran valores modelados (caudal, área de drenaje, régimen de flujo).",
+        "review": "Marcado como en revisión por el organismo que lo publica."
+      }
     }
   },
   "attributions": {

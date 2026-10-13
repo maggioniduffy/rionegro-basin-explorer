@@ -60,6 +60,8 @@ import { loadNameSource, nameFile } from "../lib/name-source";
 import {
   type NetworkReach,
   mouthKinds,
+  overridePaths,
+  seaDistance,
   terminalFlowsInto,
 } from "../lib/mouth-kind";
 import { nameKey, riverSlug } from "../lib/names";
@@ -132,9 +134,9 @@ const PROVENANCE = {
 /** Provenance that differs in a reference region (R3.7): sinks have no distance to the sea. */
 const REFERENCE_PROVENANCE = {
   "mouth.distanceToSeaKm":
-    "HydroRIVERS v1.0 DIST_DN_KM at the mouth reach; null when the flow path ends in an endorheic sink, where it would measure the distance to the sink, not to the sea",
+    "HydroRIVERS v1.0 DIST_DN_KM at the mouth reach; null when the flow path ends in an endorheic sink (it would measure the distance to the sink, not to the sea) or crosses a link of regions/<id>/network-overrides.json (it would measure to the end HydroRIVERS had, and the link is not a channel)",
   mouthKind:
-    "End of the flow path from the mouth reach along NEXT_DOWN (pipeline:rivers, edited at the region's edge): region-edge = next_down_edit 'outside' (the reach flows on outside the mapped region); sink = HydroRIVERS ENDORHEIC = 1 or the endorheic network; sea otherwise",
+    "End of the flow path from the mouth reach along NEXT_DOWN (pipeline:rivers, edited at the region's edge and by network-overrides.json): region-edge = next_down_edit 'outside' (the reach flows on outside the mapped region); sink = HydroRIVERS ENDORHEIC = 1 or the endorheic network; sea otherwise",
 };
 
 async function main() {
@@ -186,22 +188,23 @@ async function main() {
 
     // Reference regions (cba): where the water of each reach ends, from the edited flow
     // network of pipeline:rivers. Absent for nqn, whose output stays as it was.
-    const kinds = reference
-      ? mouthKinds(
-          (
-            await db.all(`
-              SELECT HYRIV_ID, NEXT_DOWN, next_down_edit, ENDORHEIC, network
-              FROM ${lit(reachesFile)}`)
-          ).map((r): NetworkReach => ({
-            id: Number(r.HYRIV_ID),
-            nextDown: Number(r.NEXT_DOWN),
-            nextDownEdit:
-              r.next_down_edit == null ? null : String(r.next_down_edit),
-            endorheic: Number(r.ENDORHEIC) === 1,
-            network: String(r.network),
-          })),
-        )
+    const network = reference
+      ? (
+          await db.all(`
+            SELECT HYRIV_ID, NEXT_DOWN, next_down_edit, ENDORHEIC, network
+            FROM ${lit(reachesFile)}`)
+        ).map((r): NetworkReach => ({
+          id: Number(r.HYRIV_ID),
+          nextDown: Number(r.NEXT_DOWN),
+          nextDownEdit:
+            r.next_down_edit == null ? null : String(r.next_down_edit),
+          endorheic: Number(r.ENDORHEIC) === 1,
+          network: String(r.network),
+        }))
       : null;
+    const kinds = network ? mouthKinds(network) : null;
+    // Paths across a network-overrides link have no sourced distance to the sea.
+    const overridden = network ? overridePaths(network) : new Set<number>();
 
     const missingMouths = names
       .filter((n) => !byId.has(n.mouthReach))
@@ -439,9 +442,18 @@ async function main() {
           elevationM: mouthElevation,
           dischargeM3s: round(Number(m.DIS_AV_CMS), 1),
           uplandKm2: round(Number(m.UPLAND_SKM)),
-          // DIST_DN_KM measures to the end of the path: for a sink that is the sink, not the sea.
-          distanceToSeaKm:
-            mouthKind === "sink" ? null : round(Number(m.DIST_DN_KM)),
+          // DIST_DN_KM measures to the end of the HydroRIVERS path: for a sink that is the
+          // sink, and across an override link the end HydroRIVERS had (lib/mouth-kind.ts).
+          distanceToSeaKm: reference
+            ? (() => {
+                const d = seaDistance(
+                  mouthKind,
+                  overridden.has(mouth),
+                  Number(m.DIST_DN_KM),
+                );
+                return d === null ? null : round(d);
+              })()
+            : round(Number(m.DIST_DN_KM)),
           strahler: Number(m.ORD_STRA),
           regulationPct: round(Number(m.dor_pc_pva) / 10),
         },

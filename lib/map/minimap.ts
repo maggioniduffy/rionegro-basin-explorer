@@ -1,7 +1,7 @@
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
 import type { RegionId } from "@/regions";
 import { tilePaths } from "./config";
-import { FLOW_STYLE, THEME_COLORS, type Theme } from "./style";
+import { FLOW_STYLE, REACH_ORDER, THEME_COLORS, type Theme } from "./style";
 
 export const MINIMAP_VIEW_SOURCE = "view";
 export const MINIMAP_VIEW_FILL_LAYER_ID = "view-fill";
@@ -158,11 +158,11 @@ export function buildMinimapStyle(o: {
         filter: [
           "step",
           ["zoom"],
-          [">=", ["get", "strahler"], MINIMAP_MIN_STRAHLER],
+          [">=", REACH_ORDER, MINIMAP_MIN_STRAHLER],
           7,
-          [">=", ["get", "strahler"], 4],
+          [">=", REACH_ORDER, 4],
           8,
-          [">=", ["get", "strahler"], 3],
+          [">=", REACH_ORDER, 3],
         ],
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
@@ -170,7 +170,7 @@ export function buildMinimapStyle(o: {
           "line-width": [
             "interpolate",
             ["linear"],
-            ["get", "strahler"],
+            REACH_ORDER,
             MINIMAP_MIN_STRAHLER,
             0.6,
             7,
