@@ -77,9 +77,19 @@ const REACH_PROPS = [
 
 /**
  * Display line pieces (mapLines "pieces", cba) also carry what the panel of a piece no reach
- * matched shows (lib/map/picked.ts toPickedLine) and `rank`, the order they are drawn at.
+ * matched shows (lib/map/picked.ts toPickedLine), `rank`, the order they are drawn at, and
+ * `flow`, IGN's mapped class (pipeline:line-flow; 0 perennial, 1 intermittent), which the
+ * map draws in place of GIRES's `nonPerennial1d`.
  */
-const PIECE_PROPS = ["piece", "src", "name", "km", "review", "rank"] as const;
+const PIECE_PROPS = [
+  "piece",
+  "src",
+  "name",
+  "km",
+  "review",
+  "rank",
+  "flow",
+] as const;
 
 function run(cmd: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {

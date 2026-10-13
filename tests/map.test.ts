@@ -223,6 +223,28 @@ describe("reachFilter with the Display toggles", () => {
     );
   });
 
+  it("draws IGN's class (flow) over GIRES's on cba line pieces", () => {
+    const dammed = {
+      piece: "aprhi:3#0",
+      strahler: 4,
+      nonPerennial1d: 1,
+      flow: 0,
+    };
+    const unmatchedIgn = { piece: "aprhi:4#0", flow: 1 };
+    expect(keeps(reachFilter("perennial", false, DEFAULT_LAYERS), dammed)).toBe(
+      true,
+    );
+    expect(
+      keeps(reachFilter("nonPerennial", false, DEFAULT_LAYERS), dammed),
+    ).toBe(false);
+    expect(
+      keeps(reachFilter("nonPerennial", false, DEFAULT_LAYERS), unmatchedIgn),
+    ).toBe(true);
+    expect(keeps(unmatchedFilter(false, DEFAULT_LAYERS), unmatchedIgn)).toBe(
+      false,
+    );
+  });
+
   it("draws unmatched line pieces on their own layer, not as 'no prediction'", () => {
     const unmatched = { piece: "aprhi:1#0", network: "endorheic" };
     const matched = { piece: "aprhi:2#0", strahler: 3 };

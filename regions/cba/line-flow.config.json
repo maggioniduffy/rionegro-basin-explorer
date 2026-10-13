@@ -1,0 +1,6 @@
+{
+  "$comment": "Settings of pipeline:line-flow (owner, 2026-10-12): the flow class the map draws for APRHI line pieces comes from IGN's mapped perennial and intermittent lines, the authority over GIRES's modeled class. Each APRHI piece is sampled every partM metres (South America Albers); a point takes the class of its nearest IGN line within bufferM, the same 250 m as pipeline:lines; a piece with at least minShare of its points by an IGN line takes the class with more points (a tie goes to perennial), otherwise it keeps GIRES's class (or none). IGN pieces (outside the province) keep their own class. Display only: reach documents keep GIRES's values.",
+  "partM": 100,
+  "bufferM": 250,
+  "minShare": 0.5
+}

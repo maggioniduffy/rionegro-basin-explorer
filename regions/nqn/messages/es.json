@@ -52,6 +52,8 @@
     }
   },
   "legend": {
-    "ignDetail": "Curso del IGN que no está en HydroRIVERS"
+    "ignDetail": "Curso del IGN que no está en HydroRIVERS",
+    "nonPerennial": "No permanente (deja de fluir al menos 1 día al año)",
+    "modeledNote": "Modelado, no observado: predicciones de GIRES v1.0 (Messager et al., 2021). Las condiciones locales pueden diferir."
   }
 }

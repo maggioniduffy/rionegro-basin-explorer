@@ -267,20 +267,37 @@ export function reachFeatureSelection(
 }
 
 /**
- * A display line piece (it has `piece`) with no matched reach (no `strahler`); nqn tiles have
- * no pieces. tippecanoe omits null attributes, so a null value is a missing property.
+ * A display line piece (it has `piece`) with no matched reach (no `strahler`) and no IGN
+ * class (no `flow`); nqn tiles have no pieces. tippecanoe omits null attributes, so a null value is a missing property.
  */
 const UNMATCHED: ExpressionSpecification = [
   "all",
   ["has", "piece"],
   ["!", ["has", "strahler"]],
+  ["!", ["has", "flow"]],
+];
+
+/**
+ * The flow class a line is drawn with: IGN's mapped class on cba line pieces (`flow`,
+ * pipeline:line-flow; owner, 2026-10-12), else GIRES's modeled `nonPerennial1d`. nqn tiles
+ * have no `flow`.
+ */
+const FLOW_CODE: ExpressionSpecification = [
+  "coalesce",
+  ["get", "flow"],
+  ["get", "nonPerennial1d"],
 ];
 
 // "No GIRES prediction" is a missing property too; unmatched pieces have their own layer.
 const CLASS_FILTER: Record<FlowClass, ExpressionSpecification> = {
-  perennial: ["==", ["get", "nonPerennial1d"], 0],
-  nonPerennial: ["==", ["get", "nonPerennial1d"], 1],
-  unknown: ["all", ["!", ["has", "nonPerennial1d"]], ["!", UNMATCHED]],
+  perennial: ["==", FLOW_CODE, 0],
+  nonPerennial: ["==", FLOW_CODE, 1],
+  unknown: [
+    "all",
+    ["!", ["has", "nonPerennial1d"]],
+    ["!", ["has", "flow"]],
+    ["!", UNMATCHED],
+  ],
 };
 
 const notEndorheic: ExpressionSpecification = [

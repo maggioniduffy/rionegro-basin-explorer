@@ -250,3 +250,9 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 - [ ] Landing image: `public/landing/cba/basin.png` (1400×900 map screenshot), imported in `regions/images.ts` in place of `null`.
 - [ ] Browser on `cordoba.localhost:3000/map` (after the seed): the R3.7 checks above, Visible Land levels, the endorheic toggle (unmatched lines hide with their reaches), localities, Mar Chiquita and the reservoirs, sub-basin view with APRHI levels.
 - [ ] Review `regions/cba/content.ts` picks (featured Tercero, Dulce, Quinto; ask examples) and the `cba` landing copy in `regions/cba/messages/`.
+
+## Córdoba map review: unmatched lines, IGN flow class (2026-10-12)
+
+- [x] `pipeline:line-flow -- --region cba` twice: ok, identical. `export` (cba) twice: ok; `export` (nqn): `data/out/nqn` byte-identical. `tiles` (cba): ok, rivers.pmtiles 4.47 MB (+35 KB).
+- [ ] Vercel: bump `cba` in `NEXT_PUBLIC_TILES_VERSIONS` (rivers.pmtiles changed) when deploying.
+- [ ] Browser on `cordoba.localhost:3000/map`: Ríos Segundo, Tercero, Cuarto and Primero solid blue (perennial); unmatched lines light blue; legend note names IGN and GIRES.

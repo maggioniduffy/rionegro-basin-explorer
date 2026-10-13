@@ -52,6 +52,8 @@
     }
   },
   "legend": {
-    "ignDetail": "IGN stream not in HydroRIVERS"
+    "ignDetail": "IGN stream not in HydroRIVERS",
+    "nonPerennial": "Non-perennial (stops flowing at least 1 day a year)",
+    "modeledNote": "Modeled, not observed: GIRES v1.0 predictions (Messager et al., 2021). Local conditions may differ."
   }
 }

@@ -35,6 +35,7 @@
     "pipeline:lines-gate": "tsx pipeline/steps/lines-gate.ts",
     "pipeline:lines": "tsx pipeline/steps/lines.ts",
     "pipeline:line-names": "tsx pipeline/steps/line-names.ts",
+    "pipeline:line-flow": "tsx pipeline/steps/line-flow.ts",
     "pipeline:ign": "tsx pipeline/steps/ign.ts",
     "pipeline:ign-match": "tsx pipeline/steps/ign-match.ts",
     "pipeline:ign-streams": "tsx pipeline/steps/ign-streams.ts",

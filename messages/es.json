@@ -57,9 +57,7 @@
   "legend": {
     "title": "Régimen de flujo",
     "perennial": "Permanente",
-    "nonPerennial": "No permanente (deja de fluir al menos 1 día al año)",
     "unknown": "Sin predicción",
-    "modeledNote": "Modelado, no observado: predicciones de GIRES v1.0 (Messager et al., 2021). Las condiciones locales pueden diferir.",
     "subbasins": {
       "title": "Subcuencas",
       "hint": "Una subcuenca se elige en esta lista o con un clic sobre el terreno. Su superficie incluye todo lo anidado debajo, por eso se resalta el subárbol completo; los límites se ven siempre.",

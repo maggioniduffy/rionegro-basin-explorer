@@ -57,9 +57,7 @@
   "legend": {
     "title": "Flow regime",
     "perennial": "Perennial",
-    "nonPerennial": "Non-perennial (stops flowing at least 1 day a year)",
     "unknown": "No prediction",
-    "modeledNote": "Modeled, not observed: GIRES v1.0 predictions (Messager et al., 2021). Local conditions may differ.",
     "subbasins": {
       "title": "Sub-basins",
       "hint": "Pick a sub-basin here or click the land. Its land includes everything nested under it, so the whole subtree is tinted; borders always show.",

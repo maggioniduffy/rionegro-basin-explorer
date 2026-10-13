@@ -52,6 +52,8 @@
     }
   },
   "legend": {
-    "ignDetail": "Curso de APRHI o del IGN que no está en HydroRIVERS"
+    "ignDetail": "Curso de APRHI o del IGN que no está en HydroRIVERS",
+    "nonPerennial": "No permanente o intermitente",
+    "modeledNote": "Donde un curso del IGN acompaña la línea, la clase es la que mapea el IGN (permanente o intermitente). En el resto es una predicción de GIRES v1.0 (Messager et al., 2021): caudal natural modelado, 1971–2000, no observado; no permanente significa que deja de fluir al menos 1 día al año. Las condiciones locales pueden diferir."
   }
 }

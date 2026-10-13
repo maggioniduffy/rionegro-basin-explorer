@@ -201,6 +201,11 @@ async function main() {
     mapLines === "pieces"
       ? requireInput(workPath("lakes/line_geom.parquet"))
       : null;
+  // The flow class the map draws for line pieces, from IGN's mapped lines (pipeline:line-flow).
+  const lineFlowFile =
+    mapLines === "pieces"
+      ? requireInput(workPath("line-flow/flow.parquet"))
+      : null;
   // Names per reach, from the step the region's ign.config.json names (namesFrom); run it
   // before this step.
   const nameSource = await loadNameSource();
@@ -429,19 +434,22 @@ async function main() {
                o._id AS reach_found,
                o.river, o.stream, coalesce(o.network, pnet.network) AS network,
                o.strahler, o.uplandKm2, o.nonPerennial1d,
-               pn.name,
+               pn.name, lf.flow,
                coalesce(ST_SetCRS(g.geom, 'EPSG:4326'), ST_SetCRS(l.geom, 'EPSG:4326')) AS geom,
                coalesce(ST_IsEmpty(g.geom), false) AS not_drawn
         FROM read_parquet(${lit(linesFile)}) l
         LEFT JOIN out o ON o._id = l.reach
         LEFT JOIN piece_name pn ON pn.pieceId = l.pieceId
         LEFT JOIN piece_net pnet ON pnet.id = l.pieceId
+        LEFT JOIN read_parquet(${lit(lineFlowFile!)}) lf ON lf.pieceId = l.pieceId
         LEFT JOIN read_parquet(${lit(lineGeomFile)}) g ON g.pieceId = l.pieceId`);
       await db.conn.run(`
         COPY (SELECT reach AS id, river, stream, network, strahler, uplandKm2, nonPerennial1d,
                      pieceId AS piece, source AS src, class AS cls,
                      round(length_m / 1000.0, 3) AS km, name,
-                     CASE WHEN status = 'en-revision' THEN 1 END AS review, geom
+                     CASE WHEN status = 'en-revision' THEN 1 END AS review,
+                     CASE flow WHEN 'perennial' THEN 0 WHEN 'intermittent' THEN 1 END AS flow,
+                     geom
               FROM pieces WHERE NOT not_drawn ORDER BY pieceId)
         TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
       [pieceCounts] = await db.all(`
@@ -456,6 +464,7 @@ async function main() {
                   WHERE g.pieceId NOT IN (SELECT pieceId FROM pieces))::INT AS line_geom_unknown,
                round(sum(length_m) / 1000.0, 1) AS km,
                round(sum(length_m) FILTER (reach IS NULL) / 1000.0, 1) AS unmatched_km,
+               round(sum(length_m) FILTER (flow IS NOT NULL) / 1000.0, 1) AS ign_flow_km,
                round(sum(length_m) FILTER (source = 'aprhi') / 1000.0, 1) AS aprhi_km,
                round(sum(length_m) FILTER (source = 'ign') / 1000.0, 1) AS ign_km,
                round(sum(length_m) FILTER (reach IS NULL AND network = 'endorheic') / 1000.0, 1)
@@ -689,6 +698,7 @@ async function main() {
             underReview: pieceCounts.review,
             withName: pieceCounts.named,
             km: pieceCounts.km,
+            withIgnFlowKm: pieceCounts.ign_flow_km,
             unmatchedKm: pieceCounts.unmatched_km,
             aprhiKm: pieceCounts.aprhi_km,
             ignKm: pieceCounts.ign_km,

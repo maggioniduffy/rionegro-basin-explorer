@@ -216,8 +216,10 @@ all inside the basin. Places mapped only as areas are not included. Run it after
 The choice also sets the `name` provenance text of the river and stream documents (for `cba`: names from APRHI,
 FUENTE: Portal de Información Hídrica de Córdoba, inside the province and from IGN, FUENTE: Instituto
 Geográfico Nacional de la República Argentina, outside, via `pipeline:line-names` and `regions/cba/names.json`);
-the `nqn` texts are unchanged. Order for `cba`: `lines` → `line-names` → `named` → `ign-streams` → `export`
-(`export` also needs `lakes` (R3.6) and `regions/cba/subbasins.config.json` (R3.5)). Stream documents have no alias
+the `nqn` texts are unchanged. Order for `cba`: `lines` → `line-names` → `line-flow` → `named` → `ign-streams` → `export`
+(`export` also needs `lakes` (R3.6) and `regions/cba/subbasins.config.json` (R3.5)). `line-flow` gives each APRHI piece the
+class (perennial / intermittent) of the IGN lines it runs along (`regions/cba/line-flow.config.json`); `export` writes it as the
+piece's `flow`, which the map draws in place of GIRES's modeled class. Stream documents have no alias
 field, so the APRHI raw values and IGN aliases in `line-names/aliases.json` do not reach stream search yet (app
 contract, R3.7); river aliases come from `names.json`. `ign.config.json` may set `expectedSeaOutlets` (default 1):
 how many approved rivers flow into no other approved river (`named` check `oneRiverReachesTheSea`).

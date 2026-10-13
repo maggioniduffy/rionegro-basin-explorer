@@ -52,6 +52,8 @@
     }
   },
   "legend": {
-    "ignDetail": "APRHI or IGN stream not in HydroRIVERS"
+    "ignDetail": "APRHI or IGN stream not in HydroRIVERS",
+    "nonPerennial": "Non-perennial or intermittent",
+    "modeledNote": "Where an IGN line runs along the course, the class is IGN's mapped one (perennial or intermittent). Elsewhere it is a GIRES v1.0 prediction (Messager et al., 2021): modeled natural flow, 1971–2000, not observed; non-perennial means it stops at least 1 day a year. Local conditions may differ."
   }
 }
