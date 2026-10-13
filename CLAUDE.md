@@ -44,7 +44,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 7. **Pipeline steps must be idempotent** and write a `report.json` (counts, total km, orphan segments, area checks). Read the report to verify results instead of judging by eye.
 8. **Cost-conscious:** prefer free tiers (Atlas M0, Vercel hobby, PMTiles over tile servers). Flag anything that could add recurring cost.
 9. **Licenses and attribution:** keep `/pipeline/SOURCES.md` updated (source, URL, license, required citation, download date). Check the license before adding any new data source or imagery provider.
-10. **Workflow:** work one phase at a time from `context/PLAN.md`, in plan mode first. Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
+10. **Workflow:** work one phase at a time from `context/PLAN.md`, in plan mode first, following `context/orchestration.md` (Opus orchestrates and reviews, Haiku scouts read, Sonnet builders code; one branch and PR per phase, one commit per work package). Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
 11. Dismiss visual and chromium tests unless called for
 12. Execute plan's steps one at a time.
 
@@ -65,7 +65,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 - One writer per path: only one agent writes to a given `data/work/<region>/<step>/`. Inspection agents are read-only.
 - Sub-agents follow the same Rules above (no invented data, flag uncertainty, never commit data or secrets).
 - Define reusable sub-agents in `.claude/agents/<name>.md` (Markdown with YAML frontmatter: `description`, `tools`, `model`). Grant only the tools needed. Use a cheaper model for inspection and lookups; keep the main model for design and decisions (Rule 8). Verify current model aliases and frontmatter fields in the Claude Code docs before writing them.
-- Initial candidates: `data-inspector` (schema + summary stats, read-only), `pipeline-runner` (run a step, read the report, summarize), `license-checker` (license/citation lookup for `SOURCES.md`).
+- Agents: `scout` (Haiku, read and summarize docs/code/logs), `builder` (Sonnet, implements one work package), `reviewer` (Opus, independent verdict on a diff or phase gate), `data-inspector` (schema + summary stats, read-only), `pipeline-runner` (run a step, read the report, summarize), `license-checker` (license/citation lookup for `SOURCES.md`). Roles, brief template and reviewer triggers are in `context/orchestration.md`.
 
 ### Skills (repeatable procedures)
 
