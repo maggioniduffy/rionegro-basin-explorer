@@ -333,7 +333,12 @@
       },
       "ign": {
         "usedFor": "Nombres de ríos, arroyos, lagos y represas; cursos permanentes que faltan en HydroRIVERS; lagos adicionales; ubicación de represas.",
-        "terms": "El IGN no participa en esta aplicación, ni la patrocina ni la avala. Los datos derivados de las capas del IGN se comparten de forma libre y gratuita."
+        "terms": "El IGN no participa en esta aplicación, ni la patrocina ni la avala. Los datos derivados de las capas del IGN se comparten de forma libre y gratuita.",
+        "usedForCba": "Fuera de la provincia de Córdoba: cursos de agua y sus nombres, lagos y embalses; posición de las represas; nombres alternativos para la búsqueda."
+      },
+      "aprhi": {
+        "usedFor": "Dentro de la provincia de Córdoba: cursos de agua y sus nombres, lagos, embalses y los contornos de cuencas, subcuencas y unidades de gestión hídrica.",
+        "terms": "La APRHI no participa, patrocina ni avala esta aplicación. Los datos derivados de las capas de la APRHI se comparten de forma libre y gratuita."
       },
       "osm": {
         "usedFor": "Ciudades, pueblos y localidades; evidencia para los nombres de ríos.",
@@ -370,6 +375,18 @@
       "btn": "Abrir mapa",
       "quick": "Ir directo a",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
-    }
+    },
+    "hub": "Todas las regiones"
+  },
+  "hub": {
+    "metadata": {
+      "title": "Explorador de Cuencas",
+      "description": "Exploradores satelitales de cuencas hidrográficas de Argentina: ríos, arroyos y subcuencas sobre imágenes satelitales."
+    },
+    "eyebrow": "Explorador de Cuencas · Argentina",
+    "h1": "Elegí una cuenca para explorar.",
+    "sub": "Cada explorador muestra los ríos, arroyos y subcuencas de una región sobre imágenes satelitales, con valores trazables hasta sus fuentes.",
+    "regions": "Regiones",
+    "open": "Abrir el explorador"
   }
 }

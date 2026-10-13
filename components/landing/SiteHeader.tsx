@@ -1,6 +1,8 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { LOCALES } from "@/i18n/config";
+import { hubOrigin, protocolOf } from "@/regions/hosts";
 import { Icon } from "../Icon";
 import { ThemeToggle } from "../ThemeToggle";
 import { Wordmark } from "./Wordmark";
@@ -45,9 +47,17 @@ export async function LocaleLinks({ path }: { path: string }) {
   );
 }
 
-/** Landing and attributions header: home link, Attributions, theme, language. */
+/** The hub's origin for this request's host, or null when none is configured (R4). */
+export async function currentHubOrigin(): Promise<string | null> {
+  const h = await headers();
+  const host = h.get("host");
+  return hubOrigin(host, protocolOf(host, h.get("x-forwarded-proto")));
+}
+
+/** Landing and attributions header: home link, all regions (hub), Attributions, theme, language. */
 export async function SiteHeader({ path }: { path: string }) {
   const t = await getTranslations("landing");
+  const hub = await currentHubOrigin();
   return (
     <header className="relative z-10 flex flex-wrap items-center justify-between gap-3 px-[clamp(16px,4vw,40px)] py-4">
       <Link
@@ -61,6 +71,14 @@ export async function SiteHeader({ path }: { path: string }) {
         aria-label={t("nav")}
         className="flex flex-wrap items-center gap-x-[clamp(12px,3vw,28px)] gap-y-2 text-sm"
       >
+        {hub && (
+          <a
+            href={hub}
+            className="text-secondary hover:text-text inline-flex min-h-11 items-center"
+          >
+            {t("hub")}
+          </a>
+        )}
         <Link
           href="/attributions"
           className="text-secondary hover:text-text inline-flex min-h-11 items-center"

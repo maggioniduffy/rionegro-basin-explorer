@@ -333,7 +333,12 @@
       },
       "ign": {
         "usedFor": "Names of rivers, streams, lakes and dams; perennial streams that HydroRIVERS lacks; extra lakes; dam positions.",
-        "terms": "IGN does not take part in, sponsor or endorse this application. Data derived from IGN layers is shared free of charge."
+        "terms": "IGN does not take part in, sponsor or endorse this application. Data derived from IGN layers is shared free of charge.",
+        "usedForCba": "Outside the province of Córdoba: watercourses and their names, lakes and reservoirs; dam positions; alternative names for search."
+      },
+      "aprhi": {
+        "usedFor": "Inside the province of Córdoba: watercourses and their names, lakes, reservoirs, and the outlines of basins, sub-basins and water management units.",
+        "terms": "APRHI does not take part in, sponsor or endorse this application. Data derived from APRHI layers is shared free of charge."
       },
       "osm": {
         "usedFor": "Cities, towns and villages; evidence for river names.",
@@ -370,6 +375,18 @@
       "btn": "Open map",
       "quick": "Jump to",
       "credit": "EOxCloudless · HydroSHEDS · IGN"
-    }
+    },
+    "hub": "All regions"
+  },
+  "hub": {
+    "metadata": {
+      "title": "Basin Explorer",
+      "description": "Satellite explorers of river basins in Argentina: rivers, streams and sub-basins on satellite imagery."
+    },
+    "eyebrow": "Basin Explorer · Argentina",
+    "h1": "Choose a basin to explore.",
+    "sub": "Each explorer maps one region's rivers, streams and sub-basins on satellite imagery, with values traced to their sources.",
+    "regions": "Regions",
+    "open": "Open the explorer"
   }
 }

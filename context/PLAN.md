@@ -119,7 +119,7 @@ Original items:
 
 ### Phase R4 — Hub
 
-- [ ] Hub landing listing the regions; each region's landing links back
+- [x] Hub landing listing the regions; each region's landing links back — `app/hub` on `basinexplorer.vercel.app` (dev `hub.localhost:3000`), regions at `rionegro.` / `cordoba.basinexplorer.vercel.app`, back link where a hub exists; nested `*.vercel.app` names not verified yet (RUN_LOCAL.md) (2026-10-12)
 
 ## Open decisions
 

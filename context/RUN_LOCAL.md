@@ -233,3 +233,9 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 - [x] `npm run pipeline:named -- --region cba` twice: `ok: true`, `rivers.ndjson` identical; Río Cuarto `mouth.distanceToSeaKm` null (path crosses the R3.2 override).
 - [x] `nqn` unchanged: `pipeline:export` and `pipeline:tiles -- --region nqn`; `data/out/nqn` and `tiles/reaches.geojson` byte-identical, PMTiles tile data identical (only embedded metadata paths differ from the committed builds, which were kept).
 - [ ] Browser (after R3.8 serves `cba`): river panel of the Dulce ("an endorheic sink") and Tercero (joins the Carcarañá, "leaves the mapped region"); a reach in the Cuarto system shows "Not available" for distance to the sea; a reach panel links to its basin; an unmatched APRHI line opens the line panel; an "en revisión" reach shows the warning; Mar Chiquita shows the APRHI area and credit; La Picasa at three levels shows its level.
+
+## R4 — hub (2026-10-12)
+
+- [x] Dev: `hub.localhost:3000` shows the hub (one card, Río Negro); `rionegro.localhost:3000` and `nqn.localhost:3000` show "All regions"; `localhost:3000` unchanged with no hub link; `cordoba.localhost:3000` 404 until R3.8 serves `cba`.
+- [ ] Vercel: add `basinexplorer.vercel.app`, `rionegro.basinexplorer.vercel.app` and `cordoba.basinexplorer.vercel.app` to the project's Domains. If the nested names are refused (only the team slug may be a middle label, per community reports), pick single-label aliases, add them to `HOST_REGIONS` in `regions/hosts.ts` and set `REGION_URLS` / `HUB_URL` in the Vercel env.
+- [ ] Browser: hub cards, theme toggle and EN/ES on the hub; the OG image of each region on the production domain (`/<region>/opengraph-image/og`).

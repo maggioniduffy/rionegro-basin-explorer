@@ -42,3 +42,12 @@ export function deepMerge(base: Tree, over: Tree): Tree {
 export function messagesFor(region: RegionId, locale: Locale): Messages {
   return deepMerge(BASE[locale], REGION_MESSAGES[region][locale]) as Messages;
 }
+
+/**
+ * The hub's messages (R4): the shared strings only. It belongs to no region, so the keys a
+ * region adds are absent rather than borrowed from one; hub components read `hub.*` and other
+ * shared keys only.
+ */
+export function sharedMessagesFor(locale: Locale): Messages {
+  return BASE[locale] as Messages;
+}

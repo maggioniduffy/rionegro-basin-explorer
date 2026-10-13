@@ -2,7 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isLocale, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "./i18n/config";
 import { legacyMapPath } from "./lib/url-state";
 import { isRegionId } from "./regions";
-import { REGION_HEADER, regionFromHost } from "./regions/hosts";
+import {
+  HUB_HEADER,
+  isHubHost,
+  REGION_HEADER,
+  regionFromHost,
+} from "./regions/hosts";
 
 /**
  * URLs carry no locale (it lives in a cookie; see i18n/config.ts). /en and /es, the
@@ -14,6 +19,9 @@ import { REGION_HEADER, regionFromHost } from "./regions/hosts";
  * routes live under app/[region], and the region never shows in the URL. A path that
  * already starts with a region id is served as is (metadata routes such as
  * /nqn/opengraph-image are linked that way).
+ *
+ * A hub host (regions/hosts.ts isHubHost) serves the hub: `/` is rewritten to app/hub with
+ * HUB_HEADER and no region; other paths are 404 except region-prefixed ones (above).
  */
 export function proxy(request: NextRequest) {
   const { pathname, search, searchParams } = request.nextUrl;
@@ -23,9 +31,21 @@ export function proxy(request: NextRequest) {
   const target = legacyMapPath(path, searchParams) ?? path;
   if (!locale && target === pathname) {
     const headers = new Headers(request.headers);
+    // Only the proxy decides whether a request is the hub's.
+    headers.delete(HUB_HEADER);
+    // Region-prefixed paths pass on every host, the hub's included: metadata URLs (OG images)
+    // are made absolute with the production domain, which may be the hub's.
     if (isRegionId(prefix)) {
       headers.set(REGION_HEADER, prefix);
       return NextResponse.next({ request: { headers } });
+    }
+    if (isHubHost(request.headers.get("host"))) {
+      if (pathname !== "/") return new NextResponse(null, { status: 404 });
+      const url = request.nextUrl.clone();
+      url.pathname = "/hub";
+      headers.delete(REGION_HEADER);
+      headers.set(HUB_HEADER, "1");
+      return NextResponse.rewrite(url, { request: { headers } });
     }
     const region = regionFromHost(request.headers.get("host"));
     // A region that exists in the pipeline but has no app content yet (e.g. cba).

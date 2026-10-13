@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
 import { Figtree, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import {
@@ -35,22 +34,6 @@ const figtree = Figtree({
 // default), or a light choice saved in localStorage before the theme moved to a cookie.
 // Either way it writes the cookie, so later requests render the right theme on the server.
 const themeScript = `try{var d=document.documentElement,t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";if(t==="light")d.dataset.theme="light";document.cookie="${THEME_COOKIE}="+t+"; path=/; max-age=${THEME_COOKIE_MAX_AGE}; samesite=lax"}catch(e){}`;
-
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("metadata");
-  // The image comes from app/opengraph-image.tsx. Its absolute URL uses Vercel's
-  // production domain (VERCEL_PROJECT_PRODUCTION_URL), so no metadataBase is set here.
-  return {
-    title: t("title"),
-    description: t("description"),
-    openGraph: {
-      title: t("title"),
-      description: t("description"),
-      type: "website",
-    },
-    twitter: { card: "summary_large_image" },
-  };
-}
 
 // The locale comes from a cookie (i18n/request.ts), so this layout renders per request.
 export default async function RootLayout({ children }: LayoutProps<"/">) {
