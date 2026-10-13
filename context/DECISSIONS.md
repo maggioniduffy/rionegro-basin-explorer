@@ -448,6 +448,13 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 - **OSM tile policy (checked 2026-10-12):** normal viewing with no key is allowed; bulk and offline use are not; OSM may block without notice if usage degrades the service, and gives no SLA. This is a known risk for a public app: if it bites, switch Mapa to an OSM-derived provider. Recorded in pipeline/SOURCES.md and the attributions page.
 - Both bases stay under the same mask, so Visible Land and sub-basin tint work the same. Not yet checked on the map: river colours on the light OSM background (see the plan's open items).
 
+## Mapa base: relief only; darker river colours (2026-10-13)
+
+- **Mapa is relief only (owner):** no towns, roads, rivers or green areas. OpenStreetMap's standard tiles are replaced by a MapLibre hillshade of the AWS Terrain Tiles (terrarium, no key, `BASEMAP_DEM_URL`) over a plain light land colour (`BASEMAP_LAND_COLOR`). Licence checked (pipeline/SOURCES.md): public-domain SRTM/GMTED2010 plus NOAA ETOPO1, credit required. This also removes the OSM tile-policy risk recorded on 2026-10-12.
+- Esri World Shaded Relief was the closer look but is rejected: Esri's terms need an ArcGIS subscription outside Esri software, and it retires in March 2028.
+- **River colours follow the base (owner):** Satelital keeps the light colours (perennial `#38bdf8`, non-perennial `#f0c27b`, detail lines `#67e8f9`). Mapa uses darker ones: perennial `#1d4ed8`, non-perennial `#5b7f1a` (deep olive green, the landing's sage family, still dashed), detail lines `#0284c7`. Unknown stays `#9aa3ab` on both. The selected river's halo is lime green `#9cc23c` on Mapa (owner tried red and orange and preferred greens) and stays `#fde68a` on Satelital. `RIVER_COLORS` in `lib/map/style.ts`; the map, legend and layer toggles switch with the base; the minimap keeps the satellite blue.
+- **Province line on Mapa (owner):** the Córdoba province boundary is black (opacity 0.85) on Mapa, where the light outline colour vanished; Satelital keeps the outline colour. Over the dark mask outside the basin the black line barely shows.
+
 ## Design v6 — landing and restyle (2026-10-13)
 
 - **Source:** claude.ai/design "Landing v6". Its scroll animations are not implemented (owner). The scroll reveals and the parallax are left out; hover and focus styles stay.

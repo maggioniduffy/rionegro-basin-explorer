@@ -46,7 +46,7 @@
       "label": "Base map",
       "satellite": "Satellite",
       "map": "Map",
-      "note": "Map tiles © OpenStreetMap contributors."
+      "note": "Shaded relief from Terrain Tiles (USGS SRTM, GMTED2010; NOAA ETOPO1)."
     }
   },
   "sheet": {
@@ -344,8 +344,11 @@
         "terms": "APRHI does not take part in, sponsor or endorse this application. Data derived from APRHI layers is shared free of charge."
       },
       "osm": {
-        "usedFor": "Map base (\"Mapa\"): standard tiles from tile.openstreetmap.org, under the basin mask. Normal viewing only (tile usage policy: operations.osmfoundation.org/policies/tiles).",
+        "usedFor": "Cities, towns and villages; evidence for river names.",
         "terms": "OpenStreetMap data is available under the Open Database License."
+      },
+      "terrain": {
+        "usedFor": "Map base (\"Mapa\"): shaded relief drawn from these elevation tiles (SRTM, GMTED2010, ETOPO1), under the basin mask. Relief only: modeled elevation, not a measured value."
       },
       "eox": {
         "usedFor": "Satellite imagery.",

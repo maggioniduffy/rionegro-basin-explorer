@@ -30,7 +30,9 @@ import {
   IGN_LAKE_FILL_LAYER_ID,
   IGN_LAKE_LINE_LAYER_ID,
   BASEMAP_LAYER_ID,
-  IMAGERY_LAYER_ID,
+  BASE_LAYERS,
+  BASE_REVEAL,
+  riverColorPaint,
   LAKE_HIT_LAYER_ID,
   LAKE_LAYER_ID,
   lakeFilter,
@@ -252,17 +254,16 @@ type State = ReturnType<typeof useMapStore.getState>;
 /** Push store state into an already-loaded map. */
 function applyState(map: MapLibreMap, s: State, prev?: State) {
   if (!prev || s.baseLayer !== prev.baseLayer) {
-    // Satellite and the OpenStreetMap base are one layer each; only the chosen one shows.
-    for (const [id, base] of [
-      [IMAGERY_LAYER_ID, "satellite"],
-      [BASEMAP_LAYER_ID, "map"],
-    ] as const)
+    // Only the chosen base's layers show.
+    for (const [id, base] of BASE_LAYERS)
       if (map.getLayer(id))
         map.setLayoutProperty(
           id,
           "visibility",
           s.baseLayer === base ? "visible" : "none",
         );
+    for (const [id, prop, value] of riverColorPaint(s.baseLayer))
+      if (map.getLayer(id)) map.setPaintProperty(id, prop, value);
   }
   const landChanged = !prev || s.visibleLand !== prev.visibleLand;
   const endoChanged = !prev || s.hideEndorheic !== prev.hideEndorheic;
@@ -469,8 +470,8 @@ export default function MapView() {
     const revealImagery = () => {
       if (!map.getLayer(BASEMAP_LAYER_ID) || !map.isSourceLoaded("mask"))
         return;
-      for (const id of [IMAGERY_LAYER_ID, BASEMAP_LAYER_ID])
-        if (map.getLayer(id)) map.setPaintProperty(id, "raster-opacity", 1);
+      for (const [id, prop, value] of BASE_REVEAL)
+        if (map.getLayer(id)) map.setPaintProperty(id, prop, value);
       map.off("sourcedata", revealImagery);
     };
     map.on("sourcedata", revealImagery);
