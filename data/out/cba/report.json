@@ -45,7 +45,7 @@
       "mouthElevationM": 12,
       "sourceElevationM": 95,
       "dischargeM3s": 83,
-      "nonPerennialPct": 28.9,
+      "nonPerennialPct": 0.3,
       "regulationPct": 40.1,
       "population": 557129
     },
@@ -57,7 +57,7 @@
       "mouthElevationM": 94,
       "sourceElevationM": 531,
       "dischargeM3s": 12.2,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 18.7,
       "regulationPct": 272.2,
       "population": 120720
     },
@@ -69,7 +69,7 @@
       "mouthElevationM": 143,
       "sourceElevationM": 655,
       "dischargeM3s": 3.3,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 0,
       "regulationPct": 0,
       "population": 27593
     },
@@ -81,7 +81,7 @@
       "mouthElevationM": 94,
       "sourceElevationM": 116,
       "dischargeM3s": 10.2,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 8.9,
       "regulationPct": 0,
       "population": 73615
     },
@@ -93,7 +93,7 @@
       "mouthElevationM": 124,
       "sourceElevationM": 926,
       "dischargeM3s": 5.7,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 61.5,
       "regulationPct": 58.6,
       "population": 55630
     },
@@ -105,7 +105,7 @@
       "mouthElevationM": 69,
       "sourceElevationM": 274,
       "dischargeM3s": 145.1,
-      "nonPerennialPct": 79.9,
+      "nonPerennialPct": 24.6,
       "regulationPct": 47.2,
       "population": 1951713
     },
@@ -117,7 +117,7 @@
       "mouthElevationM": 274,
       "sourceElevationM": 607,
       "dischargeM3s": 97.7,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 11.9,
       "regulationPct": 8.9,
       "population": 1126783
     },
@@ -129,7 +129,7 @@
       "mouthElevationM": 108,
       "sourceElevationM": 646,
       "dischargeM3s": 15.7,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 17,
       "regulationPct": 40.5,
       "population": 1245541
     },
@@ -141,7 +141,7 @@
       "mouthElevationM": 69,
       "sourceElevationM": 437,
       "dischargeM3s": 11.6,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 41.6,
       "regulationPct": 83.6,
       "population": 105659
     },
@@ -153,7 +153,7 @@
       "mouthElevationM": 69,
       "sourceElevationM": 411,
       "dischargeM3s": 11.5,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 78.5,
       "regulationPct": 0,
       "population": 61216
     },
@@ -165,7 +165,7 @@
       "mouthElevationM": 448,
       "sourceElevationM": 839,
       "dischargeM3s": 6.9,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 5.8,
       "regulationPct": 37.1,
       "population": 81152
     },
@@ -177,7 +177,7 @@
       "mouthElevationM": 292,
       "sourceElevationM": 531,
       "dischargeM3s": 7.9,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 0,
       "regulationPct": 51.7,
       "population": 70238
     },
@@ -189,7 +189,7 @@
       "mouthElevationM": 371,
       "sourceElevationM": 717,
       "dischargeM3s": 7.6,
-      "nonPerennialPct": 100,
+      "nonPerennialPct": 3.1,
       "regulationPct": 0,
       "population": 14256
     }

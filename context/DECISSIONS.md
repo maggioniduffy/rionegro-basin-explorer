@@ -434,3 +434,8 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 ## Córdoba: province boundary on the map (2026-10-12)
 
 - **A soft line along Córdoba's boundary (owner).** Source: IGN 'Provincia de Córdoba' (`ign/provincia/provincia.zip`, already in SOURCES.md for the R2 scope), the official boundary, rather than the union of APRHI's basins. `map.config.json` `provinceOutline` (cba only): `pipeline:export` writes the polygon's boundary to `tiles/province.geojson`, `pipeline:tiles` adds it as the `province` layer of rivers.pmtiles (+21 KB). Style: the basin-outline colour, 0.8–1.4 px, dashed 3–2, opacity 0.6, above the mask and under the river lines. `nqn` has no layer; its outputs are unchanged.
+
+## Córdoba: nonPerennialPct follows the drawn class (2026-10-12)
+
+- `pipeline:named` (cba) computes a river's `nonPerennialPct` per reach: a reach with an IGN class (`pipeline:line-flow`, majority of its display pieces) counts by it; a reach with no IGN class keeps GIRES's `predcat1`. Río Segundo: 100 % (GIRES) → 41.6 %. Its own IGN lines are perennial; the 41.6 % is path reaches with no IGN line along them, where GIRES says non-perennial. Open for the owner: measure the share on the river's own display pieces instead (100 % perennial for the Segundo), or keep the reach rule.
+- Provenance text says which source applies. `nqn` unchanged (its named output has no line-flow file).

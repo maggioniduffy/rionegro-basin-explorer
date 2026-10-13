@@ -277,3 +277,8 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 
 - [x] `export` (cba, nqn: `data/out/nqn` identical), `tiles` (cba): ok; `province` layer decoded from rivers.pmtiles.
 - [ ] Browser: `localhost:3000/cordoba/map` shows a soft dashed line along the province edge, under the rivers, at every zoom; Vercel tiles version bump for `cba`.
+
+## Córdoba: nonPerennialPct (2026-10-12)
+
+- [x] `named`, `export` (twice) for cba: ok; `export` nqn: `data/out/nqn` identical. Río Segundo nonPerennialPct 41.6 (was 100).
+- [ ] `npm run seed -- --region cba` (rivers.ndjson changed) — not run yet; waiting for the owner's choice of method (see DECISSIONS).
