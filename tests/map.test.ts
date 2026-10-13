@@ -24,6 +24,7 @@ import {
   reachFilter,
   unmatchedFilter,
   reachLayerId,
+  PROVINCE_LAYER_ID,
   reachFeatureSelection,
   reachOrder,
   selectionFilter,
@@ -155,6 +156,39 @@ describe("buildStyle with the IGN layers", () => {
       DAM_WALL_LAYER_ID,
     ])
       expect(style.layers[index(id)]).toMatchObject({ source: "ign" });
+  });
+});
+
+describe("buildStyle with the province outline (cba)", () => {
+  const options = {
+    origin: "http://localhost",
+    dataAttribution: "",
+    theme: "dark",
+    hideEndorheic: false,
+    visibleLand: 3,
+    selection: null,
+    viewMode: "basin",
+    isolatedIds: null,
+    layers: DEFAULT_LAYERS,
+  } as const;
+  const cba = buildStyle({ ...options, region: "cba" });
+  const nqn = buildStyle({ ...options, region: "nqn" });
+  const index = (style: typeof cba, id: string) =>
+    style.layers.findIndex((l) => l.id === id);
+
+  it("draws Córdoba's boundary above the mask and under the rivers, valid style", () => {
+    expect(validateStyleMin(cba)).toEqual([]);
+    const i = index(cba, PROVINCE_LAYER_ID);
+    expect(i).toBeGreaterThan(index(cba, maskLayerId(0)));
+    expect(i).toBeLessThan(index(cba, reachLayerId("unknown")));
+    expect(cba.layers[i]).toMatchObject({
+      source: "rivers",
+      "source-layer": "province",
+    });
+  });
+
+  it("has no province layer for a region without one (nqn)", () => {
+    expect(index(nqn, PROVINCE_LAYER_ID)).toBe(-1);
   });
 });
 

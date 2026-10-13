@@ -272,3 +272,8 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 - [ ] `npm run seed -- --region cba` (the river document and 15 reaches change; until then the panel shows 104.7 km).
 - [ ] Vercel: bump `cba` in `NEXT_PUBLIC_TILES_VERSIONS` (rivers.pmtiles changed again).
 - [ ] Browser: `localhost:3000/cordoba/map?r=segundo` highlights the river down the Plujunta to the lagoon.
+
+## Córdoba: province boundary (2026-10-12)
+
+- [x] `export` (cba, nqn: `data/out/nqn` identical), `tiles` (cba): ok; `province` layer decoded from rivers.pmtiles.
+- [ ] Browser: `localhost:3000/cordoba/map` shows a soft dashed line along the province edge, under the rivers, at every zoom; Vercel tiles version bump for `cba`.

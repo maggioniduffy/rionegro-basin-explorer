@@ -8,6 +8,8 @@
  *                                  on (tippecanoe input), clipped out of lakes by
  *                                  pipeline:lakes
  *   data/work/tiles/basin.geojson  basin outline (tippecanoe input, Phase 2)
+ *   data/work/tiles/province.geojson  the province boundary, a line (map.config.json
+ *                                  provinceOutline; cba only)
  *   data/out/report.json           combined report (committed): counts, km, orphans,
  *                                  area check, named rivers
  *
@@ -38,6 +40,7 @@
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
+import { mapConfig } from "../lib/map-config";
 import { loadMapLines } from "../lib/map-lines";
 import { assignNetwork, createHybasNetwork } from "../lib/water-network";
 import {
@@ -47,7 +50,14 @@ import {
   seaDistance,
 } from "../lib/mouth-kind";
 import { loadNameSource, nameFile } from "../lib/name-source";
-import { regionFile, OUT_DIR, REGION_ID, rel, workPath } from "../lib/paths";
+import {
+  rawPath,
+  regionFile,
+  OUT_DIR,
+  REGION_ID,
+  rel,
+  workPath,
+} from "../lib/paths";
 import {
   type AliasesFile,
   pieceDisplayName,
@@ -607,6 +617,24 @@ async function main() {
       streamsNdjson,
       docs.map((d) => JSON.stringify(d)).join("\n") + "\n",
     );
+    // The province's boundary, a soft line on the map (owner, 2026-10-12; cba).
+    const province = mapConfig.provinceOutline;
+    if (province) {
+      if (!/^\w+$/.test(province.nameField))
+        throw new Error(
+          `unsafe provinceOutline.nameField: ${province.nameField}`,
+        );
+      const from = `FROM ST_Read(${lit(`/vsizip/${requireInput(rawPath(province.path))}`)})
+                    WHERE ${province.nameField} = ${lit(province.name)}`;
+      const [hit] = await db.all(`SELECT count(*)::INT AS n ${from}`);
+      if (Number(hit?.n) !== 1)
+        throw new Error(
+          `provinceOutline: ${hit?.n ?? 0} polygons named "${province.name}" in ${province.path}, expected 1`,
+        );
+      await db.conn.run(`
+        COPY (SELECT ${province.nameField} AS name, ST_Boundary(ST_Force2D(geom)) AS geom ${from})
+        TO ${lit(`${tilesDir}/province.geojson`)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
+    }
   } finally {
     db.close();
   }

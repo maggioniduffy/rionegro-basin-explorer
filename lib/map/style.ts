@@ -7,6 +7,7 @@ import type {
 import {
   IMAGERY_MAXZOOM,
   MASK_LEVEL_COUNT,
+  hasProvinceOutline,
   mapConfigFor,
   tilePaths,
 } from "./config";
@@ -203,6 +204,8 @@ export const REACH_LAYER_IDS = [
   ...FLOW_CLASSES.map(reachLayerId),
 ];
 export const OUTLINE_LAYER_ID = "basin-outline";
+/** The province boundary, a soft dashed line (cba; map.config.json provinceOutline). */
+export const PROVINCE_LAYER_ID = "province-outline";
 export const LAKE_LAYER_ID = "lake-outline";
 /** Invisible fill over every lake, so a click inside a lake finds it. */
 export const LAKE_HIT_LAYER_ID = "lake-hit";
@@ -519,6 +522,21 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       "line-opacity": basinOutlineOpacity(o.isolatedIds),
     },
   });
+  // Soft: a thin dashed line under the river lines, readable on the mask and the imagery.
+  if (hasProvinceOutline(o.region))
+    layers.push({
+      id: PROVINCE_LAYER_ID,
+      type: "line",
+      source: "rivers",
+      "source-layer": "province",
+      layout: { "line-join": "round" },
+      paint: {
+        "line-color": outline,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.8, 10, 1.4],
+        "line-opacity": 0.6,
+        "line-dasharray": [3, 2],
+      },
+    });
   // Above the mask: sub-basin borders show at every Visible Land level.
   layers.push({
     id: SUBBASIN_LINE_LAYER_ID,

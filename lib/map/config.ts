@@ -10,6 +10,10 @@ const MAP_CONFIGS: Record<RegionId, typeof nqnMap> = {
 
 export const mapConfigFor = (region: RegionId) => MAP_CONFIGS[region];
 
+/** Whether the region's rivers tiles carry a `province` layer (map.config.json provinceOutline). */
+export const hasProvinceOutline = (region: RegionId) =>
+  "provinceOutline" in MAP_CONFIGS[region];
+
 /** Ids of every region with a map config (for tests). */
 export const MAP_CONFIG_REGIONS = Object.keys(MAP_CONFIGS) as RegionId[];
 

@@ -240,6 +240,10 @@ async function main() {
   const endoIn = requireInput(workPath("tiles/mask_endorheic.geojson"));
   // HydroLAKES polygons with IGN names (pipeline:ign-layers).
   const lakesIn = requireInput(workPath("tiles/ign_lakes.geojson"));
+  // The province boundary (map.config.json provinceOutline, pipeline:export; cba only).
+  const provinceIn = mapConfig.provinceOutline
+    ? requireInput(workPath("tiles/province.geojson"))
+    : null;
   const subbasinsIn = requireInput(workPath("tiles/subbasins.geojson"));
   const outlinesIn = requireInput(workPath("tiles/subbasin_outlines.geojson"));
   const reachesZ = workPath("tiles/reaches.minzoom.geojson");
@@ -315,6 +319,7 @@ async function main() {
     `--named-layer=reaches:${reachesZ}`,
     `--named-layer=basin:${basinIn}`,
     `--named-layer=lakes:${lakesIn}`,
+    ...(provinceIn ? [`--named-layer=province:${provinceIn}`] : []),
   ]);
   // Mask: low zooms at lower detail, high zooms at full detail, joined into one file.
   // --detect-shared-borders keeps each level's edge with its endorheic overlay in step.

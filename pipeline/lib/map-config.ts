@@ -29,6 +29,15 @@ const schema = z.object({
     .record(z.string(), z.number().int().positive())
     .refine((r) => "*" in r, { message: 'pieceOrderByClass needs a "*" entry' })
     .optional(),
+  /**
+   * Optional (cba): a province's boundary drawn as a soft line, from the polygon of `path`
+   * (under data/raw, EPSG:4326) whose `nameField` equals `name`. pipeline:export writes it to
+   * data/work/<id>/tiles/province.geojson, pipeline:tiles to the `province` layer of
+   * rivers.pmtiles. Absent = no layer.
+   */
+  provinceOutline: z
+    .object({ path: z.string(), nameField: z.string(), name: z.string() })
+    .optional(),
   ign: z.object({
     detailMinzoomByKm: z.array(step),
     extraLakeMinzoomByKm2: z.array(step),
