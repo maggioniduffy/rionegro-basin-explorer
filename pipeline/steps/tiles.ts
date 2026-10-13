@@ -181,16 +181,43 @@ function spanUnitsZ0(geometry: unknown): number {
   return best;
 }
 
-/** As spanUnitsZ0, for any geometry: the larger side of its extent, in z0 tile units. */
-function spanUnitsZ0Any(geometry: unknown): number {
-  const pts: number[][] = [];
-  const walk = (c: unknown): void => {
-    if (Array.isArray(c) && typeof c[0] === "number") pts.push(c as number[]);
-    else if (Array.isArray(c)) c.forEach(walk);
+/** True for a LineString (or every part of a MultiLineString) that ends where it starts. */
+function isClosedLine(geometry: unknown): boolean {
+  const g = geometry as { type: string; coordinates: unknown };
+  const lines = (
+    g.type === "LineString" ? [g.coordinates] : g.coordinates
+  ) as number[][][];
+  return lines.every((l) => {
+    const [a, b] = [l[0], l.at(-1)];
+    return l.length > 2 && a?.[0] === b?.[0] && a?.[1] === b?.[1];
+  });
+}
+
+/** Area of a Polygon or MultiPolygon in squared z0 tile units (Web Mercator, holes subtracted). */
+function areaUnitsZ0(geometry: unknown): number {
+  const g = geometry as { type: string; coordinates: unknown };
+  const polygons = (
+    g.type === "Polygon" ? [g.coordinates] : g.coordinates
+  ) as number[][][][];
+  const toXY = ([lon = 0, lat = 0]: number[]) => {
+    const sn = Math.sin((lat * Math.PI) / 180);
+    return [
+      ((lon + 180) / 360) * TILE_EXTENT,
+      (0.5 - Math.log((1 + sn) / (1 - sn)) / (4 * Math.PI)) * TILE_EXTENT,
+    ] as const;
   };
-  walk((geometry as { coordinates?: unknown } | null)?.coordinates);
-  if (pts.length === 0) return 0;
-  return spanUnitsZ0({ type: "LineString", coordinates: pts });
+  let total = 0;
+  for (const rings of polygons)
+    rings.forEach((ring, k) => {
+      let a = 0;
+      for (let i = 0; i + 1 < ring.length; i++) {
+        const [x1, y1] = toXY(ring[i]!);
+        const [x2, y2] = toXY(ring[i + 1]!);
+        a += x1 * y2 - x2 * y1;
+      }
+      total += (k === 0 ? 1 : -1) * Math.abs(a / 2);
+    });
+  return total;
 }
 
 const sizeKb = async (file: string) =>
@@ -239,7 +266,15 @@ async function main() {
     const k = String(f.properties[key]);
     if (minzoomById.has(k)) throw new Error(`duplicate reach ${key} ${k}`);
     minzoomById.set(k, minzoom);
-    spanById.set(k, spanUnitsZ0(f.geometry));
+    // A closed loop collapses to a point on the tile grid sooner than an open line of the
+    // same extent (cba: 24–41 m loops in the APRHI and IGN lines vanish at z9–z10), so it
+    // counts at half its extent.
+    spanById.set(
+      k,
+      isClosedLine(f.geometry)
+        ? spanUnitsZ0(f.geometry) / 2
+        : spanUnitsZ0(f.geometry),
+    );
     const values: Record<string, unknown> = { ...f.properties, rank };
     return {
       type: "Feature",
@@ -437,10 +472,11 @@ async function main() {
   const outlineIds = new Set(
     (await readIds(outlinesIn)).map((f) => String(f.properties.id)),
   );
-  // An own area smaller than one tile unit may be dropped at a zoom, as a short reach is
-  // (cba: Juramento Salado's own area is 0.1 km²).
-  const ownSpan = new Map(
-    ownAreas.map((f) => [String(f.properties.id), spanUnitsZ0Any(f.geometry)]),
+  // An own area smaller than one square tile unit may be dropped at a zoom (tippecanoe's
+  // tiny-polygon reduction), as a short reach is (cba: Juramento Salado's own area is a
+  // 0.1 km² sliver).
+  const ownArea = new Map(
+    ownAreas.map((f) => [String(f.properties.id), areaUnitsZ0(f.geometry)]),
   );
 
   // 3. Decode back: reach ids per zoom vs the expected set; mask levels per zoom.
@@ -535,7 +571,7 @@ async function main() {
         [...subbasinIds].every(
           (id) =>
             m.subbasins.includes(id) ||
-            (ownSpan.get(id) ?? 0) * 2 ** m.zoom < 1,
+            (ownArea.get(id) ?? 0) * 4 ** m.zoom < 1,
         ),
     ),
     everySubbasinOutlineAtEveryCheckedZoom: maskLevelsByZoom.every(
