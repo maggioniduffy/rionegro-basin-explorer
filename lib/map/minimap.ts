@@ -1,7 +1,7 @@
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
 import type { RegionId } from "@/regions";
 import { tilePaths } from "./config";
-import { FLOW_STYLE, REACH_ORDER, THEME_COLORS, type Theme } from "./style";
+import { REACH_ORDER, RIVER_COLORS, THEME_COLORS, type Theme } from "./style";
 
 export const MINIMAP_VIEW_SOURCE = "view";
 export const MINIMAP_VIEW_FILL_LAYER_ID = "view-fill";
@@ -166,7 +166,7 @@ export function buildMinimapStyle(o: {
         ],
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
-          "line-color": FLOW_STYLE.perennial.color,
+          "line-color": RIVER_COLORS.satellite.perennial,
           "line-width": [
             "interpolate",
             ["linear"],

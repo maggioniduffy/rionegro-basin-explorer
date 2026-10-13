@@ -70,12 +70,16 @@ export function tilePaths(region: RegionId, versions = TILES_VERSIONS) {
 /** EOX Sentinel-2 tiles are ~10 m imagery; above this MapLibre overzooms. */
 export const IMAGERY_MAXZOOM = 15;
 /**
- * OpenStreetMap's standard tiles, the "Mapa" base (owner, 2026-10-12). No key. Their tile usage
- * policy: normal viewing only, no bulk or offline use, may be blocked if it degrades the service
- * (pipeline/SOURCES.md). Attribution is shown whenever this base is on.
+ * The "Mapa" base is relief only, no towns, roads, rivers or land cover (owner, 2026-10-13):
+ * MapLibre shades the AWS Open Data Terrain Tiles (Tilezen, terrarium encoding) over a plain
+ * land colour. No key. Credit and terms in pipeline/SOURCES.md.
  */
-export const BASEMAP_TILE_URL =
-  "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-export const BASEMAP_MAXZOOM = 19;
+export const BASEMAP_DEM_URL =
+  "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
+/** Past this the relief overzooms; finer detail adds nothing under the 1:13 rivers. */
+export const BASEMAP_MAXZOOM = 12;
+/** Required credit for the sources under the basins (joerd docs/attribution.md), verbatim. */
+export const BASEMAP_CREDIT =
+  "United States 3DEP (formerly NED) and global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey. Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric Administration";
 /** HydroRIVERS is 15 arc-second data; closer than this the lines drift off the imagery. */
 export const MAP_MAXZOOM = 13;

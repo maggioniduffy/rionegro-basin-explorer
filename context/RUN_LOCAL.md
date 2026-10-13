@@ -307,3 +307,9 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 
 - [x] `npm run check`; `next build` prerenders `/rionegro/opengraph-image`, `/cordoba/opengraph-image` and `/hub/opengraph-image`.
 - [ ] After deploy, paste `/`, `/rionegro` and `/cordoba` into a card validator (e.g. opengraph.xyz) and check the image URL uses the production domain.
+
+## Mapa base relief only; river colours (2026-10-13)
+
+- [x] `npm run check` (609 tests).
+- [ ] Browser, `/rionegro/map` and `/cordoba/map`, Visualización → Mapa: light land with shaded relief only (no towns, roads, rivers, green areas), nothing outside the basin mask on first load; the credit line names Terrain Tiles / USGS / NOAA.
+- [ ] Switch Satelital ↔ Mapa, light and dark: Satelital keeps the old light colours; Mapa shows dark blue perennial, olive-green dashed non-perennial and mid-blue detail lines (`#0284c7`); the legend and layer toggles switch with it. Select a river on Mapa: lime-green halo; on Satelital: yellow as before.

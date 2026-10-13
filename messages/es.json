@@ -46,7 +46,7 @@
       "label": "Mapa base",
       "satellite": "Satelital",
       "map": "Mapa",
-      "note": "Teselas del mapa © colaboradores de OpenStreetMap."
+      "note": "Relieve sombreado de Terrain Tiles (USGS SRTM, GMTED2010; NOAA ETOPO1)."
     }
   },
   "sheet": {
@@ -344,8 +344,11 @@
         "terms": "La APRHI no participa, patrocina ni avala esta aplicación. Los datos derivados de las capas de la APRHI se comparten de forma libre y gratuita."
       },
       "osm": {
-        "usedFor": "Base de mapa (\"Mapa\"): teselas estándar de tile.openstreetmap.org, bajo la máscara de la cuenca. Solo para uso normal (política de uso de teselas: operations.osmfoundation.org/policies/tiles).",
+        "usedFor": "Ciudades, pueblos y localidades; evidencia para los nombres de ríos.",
         "terms": "Los datos de OpenStreetMap están disponibles bajo la Open Database License."
+      },
+      "terrain": {
+        "usedFor": "Base de mapa (\"Mapa\"): relieve sombreado a partir de estas teselas de elevación (SRTM, GMTED2010, ETOPO1), bajo la máscara de la cuenca. Solo relieve: elevación modelada, no un valor medido."
       },
       "eox": {
         "usedFor": "Imágenes satelitales.",

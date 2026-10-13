@@ -5,8 +5,9 @@ import type {
   StyleSpecification,
 } from "@maplibre/maplibre-gl-style-spec";
 import {
+  BASEMAP_CREDIT,
+  BASEMAP_DEM_URL,
   BASEMAP_MAXZOOM,
-  BASEMAP_TILE_URL,
   IMAGERY_MAXZOOM,
   MASK_LEVEL_COUNT,
   hasProvinceOutline,
@@ -25,14 +26,63 @@ export type { Theme };
 export const FLOW_CLASSES = ["perennial", "nonPerennial", "unknown"] as const;
 export type FlowClass = (typeof FLOW_CLASSES)[number];
 
-/** Same river colours in both themes: they sit on satellite imagery, not on the UI. */
+/** Paint properties that follow the base's river colours, for MapView to set on a base switch. */
+export function riverColorPaint(
+  base: BaseLayer,
+): [layer: string, property: "fill-color" | "line-color", color: string][] {
+  const colors = RIVER_COLORS[base];
+  return [
+    [SELECTED_LAYER_ID, "line-color", colors.selected],
+    [IGN_LAKE_FILL_LAYER_ID, "fill-color", colors.detail],
+    [IGN_DETAIL_LAYER_ID, "line-color", colors.detail],
+    [UNMATCHED_LAYER_ID, "line-color", colors.detail],
+    ...FLOW_CLASSES.map(
+      (c) =>
+        [reachLayerId(c), "line-color", colors[c]] as [
+          string,
+          "line-color",
+          string,
+        ],
+    ),
+  ];
+}
+
+/** How each flow class is drawn; its colour depends on the base (RIVER_COLORS). */
 export const FLOW_STYLE: Record<
   FlowClass,
-  { color: string; dash?: [number, number]; widthScale: number }
+  { dash?: [number, number]; widthScale: number }
 > = {
-  perennial: { color: "#38bdf8", widthScale: 1 },
-  nonPerennial: { color: "#f0c27b", dash: [2, 1.5], widthScale: 0.9 },
-  unknown: { color: "#9aa3ab", widthScale: 0.6 },
+  perennial: { widthScale: 1 },
+  nonPerennial: { dash: [2, 1.5], widthScale: 0.9 },
+  unknown: { widthScale: 0.6 },
+};
+
+/**
+ * River colours per base, the same in both themes: they sit on the base, not on the UI. The
+ * imagery keeps the light colours; the light relief base gets a deep blue, a deep olive green
+ * (the landing's sage family) and a mid blue for the detail lines (owner, 2026-10-13). `detail` is the colour of the IGN
+ * detail lines (nqn) and of the line pieces no reach matched (cba): both are mapped courses
+ * with no HydroRIVERS reach (owner, 2026-10-12). `selected` is the halo under the selected
+ * river, stream or reach (lime green on Mapa, owner 2026-10-13).
+ */
+export const RIVER_COLORS: Record<
+  BaseLayer,
+  Record<FlowClass | "detail" | "selected", string>
+> = {
+  satellite: {
+    perennial: "#38bdf8",
+    nonPerennial: "#f0c27b",
+    unknown: "#9aa3ab",
+    detail: "#67e8f9",
+    selected: "#fde68a",
+  },
+  map: {
+    perennial: "#1d4ed8",
+    nonPerennial: "#5b7f1a",
+    unknown: "#9aa3ab",
+    detail: "#0284c7",
+    selected: "#9cc23c",
+  },
 };
 
 /**
@@ -226,19 +276,29 @@ export function localityFilter(show: boolean): FilterSpecification {
   return show ? ["literal", true] : ["boolean", false];
 }
 
-/**
- * Colour of the IGN detail lines (nqn) and of the line pieces no reach matched (cba), also
- * used by the legend: both are mapped courses with no HydroRIVERS reach (owner, 2026-10-12).
- */
-export const IGN_DETAIL_COLOR = "#67e8f9";
-
 export const IMAGERY_LAYER_ID = "imagery";
-/** OpenStreetMap's standard tiles, the "Mapa" base (BASEMAP_TILE_URL); under the mask. */
+/** The "Mapa" base, under the mask: a plain land colour and the relief shaded on it. */
+export const BASEMAP_LAND_LAYER_ID = "basemap-land";
 export const BASEMAP_LAYER_ID = "basemap";
+export const BASEMAP_LAND_COLOR = "#e8e9e4";
+/**
+ * Base layers and the paint value that shows each. The style starts them at zero, so nothing
+ * shows outside the basin before the mask has loaded; MapView sets these once it has.
+ */
+export const BASE_REVEAL = [
+  [IMAGERY_LAYER_ID, "raster-opacity", 1],
+  [BASEMAP_LAND_LAYER_ID, "background-opacity", 1],
+  [BASEMAP_LAYER_ID, "hillshade-exaggeration", 0.5],
+] as const;
+/** Layers that show only on their base. */
+export const BASE_LAYERS = [
+  [IMAGERY_LAYER_ID, "satellite"],
+  [BASEMAP_LAND_LAYER_ID, "map"],
+  [BASEMAP_LAYER_ID, "map"],
+] as const;
 export const BACKGROUND_LAYER_ID = "background";
 /** Halo under the selected river, stream or reach, drawn below the flow-class lines. */
 export const SELECTED_LAYER_ID = "reaches-selected";
-export const SELECTED_COLOR = "#fde68a";
 
 /**
  * Tile features carry the reach id as feature id, the river slug as `river` and the
@@ -393,6 +453,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
   const { xmin, ymin, xmax, ymax } = mapConfigFor(o.region).basinBbox;
   const tiles = tilePaths(o.region);
   const opacities = maskLayerOpacities(o.visibleLand, MASK_LEVEL_COUNT);
+  const colors = RIVER_COLORS[o.baseLayer];
 
   const layers: LayerSpecification[] = [
     {
@@ -401,15 +462,32 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       paint: { "background-color": mask },
     },
   ];
-  // The OpenStreetMap base, hidden unless chosen (owner, 2026-10-12). Like the imagery it is
-  // transparent until the mask has loaded.
-  layers.push({
-    id: BASEMAP_LAYER_ID,
-    type: "raster",
-    source: "basemap",
-    layout: { visibility: o.baseLayer === "map" ? "visible" : "none" },
-    paint: { "raster-opacity": 0, "raster-fade-duration": 0 },
-  });
+  // The relief base, hidden unless chosen (owner, 2026-10-12, relief only since 2026-10-13).
+  // Like the imagery it is transparent until the mask has loaded (BASE_REVEAL).
+  const mapVisibility = o.baseLayer === "map" ? "visible" : "none";
+  layers.push(
+    {
+      id: BASEMAP_LAND_LAYER_ID,
+      type: "background",
+      layout: { visibility: mapVisibility },
+      paint: {
+        "background-color": BASEMAP_LAND_COLOR,
+        "background-opacity": 0,
+      },
+    },
+    {
+      id: BASEMAP_LAYER_ID,
+      type: "hillshade",
+      source: "basemap",
+      layout: { visibility: mapVisibility },
+      paint: {
+        "hillshade-exaggeration": 0,
+        "hillshade-shadow-color": "#5b6470",
+        "hillshade-highlight-color": "#ffffff",
+        "hillshade-accent-color": "#8a929b",
+      },
+    },
+  );
   if (o.imageryUrl) {
     layers.push({
       id: IMAGERY_LAYER_ID,
@@ -444,7 +522,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       source: "ign",
       "source-layer": "lakes_extra",
       filter: waterFilter(o.hideEndorheic, o.layers),
-      paint: { "fill-color": IGN_DETAIL_COLOR, "fill-opacity": 0.25 },
+      paint: { "fill-color": colors.detail, "fill-opacity": 0.25 },
     },
     {
       id: IGN_LAKE_LINE_LAYER_ID,
@@ -465,7 +543,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       filter: lakeFilter(o.hideEndorheic),
       layout: { "line-cap": "round", "line-join": "round" },
       paint: {
-        "line-color": IGN_DETAIL_COLOR,
+        "line-color": colors.detail,
         "line-opacity": 0.85,
         "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.6, 12, 1.4],
       },
@@ -588,7 +666,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     filter: selectionFilter(o.selection),
     layout: { "line-cap": "round", "line-join": "round" },
     paint: {
-      "line-color": SELECTED_COLOR,
+      "line-color": colors.selected,
       "line-opacity": 0.9,
       "line-width": reachWidth(1, 5),
       "line-blur": 1,
@@ -602,14 +680,14 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     filter: unmatchedFilter(o.hideEndorheic, o.layers),
     layout: { "line-cap": "round", "line-join": "round" },
     paint: {
-      "line-color": IGN_DETAIL_COLOR,
+      "line-color": colors.detail,
       "line-opacity": 0.85,
       "line-width": reachWidth(FLOW_STYLE.unknown.widthScale),
     },
   });
   // Drawn smallest class first so perennial rivers sit on top.
   for (const c of ["unknown", "nonPerennial", "perennial"] as const) {
-    const { color, dash, widthScale } = FLOW_STYLE[c];
+    const { dash, widthScale } = FLOW_STYLE[c];
     layers.push({
       id: reachLayerId(c),
       type: "line",
@@ -618,7 +696,7 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       filter: reachFilter(c, o.hideEndorheic, o.layers),
       layout: { "line-cap": dash ? "butt" : "round", "line-join": "round" },
       paint: {
-        "line-color": color,
+        "line-color": colors[c],
         "line-width": reachWidth(widthScale),
         ...(dash ? { "line-dasharray": dash } : {}),
       },
@@ -687,13 +765,13 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
     version: 8,
     sources: {
       basemap: {
-        type: "raster",
-        tiles: [BASEMAP_TILE_URL],
+        type: "raster-dem",
+        encoding: "terrarium",
+        tiles: [BASEMAP_DEM_URL],
         tileSize: 256,
         maxzoom: BASEMAP_MAXZOOM,
         bounds: [xmin, ymin, xmax, ymax],
-        attribution:
-          '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>',
+        attribution: `<a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain Tiles</a>: ${BASEMAP_CREDIT}`,
       },
       ...(o.imageryUrl
         ? {

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { FLOW_CLASSES, FLOW_STYLE } from "@/lib/map/style";
+import { FLOW_CLASSES, FLOW_STYLE, RIVER_COLORS } from "@/lib/map/style";
 import { useMapStore } from "@/lib/store";
 import { Icon } from "./Icon";
 import { Swatch } from "./Legend";
@@ -44,6 +44,7 @@ export function LayerToggles() {
   const tLegend = useTranslations("legend");
   const layers = useMapStore((s) => s.layers);
   const setLayers = useMapStore((s) => s.setLayers);
+  const baseLayer = useMapStore((s) => s.baseLayer);
 
   return (
     <fieldset className="flex flex-col gap-2">
@@ -67,7 +68,7 @@ export function LayerToggles() {
             disabled={!layers.rivers}
             onChange={(v) => setLayers({ flow: { ...layers.flow, [c]: v } })}
           >
-            <Swatch {...FLOW_STYLE[c]} />
+            <Swatch {...FLOW_STYLE[c]} color={RIVER_COLORS[baseLayer][c]} />
             {tLegend(c)}
           </Toggle>
         ))}
