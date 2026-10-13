@@ -30,25 +30,3 @@ export function pieceFlow(
 
 /** Tile value of the class, as GIRES's `nonPerennial1d`: 0 perennial, 1 not. */
 export const flowCode = (f: LineFlow): 0 | 1 => (f === "perennial" ? 0 : 1);
-
-/**
- * The IGN class of each reach from its display pieces (pipeline:named, cba): the class with
- * more piece length on the reach, a tie to perennial. Reaches with no classed piece are
- * absent (they keep GIRES's class).
- */
-export function reachFlows(
-  rows: readonly { reach: number; flow: LineFlow; lengthM: number }[],
-): Map<number, LineFlow> {
-  const sums = new Map<number, { perennial: number; intermittent: number }>();
-  for (const r of rows) {
-    const s = sums.get(r.reach) ?? { perennial: 0, intermittent: 0 };
-    s[r.flow] += r.lengthM;
-    sums.set(r.reach, s);
-  }
-  return new Map(
-    [...sums].map(([reach, s]) => [
-      reach,
-      s.perennial >= s.intermittent ? "perennial" : "intermittent",
-    ]),
-  );
-}

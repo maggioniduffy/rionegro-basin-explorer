@@ -437,5 +437,6 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 
 ## Córdoba: nonPerennialPct follows the drawn class (2026-10-12)
 
-- `pipeline:named` (cba) computes a river's `nonPerennialPct` per reach: a reach with an IGN class (`pipeline:line-flow`, majority of its display pieces) counts by it; a reach with no IGN class keeps GIRES's `predcat1`. Río Segundo: 100 % (GIRES) → 41.6 %. Its own IGN lines are perennial; the 41.6 % is path reaches with no IGN line along them, where GIRES says non-perennial. Open for the owner: measure the share on the river's own display pieces instead (100 % perennial for the Segundo), or keep the reach rule.
+- **Owner's choice: measure on the river's own IGN lines.** `pipeline:named` (cba) takes a river's `nonPerennialPct` as the intermittent share of the IGN-classed display-line length on the river's reaches (pipeline:line-flow). Where no line on the river is classed, it keeps GIRES's share of reach length (modeled). Río Segundo: 100 % (GIRES) → 0 % (its IGN lines are all perennial). Tercero 18.7 → 3.7 %, Cuarto 0 → 0.3 %, Quinto 24.3 %, Primero 17 → 0 %.
 - Provenance text says which source applies. `nqn` unchanged (its named output has no line-flow file).
+- Seed run (cba, 2026-10-12): ok; `basin-explorer-cba` rivers modified 13.

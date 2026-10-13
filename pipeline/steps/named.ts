@@ -58,7 +58,7 @@ import { hydroLakesBbox } from "../lib/hydrolakes";
 import { ALBERS } from "../lib/ign";
 import type { MatchConfig } from "../lib/ign-match";
 import { requireInput } from "../lib/inputs";
-import { type LineFlow, isLineFlow, reachFlows } from "../lib/line-flow";
+import { isLineFlow } from "../lib/line-flow";
 import { type ReachKind, traceAlongName } from "../lib/name-trace";
 import { loadNameSource, nameFile } from "../lib/name-source";
 import {
@@ -166,7 +166,7 @@ async function main() {
     ...(existsSync(regionFile("line-flow.config.json"))
       ? {
           nonPerennialPct:
-            "Share of lengthKm (HydroRIVERS LENGTH_KM) of reaches drawn non-perennial: IGN's mapped class (intermittent) where IGN lines run along the reach's display lines (pipeline:line-flow; FUENTE: Instituto Geográfico Nacional de la República Argentina), else GIRES v1.0 predcat1 = 1 (modeled, ≥ 1 no-flow day per year); reaches with neither are counted in unknownPct",
+            "Share of the river's IGN-classed line length that is intermittent (pipeline:line-flow; FUENTE: Instituto Geográfico Nacional de la República Argentina) along the river's reaches. Where no IGN line is classed on the river, the share of lengthKm (HydroRIVERS LENGTH_KM) of reaches with GIRES v1.0 predcat1 = 1 (modeled, ≥ 1 no-flow day per year); reaches with neither are counted in unknownPct",
         }
       : {}),
     name: nameSource.riverNameProvenance,
@@ -188,29 +188,28 @@ async function main() {
       FROM ${lit(reachesFile)} r JOIN ${lit(atlasFile)} a USING (HYRIV_ID)
       WHERE r.network = 'connected'`);
     const byId = new Map<number, Row>(rows.map((r) => [Number(r.HYRIV_ID), r]));
-    // IGN's mapped class per reach (cba, pipeline:line-flow): the panel's non-perennial share
-    // then matches the lines the map draws (owner, 2026-10-12).
-    const ignFlow = new Map<number, LineFlow>();
+    // IGN's mapped class of the display lines on each reach (cba, pipeline:line-flow), in
+    // metres per class. A river's non-perennial share is measured on these lines, so it
+    // matches what the map draws (owner, 2026-10-12).
+    const ignLength = new Map<
+      number,
+      { perennial: number; intermittent: number }
+    >();
     if (existsSync(regionFile("line-flow.config.json"))) {
       const flowRows = await db.all(`
         SELECT l.reach, f.flow, sum(l.length_m) AS length_m
         FROM read_parquet(${lit(requireInput(workPath("lines/lines.parquet")))}) l
         JOIN read_parquet(${lit(requireInput(workPath("line-flow/flow.parquet")))}) f USING (pieceId)
         WHERE l.reach IS NOT NULL GROUP BY ALL`);
-      for (const [reach, flow] of reachFlows(
-        flowRows.flatMap((r) =>
-          isLineFlow(r.flow)
-            ? [
-                {
-                  reach: Number(r.reach),
-                  flow: r.flow,
-                  lengthM: Number(r.length_m),
-                },
-              ]
-            : [],
-        ),
-      ))
-        ignFlow.set(reach, flow);
+      for (const r of flowRows) {
+        if (!isLineFlow(r.flow)) continue;
+        const reach = Number(r.reach);
+        const s = ignLength.get(reach) ?? { perennial: 0, intermittent: 0 };
+        s[r.flow === "perennial" ? "perennial" : "intermittent"] += Number(
+          r.length_m,
+        );
+        ignLength.set(reach, s);
+      }
     }
     const num = (id: number, field: string) => Number(byId.get(id)?.[field]);
     const index = upstreamIndex(
@@ -445,15 +444,28 @@ async function main() {
         path
           .filter((id) => pred(byId.get(id)!))
           .reduce((s, id) => s + num(id, "LENGTH_KM"), 0);
-      const ign = (r: Row) => ignFlow.get(Number(r.HYRIV_ID));
-      const nonPerennialKm = lengthWhere((r) =>
-        ign(r)
-          ? ign(r) === "intermittent"
-          : Number(r.predcat1) === 1 && r.predcat1 !== null,
+      const ign = (r: Row) => ignLength.get(Number(r.HYRIV_ID));
+      // Share on IGN's lines along the river (metres), when any is classed. Otherwise the
+      // share of reach length GIRES gives non-perennial (modeled, as for nqn).
+      const classedM = path.reduce((s, id) => {
+        const l = ignLength.get(id);
+        return s + (l ? l.perennial + l.intermittent : 0);
+      }, 0);
+      const intermittentM = path.reduce(
+        (s, id) => s + (ignLength.get(id)?.intermittent ?? 0),
+        0,
       );
+      const nonPerennialPct =
+        classedM > 0
+          ? round((intermittentM / classedM) * 100)
+          : round(
+              (lengthWhere(
+                (r) => Number(r.predcat1) === 1 && r.predcat1 !== null,
+              ) /
+                lengthKm) *
+                100,
+            );
       const unknownKm = lengthWhere((r) => !ign(r) && r.predcat1 === null);
-      // Modeled unless every reach has IGN's mapped class.
-      const giresKm = lengthWhere((r) => !ign(r));
       const { flowsInto } = receiving(mouth);
       const mouthKind = kinds?.get(mouth);
       const m = byId.get(mouth)!;
@@ -514,12 +526,12 @@ async function main() {
           extent("xmax", Math.max),
           extent("ymax", Math.max),
         ],
-        nonPerennialPct: round((nonPerennialKm / lengthKm) * 100),
+        nonPerennialPct,
         unknownPct: round((unknownKm / lengthKm) * 100),
         modeled: [
           "mouth.dischargeM3s",
           "mouth.regulationPct",
-          ...(giresKm > 0 ? ["nonPerennialPct"] : []),
+          ...(classedM > 0 ? [] : ["nonPerennialPct"]),
           "watershed.floodedMinPct",
           "watershed.floodedMaxPct",
           "watershed.population",

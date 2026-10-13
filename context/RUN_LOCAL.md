@@ -281,4 +281,4 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 ## Córdoba: nonPerennialPct (2026-10-12)
 
 - [x] `named`, `export` (twice) for cba: ok; `export` nqn: `data/out/nqn` identical. Río Segundo nonPerennialPct 41.6 (was 100).
-- [ ] `npm run seed -- --region cba` (rivers.ndjson changed) — not run yet; waiting for the owner's choice of method (see DECISSIONS).
+- [x] `npm run seed -- --region cba` (rivers changed): ok; API `/cordoba/api/rivers/segundo` 223.6 km, 0 % non-perennial.
