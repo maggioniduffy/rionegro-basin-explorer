@@ -108,7 +108,7 @@ Plan approved 2026-10-12 ([DECISSIONS.md](DECISSIONS.md#córdoba-r3-plan-2026-10
 - [x] R3.5 Sub-basins from APRHI: region → 6 basins → 25 subcuencas → 80 UGH — `pipeline:subbasins` reference mode, 112 nodes of kind `area` (schema), parent by geometry, stable ids in `regions/cba/subbasin-ids.json`, outlets by the 90% rule (5 basins, 1 subcuenca, 18 UGH), salar and lagoon in their basin's own area; `nqn` unchanged (2026-10-12)
 - [x] R3.6 Lakes and dams: APRHI > IGN > HydroLAKES; caveat names Córdoba's dams — `pipeline:lakes` / `ign-layers` reference mode, 2,202 polygons (APRHI 1,630, IGN 96, HydroLAKES 476 incl. Salinas Grandes), Mar Chiquita from APRHI, lines cut inside water, 39 IGN dams; the dam caveat list (26 APRHI Presa reservoirs) is in DECISSIONS.md for the region text in R3.8; `nqn` unchanged (2026-10-12)
 - [x] R3.7 App contract: sink and region-edge mouths, root per reach, line source and status (no change for `nqn`) — `mouthKind` on rivers, reaches and streams (4 rivers end at the region's edge, 9 in sinks), distance to the sea null in sinks and across override links (the Río Cuarto system), `root` and `lineReview` per reach, piece tiles with source/status/display order, unmatched pieces clickable (owner), lake `source`, area wording in panels, ask box and prompt; `nqn` data byte-identical (2026-10-12)
-- [ ] R3.8 Localities, mask, map config, tiles, export, seed `basin-explorer-cba`; the map style matches Río Negro's (same layers, colours and widths; owner, 2026-10-11)
+- [x] R3.8 Localities, mask, map config, tiles, export, seed `basin-explorer-cba`; the map style matches Río Negro's (same layers, colours and widths; owner, 2026-10-11) — export, localities (687 places), mask, tiles (~15 MB, owner approved) all ok; `cba` served at `cordobabasinexplorer.vercel.app` (dev `cordoba.localhost:3000`) and listed on the hub. Owner, local: seed `basin-explorer-cba` + Atlas grant, landing image, browser pass ([RUN_LOCAL.md](RUN_LOCAL.md)) (2026-10-12)
 
 Original items:
 
@@ -119,7 +119,7 @@ Original items:
 
 ### Phase R4 — Hub
 
-- [x] Hub landing listing the regions; each region's landing links back — `app/hub` on `basinexplorer.vercel.app` (dev `hub.localhost:3000`), regions at `rionegro.` / `cordoba.basinexplorer.vercel.app`, back link where a hub exists; nested `*.vercel.app` names not verified yet (RUN_LOCAL.md) (2026-10-12)
+- [x] Hub landing listing the regions; each region's landing links back — `app/hub` on `basinexplorer.vercel.app` (dev `hub.localhost:3000`), regions at `rionegrobasinexplorer.vercel.app` and `cordobabasinexplorer.vercel.app` (Vercel refused nested names), back link where a hub exists (2026-10-12)
 
 ## Open decisions
 

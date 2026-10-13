@@ -1,3 +1,4 @@
+import { cbaContent } from "./cba/content";
 import { nqnContent } from "./nqn/content";
 import type { RegionId } from "./index";
 
@@ -26,4 +27,5 @@ export interface RegionContent {
 
 export const REGION_CONTENT: Record<RegionId, RegionContent> = {
   nqn: nqnContent,
+  cba: cbaContent,
 };

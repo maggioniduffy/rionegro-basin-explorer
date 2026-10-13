@@ -13,13 +13,14 @@ describe("regionFromHost", () => {
     expect(regionFromHost("NQN.localhost:3000")).toBe("nqn");
   });
 
-  it("reads the region's host label (owner, 2026-10-12)", () => {
-    expect(regionFromHost("cordoba.basinexplorer.vercel.app")).toBe("cba");
-    expect(regionFromHost("rionegro.basinexplorer.vercel.app")).toBe("nqn");
+  it("reads the production aliases and the dev labels (owner, 2026-10-12)", () => {
+    expect(regionFromHost("cordobabasinexplorer.vercel.app")).toBe("cba");
+    expect(regionFromHost("rionegrobasinexplorer.vercel.app")).toBe("nqn");
     expect(regionFromHost("cordoba.localhost:3000")).toBe("cba");
+    expect(regionFromHost("rionegro.localhost:3000")).toBe("nqn");
   });
 
-  it("returns a known region that isn't served yet as is (proxy.ts answers 404)", () => {
+  it("reads a region id as a dev label", () => {
     expect(regionFromHost("cba.localhost:3000")).toBe("cba");
   });
 
@@ -34,26 +35,29 @@ describe("regionFromHost", () => {
 describe("hub hosts (R4)", () => {
   const env = {};
 
-  it("serves the hub on basinexplorer.vercel.app, hub.* and HUB_HOSTS only", () => {
+  it("serves the hub on basinexplorer.vercel.app, plain localhost and HUB_HOSTS only", () => {
     expect(isHubHost("basinexplorer.vercel.app", env)).toBe(true);
-    expect(isHubHost("hub.localhost:3000", env)).toBe(true);
+    expect(isHubHost("localhost:3000", env)).toBe(true);
     expect(
       isHubHost("explorer.example.org", { HUB_HOSTS: "explorer.example.org" }),
     ).toBe(true);
     for (const host of [
       "rionegrobasinexplorer.vercel.app",
-      "localhost:3000",
-      "cordoba.basinexplorer.vercel.app",
+      "cordobabasinexplorer.vercel.app",
+      "cordoba.localhost:3000",
       null,
     ])
       expect(isHubHost(host, env)).toBe(false);
   });
 
-  it("links each region one label above the hub, or by swapping hub. in dev", () => {
+  it("links each region to its production alias, or one label above localhost in dev", () => {
     expect(regionOrigin("cba", "basinexplorer.vercel.app", "https", env)).toBe(
-      "https://cordoba.basinexplorer.vercel.app",
+      "https://cordobabasinexplorer.vercel.app",
     );
-    expect(regionOrigin("nqn", "hub.localhost:3000", "http", env)).toBe(
+    expect(regionOrigin("nqn", "basinexplorer.vercel.app", "https", env)).toBe(
+      "https://rionegrobasinexplorer.vercel.app",
+    );
+    expect(regionOrigin("nqn", "localhost:3000", "http", env)).toBe(
       "http://rionegro.localhost:3000",
     );
     expect(
@@ -63,17 +67,18 @@ describe("hub hosts (R4)", () => {
     ).toBe("https://b.vercel.app");
   });
 
-  it("links back to the hub only from a region-label host, or HUB_URL", () => {
-    expect(hubOrigin("cordoba.basinexplorer.vercel.app", "https", env)).toBe(
-      "https://basinexplorer.vercel.app",
-    );
+  it("links back to the hub from the production aliases, dev labels or HUB_URL", () => {
+    for (const host of [
+      "cordobabasinexplorer.vercel.app",
+      "rionegrobasinexplorer.vercel.app",
+    ])
+      expect(hubOrigin(host, "https", env)).toBe(
+        "https://basinexplorer.vercel.app",
+      );
     expect(hubOrigin("cba.localhost:3000", "http", env)).toBe(
-      "http://hub.localhost:3000",
+      "http://localhost:3000",
     );
-    expect(
-      hubOrigin("rionegrobasinexplorer.vercel.app", "https", env),
-    ).toBeNull();
-    expect(hubOrigin("localhost:3000", "http", env)).toBeNull();
+    expect(hubOrigin("xyz.example.com", "https", env)).toBeNull();
     expect(
       hubOrigin("localhost:3000", "http", {
         HUB_URL: "https://hub.example.org/",

@@ -16,8 +16,9 @@ describe("regions", () => {
     expect(isRegionId(DEFAULT_REGION)).toBe(true);
     expect(isRegionId("xyz")).toBe(false);
     expect(isRegionId(undefined)).toBe(false);
-    // Known to the pipeline, not served by the app yet.
+    // Known to the pipeline and served by the app (R3.8).
     expect(isKnownRegionId("cba")).toBe(true);
-    expect(isRegionId("cba")).toBe(false);
+    expect(isRegionId("cba")).toBe(true);
+    expect(isRegionId("xyz")).toBe(false);
   });
 });

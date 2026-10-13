@@ -1,3 +1,5 @@
+import cbaSample from "./cba/landing-sample.json";
+import cbaShapes from "./cba/og-shapes.json";
 import nqnSample from "./nqn/landing-sample.json";
 import nqnShapes from "./nqn/og-shapes.json";
 import type { RegionId } from "./index";
@@ -8,7 +10,11 @@ export type OgShapes = typeof nqnShapes;
 /** Generated per region by `npm run landing:sample -- --region <id>`. */
 export const LANDING_SAMPLES: Record<RegionId, LandingSample> = {
   nqn: nqnSample,
+  cba: cbaSample,
 };
 
 /** Generated per region by `npx tsx scripts/og-shapes.ts --region <id>`. */
-export const OG_SHAPES: Record<RegionId, OgShapes> = { nqn: nqnShapes };
+export const OG_SHAPES: Record<RegionId, OgShapes> = {
+  nqn: nqnShapes,
+  cba: cbaShapes,
+};

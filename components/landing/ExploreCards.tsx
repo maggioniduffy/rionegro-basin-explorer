@@ -151,13 +151,15 @@ export async function ExploreCards({ region }: { region: RegionId }) {
           text={t("f3p")}
           stage={
             <div className="h-full overflow-hidden bg-[#050706]">
-              <Image
-                src={basin}
-                alt=""
-                fill
-                sizes="(max-width: 700px) 100vw, 400px"
-                className="origin-[30%_45%] scale-[1.6] object-cover object-[30%_45%]"
-              />
+              {basin && (
+                <Image
+                  src={basin}
+                  alt=""
+                  fill
+                  sizes="(max-width: 700px) 100vw, 400px"
+                  className="origin-[30%_45%] scale-[1.6] object-cover object-[30%_45%]"
+                />
+              )}
               <div className="bg-panel-glass border-line text-secondary absolute right-[18px] bottom-[18px] left-[18px] rounded-[10px] border px-3.5 py-3 text-xs">
                 <div className="text-text mb-3 flex items-center gap-2 text-sm font-semibold">
                   <Icon name="mask" className="text-accent shrink-0" />

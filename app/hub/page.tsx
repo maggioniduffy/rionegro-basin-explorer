@@ -70,21 +70,24 @@ export default async function HubPage() {
             {REGION_IDS.map((id) => {
               const m = messagesFor(id, locale);
               const href = regionOrigin(id, host, protocol);
+              const image = LANDING_IMAGES[id];
               const body = (
                 <>
                   <div className="relative aspect-video overflow-hidden bg-black">
-                    <Image
-                      src={LANDING_IMAGES[id]}
-                      alt={m.landing.card.alt}
-                      fill
-                      sizes="(max-width: 640px) calc(100vw - 32px), 520px"
-                      className="object-cover transition-[transform,filter] duration-[800ms,400ms] group-hover:scale-105 group-hover:brightness-[1.18]"
-                    />
+                    {image && (
+                      <Image
+                        src={image}
+                        alt={m.landing.card.alt}
+                        fill
+                        sizes="(max-width: 640px) calc(100vw - 32px), 520px"
+                        className="object-cover transition-[transform,filter] duration-[800ms,400ms] group-hover:scale-105 group-hover:brightness-[1.18]"
+                      />
+                    )}
                     <div className="text-secondary absolute bottom-3 left-3.5 font-mono text-[11px]">
                       {card("credit")}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 px-[22px] py-5">
+                  <div className="flex flex-1 flex-col gap-2 px-[22px] py-5">
                     <h2 className="text-xl font-semibold tracking-[-0.01em]">
                       {m.metadata.title}
                     </h2>
@@ -92,7 +95,7 @@ export default async function HubPage() {
                       {m.metadata.description}
                     </p>
                     {href && (
-                      <span className="text-accent mt-1 font-semibold">
+                      <span className="text-accent mt-auto pt-1 font-semibold">
                         {t("open")} →
                       </span>
                     )}
@@ -100,9 +103,9 @@ export default async function HubPage() {
                 </>
               );
               const frame =
-                "bg-surface border-line shadow-card block overflow-hidden rounded-[14px] border text-inherit";
+                "bg-surface border-line shadow-card flex w-full flex-col overflow-hidden rounded-[14px] border text-inherit";
               return (
-                <li key={id}>
+                <li key={id} className="flex">
                   {href ? (
                     <a
                       href={href}

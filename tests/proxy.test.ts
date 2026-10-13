@@ -7,9 +7,14 @@ const req = (url: string, extra: Record<string, string> = {}) =>
 const rewrite = (r: Response) => r.headers.get("x-middleware-rewrite");
 
 describe("proxy and the hub (R4)", () => {
-  it("rewrites a hub host's / to app/hub", () => {
-    const r = proxy(req("https://basinexplorer.vercel.app/"));
-    expect(new URL(rewrite(r)!).pathname).toBe("/hub");
+  it("rewrites a hub host's / to app/hub, plain localhost included", () => {
+    for (const url of [
+      "https://basinexplorer.vercel.app/",
+      "http://localhost:3000/",
+    ]) {
+      const r = proxy(req(url));
+      expect(new URL(rewrite(r)!).pathname).toBe("/hub");
+    }
   });
 
   it("answers 404 for other hub paths, but passes region-prefixed ones (OG images)", () => {
@@ -22,8 +27,8 @@ describe("proxy and the hub (R4)", () => {
   });
 
   it("routes region hosts as before", () => {
-    const r = proxy(req("https://rionegro.basinexplorer.vercel.app/map"));
-    expect(new URL(rewrite(r)!).pathname).toBe("/nqn/map");
+    const r = proxy(req("https://cordobabasinexplorer.vercel.app/map"));
+    expect(new URL(rewrite(r)!).pathname).toBe("/cba/map");
     const old = proxy(req("https://rionegrobasinexplorer.vercel.app/"));
     expect(new URL(rewrite(old)!).pathname).toBe("/nqn");
   });

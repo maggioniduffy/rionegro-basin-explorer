@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { messagesFor } from "../i18n/messages";
 import { openMap, stubImagery } from "./map-helpers";
 
-// The e2e server runs on localhost, which serves the default region.
+// The e2e baseURL is rionegro.localhost, the default region's host (plain localhost is the hub).
 const en = messagesFor("nqn", "en");
 const es = messagesFor("nqn", "es");
 

@@ -10,7 +10,8 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    // Plain localhost is the hub (R4); the specs test the default region's own host.
+    baseURL: `http://rionegro.localhost:${PORT}`,
     trace: "retain-on-failure",
   },
   // Screenshot baselines are OS/font dependent; they are generated on Linux.

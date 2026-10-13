@@ -1,13 +1,11 @@
-# `cba` — Córdoba (stub, not served)
+# `cba` — Córdoba
 
 Córdoba province plus the nearby interprovincial basins that reach it, with each endorheic
 basin as its own root (Mar Chiquita/Ansenuza, Salinas Grandes, …). Decisions:
 [DECISSIONS.md](../../context/DECISSIONS.md#multi-region-2026-10-10); phases R2–R3 in
 [PLAN.md](../../context/PLAN.md).
 
-**Status:** known to the pipeline and the data scripts (`--region cba` is accepted, Mongo
-database `basin-explorer-cba`), **not served** by the app: `cba.<host>` answers 404, and
-`cba` is not in `REGION_IDS` (`regions/index.ts`). Nothing here is data yet.
+**Status:** served since R3.8 (2026-10-12) at `cordobabasinexplorer.vercel.app` (dev `cordoba.localhost:3000`), listed on the hub. Pending (owner): the landing image (`LANDING_IMAGES.cba` is `null`) and seeding `basin-explorer-cba` (see `context/RUN_LOCAL.md`).
 
 ## Before the pipeline can run (Phase R2–R3)
 

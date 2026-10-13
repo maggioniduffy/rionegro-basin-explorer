@@ -19,7 +19,10 @@ export function isKnownRegionId(value: unknown): value is KnownRegionId {
  * config, messages, content, landing sample, OG shapes, landing image). See
  * regions/cba/README.md for the checklist.
  */
-export const REGION_IDS = ["nqn"] as const satisfies readonly KnownRegionId[];
+export const REGION_IDS = [
+  "nqn",
+  "cba",
+] as const satisfies readonly KnownRegionId[];
 
 export type RegionId = (typeof REGION_IDS)[number];
 

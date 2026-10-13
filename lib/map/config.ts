@@ -1,8 +1,12 @@
+import cbaMap from "@/regions/cba/map.config.json";
 import nqnMap from "@/regions/nqn/map.config.json";
 import { DEFAULT_REGION, type RegionId } from "@/regions";
 
 /** Each region's regions/<id>/map.config.json, shared with the pipeline; see its $comment. */
-const MAP_CONFIGS: Record<RegionId, typeof nqnMap> = { nqn: nqnMap };
+const MAP_CONFIGS: Record<RegionId, typeof nqnMap> = {
+  nqn: nqnMap,
+  cba: cbaMap,
+};
 
 export const mapConfigFor = (region: RegionId) => MAP_CONFIGS[region];
 

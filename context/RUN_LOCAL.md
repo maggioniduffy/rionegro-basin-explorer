@@ -236,6 +236,17 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 
 ## R4 — hub (2026-10-12)
 
-- [x] Dev: `hub.localhost:3000` shows the hub (one card, Río Negro); `rionegro.localhost:3000` and `nqn.localhost:3000` show "All regions"; `localhost:3000` unchanged with no hub link; `cordoba.localhost:3000` 404 until R3.8 serves `cba`.
-- [ ] Vercel: add `basinexplorer.vercel.app`, `rionegro.basinexplorer.vercel.app` and `cordoba.basinexplorer.vercel.app` to the project's Domains. If the nested names are refused (only the team slug may be a middle label, per community reports), pick single-label aliases, add them to `HOST_REGIONS` in `regions/hosts.ts` and set `REGION_URLS` / `HUB_URL` in the Vercel env.
+- [x] Dev: `localhost:3000` is the hub (entry point; owner, 2026-10-12) with both regions; `rionegro.localhost:3000` and `cordoba.localhost:3000` show "All regions" back to it.
+- [x] Vercel: nested names refused (owner, 2026-10-12); aliases `basinexplorer.vercel.app`, `cordobabasinexplorer.vercel.app`, `rionegrobasinexplorer.vercel.app` (`regions/hosts.ts` `REGION_HOSTS`).
+- [ ] Vercel: confirm all three aliases point at the production deployment; open each and check the hub links and the "All regions" link.
 - [ ] Browser: hub cards, theme toggle and EN/ES on the hub; the OG image of each region on the production domain (`/<region>/opengraph-image/og`).
+
+## Córdoba R3.8 — data and serving (2026-10-12)
+
+- [x] `pipeline:export`, `localities`, `mask`, `tiles` for `cba`: all `ok: true` (export twice, identical). `mask` peaks at 4.4 GB: run it capped, `systemd-run --user --scope -p MemoryMax=4500M -p MemorySwapMax=0 sh -c 'PIPELINE_MEMORY_LIMIT=2.5GB npm run pipeline:mask -- --region cba'`, so an overrun kills the step and not the editor.
+- [x] `nqn` unchanged: `export` re-run, `data/out/nqn` byte-identical.
+- [x] Dev: `cordoba.localhost:3000` landing, `/map`, `/attributions` (APRHI credit) and `/cba/opengraph-image` answer 200; the hub lists both regions.
+- [ ] `npm run seed -- --region cba` twice (idempotent), then give the read-only app user `read@basin-explorer-cba` and run `npm run atlas:check -- --region cba`. Until then the `cba` map draws, but panels, search and ask have no data.
+- [ ] Landing image: `public/landing/cba/basin.png` (1400×900 map screenshot), imported in `regions/images.ts` in place of `null`.
+- [ ] Browser on `cordoba.localhost:3000/map` (after the seed): the R3.7 checks above, Visible Land levels, the endorheic toggle (unmatched lines hide with their reaches), localities, Mar Chiquita and the reservoirs, sub-basin view with APRHI levels.
+- [ ] Review `regions/cba/content.ts` picks (featured Tercero, Dulce, Quinto; ask examples) and the `cba` landing copy in `regions/cba/messages/`.

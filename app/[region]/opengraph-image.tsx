@@ -7,27 +7,15 @@ import { REGION_CONTENT } from "@/regions/content";
 import { OG_SHAPES } from "@/regions/generated";
 
 // One static image for both languages: a shared link has no locale cookie, so the
-// card shows both titles (the site picks its language per visitor). The alt text names the
-// region, so it comes from generateImageMetadata (one image per region, id "og").
-export function generateImageMetadata({
-  params,
-}: {
-  params: { region: string };
-}) {
-  const region = isRegionId(params.region) ? params.region : DEFAULT_REGION;
-  return [
-    {
-      id: "og",
-      alt: `${messagesFor(region, "en").metadata.title} · ${messagesFor(region, "es").metadata.title}`,
-      size: OG_SIZE,
-      contentType: "image/png",
-    },
-  ];
-}
+// card shows both titles (the site picks its language per visitor).
+// `alt` is a constant export shared by every region, so it names the product family (the
+// hub's title, shared messages); the image itself shows the region's titles. A per-region alt
+// via generateImageMetadata answered 404 for every image in this Next version (R3.8).
+export const alt = `${messagesFor(DEFAULT_REGION, "en").hub.metadata.title} · ${messagesFor(DEFAULT_REGION, "es").hub.metadata.title}`;
+export const size = OG_SIZE;
+export const contentType = "image/png";
 
-const size = OG_SIZE;
-
-// Rendered at build time, one per region.
+// Rendered at build time, one per region (regions/<id>/og-shapes.json).
 export function generateStaticParams() {
   return REGION_IDS.map((region) => ({ region }));
 }
@@ -39,7 +27,6 @@ export default async function Image({
   params,
 }: {
   params: Promise<{ region: string }>;
-  id: Promise<string>;
 }) {
   const { region: raw } = await params;
   const region = isRegionId(raw) ? raw : DEFAULT_REGION;

@@ -31,15 +31,17 @@ export async function MapAccessCard({ region }: { region: RegionId }) {
       >
         <div className="relative aspect-video min-h-[220px] overflow-hidden bg-black">
           {/* The LCP element: preloaded, served as AVIF/WebP by next/image. */}
-          <Image
-            src={basin}
-            alt={t("alt")}
-            loading="eager"
-            fetchPriority="high"
-            fill
-            sizes="(max-width: 912px) calc(100vw - 32px), 880px"
-            className="object-cover object-[45%_50%] transition-[transform,filter] duration-[800ms,400ms] ease-[cubic-bezier(.2,.7,.2,1)] group-hover:scale-105 group-hover:brightness-[1.18]"
-          />
+          {basin && (
+            <Image
+              src={basin}
+              alt={t("alt")}
+              loading="eager"
+              fetchPriority="high"
+              fill
+              sizes="(max-width: 912px) calc(100vw - 32px), 880px"
+              className="object-cover object-[45%_50%] transition-[transform,filter] duration-[800ms,400ms] ease-[cubic-bezier(.2,.7,.2,1)] group-hover:scale-105 group-hover:brightness-[1.18]"
+            />
+          )}
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_55%,var(--image-fade))]" />
           <div
             aria-hidden

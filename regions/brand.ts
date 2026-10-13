@@ -6,4 +6,5 @@ import type { RegionId } from "./index";
  */
 export const REGION_BRANDS: Record<RegionId, string> = {
   nqn: "Río Negro Basin Explorer",
+  cba: "Córdoba Basin Explorer",
 };

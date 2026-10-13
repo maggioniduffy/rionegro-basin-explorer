@@ -2,6 +2,8 @@ import baseEn from "../messages/en.json";
 import baseEs from "../messages/es.json";
 import nqnEn from "../regions/nqn/messages/en.json";
 import nqnEs from "../regions/nqn/messages/es.json";
+import cbaEn from "../regions/cba/messages/en.json";
+import cbaEs from "../regions/cba/messages/es.json";
 import type { RegionId } from "../regions";
 import type { Locale } from "./config";
 
@@ -22,6 +24,7 @@ export const REGION_MESSAGES: Record<
   Record<Locale, RegionMessages>
 > = {
   nqn: { en: nqnEn, es: nqnEs },
+  cba: { en: cbaEn, es: cbaEs },
 };
 
 type Tree = { [key: string]: unknown };
