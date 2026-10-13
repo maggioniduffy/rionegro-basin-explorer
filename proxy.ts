@@ -15,7 +15,7 @@ import {
  *
  * 1. URLs carry no locale (it lives in a cookie; see i18n/config.ts). /en and /es, the
  *    landing's language links and links shared before the cookie, set the cookie and
- *    redirect to the same path without the prefix.
+ *    redirect (307, no-store) to the same path without the prefix.
  * 2. The old per-region hosts (regions/hosts.ts oldRegionHost) redirect to the hub host with
  *    the region's path, so links shared before keep working.
  * 3. `/` is the hub (app/hub), on every host.
@@ -30,9 +30,13 @@ export function proxy(request: NextRequest) {
   const redirect = (url: string | URL) => NextResponse.redirect(url, 308);
 
   if (isLocale(prefix)) {
-    const response = redirect(
+    // Temporary and uncacheable: the redirect exists to set the cookie. A cached 308 would
+    // send the browser /en -> / on its own and the cookie would never be set again.
+    const response = NextResponse.redirect(
       new URL(`/${rest.join("/")}${search}`, request.url),
+      307,
     );
+    response.headers.set("Cache-Control", "no-store");
     response.cookies.set(LOCALE_COOKIE, prefix, {
       path: "/",
       maxAge: LOCALE_COOKIE_MAX_AGE,

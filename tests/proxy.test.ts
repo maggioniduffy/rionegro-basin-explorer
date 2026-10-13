@@ -69,9 +69,24 @@ describe("proxy: regions by path (owner, 2026-10-12)", () => {
 
   it("sets the locale cookie and drops the prefix", () => {
     const r = proxy(req("http://localhost:3000/es/cordoba/map"));
-    expect(r.status).toBe(308);
     expect(location(r)).toBe("http://localhost:3000/cordoba/map");
     expect(r.headers.get("set-cookie")).toContain("es");
+  });
+
+  it("redirects the locale prefix with 307 and no-store, so the cookie is set every time", () => {
+    // A cached 308 would skip the server on the next /en and never set the cookie again.
+    for (const url of [
+      "http://localhost:3000/en",
+      "http://localhost:3000/es",
+    ]) {
+      const r = proxy(req(url));
+      expect(r.status).toBe(307);
+      expect(location(r)).toBe("http://localhost:3000/");
+      expect(r.headers.get("cache-control")).toBe("no-store");
+      expect(r.headers.get("set-cookie")).toContain(
+        `NEXT_LOCALE=${url.slice(-2)}`,
+      );
+    }
   });
 
   it("gives any other path the shared messages (the 404 page names no region)", () => {
