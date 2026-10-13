@@ -67,17 +67,22 @@ interface MapState {
   fitPending: boolean;
   /** Last fit request; `key` makes a repeated fit to the same bbox a change. */
   focus: { bbox: Bbox; key: number } | null;
-  select: (selection: Selection | null, opts?: { fit?: boolean }) => void;
+  /** `keepIsolated` keeps the hidden rest of the basin hidden (map clicks inside it). */
+  select: (
+    selection: Selection | null,
+    opts?: { fit?: boolean; keepIsolated?: boolean },
+  ) => void;
   /**
    * A lake, dam, locality or IGN detail line the user clicked: shown in the panel, not in the URL.
    * Any selection clears it, and picking one clears the selection.
    */
   picked: Picked | null;
-  pick: (picked: Picked | null) => void;
+  pick: (picked: Picked | null, opts?: { keepIsolated?: boolean }) => void;
   focusOn: (bbox: Bbox) => void;
   /**
    * Sub-basin ids to keep visible while the rest of the basin is hidden, or null.
-   * Set from the sub-basin panel; any new selection clears it.
+   * Set from the sub-basin panel; any new selection clears it, except one clicked on the
+   * map (land, river or feature), which can only be inside the isolated sub-basins.
    */
   isolatedIds: string[] | null;
   setIsolatedIds: (ids: string[] | null) => void;
@@ -121,12 +126,17 @@ export const useMapStore = create<MapState>()((set) => ({
     set((s) => ({
       selection,
       picked: null,
-      isolatedIds: null,
+      isolatedIds: opts?.keepIsolated && selection ? s.isolatedIds : null,
       fitPending: Boolean(selection && opts?.fit),
       viewMode: selection?.kind === "subbasin" ? "subbasins" : s.viewMode,
     })),
   picked: null,
-  pick: (picked) => set({ picked, selection: null, isolatedIds: null }),
+  pick: (picked, opts) =>
+    set((s) => ({
+      picked,
+      selection: null,
+      isolatedIds: opts?.keepIsolated && picked ? s.isolatedIds : null,
+    })),
   focusOn: (bbox) =>
     set((s) => ({
       fitPending: false,

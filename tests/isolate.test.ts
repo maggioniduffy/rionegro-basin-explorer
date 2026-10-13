@@ -74,4 +74,23 @@ describe("hiding the rest of the basin", () => {
     expect(s().isolatedIds).toBeNull();
     expect(s().selection).toBeNull();
   });
+
+  it("is kept by land, a river or a feature clicked inside the isolated sub-basin", () => {
+    const s = useMapStore.getState;
+    s().select({ kind: "subbasin", id: "limay" });
+    s().setIsolatedIds(["limay"]);
+    s().select({ kind: "river", id: "limay" }, { keepIsolated: true });
+    expect(s().isolatedIds).toEqual(["limay"]);
+    s().pick({ kind: "lake", id: "x" } as never, { keepIsolated: true });
+    expect(s().isolatedIds).toEqual(["limay"]);
+    // Visible land is inside the isolated sub-basin; a click on hidden land clears.
+    s().select({ kind: "subbasin", id: "alumine" }, { keepIsolated: true });
+    expect(s().isolatedIds).toEqual(["limay"]);
+    s().select(null, { keepIsolated: true });
+    expect(s().isolatedIds).toBeNull();
+    // Search and panel links can select anything, so they clear it.
+    s().setIsolatedIds(["limay"]);
+    s().select({ kind: "river", id: "neuquen" }, { fit: true });
+    expect(s().isolatedIds).toBeNull();
+  });
 });

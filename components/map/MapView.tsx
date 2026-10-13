@@ -481,13 +481,15 @@ export default function MapView() {
 
     // Click a line to select its river, else its stream, else the reach; in the sub-basin
     // view, click land to select its sub-basin; click elsewhere to clear. Hovering
-    // something selectable shows a pointer.
+    // something selectable shows a pointer. Hidden land can't be hit, so land, a river
+    // or a feature clicked while sub-basins are isolated is inside them: keep the rest hidden.
     map.on("click", (e) => {
       if (!loaded) return;
       const hit = hitAt(map, e.point.x, e.point.y);
       const store = useMapStore.getState();
-      if (hit?.type === "picked") store.pick(hit.picked);
-      else store.select(hit?.selection ?? null);
+      if (hit?.type === "picked")
+        store.pick(hit.picked, { keepIsolated: true });
+      else store.select(hit?.selection ?? null, { keepIsolated: true });
     });
     // Hovering a locality also names it; the click opens its panel.
     const nameTip = new Popup({
