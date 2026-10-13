@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "title": "Explorador de Cuencas de Córdoba",
+    "description": "Explorador satelital de las cuencas de Córdoba, Argentina: los ríos Primero, Segundo, Tercero, Cuarto y Quinto, Mar Chiquita y sus arroyos."
+  },
+  "home": {
+    "title": "Explorador de Cuencas de Córdoba"
+  },
+  "map": {
+    "maplibre": {
+      "title": "Mapa de las cuencas de Córdoba"
+    }
+  },
+  "ask": {
+    "examples": {
+      "0": "¿Qué río es más largo, Primero o Segundo?",
+      "1": "El afluente más largo del Carcarañá",
+      "2": "Cuenca de Mar Chiquita"
+    }
+  },
+  "attributions": {
+    "metaTitle": "Fuentes y licencias · Explorador de Cuencas de Córdoba",
+    "modeled": {
+      "regulated": "Hoy varias represas regulan estos ríos (Embalse Río III, Los Molinos, San Roque, Cerro Pelado, Cruz del Eje y otras), así que su caudal puede diferir mucho de los promedios naturales que se muestran aquí."
+    }
+  },
+  "landing": {
+    "eyebrow": "Cuencas de Córdoba · Argentina",
+    "h1": "Seguí el agua desde las Sierras hasta Mar Chiquita y el Paraná.",
+    "sub": "Explorá los ríos de Córdoba, del Primero y el Segundo al Tercero, el Cuarto y el Quinto, sus arroyos y cuencas sobre imágenes satelitales.",
+    "f2p": "Pasá de la región completa a sus seis cuencas, y bajá a subcuencas y unidades de gestión hídrica con migas de pan.",
+    "d2": "El caudal es un promedio natural modelado para 1971–2000 y no refleja la regulación actual de embalses como Río III, Los Molinos, San Roque y Cerro Pelado. La población es una estimación de 2010.",
+    "home": "Córdoba Basin Explorer, inicio",
+    "card": {
+      "alt": "Imagen satelital de las cuencas de Córdoba con sus ríos resaltados en celeste"
+    }
+  },
+  "panel": {
+    "reach": {
+      "ignName": "Nombre de la APRHI dentro de Córdoba y del IGN fuera de ella. Confianza de la coincidencia: {confidence, select, high {alta} medium {media} other {baja}}.",
+      "ignNameReviewed": "Nombre confirmado a mano.",
+      "ownerName": "Nombre asignado a mano; ninguna línea de la APRHI ni del IGN lo lleva."
+    },
+    "stream": {
+      "title": "Curso de agua con nombre",
+      "nameNote": "Nombre de la APRHI dentro de Córdoba y del IGN fuera de ella. El curso une los tramos que comparten este nombre a lo largo de la red de drenaje."
+    },
+    "feature": {
+      "water": {
+        "note": "Contorno de la APRHI dentro de Córdoba y del IGN fuera de ella, o de HydroLAKES (Messager et al., 2016) donde ninguno lo tiene."
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "river": {
+    "id": "tercero",
+    "name": "Río Tercero",
+    "lengthKm": 274.8,
+    "strahler": 5,
+    "dischargeM3s": 12.2,
+    "flowsInto": {
+      "id": "carcarana",
+      "name": "Río Carcarañá"
+    }
+  },
+  "subbasin": {
+    "id": "mar-chiquita",
+    "name": "Laguna Mar Chiquita (Mar de Ansenuza)",
+    "parent": {
+      "id": "cordoba",
+      "name": "Córdoba"
+    },
+    "children": [
+      "Bañados del Río Dulce",
+      "Este Mar Chiquita",
+      "Miramar",
+      "Noroeste Mar Chiquita",
+      "Oeste Mar Chiquita",
+      "Río Carnero-Salsipuedes",
+      "Río Primero (Suquía)",
+      "Río Segundo (Xanaes)",
+      "Salinas de Ambargasta"
+    ]
+  }
+}

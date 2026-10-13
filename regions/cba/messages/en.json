@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "title": "Córdoba Basin Explorer",
+    "description": "Satellite explorer of the basins of Córdoba, Argentina: the Primero, Segundo, Tercero, Cuarto and Quinto rivers, Mar Chiquita and their streams."
+  },
+  "home": {
+    "title": "Córdoba Basin Explorer"
+  },
+  "map": {
+    "maplibre": {
+      "title": "Map of the basins of Córdoba"
+    }
+  },
+  "ask": {
+    "examples": {
+      "0": "Which is longer, Primero or Segundo?",
+      "1": "Longest tributary of the Carcarañá",
+      "2": "Mar Chiquita basin"
+    }
+  },
+  "attributions": {
+    "metaTitle": "Sources and licenses · Córdoba Basin Explorer",
+    "modeled": {
+      "regulated": "Dams regulate several of these rivers today (Embalse Río III, Los Molinos, San Roque, Cerro Pelado, Cruz del Eje and others), so their flow can differ a lot from the natural averages shown here."
+    }
+  },
+  "landing": {
+    "eyebrow": "Basins of Córdoba · Argentina",
+    "h1": "Follow the water from the Sierras to Mar Chiquita and the Paraná.",
+    "sub": "Explore the rivers of Córdoba, from the Primero and Segundo to the Tercero, Cuarto and Quinto, their streams and basins on satellite imagery.",
+    "f2p": "Switch from the whole region to its six basins, then drill into sub-basins and water management units with breadcrumb navigation.",
+    "d2": "Discharge is a modeled natural average for 1971–2000 and does not reflect current regulation by dams such as Embalse Río III, Los Molinos, San Roque and Cerro Pelado. Population is a 2010 estimate.",
+    "home": "Córdoba Basin Explorer, home",
+    "card": {
+      "alt": "Satellite image of the basins of Córdoba with their rivers highlighted in cyan"
+    }
+  },
+  "panel": {
+    "reach": {
+      "ignName": "Name from APRHI inside Córdoba, from IGN outside it. Match confidence: {confidence, select, high {high} medium {medium} other {low}}.",
+      "ignNameReviewed": "Name confirmed by hand.",
+      "ownerName": "Name set by hand; no APRHI or IGN line carries it."
+    },
+    "stream": {
+      "title": "Named stream",
+      "nameNote": "Name from APRHI inside Córdoba, from IGN outside it. The stream joins the reaches that share this name along the flow network."
+    },
+    "feature": {
+      "water": {
+        "note": "Outline from APRHI inside Córdoba and from IGN outside it, or from HydroLAKES (Messager et al., 2016) where neither has one."
+      }
+    }
+  }
+}

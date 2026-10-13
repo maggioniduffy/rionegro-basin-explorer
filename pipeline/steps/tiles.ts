@@ -181,6 +181,18 @@ function spanUnitsZ0(geometry: unknown): number {
   return best;
 }
 
+/** As spanUnitsZ0, for any geometry: the larger side of its extent, in z0 tile units. */
+function spanUnitsZ0Any(geometry: unknown): number {
+  const pts: number[][] = [];
+  const walk = (c: unknown): void => {
+    if (Array.isArray(c) && typeof c[0] === "number") pts.push(c as number[]);
+    else if (Array.isArray(c)) c.forEach(walk);
+  };
+  walk((geometry as { coordinates?: unknown } | null)?.coordinates);
+  if (pts.length === 0) return 0;
+  return spanUnitsZ0({ type: "LineString", coordinates: pts });
+}
+
 const sizeKb = async (file: string) =>
   Math.round((await stat(file)).size / 1024);
 
@@ -415,10 +427,20 @@ async function main() {
     });
   }
 
-  const subbasinIds = new Set(
-    (
-      JSON.parse(await readFile(subbasinsIn, "utf8")) as { features: Feature[] }
-    ).features.map((f) => String(f.properties.id)),
+  // Own areas and outlines are checked against their own files: in a reference region a node
+  // fully covered by its children has an outline but no own area (cba's subcuencas, R3.5).
+  const readIds = async (file: string) =>
+    (JSON.parse(await readFile(file, "utf8")) as { features: Feature[] })
+      .features;
+  const ownAreas = await readIds(subbasinsIn);
+  const subbasinIds = new Set(ownAreas.map((f) => String(f.properties.id)));
+  const outlineIds = new Set(
+    (await readIds(outlinesIn)).map((f) => String(f.properties.id)),
+  );
+  // An own area smaller than one tile unit may be dropped at a zoom, as a short reach is
+  // (cba: Juramento Salado's own area is 0.1 km²).
+  const ownSpan = new Map(
+    ownAreas.map((f) => [String(f.properties.id), spanUnitsZ0Any(f.geometry)]),
   );
 
   // 3. Decode back: reach ids per zoom vs the expected set; mask levels per zoom.
@@ -433,7 +455,8 @@ async function main() {
       .map(([id]) => id);
     const subUnit = (id: string) => (spanById.get(id) ?? 0) * 2 ** z < 1;
     const missing = missingIds.length;
-    const missingVisible = missingIds.filter((id) => !subUnit(id)).length;
+    const visibleMissing = missingIds.filter((id) => !subUnit(id));
+    const missingVisible = visibleMissing.length;
     const early = [...got].filter(
       (id) => (minzoomById.get(id) ?? Infinity) > z,
     ).length;
@@ -443,6 +466,9 @@ async function main() {
       found: got.size,
       missing,
       missingVisible,
+      ...(missingVisible > 0
+        ? { missingVisibleIds: visibleMissing.slice(0, 10) }
+        : {}),
       early,
     });
     console.log(
@@ -505,13 +531,17 @@ async function main() {
     ),
     everySubbasinAtEveryCheckedZoom: maskLevelsByZoom.every(
       (m) =>
-        m.subbasins.length === subbasinIds.size &&
-        m.subbasins.every((id) => subbasinIds.has(id)),
+        m.subbasins.every((id) => subbasinIds.has(id)) &&
+        [...subbasinIds].every(
+          (id) =>
+            m.subbasins.includes(id) ||
+            (ownSpan.get(id) ?? 0) * 2 ** m.zoom < 1,
+        ),
     ),
     everySubbasinOutlineAtEveryCheckedZoom: maskLevelsByZoom.every(
       (m) =>
-        m.outlines.length === subbasinIds.size &&
-        m.outlines.every((id) => subbasinIds.has(id)),
+        m.outlines.length === outlineIds.size &&
+        m.outlines.every((id) => outlineIds.has(id)),
     ),
   };
   await writeReport("tiles", {

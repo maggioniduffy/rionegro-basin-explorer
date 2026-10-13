@@ -39,6 +39,7 @@ import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
 import { loadMapLines } from "../lib/map-lines";
+import { assignNetwork, createHybasNetwork } from "../lib/water-network";
 import {
   type NetworkReach,
   mouthKinds,
@@ -61,20 +62,49 @@ import {
   subbasinMouths,
 } from "../lib/streams";
 
+/** pipeline:basin report: one sea outlet (nqn) or reference mode (cba, `outline`). */
 interface BasinReport {
   ok: boolean;
-  areaKm2: {
+  areaKm2?: {
     polygonSpheroid: number;
     connectedPolygonSpheroid: number;
     diffPct: { vsReference: number };
   };
+  outline?: { areaSpheroidKm2: number };
 }
+/** pipeline:rivers report: one sea outlet (nqn) or reference mode (cba, totals per root). */
 interface RiversReport {
   ok: boolean;
-  counts: { reaches: number; connected: number; endorheic: number };
-  lengthKm: { total: number; connected: number; endorheic: number };
+  counts: { reaches: number; connected?: number; endorheic?: number };
+  lengthKm: { total: number; connected?: number; endorheic?: number };
   topology: { orphans: number };
-  gires: { byNetworkAndClass1Day: unknown };
+  gires: { byNetworkAndClass1Day?: unknown };
+  totalsByRoot?: Array<{
+    km: number;
+    connected_km: number;
+    endorheic_km: number;
+    connected_reaches: number;
+    endorheic_reaches: number;
+  }>;
+}
+
+/** Connected / endorheic reach counts and km from either report shape. */
+function networkTotals(r: RiversReport) {
+  if (!r.totalsByRoot)
+    return {
+      connected: r.counts.connected!,
+      endorheic: r.counts.endorheic!,
+      connectedKm: r.lengthKm.connected!,
+      endorheicKm: r.lengthKm.endorheic!,
+    };
+  const sum = (k: keyof NonNullable<RiversReport["totalsByRoot"]>[number]) =>
+    r.totalsByRoot!.reduce((s, t) => s + t[k], 0);
+  return {
+    connected: sum("connected_reaches"),
+    endorheic: sum("endorheic_reaches"),
+    connectedKm: sum("connected_km"),
+    endorheicKm: sum("endorheic_km"),
+  };
 }
 /** One entry of data/work/ign-streams/streams.json (pipeline:ign-streams). */
 interface StreamsFileEntry {
@@ -375,17 +405,37 @@ async function main() {
         CREATE TABLE piece_name AS
         SELECT * FROM read_json(${lit(pieceNameFile)},
                                 columns = {pieceId: 'VARCHAR', name: 'VARCHAR'})`);
+      // A piece no reach matched takes the network flag of the level-12 polygon under its
+      // midpoint, the rule lakes and dams use (lib/water-network.ts), so the map's
+      // endorheic toggle hides it with the reaches around it.
+      await createHybasNetwork(
+        db,
+        requireInput(workPath("basin/hybas_l12.parquet")),
+        reachesFile,
+      );
+      await db.conn.run(`
+        CREATE TABLE unmatched AS
+        SELECT pieceId AS id, ST_SetCRS(geom, 'EPSG:4326') AS geom
+        FROM read_parquet(${lit(linesFile)}) WHERE reach IS NULL`);
+      const unmatchedOutside = await assignNetwork(
+        db,
+        "unmatched",
+        "ST_PointOnSurface(geom)",
+        "piece_net",
+      );
       await db.conn.run(`
         CREATE TABLE pieces AS
         SELECT l.pieceId, l.reach, l.source, l.class, l.status, l.length_m,
                o._id AS reach_found,
-               o.river, o.stream, o.network, o.strahler, o.uplandKm2, o.nonPerennial1d,
+               o.river, o.stream, coalesce(o.network, pnet.network) AS network,
+               o.strahler, o.uplandKm2, o.nonPerennial1d,
                pn.name,
                coalesce(ST_SetCRS(g.geom, 'EPSG:4326'), ST_SetCRS(l.geom, 'EPSG:4326')) AS geom,
                coalesce(ST_IsEmpty(g.geom), false) AS not_drawn
         FROM read_parquet(${lit(linesFile)}) l
         LEFT JOIN out o ON o._id = l.reach
         LEFT JOIN piece_name pn ON pn.pieceId = l.pieceId
+        LEFT JOIN piece_net pnet ON pnet.id = l.pieceId
         LEFT JOIN read_parquet(${lit(lineGeomFile)}) g ON g.pieceId = l.pieceId`);
       await db.conn.run(`
         COPY (SELECT reach AS id, river, stream, network, strahler, uplandKm2, nonPerennial1d,
@@ -407,7 +457,10 @@ async function main() {
                round(sum(length_m) / 1000.0, 1) AS km,
                round(sum(length_m) FILTER (reach IS NULL) / 1000.0, 1) AS unmatched_km,
                round(sum(length_m) FILTER (source = 'aprhi') / 1000.0, 1) AS aprhi_km,
-               round(sum(length_m) FILTER (source = 'ign') / 1000.0, 1) AS ign_km
+               round(sum(length_m) FILTER (source = 'ign') / 1000.0, 1) AS ign_km,
+               round(sum(length_m) FILTER (reach IS NULL AND network = 'endorheic') / 1000.0, 1)
+                 AS unmatched_endorheic_km,
+               ${unmatchedOutside}::INT AS unmatched_outside_level12
         FROM pieces`);
     }
     [counts] = await db.all(`
@@ -561,6 +614,7 @@ async function main() {
     regionFile("basin.config.json"),
   );
 
+  const net = networkTotals(r);
   const checks = {
     basinChecks: b.ok,
     riversChecks: r.ok,
@@ -588,16 +642,23 @@ async function main() {
   const summary = {
     ok: Object.values(checks).every(Boolean),
     checks,
-    basin: {
-      areaKm2: Math.round(b.areaKm2.polygonSpheroid),
-      connectedAreaKm2: Math.round(b.areaKm2.connectedPolygonSpheroid),
-      reference: basinReference,
-      vsReferencePct: Number(b.areaKm2.diffPct.vsReference.toFixed(2)),
-    },
+    // Reference mode has no single official area or connected polygon: the APRHI roots
+    // are checked in pipeline:basin's own report.
+    basin: reference
+      ? {
+          areaKm2: Math.round(b.outline!.areaSpheroidKm2),
+          reference: basinReference,
+        }
+      : {
+          areaKm2: Math.round(b.areaKm2!.polygonSpheroid),
+          connectedAreaKm2: Math.round(b.areaKm2!.connectedPolygonSpheroid),
+          reference: basinReference,
+          vsReferencePct: Number(b.areaKm2!.diffPct.vsReference.toFixed(2)),
+        },
     reaches: {
       total: r.counts.reaches,
-      connected: r.counts.connected,
-      endorheic: r.counts.endorheic,
+      connected: net.connected,
+      endorheic: net.endorheic,
       inNamedRivers: counts?.named_n,
       withIgnName: counts?.ign_named_n,
       // IGN name not shown: off every IGN line (pipeline:ign-streams dropped.json).
@@ -611,8 +672,8 @@ async function main() {
     },
     lengthKm: {
       total: Number(r.lengthKm.total.toFixed(1)),
-      connected: Number(r.lengthKm.connected.toFixed(1)),
-      endorheic: Number(r.lengthKm.endorheic.toFixed(1)),
+      connected: Number(net.connectedKm.toFixed(1)),
+      endorheic: Number(net.endorheicKm.toFixed(1)),
       namedRivers: n.namedKm,
     },
     namedRivers: n.rivers,
@@ -631,6 +692,9 @@ async function main() {
             unmatchedKm: pieceCounts.unmatched_km,
             aprhiKm: pieceCounts.aprhi_km,
             ignKm: pieceCounts.ign_km,
+            // Network flag of unmatched pieces, from their level-12 polygon.
+            unmatchedEndorheicKm: pieceCounts.unmatched_endorheic_km,
+            unmatchedOutsideLevel12: pieceCounts.unmatched_outside_level12,
           },
         }
       : {}),

@@ -5,12 +5,14 @@ import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { messagesFor } from "@/i18n/messages";
 import {
   SOFTWARE,
-  SOURCES,
+  sourcesFor,
   type Source,
   type SourceId,
 } from "@/lib/attributions";
+import { DEFAULT_REGION, isRegionId } from "@/regions";
 
 /** The panel caveats (messages panel.caveat.*), listed here in one place (rule 4). */
 const CAVEATS = [
@@ -24,6 +26,7 @@ const CAVEATS = [
 /** Sources whose license terms need a sentence of explanation. */
 const TERMS = {
   ign: "ign.terms",
+  aprhi: "aprhi.terms",
   osm: "osm.terms",
   eox: "eox.terms",
 } as const satisfies Partial<Record<SourceId, string>>;
@@ -97,7 +100,9 @@ async function SourceCard({ source }: { source: Source }) {
         <ExternalLink href={source.url}>{source.name}</ExternalLink>
       </h3>
       <dl className="flex flex-col gap-3 text-sm">
-        <Field label={t("usedFor")}>{t(`${source.id}.usedFor`)}</Field>
+        <Field label={t("usedFor")}>
+          {t(source.usedForKey ?? `${source.id}.usedFor`)}
+        </Field>
         <Field label={t("license")}>
           <ExternalLink href={source.license.url}>
             {source.license.name}
@@ -146,7 +151,13 @@ async function SourceCard({ source }: { source: Source }) {
   );
 }
 
-export default async function AttributionsPage() {
+export default async function AttributionsPage({
+  params,
+}: PageProps<"/[region]/attributions">) {
+  const { region: raw } = await params;
+  const region = isRegionId(raw) ? raw : DEFAULT_REGION;
+  // The product name in the HydroSHEDS notice is the region's English title (a proper noun).
+  const sources = sourcesFor(region, messagesFor(region, "en").metadata.title);
   const t = await getTranslations("attributions");
   const caveat = await getTranslations("panel.caveat");
 
@@ -183,7 +194,7 @@ export default async function AttributionsPage() {
         <Section id="sources" title={t("sources.title")}>
           <p>{t("sources.intro")}</p>
           <div className="flex flex-col gap-4">
-            {SOURCES.map((s) => (
+            {sources.map((s) => (
               <SourceCard key={s.id} source={s} />
             ))}
           </div>

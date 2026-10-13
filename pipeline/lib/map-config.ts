@@ -44,6 +44,12 @@ const schema = z.object({
   mask: z.object({
     strahlerFactor: byStrahler,
     baseHalfWidthKm: z.array(z.number().positive()).min(1),
+    /**
+     * Optional: lines are simplified by this many metres (Albers) before buffering. Dense
+     * source lines (cba's APRHI pieces, a vertex every ~40 m) otherwise make the buffers
+     * outgrow the dev laptop's memory; 25 m is under a fifth of a pixel at z10. Absent = none.
+     */
+    simplifyM: z.number().positive().optional(),
   }),
 });
 
@@ -80,6 +86,26 @@ export function pieceOrder(
     table[`${String(props.src)}:${String(props.cls)}`] ?? table["*"];
   if (order === undefined) throw new Error('pieceOrderByClass has no "*"');
   return order;
+}
+
+/**
+ * pieceOrder as a SQL expression over the columns `strahler`, `src` and `cls` of
+ * tiles/reaches.geojson (pipeline:mask builds its buffers per order).
+ */
+export function pieceOrderSql(
+  config: Pick<MapConfig, "pieceOrderByClass">,
+): string {
+  const table = config.pieceOrderByClass;
+  if (!table)
+    throw new Error(
+      'map.config.json: pieceOrderByClass is required with mapLines "pieces"',
+    );
+  const q = (v: string) => `'${v.replaceAll("'", "''")}'`;
+  const cases = Object.entries(table)
+    .filter(([k]) => k !== "*")
+    .map(([k, v]) => `WHEN ${q(k)} THEN ${v}`)
+    .join(" ");
+  return `coalesce(strahler, CASE src || ':' || cls ${cases} ELSE ${table["*"]} END)`;
 }
 
 /**

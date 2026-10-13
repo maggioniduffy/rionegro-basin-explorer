@@ -1,0 +1,82 @@
+{
+  "$comment": "Shared by pipeline:mask, pipeline:tiles and the app (lib/map). basinBbox is the basin outline's extent (initial view; pipeline:mask checks it against basin.geojson). bounds is the rectangle the mask covers and also the map's maxBounds, so the viewer never sees past the mask edge. minzoom is the lowest zoom the map allows (maxBounds alone would stop near z4 on a phone); tile checks start there. reachMinzoomByStrahler sets when each Strahler order appears. mask.levels are the Visible Land slider stops: each reach is buffered by baseHalfWidthKm × strahlerFactor[order] (per side), clipped to the basin; a final implicit level reveals the whole basin. ign: zoom at which IGN layers appear (pipeline:tiles, Phase 5), PROVISIONAL until checked on the map: detail pieces by length (km), extra lakes by area (km2), dams and dam walls all at damsMinzoom; each list is read top to bottom and the first step whose min is <= the value applies. localities.minzoomByPlace (Phase 7): zoom at which OSM cities, towns and villages appear, PROVISIONAL until checked on the map. Córdoba (R3.8): every value except basinBbox and bounds is copied from Río Negro, so the map style matches (owner, 2026-10-11); bounds pad the outline by about 3 degrees as for nqn. pieceOrderByClass (mapLines \"pieces\") is the display-only order of a line piece no HydroRIVERS reach matched, by '<source>:<class>' of pipeline:lines: APRHI rivers and IGN perennial lines appear with Strahler 3 reaches (z7), all other classes with Strahler 1 (z9); it sets zoom, width and mask buffer only and is never shown as a Strahler order. mask.simplifyM (cba only): lines are simplified by 25 m before buffering, since APRHI's dense lines made pipeline:mask outgrow 4 GB.",
+  "basinBbox": {
+    "xmin": -66.5665,
+    "ymin": -35.0156,
+    "xmax": -60.7838,
+    "ymax": -25.8528
+  },
+  "bounds": {
+    "xmin": -70,
+    "ymin": -38.5,
+    "xmax": -57.5,
+    "ymax": -22.5
+  },
+  "minzoom": 4,
+  "maxzoom": 10,
+  "reachMinzoomByStrahler": {
+    "1": 9,
+    "2": 8,
+    "3": 7,
+    "4": 6,
+    "5": 0,
+    "6": 0,
+    "7": 0
+  },
+  "pieceOrderByClass": {
+    "aprhi:Río": 3,
+    "ign:perennial": 3,
+    "*": 1
+  },
+  "mask": {
+    "strahlerFactor": {
+      "1": 1,
+      "2": 1.5,
+      "3": 2.25,
+      "4": 3.4,
+      "5": 5,
+      "6": 7.6,
+      "7": 11.4
+    },
+    "baseHalfWidthKm": [0.05, 0.1, 0.2, 0.4, 0.8],
+    "simplifyM": 25
+  },
+  "ign": {
+    "detailMinzoomByKm": [
+      {
+        "min": 20,
+        "minzoom": 7
+      },
+      {
+        "min": 5,
+        "minzoom": 8
+      },
+      {
+        "min": 0,
+        "minzoom": 9
+      }
+    ],
+    "extraLakeMinzoomByKm2": [
+      {
+        "min": 1,
+        "minzoom": 6
+      },
+      {
+        "min": 0.1,
+        "minzoom": 8
+      },
+      {
+        "min": 0,
+        "minzoom": 9
+      }
+    ],
+    "damsMinzoom": 6
+  },
+  "localities": {
+    "minzoomByPlace": {
+      "city": 4,
+      "town": 6,
+      "village": 8
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveMapLines } from "../../pipeline/lib/map-lines";
-import { pieceOrder } from "../../pipeline/lib/map-config";
+import { pieceOrder, pieceOrderSql } from "../../pipeline/lib/map-config";
 
 describe("resolveMapLines", () => {
   it("defaults to the reaches (nqn) and accepts pieces", () => {
@@ -34,6 +34,18 @@ describe("pieceOrder", () => {
   it("throws when the table is missing", () => {
     expect(() => pieceOrder({}, { src: "aprhi", cls: "Río" })).toThrow(
       /pieceOrderByClass/,
+    );
+  });
+});
+
+describe("pieceOrderSql", () => {
+  it("is the same rule as pieceOrder, as SQL over strahler, src and cls", () => {
+    expect(
+      pieceOrderSql({
+        pieceOrderByClass: { "aprhi:Río": 3, "ign:perennial": 3, "*": 1 },
+      }),
+    ).toBe(
+      "coalesce(strahler, CASE src || ':' || cls WHEN 'aprhi:Río' THEN 3 WHEN 'ign:perennial' THEN 3 ELSE 1 END)",
     );
   });
 });

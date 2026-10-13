@@ -18,6 +18,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import net from "node:net";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
+import { isReferenceRegion } from "../lib/region-mode";
 import { rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
@@ -93,15 +94,18 @@ out;`;
 
 async function main() {
   const basinFile = requireInput(workPath("basin/basin.geojson"));
+  // pipeline:basin reports the outline's extent under `polygon` (nqn) or, in reference
+  // mode, under `outline` (cba).
   const basinReport = JSON.parse(
     await readFile(requireInput(workPath("basin/report.json")), "utf8"),
-  ) as { polygon: { bbox: Bbox } };
+  ) as { polygon?: { bbox: Bbox }; outline?: { bbox: Bbox } };
+  const bbox = (
+    (await isReferenceRegion()) ? basinReport.outline : basinReport.polygon
+  )?.bbox;
+  if (!bbox) throw new Error("basin/report.json has no outline bbox");
   const outDir = workPath("localities");
   await mkdir(outDir, { recursive: true });
-  const elements = await fetchOverpass(
-    basinReport.polygon.bbox,
-    `${outDir}/overpass.json`,
-  );
+  const elements = await fetchOverpass(bbox, `${outDir}/overpass.json`);
 
   const nodes = elements.filter(
     (e) =>

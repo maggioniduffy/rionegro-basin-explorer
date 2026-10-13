@@ -4,9 +4,17 @@
  * providers publish them, so they are not translated; the prose around them lives in
  * messages (attributions.*), keyed by `id`.
  */
+import type { KnownRegionId } from "@/regions";
 
 export type SourceId =
-  "hydrosheds" | "hydroatlas" | "gires" | "hydrolakes" | "ign" | "osm" | "eox";
+  | "hydrosheds"
+  | "hydroatlas"
+  | "gires"
+  | "hydrolakes"
+  | "ign"
+  | "aprhi"
+  | "osm"
+  | "eox";
 
 export type Source = {
   id: SourceId;
@@ -18,18 +26,51 @@ export type Source = {
   /** Long notice the license asks to reproduce, verbatim (English only). */
   notice?: string;
   citations: { text: string; url?: string }[];
+  /** Messages key (under attributions.sources) of "Used for", when not `<id>.usedFor`. */
+  usedForKey?: "ign.usedForCba";
 };
 
 /** HydroSHEDS v1 License Agreement, Exhibit B (SOURCES.md), with the product name filled in. */
-const HYDROSHEDS_NOTICE =
-  "This product Río Negro Basin Explorer incorporates data from the HydroSHEDS version 1 database which is © World Wildlife Fund, Inc. (2006-2022) and has been used herein under license. WWF has not evaluated the data as altered and incorporated within Río Negro Basin Explorer, and therefore gives no warranty regarding its accuracy, completeness, currency or suitability for any particular purpose. Portions of the HydroSHEDS v1 database incorporate data which are the intellectual property rights of © USGS (2006-2008), NASA (2000-2005), ESRI (1992-1998), CIAT (2004-2006), UNEP-WCMC (1993), WWF (2004), Commonwealth of Australia (2007), and Her Royal Majesty and the British Crown and are used under license. The HydroSHEDS v1 database and more information are available at https://www.hydrosheds.org.";
+const hydroshedsNotice = (product: string) =>
+  `This product ${product} incorporates data from the HydroSHEDS version 1 database which is © World Wildlife Fund, Inc. (2006-2022) and has been used herein under license. WWF has not evaluated the data as altered and incorporated within ${product}, and therefore gives no warranty regarding its accuracy, completeness, currency or suitability for any particular purpose. Portions of the HydroSHEDS v1 database incorporate data which are the intellectual property rights of © USGS (2006-2008), NASA (2000-2005), ESRI (1992-1998), CIAT (2004-2006), UNEP-WCMC (1993), WWF (2004), Commonwealth of Australia (2007), and Her Royal Majesty and the British Crown and are used under license. The HydroSHEDS v1 database and more information are available at https://www.hydrosheds.org.`;
 
 const CC_BY_4 = {
   name: "CC BY 4.0",
   url: "https://creativecommons.org/licenses/by/4.0/",
 };
 
-export const SOURCES: Source[] = [
+/**
+ * APRHI's PIHC water layers (SOURCES.md, Córdoba): the terms ask for the "FUENTE" line, the
+ * date of the original data and no suggestion that APRHI endorses the product (the last is
+ * attributions.sources.aprhi.terms).
+ */
+const APRHI: Source = {
+  id: "aprhi",
+  name: "Portal de Información Hídrica de Córdoba (APRHI)",
+  url: "http://pihc.aprhi.gob.ar/",
+  license: {
+    name: "PIHC Términos y Condiciones de uso de la información",
+    url: "https://drive.google.com/file/d/15Y-D80ZX6puQtapwDAJ294jUYymjPYzx/view",
+  },
+  credit:
+    "FUENTE: Portal de Información Hídrica de Córdoba. Administración Provincial de Recursos Hídricos de Córdoba (APRHI). Original data: Cuencas 24/10/2019, Unidades de Gestión Hídrica 23/12/2019; CursosDeAgua, CuerposDeAguaNaturales and Embalses as published on the PIHC in October 2026.",
+  citations: [],
+};
+
+/** The sources a region credits, with its product name in the HydroSHEDS notice. */
+export function sourcesFor(region: KnownRegionId, product: string): Source[] {
+  const all = SOURCES.map((s) =>
+    s.id === "hydrosheds" ? { ...s, notice: hydroshedsNotice(product) } : s,
+  );
+  if (region !== "cba") return all;
+  // Córdoba: APRHI comes first among the agencies (precedence APRHI > IGN > HydroRIVERS),
+  // and IGN is used outside the province.
+  return all.flatMap((s) =>
+    s.id === "ign" ? [APRHI, { ...s, usedForKey: "ign.usedForCba" }] : [s],
+  );
+}
+
+const SOURCES: Source[] = [
   {
     id: "hydrosheds",
     name: "HydroRIVERS v1.0 and HydroBASINS v1c (HydroSHEDS)",
@@ -38,7 +79,7 @@ export const SOURCES: Source[] = [
       name: "HydroSHEDS v1 License Agreement",
       url: "https://data.hydrosheds.org/file/technical-documentation/HydroSHEDS_TechDoc_v1_4.pdf",
     },
-    notice: HYDROSHEDS_NOTICE,
+
     citations: [
       {
         text: "Lehner, B., Verdin, K., Jarvis, A. (2008): New global hydrography derived from spaceborne elevation data. Eos, Transactions, AGU, 89(10): 93–94.",

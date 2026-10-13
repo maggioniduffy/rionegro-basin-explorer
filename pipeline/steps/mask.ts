@@ -17,14 +17,22 @@
  * lines and land disappear together (one small extra layer instead of a second set of
  * masks).
  *
+ * Line pieces (mapLines "pieces", cba): a piece no reach matched is buffered at its display
+ * order (map.config.json pieceOrderByClass), and the connected part of the basin is the
+ * level-12 polygons flagged connected by the reaches they hold (lib/water-network.ts, the
+ * rule of lakes and dams), since HydroBASINS ENDO disagrees with the edited network there.
+ *
  * Outputs: data/work/tiles/mask.geojson and mask_endorheic.geojson (one feature per
  * level, property `level`).
  */
-import { mkdir, rm } from "node:fs/promises";
-import { lit, openDb } from "../lib/duckdb";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { limitResources, lit, openDb } from "../lib/duckdb";
 import { areaAlbersKm2, envelope } from "../lib/geo";
+import { type Geometry, flattenPolygons } from "../lib/flatten-polygons";
 import { requireInput } from "../lib/inputs";
-import { mapConfig } from "../lib/map-config";
+import { mapConfig, pieceOrderSql } from "../lib/map-config";
+import { loadMapLines } from "../lib/map-lines";
+import { createHybasNetwork } from "../lib/water-network";
 import { rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
 
@@ -42,12 +50,22 @@ async function main() {
   const endoFile = workPath("tiles/mask_endorheic.geojson");
   await mkdir(workPath("tiles"), { recursive: true });
   const { basinBbox, bounds, mask } = mapConfig;
+  const pieces = (await loadMapLines()) === "pieces";
   const db = await openDb();
+  // Bounded like the other heavy steps (the default would take ~80% of RAM; on the 7 GB dev
+  // laptop the cba buffers got the step killed).
+  await mkdir(workPath("mask/tmp"), { recursive: true });
+  await limitResources(db, workPath("mask/tmp"));
 
   try {
     await db.conn.run(`
       CREATE TABLE r AS
-      SELECT strahler, network, ST_Transform(geom, ${TO_ALBERS}) AS g
+      SELECT ${pieces ? pieceOrderSql(mapConfig) : "strahler"} AS strahler, network,
+             ${
+               mask.simplifyM
+                 ? `ST_SimplifyPreserveTopology(ST_Transform(geom, ${TO_ALBERS}), ${mask.simplifyM})`
+                 : `ST_Transform(geom, ${TO_ALBERS})`
+             } AS g
       FROM ST_Read(${reaches})`);
     await db.conn.run(`
       CREATE TABLE b AS
@@ -61,11 +79,24 @@ async function main() {
                FILTER (WHERE network = 'connected') AS g_conn,
              count(*)::INT AS n
       FROM ST_Read(${lakes})`);
-    await db.conn.run(`
-      CREATE TABLE conn AS
-      SELECT ST_Intersection(ST_Transform(ST_Union_Agg(ST_MakeValid(geom)), ${TO_ALBERS}),
-                             (SELECT g FROM b)) AS g
-      FROM read_parquet(${hybas}) WHERE ENDO = 0`);
+    if (pieces) {
+      await createHybasNetwork(
+        db,
+        requireInput(workPath("basin/hybas_l12.parquet")),
+        requireInput(workPath("rivers/reaches.parquet")),
+      );
+      await db.conn.run(`
+        CREATE TABLE conn AS
+        SELECT ST_Intersection(ST_Transform(ST_Union_Agg(geom), ${TO_ALBERS}),
+                               (SELECT g FROM b)) AS g
+        FROM hybnet WHERE network = 'connected'`);
+    } else {
+      await db.conn.run(`
+        CREATE TABLE conn AS
+        SELECT ST_Intersection(ST_Transform(ST_Union_Agg(ST_MakeValid(geom)), ${TO_ALBERS}),
+                               (SELECT g FROM b)) AS g
+        FROM read_parquet(${hybas}) WHERE ENDO = 0`);
+    }
     const orders = (
       await db.all(`SELECT DISTINCT strahler FROM r ORDER BY strahler`)
     ).map((row) => Number(row.strahler));
@@ -165,6 +196,30 @@ async function main() {
       TO ${lit(outFile)} WITH (FORMAT gdal, DRIVER 'GeoJSON',
                                LAYER_CREATION_OPTIONS 'COORDINATE_PRECISION=6')`);
 
+    // The GeoJSON writer can turn a level's MultiPolygon into a GeometryCollection nested in
+    // another, which tippecanoe rejects outright ("feature without coordinates array"), so
+    // the level goes missing from the tiles (found on cba, R3.8). In pieces mode the written
+    // files are rewritten with only their polygons (lib/flatten-polygons.ts), after the big
+    // tables are dropped: the cba run was killed doing this in DuckDB at the 4 GB cap.
+    // nqn's files (one level of collection, which tippecanoe reads) are unchanged.
+    let nested = 0;
+    if (pieces) {
+      for (const t of ["bufs", "masks", "endo", "holes", "r"])
+        await db.conn.run(`DROP TABLE IF EXISTS ${t}`);
+      for (const file of [outFile, endoFile]) {
+        const fc = JSON.parse(await readFile(file, "utf8")) as {
+          features: { geometry: Geometry | null }[];
+        };
+        for (const f of fc.features) {
+          f.geometry = flattenPolygons(f.geometry);
+          const t = f.geometry?.type;
+          if (t !== "Polygon" && t !== "MultiPolygon") nested++;
+        }
+        await writeFile(`${file}.flat`, JSON.stringify(fc));
+        await rename(`${file}.flat`, file);
+      }
+    }
+
     const extent = (fit?.extent as number[] | undefined) ?? [];
     const configBbox = [
       basinBbox.xmin,
@@ -175,6 +230,7 @@ async function main() {
     const visible = levels.map((l) => Number(l.visiblePctOfBasin));
     const checks = {
       allValid: levels.every((l) => l.valid === true),
+      writtenLevelsArePolygons: nested === 0,
       basinInsideBounds: fit?.basin_inside === true,
       masksInsideBounds: fit?.masks_inside === true,
       visibleAreaGrowsWithLevel: visible.every(

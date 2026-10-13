@@ -2,8 +2,8 @@
 
 Córdoba province plus the nearby interprovincial basins that reach it, with each endorheic
 basin as its own root (Mar Chiquita/Ansenuza, Salinas Grandes, …). Decisions:
-[DECISSIONS.md](../../DECISSIONS.md#multi-region-2026-10-10); phases R2–R3 in
-[PLAN.md](../../PLAN.md).
+[DECISSIONS.md](../../context/DECISSIONS.md#multi-region-2026-10-10); phases R2–R3 in
+[PLAN.md](../../context/PLAN.md).
 
 **Status:** known to the pipeline and the data scripts (`--region cba` is accepted, Mongo
 database `basin-explorer-cba`), **not served** by the app: `cba.<host>` answers 404, and
