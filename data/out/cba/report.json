@@ -25,7 +25,7 @@
     "total": 12921,
     "connected": 10759,
     "endorheic": 2162,
-    "inNamedRivers": 474,
+    "inNamedRivers": 489,
     "withIgnName": 2029,
     "ignNameHiddenOffLine": 168,
     "orphans": 0
@@ -34,7 +34,7 @@
     "total": 79308.3,
     "connected": 66043,
     "endorheic": 13265.4,
-    "namedRivers": 2435.7
+    "namedRivers": 2554.6
   },
   "namedRivers": [
     {
@@ -136,14 +136,14 @@
     {
       "id": "segundo",
       "flowsInto": "sink",
-      "lengthKm": 104.7,
-      "reaches": 11,
-      "mouthElevationM": 232,
+      "lengthKm": 223.6,
+      "reaches": 26,
+      "mouthElevationM": 69,
       "sourceElevationM": 437,
-      "dischargeM3s": 4.4,
+      "dischargeM3s": 11.6,
       "nonPerennialPct": 100,
-      "regulationPct": 221.6,
-      "population": 82761
+      "regulationPct": 83.6,
+      "population": 105659
     },
     {
       "id": "jesus-maria",
@@ -197,7 +197,7 @@
   "streams": {
     "streams": 704,
     "reachesInStreams": 1606,
-    "reachesOnStreamsAndRivers": 15,
+    "reachesOnStreamsAndRivers": 20,
     "uniqueValidIds": true,
     "everyReachExported": true,
     "reachCountsMatch": true,

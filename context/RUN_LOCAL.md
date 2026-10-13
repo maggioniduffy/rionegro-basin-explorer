@@ -265,3 +265,10 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 - [ ] Vercel: production domain `basinexplorer.vercel.app`; keep `cordobabasinexplorer.vercel.app` and `rionegrobasinexplorer.vercel.app` assigned to the same project so they redirect. The `HUB_HOSTS`, `HUB_URL` and `REGION_URLS` env vars are no longer read (remove them if set).
 - [ ] Browser: `localhost:3000/cordoba/map` and `/rionegro/map` (search, panels, ask box all call `/<region>/api/…`), the language links, "All regions", and an old link (`rionegrobasinexplorer.vercel.app/?r=limay` once deployed).
 - [ ] `npm run test:e2e`: the specs now open `/rionegro/…` from `http://localhost:3100` (baseURL); screenshot baselines may need `--update-snapshots` if only the URL changed nothing visible should differ.
+
+## Córdoba: Río Segundo to Mar Chiquita (2026-10-12)
+
+- [x] `named`, `ign-streams`, `export` (twice), `tiles` for `cba`: all ok. Río Segundo 223.6 km, mouth on Mar Chiquita's southern shore.
+- [ ] `npm run seed -- --region cba` (the river document and 15 reaches change; until then the panel shows 104.7 km).
+- [ ] Vercel: bump `cba` in `NEXT_PUBLIC_TILES_VERSIONS` (rivers.pmtiles changed again).
+- [ ] Browser: `localhost:3000/cordoba/map?r=segundo` highlights the river down the Plujunta to the lagoon.

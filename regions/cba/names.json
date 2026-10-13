@@ -99,9 +99,11 @@
       "type": "Río",
       "slug": "segundo",
       "aliases": ["Xanaes"],
-      "mouthReach": 61478520,
-      "confidence": "weak",
-      "evidence": "APRHI 'R. Segundo (Xanaes)' on 107 km of reaches. Weak: downstream APRHI names the lower course 'Arroyo Segundo' (a separate stream, mouth 61471092, 8 km from the Mar Chiquita sink), the 15″ path from this mouth runs 94 km to the Río Plujunta instead, and IGN's 'Río Segundo (Xanaes)' lies along APRHI's 'Arroyo de los Guevara' (98% of its km). The river ends where APRHI's name ends (pipeline:line-names, 2026-10-12)."
+      "mouthReach": 61471553,
+      "confidence": "strong",
+      "evidence": "APRHI 'R. Segundo (Xanaes)' ends at -62.954, -31.372, the exact point where APRHI's 'R. Plujunta' starts; the Plujunta runs 58 km north to Mar Chiquita's southern shore (-62.727, -30.936). The owner identifies the Plujunta as the Segundo's course to Mar Chiquita (owner, 2026-10-12), so the river ends at the Plujunta's mouth reach 61471553 (the last Plujunta reach before the modeled lagoon). From the same point an eastern arm ('R. Segundo', 10.8 km, then 'A. de los Guevara') ends on the plain at -62.487, -31.279 without reaching the lagoon; IGN names that arm 'Río Segundo (Xanaes)' (98% of its km along 'A. de los Guevara'). APRHI prevails for Córdoba (owner). APRHI 'Arroyo Segundo' (mouth 61471092) is a separate stream. The 15″ path from the end of APRHI's Segundo name (reach 61478520) runs 94 km to the Plujunta reaches, apart from the mapped channel (no APRHI line along 8 of its reaches), so lengths and the course drawn follow HydroRIVERS there (pipeline:line-names; APRHI CursosDeAgua endpoints, 2026-10-12).",
+      "sourceReach": 61481786,
+      "sourceEvidence": "The source the line rule found before the mouth moved (reach 61481786, the confluence where 'R. Segundo (Xanaes)' starts, -64.327, -31.791). With the mouth at the Plujunta, the rule cannot cross the 8 reaches without a Segundo or Plujunta line, so the path is set from this reach down to the mouth (2026-10-12)."
     },
     {
       "name": "Río Jesús María",
