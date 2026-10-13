@@ -28,6 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: t("description"),
       type: "website",
     },
+    twitter: { card: "summary_large_image" },
   };
 }
 

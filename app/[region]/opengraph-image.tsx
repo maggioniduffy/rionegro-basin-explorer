@@ -1,7 +1,13 @@
 import { ImageResponse } from "next/og";
 import { messagesFor } from "@/i18n/messages";
 import { OG_MAP_BOX, OG_SIZE } from "@/lib/og";
-import { FLOW_STYLE, THEME_COLORS } from "@/lib/map/style";
+import {
+  OG_COLORS,
+  OG_FONTS,
+  OgBasin,
+  OgEyebrow,
+  OgFrame,
+} from "@/lib/og-image";
 import { notFound } from "next/navigation";
 import {
   DEFAULT_REGION,
@@ -9,11 +15,12 @@ import {
   REGION_SLUGS,
   regionFromSlug,
 } from "@/regions";
+import { REGION_BRANDS } from "@/regions/brand";
 import { REGION_CONTENT } from "@/regions/content";
 import { OG_SHAPES } from "@/regions/generated";
 
 // One static image for both languages: a shared link has no locale cookie, so the
-// card shows both titles (the site picks its language per visitor).
+// card shows the landing's headline in both (the site picks its language per visitor).
 // `alt` is a constant export shared by every region, so it names the product family (the
 // hub's title, shared messages); the image itself shows the region's titles. A per-region alt
 // via generateImageMetadata answered 404 for every image in this Next version (R3.8).
@@ -21,14 +28,15 @@ export const alt = `${messagesFor(DEFAULT_REGION, "en").hub.metadata.title} · $
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
+/** Headlines longer than this (cba's) get a smaller size, so they stay on three lines. */
+const LONG_HEADLINE = 55;
+
 // Rendered at build time, one per region (regions/<id>/og-shapes.json).
 export function generateStaticParams() {
   return REGION_IDS.map((id) => ({ region: REGION_SLUGS[id] }));
 }
 
-const { mask, lake } = THEME_COLORS.dark;
-
-/** Basin, lakes and Strahler ≥ 4 rivers from rivers.pmtiles (scripts/og-shapes.ts). */
+/** The landing's hero (Landing v6) beside the basin, its lakes and main rivers. */
 export default async function Image({
   params,
 }: {
@@ -36,69 +44,76 @@ export default async function Image({
 }) {
   const region = regionFromSlug((await params).region);
   if (!region) notFound();
-  const en = messagesFor(region, "en");
-  const es = messagesFor(region, "es");
-  const shapes = OG_SHAPES[region];
+  const en = messagesFor(region, "en").landing;
+  const es = messagesFor(region, "es").landing;
+  const names = REGION_CONTENT[region].ogSubtitle.split(" · ");
   return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        background: mask,
-        color: "#f4f4f5",
-      }}
-    >
+    <OgFrame brand={REGION_BRANDS[region]}>
       <div
         style={{
+          position: "absolute",
+          left: 72,
+          top: 150,
+          bottom: 64,
+          width: OG_MAP_BOX.left - 72,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          width: OG_MAP_BOX.left,
-          padding: "0 40px 0 72px",
         }}
       >
-        <div style={{ fontSize: 64, lineHeight: 1.1, letterSpacing: -1 }}>
-          {en.metadata.title}
-        </div>
-        <div style={{ fontSize: 30, marginTop: 16, color: "#a1a1aa" }}>
-          {es.metadata.title}
+        <OgEyebrow>{en.eyebrow}</OgEyebrow>
+        <div
+          style={{
+            marginTop: 26,
+            fontFamily: "Instrument Serif",
+            fontSize: en.h1.length > LONG_HEADLINE ? 58 : 70,
+            lineHeight: 1,
+            letterSpacing: -1.4,
+          }}
+        >
+          {en.h1}
         </div>
         <div
           style={{
-            fontSize: 26,
-            marginTop: 40,
-            color: FLOW_STYLE.perennial.color,
+            marginTop: 18,
+            fontFamily: "Instrument Serif",
+            fontSize: en.h1.length > LONG_HEADLINE ? 28 : 32,
+            lineHeight: 1.15,
+            color: OG_COLORS.secondary,
           }}
         >
-          {REGION_CONTENT[region].ogSubtitle}
+          {es.h1}
+        </div>
+        {/* Wraps between names only, never inside one (Mar Chiquita). */}
+        <div
+          style={{
+            marginTop: "auto",
+            display: "flex",
+            flexWrap: "wrap",
+            rowGap: 6,
+            fontFamily: "JetBrains Mono",
+            fontSize: 16,
+            color: OG_COLORS.accentSoft,
+          }}
+        >
+          {names.map((name, i) => (
+            <span key={name} style={{ whiteSpace: "pre" }}>
+              {name}
+              {i < names.length - 1 ? " · " : ""}
+            </span>
+          ))}
         </div>
       </div>
-      <svg
-        width={OG_MAP_BOX.width}
-        height={OG_MAP_BOX.height}
-        viewBox={`0 0 ${OG_MAP_BOX.width} ${OG_MAP_BOX.height}`}
+      <div
         style={{
           position: "absolute",
           left: OG_MAP_BOX.left,
           top: OG_MAP_BOX.top,
+          display: "flex",
         }}
       >
-        <path d={shapes.basin} fill="#1a1e22" />
-        <path d={shapes.lakes} fill={lake} />
-        {shapes.rivers.map((r) => (
-          <path
-            key={r.strahler}
-            d={r.d}
-            fill="none"
-            stroke={FLOW_STYLE.perennial.color}
-            strokeWidth={Math.max(0.6, (r.strahler - 3) * 0.7)}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        ))}
-      </svg>
-    </div>,
-    size,
+        <OgBasin shapes={OG_SHAPES[region]} width={OG_MAP_BOX.width} />
+      </div>
+    </OgFrame>,
+    { ...size, fonts: OG_FONTS },
   );
 }

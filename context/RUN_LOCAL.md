@@ -302,3 +302,8 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 - [ ] Footer, both regions and `/rionegro/attributions`, light and dark: wordmark, credit and the three columns are readable above the art; no grey rectangle, no hard top or side edge; on the landing the data note overlaps the footer without hiding its text.
 - [ ] Menu at 390 px on the landing, the hub and the map: the button opens and closes the dropdown (Escape returns focus to the button, an outside click and a link close it); the landing shows wordmark mark, "Open map" and the button on one line; on the map the search box still fits at 360 and 390 px and the dropdown sits above the panels.
 - [ ] Map at 390 px: the menu panel sits inside the viewport (16px sides), above the right-hand controls, and its items (Attributions, theme, language) are full-width rows.
+
+## OG images in the Landing v6 design (2026-10-13)
+
+- [x] `npm run check`; `next build` prerenders `/rionegro/opengraph-image`, `/cordoba/opengraph-image` and `/hub/opengraph-image`.
+- [ ] After deploy, paste `/`, `/rionegro` and `/cordoba` into a card validator (e.g. opengraph.xyz) and check the image URL uses the production domain.
