@@ -5,7 +5,7 @@ basin as its own root (Mar Chiquita/Ansenuza, Salinas Grandes, …). Decisions:
 [DECISSIONS.md](../../context/DECISSIONS.md#multi-region-2026-10-10); phases R2–R3 in
 [PLAN.md](../../context/PLAN.md).
 
-**Status:** served since R3.8 (2026-10-12) at `cordobabasinexplorer.vercel.app` (dev `cordoba.localhost:3000`), listed on the hub. Pending (owner): the landing image (`LANDING_IMAGES.cba` is `null`) and seeding `basin-explorer-cba` (see `context/RUN_LOCAL.md`).
+**Status:** served since R3.8 (2026-10-12) at `basinexplorer.vercel.app/cordoba` (dev `localhost:3000/cordoba`), listed on the hub; seeded (`basin-explorer-cba`).
 
 ## Before the pipeline can run (Phase R2–R3)
 

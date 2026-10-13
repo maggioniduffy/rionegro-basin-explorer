@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { messagesFor } from "../i18n/messages";
-import { openMap, stubImagery } from "./map-helpers";
+import { openMap, REGION_PATH, stubImagery } from "./map-helpers";
 
-// The e2e baseURL is rionegro.localhost, the default region's host (plain localhost is the hub).
+// The specs open Río Negro's paths (map-helpers.ts REGION_PATH); `/` is the hub.
 const en = messagesFor("nqn", "en");
 const es = messagesFor("nqn", "es");
 
@@ -13,11 +13,13 @@ for (const [browserLocale, expected] of [
   ["en-US", "en"],
   ["de-DE", "es"], // unsupported language falls back to the default locale
 ] as const) {
-  test(`/ renders ${expected} for ${browserLocale}`, async ({ browser }) => {
+  test(`the landing renders ${expected} for ${browserLocale}`, async ({
+    browser,
+  }) => {
     const context = await browser.newContext({ locale: browserLocale });
     const page = await context.newPage();
     await stubImagery(page);
-    await page.goto("/");
+    await page.goto(REGION_PATH);
     await expect(page.locator("html")).toHaveAttribute("lang", expected);
     await expect(page).toHaveTitle(messages[expected].metadata.title);
     await context.close();
@@ -28,15 +30,15 @@ test("legacy /en links redirect to the map and keep English", async ({
   page,
 }) => {
   await stubImagery(page);
-  await page.goto("/en?r=test");
-  await expect(page).toHaveURL(/\/map\?r=test$/);
+  await page.goto(`/en${REGION_PATH}?r=test`);
+  await expect(page).toHaveURL(/\/rionegro\/map\?r=test$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
 });
 
 test("links from before /map open the map", async ({ page }) => {
   await stubImagery(page);
-  await page.goto("/?r=limay");
-  await expect(page).toHaveURL(/\/map\?r=limay$/);
+  await page.goto(`${REGION_PATH}?r=limay`);
+  await expect(page).toHaveURL(/\/rionegro\/map\?r=limay$/);
 });
 
 for (const [locale, other] of [
@@ -48,14 +50,14 @@ for (const [locale, other] of [
 
     test("renders translated content", async ({ page }) => {
       await stubImagery(page);
-      await page.goto("/map");
+      await page.goto(`${REGION_PATH}/map`);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(
         messages[locale].home.title,
       );
     });
 
     test("landing renders translated content", async ({ page }) => {
-      await page.goto("/");
+      await page.goto(REGION_PATH);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(
         messages[locale].landing.h1,
       );
@@ -74,7 +76,7 @@ for (const [locale, other] of [
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(
         messages[other].home.title,
       );
-      await expect(page).toHaveURL(/\/map\?r=test$/);
+      await expect(page).toHaveURL(/\/rionegro\/map\?r=test$/);
     });
 
     test("screenshot", async ({ page }) => {

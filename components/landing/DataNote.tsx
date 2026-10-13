@@ -1,9 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { regionPath, type RegionId } from "@/regions";
 import { Icon } from "../Icon";
 
 /** "Modeled, not measured": the rule 4 caveat, before anyone opens the map. */
-export async function DataNote() {
+export async function DataNote({ region }: { region: RegionId }) {
   const t = await getTranslations("landing");
   return (
     <section
@@ -27,7 +28,7 @@ export async function DataNote() {
           <p className="text-pretty">{t("d1")}</p>
           <p className="mt-3 text-pretty">{t("d2")}</p>
           <Link
-            href="/attributions#modeled"
+            href={regionPath(region, "/attributions#modeled")}
             className="text-accent hover:text-accent-soft mt-3.5 inline-block min-h-11 leading-[44px]"
           >
             {t("attr")} →

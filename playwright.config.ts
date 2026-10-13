@@ -10,8 +10,8 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    // Plain localhost is the hub (R4); the specs test the default region's own host.
-    baseURL: `http://rionegro.localhost:${PORT}`,
+    // `/` is the hub; the specs open the Río Negro paths (e2e/map-helpers.ts REGION_PATH).
+    baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
   },
   // Screenshot baselines are OS/font dependent; they are generated on Linux.

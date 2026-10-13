@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { messagesFor } from "@/i18n/messages";
+import { regionFromSlug, regionPath } from "@/regions";
 import {
   SOFTWARE,
   sourcesFor,
   type Source,
   type SourceId,
 } from "@/lib/attributions";
-import { DEFAULT_REGION, isRegionId } from "@/regions";
 
 /** The panel caveats (messages panel.caveat.*), listed here in one place (rule 4). */
 const CAVEATS = [
@@ -154,8 +155,8 @@ async function SourceCard({ source }: { source: Source }) {
 export default async function AttributionsPage({
   params,
 }: PageProps<"/[region]/attributions">) {
-  const { region: raw } = await params;
-  const region = isRegionId(raw) ? raw : DEFAULT_REGION;
+  const region = regionFromSlug((await params).region);
+  if (!region) notFound();
   // The product name in the HydroSHEDS notice is the region's English title (a proper noun).
   const sources = sourcesFor(region, messagesFor(region, "en").metadata.title);
   const t = await getTranslations("attributions");
@@ -163,11 +164,11 @@ export default async function AttributionsPage({
 
   return (
     <div className="bg-bg text-text flex min-h-full w-full flex-col">
-      <SiteHeader path="/attributions" />
+      <SiteHeader region={region} path="/attributions" />
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 py-8 sm:py-12">
         <header className="flex flex-col gap-4">
           <Link
-            href="/map"
+            href={regionPath(region, "/map")}
             className="text-muted hover:text-foreground flex w-fit items-center gap-1.5 text-sm"
           >
             <Icon name="chevron" size={16} className="rotate-180" />
@@ -210,7 +211,7 @@ export default async function AttributionsPage({
           </ul>
         </Section>
       </main>
-      <SiteFooter path="/attributions" />
+      <SiteFooter region={region} path="/attributions" />
     </div>
   );
 }

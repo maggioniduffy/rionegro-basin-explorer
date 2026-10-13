@@ -4,7 +4,7 @@ import type { AskResult } from "../lib/ask/contract";
 import { messagesFor } from "../i18n/messages";
 import { openMap } from "./map-helpers";
 
-// The e2e baseURL is rionegro.localhost, the default region's host (plain localhost is the hub).
+// The specs open Río Negro's paths (map-helpers.ts REGION_PATH); `/` is the hub.
 const en = messagesFor("nqn", "en");
 const es = messagesFor("nqn", "es");
 

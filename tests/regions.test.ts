@@ -3,7 +3,12 @@ import {
   DEFAULT_REGION,
   isKnownRegionId,
   isRegionId,
+  KNOWN_REGION_IDS,
   regionDbName,
+  regionFromSlug,
+  regionPath,
+  REGION_IDS,
+  REGION_SLUGS,
 } from "@/regions";
 
 describe("regions", () => {
@@ -20,5 +25,32 @@ describe("regions", () => {
     expect(isKnownRegionId("cba")).toBe(true);
     expect(isRegionId("cba")).toBe(true);
     expect(isRegionId("xyz")).toBe(false);
+  });
+
+  it("has one URL slug per region, unique and clear of ids and app paths", () => {
+    const slugs = KNOWN_REGION_IDS.map((id) => REGION_SLUGS[id]);
+    expect(new Set(slugs).size).toBe(slugs.length);
+    for (const slug of slugs) {
+      expect(slug).toMatch(/^[a-z]+$/);
+      expect(isKnownRegionId(slug)).toBe(false);
+      expect([
+        "hub",
+        "api",
+        "tiles",
+        "landing",
+        "maplibre",
+        "en",
+        "es",
+      ]).not.toContain(slug);
+    }
+    for (const id of REGION_IDS)
+      expect(regionFromSlug(REGION_SLUGS[id])).toBe(id);
+    expect(regionFromSlug("cba")).toBeNull();
+    expect(regionFromSlug("xyz")).toBeNull();
+  });
+
+  it("builds paths inside a region", () => {
+    expect(regionPath("cba")).toBe("/cordoba");
+    expect(regionPath("nqn", "/map")).toBe("/rionegro/map");
   });
 });

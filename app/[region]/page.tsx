@@ -5,16 +5,17 @@ import { HeroRivers } from "@/components/landing/HeroRivers";
 import { MapAccessCard } from "@/components/landing/MapAccessCard";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
-import { DEFAULT_REGION, isRegionId } from "@/regions";
+import { notFound } from "next/navigation";
+import { regionFromSlug } from "@/regions";
 
 export default async function LandingPage({ params }: PageProps<"/[region]">) {
-  const { region: raw } = await params;
-  const region = isRegionId(raw) ? raw : DEFAULT_REGION;
+  const region = regionFromSlug((await params).region);
+  if (!region) notFound();
   const t = await getTranslations("landing");
 
   return (
     <div className="bg-bg text-text relative w-full overflow-x-clip">
-      <SiteHeader path="/" />
+      <SiteHeader region={region} path="/" />
       <main>
         <section className="relative px-[clamp(16px,4vw,40px)] pt-[clamp(40px,8vw,110px)] pb-[clamp(32px,5vw,64px)]">
           <HeroRivers />
@@ -35,9 +36,9 @@ export default async function LandingPage({ params }: PageProps<"/[region]">) {
           </div>
         </section>
         <ExploreCards region={region} />
-        <DataNote />
+        <DataNote region={region} />
       </main>
-      <SiteFooter path="/" />
+      <SiteFooter region={region} path="/" />
     </div>
   );
 }

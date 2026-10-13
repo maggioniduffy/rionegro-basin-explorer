@@ -4,7 +4,7 @@ import Link from "next/link";
 import { MAP_PATH, RIVER_PARAM } from "@/lib/url-state";
 import { Icon } from "../Icon";
 import { SampleValue } from "./SampleValue";
-import type { RegionId } from "@/regions";
+import { regionPath, type RegionId } from "@/regions";
 import { REGION_CONTENT } from "@/regions/content";
 import { LANDING_SAMPLES } from "@/regions/generated";
 import { LANDING_IMAGES } from "@/regions/images";
@@ -26,7 +26,7 @@ export async function MapAccessCard({ region }: { region: RegionId }) {
   return (
     <div>
       <Link
-        href={MAP_PATH}
+        href={regionPath(region, MAP_PATH)}
         className="group bg-surface border-line shadow-card hover:border-accent hover:shadow-card-hover focus-visible:border-accent block overflow-hidden rounded-[14px] border text-inherit transition-[border-color,box-shadow] duration-250 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-(--accent)"
       >
         <div className="relative aspect-video min-h-[220px] overflow-hidden bg-black">
@@ -93,7 +93,7 @@ export async function MapAccessCard({ region }: { region: RegionId }) {
         {quick.map((r) => (
           <Link
             key={r.id}
-            href={`${MAP_PATH}?${RIVER_PARAM}=${r.id}`}
+            href={regionPath(region, `${MAP_PATH}?${RIVER_PARAM}=${r.id}`)}
             className="border-line-strong text-text hover:border-accent hover:text-accent inline-flex min-h-9 flex-none items-center rounded-full border px-3.5 text-sm transition-colors"
           >
             {r.name}

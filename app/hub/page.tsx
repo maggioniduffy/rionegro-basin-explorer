@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
-import { headers } from "next/headers";
+import Link from "next/link";
 import { Logomark } from "@/components/Icon";
 import { LocaleLinks } from "@/components/landing/SiteHeader";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isLocale } from "@/i18n/config";
 import { messagesFor } from "@/i18n/messages";
-import { REGION_IDS } from "@/regions";
-import { protocolOf, regionOrigin } from "@/regions/hosts";
+import { REGION_IDS, regionPath } from "@/regions";
 import { LANDING_IMAGES } from "@/regions/images";
 
 /**
- * The hub (R4): one card per served region (REGION_IDS), linking to its host. Served by
- * proxy.ts on hub hosts only (regions/hosts.ts isHubHost), outside app/[region], with the
- * shared messages; each card's name, text and image alt come from that region's own
+ * The hub (R4): one card per served region (REGION_IDS), linking to its path (/cordoba,
+ * /rionegro). proxy.ts serves it at / on every host, outside app/[region], with the shared
+ * messages; each card's name, text and image alt come from that region's own
  * messages, so the hub adds no per-region strings.
  */
 export async function generateMetadata(): Promise<Metadata> {
@@ -35,9 +34,6 @@ export default async function HubPage() {
   const card = await getTranslations("landing.card");
   const raw = await getLocale();
   const locale = isLocale(raw) ? raw : "en";
-  const h = await headers();
-  const host = h.get("host");
-  const protocol = protocolOf(host, h.get("x-forwarded-proto"));
 
   return (
     <div className="bg-bg text-text flex min-h-full w-full flex-col">
@@ -69,53 +65,39 @@ export default async function HubPage() {
           <ul className="grid gap-6 sm:grid-cols-2">
             {REGION_IDS.map((id) => {
               const m = messagesFor(id, locale);
-              const href = regionOrigin(id, host, protocol);
               const image = LANDING_IMAGES[id];
-              const body = (
-                <>
-                  <div className="relative aspect-video overflow-hidden bg-black">
-                    {image && (
-                      <Image
-                        src={image}
-                        alt={m.landing.card.alt}
-                        fill
-                        sizes="(max-width: 640px) calc(100vw - 32px), 520px"
-                        className="object-cover transition-[transform,filter] duration-[800ms,400ms] group-hover:scale-105 group-hover:brightness-[1.18]"
-                      />
-                    )}
-                    <div className="text-secondary absolute bottom-3 left-3.5 font-mono text-[11px]">
-                      {card("credit")}
+              return (
+                <li key={id} className="flex">
+                  <Link
+                    href={regionPath(id)}
+                    className="group bg-surface border-line shadow-card hover:border-accent hover:shadow-card-hover focus-visible:border-accent flex w-full flex-col overflow-hidden rounded-[14px] border text-inherit transition-[border-color,box-shadow] duration-250 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-(--accent)"
+                  >
+                    <div className="relative aspect-video overflow-hidden bg-black">
+                      {image && (
+                        <Image
+                          src={image}
+                          alt={m.landing.card.alt}
+                          fill
+                          sizes="(max-width: 640px) calc(100vw - 32px), 520px"
+                          className="object-cover transition-[transform,filter] duration-[800ms,400ms] group-hover:scale-105 group-hover:brightness-[1.18]"
+                        />
+                      )}
+                      <div className="text-secondary absolute bottom-3 left-3.5 font-mono text-[11px]">
+                        {card("credit")}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2 px-[22px] py-5">
-                    <h2 className="text-xl font-semibold tracking-[-0.01em]">
-                      {m.metadata.title}
-                    </h2>
-                    <p className="text-secondary text-[15px] leading-normal text-pretty">
-                      {m.metadata.description}
-                    </p>
-                    {href && (
+                    <div className="flex flex-1 flex-col gap-2 px-[22px] py-5">
+                      <h2 className="text-xl font-semibold tracking-[-0.01em]">
+                        {m.metadata.title}
+                      </h2>
+                      <p className="text-secondary text-[15px] leading-normal text-pretty">
+                        {m.metadata.description}
+                      </p>
                       <span className="text-accent mt-auto pt-1 font-semibold">
                         {t("open")} →
                       </span>
-                    )}
-                  </div>
-                </>
-              );
-              const frame =
-                "bg-surface border-line shadow-card flex w-full flex-col overflow-hidden rounded-[14px] border text-inherit";
-              return (
-                <li key={id} className="flex">
-                  {href ? (
-                    <a
-                      href={href}
-                      className={`group ${frame} hover:border-accent hover:shadow-card-hover focus-visible:border-accent transition-[border-color,box-shadow] duration-250 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-(--accent)`}
-                    >
-                      {body}
-                    </a>
-                  ) : (
-                    <div className={frame}>{body}</div>
-                  )}
+                    </div>
+                  </Link>
                 </li>
               );
             })}

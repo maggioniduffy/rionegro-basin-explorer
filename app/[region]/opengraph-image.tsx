@@ -2,7 +2,13 @@ import { ImageResponse } from "next/og";
 import { messagesFor } from "@/i18n/messages";
 import { OG_MAP_BOX, OG_SIZE } from "@/lib/og";
 import { FLOW_STYLE, THEME_COLORS } from "@/lib/map/style";
-import { DEFAULT_REGION, isRegionId, REGION_IDS } from "@/regions";
+import { notFound } from "next/navigation";
+import {
+  DEFAULT_REGION,
+  REGION_IDS,
+  REGION_SLUGS,
+  regionFromSlug,
+} from "@/regions";
 import { REGION_CONTENT } from "@/regions/content";
 import { OG_SHAPES } from "@/regions/generated";
 
@@ -17,7 +23,7 @@ export const contentType = "image/png";
 
 // Rendered at build time, one per region (regions/<id>/og-shapes.json).
 export function generateStaticParams() {
-  return REGION_IDS.map((region) => ({ region }));
+  return REGION_IDS.map((id) => ({ region: REGION_SLUGS[id] }));
 }
 
 const { mask, lake } = THEME_COLORS.dark;
@@ -28,8 +34,8 @@ export default async function Image({
 }: {
   params: Promise<{ region: string }>;
 }) {
-  const { region: raw } = await params;
-  const region = isRegionId(raw) ? raw : DEFAULT_REGION;
+  const region = regionFromSlug((await params).region);
+  if (!region) notFound();
   const en = messagesFor(region, "en");
   const es = messagesFor(region, "es");
   const shapes = OG_SHAPES[region];

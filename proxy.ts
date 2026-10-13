@@ -1,72 +1,84 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isLocale, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "./i18n/config";
 import { legacyMapPath } from "./lib/url-state";
-import { isRegionId } from "./regions";
+import { isKnownRegionId, regionFromSlug } from "./regions";
 import {
   HUB_HEADER,
-  isHubHost,
+  oldRegionHost,
   REGION_HEADER,
-  regionFromHost,
+  slugOf,
 } from "./regions/hosts";
 
 /**
- * URLs carry no locale (it lives in a cookie; see i18n/config.ts). /en and /es, the
- * landing's language links and links shared before the cookie, set the cookie and
- * redirect to the same path without the prefix. Links from before the map moved to
- * /map (/?r=limay, /es?s=neuquen) land on the map.
+ * Regions live in the path (owner, 2026-10-12): /cordoba, /rionegro (regions/index.ts
+ * REGION_SLUGS), the app/[region] route param itself, so nothing is rewritten for them.
  *
- * Every other request is rewritten to its host's region (regions/hosts.ts): pages and API
- * routes live under app/[region], and the region never shows in the URL. A path that
- * already starts with a region id is served as is (metadata routes such as
- * /nqn/opengraph-image are linked that way).
- *
- * A hub host (regions/hosts.ts isHubHost) serves the hub: `/` is rewritten to app/hub with
- * HUB_HEADER and no region; other paths are 404 except region-prefixed ones (above).
+ * 1. URLs carry no locale (it lives in a cookie; see i18n/config.ts). /en and /es, the
+ *    landing's language links and links shared before the cookie, set the cookie and
+ *    redirect to the same path without the prefix.
+ * 2. The old per-region hosts (regions/hosts.ts oldRegionHost) redirect to the hub host with
+ *    the region's path, so links shared before keep working.
+ * 3. `/` is the hub (app/hub), on every host.
+ * 4. A region path gets REGION_HEADER; links from before the map moved to /map
+ *    (/rionegro?r=limay) land on the map.
+ * 5. A path starting with a region id (/nqn/map) redirects to the slug.
+ * 6. Anything else gets HUB_HEADER: the 404 page uses the shared messages, never a region's.
  */
 export function proxy(request: NextRequest) {
   const { pathname, search, searchParams } = request.nextUrl;
-  const [, prefix, ...rest] = pathname.split("/");
-  const locale = isLocale(prefix) ? prefix : null;
-  const path = locale ? `/${rest.join("/")}` : pathname;
-  const target = legacyMapPath(path, searchParams) ?? path;
-  if (!locale && target === pathname) {
-    const headers = new Headers(request.headers);
-    // Only the proxy decides whether a request is the hub's.
-    headers.delete(HUB_HEADER);
-    // Region-prefixed paths pass on every host, the hub's included: metadata URLs (OG images)
-    // are made absolute with the production domain, which may be the hub's.
-    if (isRegionId(prefix)) {
-      headers.set(REGION_HEADER, prefix);
-      return NextResponse.next({ request: { headers } });
-    }
-    if (isHubHost(request.headers.get("host"))) {
-      if (pathname !== "/") return new NextResponse(null, { status: 404 });
-      const url = request.nextUrl.clone();
-      url.pathname = "/hub";
-      headers.delete(REGION_HEADER);
-      headers.set(HUB_HEADER, "1");
-      return NextResponse.rewrite(url, { request: { headers } });
-    }
-    const region = regionFromHost(request.headers.get("host"));
-    // A region that exists in the pipeline but has no app content yet (e.g. cba).
-    if (!isRegionId(region)) return new NextResponse(null, { status: 404 });
-    const url = request.nextUrl.clone();
-    url.pathname = pathname === "/" ? `/${region}` : `/${region}${pathname}`;
-    headers.set(REGION_HEADER, region);
-    return NextResponse.rewrite(url, { request: { headers } });
-  }
+  const [, prefix = "", ...rest] = pathname.split("/");
+  const redirect = (url: string | URL) => NextResponse.redirect(url, 308);
 
-  const response = NextResponse.redirect(
-    new URL(`${target}${search}`, request.url),
-    308,
-  );
-  if (locale)
-    response.cookies.set(LOCALE_COOKIE, locale, {
+  if (isLocale(prefix)) {
+    const response = redirect(
+      new URL(`/${rest.join("/")}${search}`, request.url),
+    );
+    response.cookies.set(LOCALE_COOKIE, prefix, {
       path: "/",
       maxAge: LOCALE_COOKIE_MAX_AGE,
       sameSite: "lax",
     });
-  return response;
+    return response;
+  }
+
+  const old = oldRegionHost(request.headers.get("host"));
+  // In dev, Next makes a redirect to the dev server's own origin (localhost) relative, so
+  // cordoba.localhost/map lands on cordoba.localhost/cordoba/map: a region path is then
+  // served as is instead of redirecting again. On Vercel the hosts differ and it redirects.
+  if (old && !regionFromSlug(prefix)) {
+    const inner = legacyMapPath(pathname, searchParams) ?? pathname;
+    const path = `/${slugOf(old.region)}${inner === "/" ? "" : inner}`;
+    return redirect(`${request.nextUrl.protocol}//${old.hub}${path}${search}`);
+  }
+
+  const headers = new Headers(request.headers);
+  // Only the proxy sets these.
+  headers.delete(HUB_HEADER);
+  headers.delete(REGION_HEADER);
+
+  const region = regionFromSlug(prefix);
+  if (region) {
+    const inner = `/${rest.join("/")}`;
+    const legacy = legacyMapPath(inner, searchParams);
+    if (legacy)
+      return redirect(new URL(`/${prefix}${legacy}${search}`, request.url));
+    headers.set(REGION_HEADER, region);
+    return NextResponse.next({ request: { headers } });
+  }
+
+  if (isKnownRegionId(prefix)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${[slugOf(prefix), ...rest].join("/")}`;
+    return redirect(url);
+  }
+
+  headers.set(HUB_HEADER, "1");
+  if (pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/hub";
+    return NextResponse.rewrite(url, { request: { headers } });
+  }
+  return NextResponse.next({ request: { headers } });
 }
 
 // Must be a static literal (Next parses it at build time). Everything but build output and

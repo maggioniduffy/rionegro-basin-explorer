@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { MouthKind } from "@/lib/data/mouth";
 import Link from "next/link";
+import { useRegionPath } from "@/components/RegionProvider";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { useMapStore } from "@/lib/store";
 import { formatQuantity, type Quantity } from "@/lib/units";
@@ -91,6 +92,7 @@ export function Group({
 
 /** Rule 4: every modeled value shown names its source and period. */
 export function Caveats({ caveats }: { caveats: Caveat[] }) {
+  const inRegion = useRegionPath();
   const t = useTranslations("panel.caveat");
   return (
     <footer className="text-muted flex flex-col gap-1 border-t border-(--border) pt-3 text-xs">
@@ -109,7 +111,7 @@ export function Caveats({ caveats }: { caveats: Caveat[] }) {
       )}
       <p>{t("source")}</p>
       <Link
-        href="/attributions#modeled"
+        href={inRegion("/attributions#modeled")}
         className="w-fit underline decoration-(--border) underline-offset-2 hover:decoration-current"
       >
         {t("more")}

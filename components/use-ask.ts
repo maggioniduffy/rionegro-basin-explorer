@@ -4,6 +4,7 @@ import { useLocale } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AskResult } from "@/lib/ask/contract";
 import { useMapStore } from "@/lib/store";
+import { useRegionPath } from "./RegionProvider";
 
 export type AskNotice = "noMatch" | "unsupported" | "rateLimited" | "error";
 
@@ -15,6 +16,7 @@ export type AskNotice = "noMatch" | "unsupported" | "rateLimited" | "error";
  */
 export function useAsk() {
   const locale = useLocale();
+  const inRegion = useRegionPath();
   const select = useMapStore((s) => s.select);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AskResult | null>(null);
@@ -43,7 +45,7 @@ export function useAsk() {
       setResult(null);
       setNotice(null);
       try {
-        const res = await fetch("/api/ask", {
+        const res = await fetch(inRegion("/api/ask"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ q, locale }),
@@ -80,7 +82,7 @@ export function useAsk() {
         }
       }
     },
-    [locale, select],
+    [locale, select, inRegion],
   );
 
   return { ask, loading, result, notice, clear };

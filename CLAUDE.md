@@ -2,8 +2,8 @@
 
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
-Amazon Basin Explorer. One app serves several **regions**, one per subdomain: `nqn` (the Río
-Negro basin, live) and `cba` (Córdoba, a stub, not served yet); see "Regions" below. See `context/PLAN.md` for open phases and status (completed phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
+Amazon Basin Explorer. One app serves several **regions**, one per path (`/rionegro`, `/cordoba`): `nqn` (the Río
+Negro basin, live) and `cba` (Córdoba, served since R3.8); see "Regions" below. See `context/PLAN.md` for open phases and status (completed phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
 decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `context/PLAN.md`).
 
 ## Stack
@@ -26,7 +26,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 
 ## Repo layout
 
-- `/app/[region]` pages + `/api/*` route handlers (`proxy.ts` rewrites each host to its region; see `regions/`)
+- `/app/[region]` pages + `/api/*` route handlers, the param being the region's URL slug (`/cordoba/map`, `/cordoba/api/search`; see `regions/`); `/app/hub` is the hub at `/`
 - `/regions` — registry (`index.ts`, `hosts.ts`) and one folder per region: pipeline configs, `messages/`, `content.ts`, generated landing/OG files
 - `/components`, `/lib` (mongo.ts, map/, store.ts, units.ts), `/messages` (shared en.json, es.json), `/i18n` (merges shared + region messages)
 - `/pipeline` TS scripts orchestrating DuckDB / GDAL / tippecanoe; each step writes to `data/work/<region>/` and emits a report
@@ -50,8 +50,8 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 
 ## Regions
 
-- **Known vs served.** `regions/index.ts`: `KNOWN_REGION_IDS` is what `--region` accepts (pipeline, seed, scripts); `REGION_IDS` is what the app serves. A known but unserved region's host gets 404. To serve a region, follow its `regions/<id>/README.md`; adding the id to `REGION_IDS` makes TypeScript list every per-region record still missing.
-- **Routing.** `proxy.ts` maps the host to a region (`regions/hosts.ts`: host table, then a region-id first label, else `nqn`) and rewrites to `app/[region]`; public URLs carry no region. Server code gets the region from route params (or the `x-basin-region` header in `i18n/request.ts`); client code from `useRegion()`.
+- **Known vs served.** `regions/index.ts`: `KNOWN_REGION_IDS` is what `--region` accepts (pipeline, seed, scripts); `REGION_IDS` is what the app serves. A known but unserved region's path gets 404. To serve a region, follow its `regions/<id>/README.md`; adding the id to `REGION_IDS` makes TypeScript list every per-region record still missing.
+- **Routing.** The region is the first path segment, its slug (`regions/index.ts` `REGION_SLUGS`: `rionegro`, `cordoba`), which is the `app/[region]` param; ids stay internal. `proxy.ts` serves the hub at `/`, sets the `x-basin-region` header on region paths, redirects id paths (`/cba/…`) and the old per-region hosts (`regions/hosts.ts`) to the slug path. Server code gets the region from route params (`regionFromSlug`, or the header in `i18n/request.ts`); client code from `useRegion()`. Links and API calls go through `regionPath` / `useRegionPath()` (`useApi` adds it). No default region for a URL: an unknown path is a 404.
 - **Per region:** pipeline configs and `--region` (required), Mongo database (`regionDbName`: `nqn` keeps `basin-explorer`, others append `-<id>`), tiles (`public/tiles/<id>/`, versioned per region), UI strings that name the region, `content.ts` (featured rivers, landing sample picks, OG subtitle, ask prompt place and examples). Everything else is shared.
 - **Never** let a region's code path fall back to another region's data silently: no default region in pipeline commands, and tests check that every served region defines the same message keys and valid prompt slugs.
 - Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in `context/RUN_LOCAL.md` after each change.

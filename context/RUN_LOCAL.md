@@ -248,11 +248,20 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 - [x] Dev: `cordoba.localhost:3000` landing, `/map`, `/attributions` (APRHI credit) and `/cba/opengraph-image` answer 200; the hub lists both regions.
 - [ ] `npm run seed -- --region cba` twice (idempotent), then give the read-only app user `read@basin-explorer-cba` and run `npm run atlas:check -- --region cba`. Until then the `cba` map draws, but panels, search and ask have no data.
 - [x] Landing image: `public/landing/cba/basin.png` (owner's screenshot of the whole map page, 1909×963), imported in `regions/images.ts`.
-- [ ] Browser on `cordoba.localhost:3000/map` (after the seed): the R3.7 checks above, Visible Land levels, the endorheic toggle (unmatched lines hide with their reaches), localities, Mar Chiquita and the reservoirs, sub-basin view with APRHI levels.
+- [ ] Browser on `localhost:3000/cordoba/map` (after the seed): the R3.7 checks above, Visible Land levels, the endorheic toggle (unmatched lines hide with their reaches), localities, Mar Chiquita and the reservoirs, sub-basin view with APRHI levels.
 - [ ] Review `regions/cba/content.ts` picks (featured Tercero, Dulce, Quinto; ask examples) and the `cba` landing copy in `regions/cba/messages/`.
 
 ## Córdoba map review: unmatched lines, IGN flow class (2026-10-12)
 
 - [x] `pipeline:line-flow -- --region cba` twice: ok, identical. `export` (cba) twice: ok; `export` (nqn): `data/out/nqn` byte-identical. `tiles` (cba): ok, rivers.pmtiles 4.47 MB (+35 KB).
 - [ ] Vercel: bump `cba` in `NEXT_PUBLIC_TILES_VERSIONS` (rivers.pmtiles changed) when deploying.
-- [ ] Browser on `cordoba.localhost:3000/map`: Ríos Segundo, Tercero, Cuarto and Primero solid blue (perennial); unmatched lines light blue; legend note names IGN and GIRES.
+- [ ] Browser on `localhost:3000/cordoba/map`: Ríos Segundo, Tercero, Cuarto and Primero solid blue (perennial); unmatched lines light blue; legend note names IGN and GIRES.
+
+## Regions by path (2026-10-12)
+
+The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/rionegro` (owner). `/` is the hub on every host. The old hosts redirect (308) to the path: `cordobabasinexplorer.vercel.app/x` → `basinexplorer.vercel.app/cordoba/x`, `rionegrobasinexplorer.vercel.app/?r=limay` → `…/rionegro/map?r=limay`. In dev, Next makes a redirect to its own origin relative, so `cordoba.localhost:3000/map` lands on `cordoba.localhost:3000/cordoba/map` (served as is); on Vercel the hosts differ and the redirect is absolute.
+
+- [x] `npm run check` (569 tests). Dev with `curl`: hub `/` 200 with cards to `/cordoba` and `/rionegro`; `/cordoba`, `/cordoba/map`, `/cordoba/attributions`, `/cordoba/api/search?q=tercero`, `/cordoba/opengraph-image`, `/rionegro`, `/rionegro/map`, `/rionegro/api/rivers/limay` 200; `/cba/map` → 308 `/cordoba/map`; `/rionegro?r=limay` → 308 `/rionegro/map?r=limay`; `/xyz` and `/map` 404. Landing links and the OG image URL carry `/cordoba`.
+- [ ] Vercel: production domain `basinexplorer.vercel.app`; keep `cordobabasinexplorer.vercel.app` and `rionegrobasinexplorer.vercel.app` assigned to the same project so they redirect. The `HUB_HOSTS`, `HUB_URL` and `REGION_URLS` env vars are no longer read (remove them if set).
+- [ ] Browser: `localhost:3000/cordoba/map` and `/rionegro/map` (search, panels, ask box all call `/<region>/api/…`), the language links, "All regions", and an old link (`rionegrobasinexplorer.vercel.app/?r=limay` once deployed).
+- [ ] `npm run test:e2e`: the specs now open `/rionegro/…` from `http://localhost:3100` (baseURL); screenshot baselines may need `--update-snapshots` if only the URL changed nothing visible should differ.

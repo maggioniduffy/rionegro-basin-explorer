@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRegionPath } from "@/components/RegionProvider";
 
 export type ApiState<T> =
   | { status: "loading" }
@@ -8,8 +9,13 @@ export type ApiState<T> =
   | { status: "notFound" }
   | { status: "error" };
 
-/** GET a JSON API path; `null` skips the request. Aborts when the path changes. */
-export function useApi<T>(path: string | null): ApiState<T> {
+/**
+ * GET a JSON API path of the current region (`/api/search` -> `/cordoba/api/search`); `null`
+ * skips the request. Aborts when the path changes.
+ */
+export function useApi<T>(apiPath: string | null): ApiState<T> {
+  const inRegion = useRegionPath();
+  const path = apiPath === null ? null : inRegion(apiPath);
   const [state, setState] = useState<{ path: string | null; s: ApiState<T> }>({
     path,
     s: { status: "loading" },

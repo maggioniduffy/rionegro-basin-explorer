@@ -49,9 +49,13 @@ export async function waitForMapIdle(page: Page) {
   );
 }
 
+/** The region the specs test: Río Negro, by path (owner, 2026-10-12). */
+export const REGION_PATH = "/rionegro";
+
+/** Open `path` inside REGION_PATH ("/map" -> "/rionegro/map") and wait for the map. */
 export async function openMap(page: Page, path: string) {
   await stubImagery(page);
-  await page.goto(path);
+  await page.goto(`${REGION_PATH}${path}`);
   await waitForMapIdle(page);
 }
 

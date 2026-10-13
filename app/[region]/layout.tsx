@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { RegionProvider } from "@/components/RegionProvider";
-import { isRegionId, REGION_IDS } from "@/regions";
+import { REGION_IDS, REGION_SLUGS, regionFromSlug } from "@/regions";
 
 /**
- * Every page and API route lives under app/[region]; proxy.ts rewrites each request to
- * its host's region (regions/hosts.ts), so the region never shows in public URLs.
+ * Every region page and API route lives under app/[region], whose param is the region's
+ * slug (basinexplorer.vercel.app/cordoba; regions/index.ts REGION_SLUGS).
  */
 export function generateStaticParams() {
-  return REGION_IDS.map((region) => ({ region }));
+  return REGION_IDS.map((id) => ({ region: REGION_SLUGS[id] }));
 }
 
 export const dynamicParams = false;
@@ -35,7 +35,7 @@ export default async function RegionLayout({
   children,
   params,
 }: LayoutProps<"/[region]">) {
-  const { region } = await params;
-  if (!isRegionId(region)) notFound();
+  const region = regionFromSlug((await params).region);
+  if (!region) notFound();
   return <RegionProvider region={region}>{children}</RegionProvider>;
 }

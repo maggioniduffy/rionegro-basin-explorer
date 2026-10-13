@@ -2,13 +2,19 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { LOCALES } from "@/i18n/config";
 import { MAP_PATH } from "@/lib/url-state";
-import { currentHubOrigin } from "./SiteHeader";
+import { regionPath, type RegionId } from "@/regions";
 import { Wordmark } from "./Wordmark";
 
-export async function SiteFooter({ path }: { path: string }) {
+/** `path` is the page's path inside the region. */
+export async function SiteFooter({
+  region,
+  path,
+}: {
+  region: RegionId;
+  path: string;
+}) {
   const t = await getTranslations("landing");
   const ls = await getTranslations("localeSwitcher");
-  const hub = await currentHubOrigin();
   return (
     <footer className="border-line-card text-footer flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t px-[clamp(16px,4vw,40px)] pt-7 pb-10 text-sm">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -16,19 +22,17 @@ export async function SiteFooter({ path }: { path: string }) {
           <Wordmark />
         </span>
         <Link
-          href="/attributions"
+          href={regionPath(region, "/attributions")}
           className="text-secondary hover:text-text inline-flex min-h-11 items-center"
         >
           {t("attr")}
         </Link>
-        {hub && (
-          <a
-            href={hub}
-            className="text-secondary hover:text-text inline-flex min-h-11 items-center"
-          >
-            {t("hub")}
-          </a>
-        )}
+        <Link
+          href="/"
+          className="text-secondary hover:text-text inline-flex min-h-11 items-center"
+        >
+          {t("hub")}
+        </Link>
         <span>{t("credit")}</span>
       </div>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -36,7 +40,7 @@ export async function SiteFooter({ path }: { path: string }) {
         {LOCALES.map((l) => (
           <a
             key={l}
-            href={`/${l}${path === "/" ? "" : path}`}
+            href={`/${l}${regionPath(region, path)}`}
             lang={l}
             hrefLang={l}
             className="text-secondary hover:text-text inline-flex min-h-11 items-center"
@@ -46,7 +50,7 @@ export async function SiteFooter({ path }: { path: string }) {
           </a>
         ))}
         <Link
-          href={MAP_PATH}
+          href={regionPath(region, MAP_PATH)}
           className="text-accent hover:text-accent-soft inline-flex min-h-11 items-center font-semibold"
         >
           {t("open")} →
