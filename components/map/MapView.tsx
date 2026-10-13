@@ -262,8 +262,8 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
           "visibility",
           s.baseLayer === base ? "visible" : "none",
         );
-    for (const [id, prop, color] of riverColorPaint(s.baseLayer))
-      if (map.getLayer(id)) map.setPaintProperty(id, prop, color);
+    for (const [id, prop, value] of riverColorPaint(s.baseLayer))
+      if (map.getLayer(id)) map.setPaintProperty(id, prop, value);
   }
   const landChanged = !prev || s.visibleLand !== prev.visibleLand;
   const endoChanged = !prev || s.hideEndorheic !== prev.hideEndorheic;

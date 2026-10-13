@@ -29,9 +29,16 @@ export type FlowClass = (typeof FLOW_CLASSES)[number];
 /** Paint properties that follow the base's river colours, for MapView to set on a base switch. */
 export function riverColorPaint(
   base: BaseLayer,
-): [layer: string, property: "fill-color" | "line-color", color: string][] {
+): [
+  layer: string,
+  property: "fill-color" | "line-color" | "line-opacity",
+  value: string | number,
+][] {
   const colors = RIVER_COLORS[base];
+  const province = provinceStyle(base);
   return [
+    [PROVINCE_LAYER_ID, "line-color", province.color],
+    [PROVINCE_LAYER_ID, "line-opacity", province.opacity],
     [SELECTED_LAYER_ID, "line-color", colors.selected],
     [IGN_LAKE_FILL_LAYER_ID, "fill-color", colors.detail],
     [IGN_DETAIL_LAYER_ID, "line-color", colors.detail],
@@ -258,6 +265,15 @@ export const REACH_LAYER_IDS = [
 export const OUTLINE_LAYER_ID = "basin-outline";
 /** The province boundary, a soft dashed line (cba; map.config.json provinceOutline). */
 export const PROVINCE_LAYER_ID = "province-outline";
+/**
+ * The province line takes the outline colour on the imagery and black on the light relief
+ * base, where the outline colour does not show (owner, 2026-10-13).
+ */
+export function provinceStyle(base: BaseLayer) {
+  return base === "map"
+    ? { color: "#000000", opacity: 0.85 }
+    : { color: THEME_COLORS.dark.outline, opacity: 0.6 };
+}
 export const LAKE_LAYER_ID = "lake-outline";
 /** Invisible fill over every lake, so a click inside a lake finds it. */
 export const LAKE_HIT_LAYER_ID = "lake-hit";
@@ -625,9 +641,9 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       "source-layer": "province",
       layout: { "line-join": "round" },
       paint: {
-        "line-color": outline,
+        "line-color": provinceStyle(o.baseLayer).color,
         "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.8, 10, 1.4],
-        "line-opacity": 0.6,
+        "line-opacity": provinceStyle(o.baseLayer).opacity,
         "line-dasharray": [3, 2],
       },
     });
