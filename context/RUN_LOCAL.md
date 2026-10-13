@@ -254,7 +254,7 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 ## Córdoba map review: unmatched lines, IGN flow class (2026-10-12)
 
 - [x] `pipeline:line-flow -- --region cba` twice: ok, identical. `export` (cba) twice: ok; `export` (nqn): `data/out/nqn` byte-identical. `tiles` (cba): ok, rivers.pmtiles 4.47 MB (+35 KB).
-- [ ] Vercel: bump `cba` in `NEXT_PUBLIC_TILES_VERSIONS` (rivers.pmtiles changed) when deploying.
+- [ ] Vercel: nothing to set: the tile version is a content hash computed at build (next.config.ts tilesVersions), so the new rivers.pmtiles changes the URL by itself.
 - [ ] Browser on `localhost:3000/cordoba/map`: Ríos Segundo, Tercero, Cuarto and Primero solid blue (perennial); unmatched lines light blue; legend note names IGN and GIRES.
 
 ## Regions by path (2026-10-12)
@@ -270,13 +270,13 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 
 - [x] `named`, `ign-streams`, `export` (twice), `tiles` for `cba`: all ok. Río Segundo 223.6 km, mouth on Mar Chiquita's southern shore.
 - [ ] `npm run seed -- --region cba` (the river document and 15 reaches change; until then the panel shows 104.7 km).
-- [ ] Vercel: bump `cba` in `NEXT_PUBLIC_TILES_VERSIONS` (rivers.pmtiles changed again).
+- [ ] Vercel: nothing to set: the build hashes the tiles.
 - [ ] Browser: `localhost:3000/cordoba/map?r=segundo` highlights the river down the Plujunta to the lagoon.
 
 ## Córdoba: province boundary (2026-10-12)
 
 - [x] `export` (cba, nqn: `data/out/nqn` identical), `tiles` (cba): ok; `province` layer decoded from rivers.pmtiles.
-- [ ] Browser: `localhost:3000/cordoba/map` shows a soft dashed line along the province edge, under the rivers, at every zoom; Vercel tiles version bump for `cba`.
+- [ ] Browser: `localhost:3000/cordoba/map` shows a soft dashed line along the province edge, under the rivers, at every zoom; nothing to bump for Vercel: the tile version is a build-time hash.
 
 ## Córdoba: nonPerennialPct (2026-10-12)
 
