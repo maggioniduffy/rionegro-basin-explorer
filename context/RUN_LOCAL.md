@@ -247,7 +247,7 @@ Needs `data/work/cba/basin/`, `data/work/cba/rivers/`, `data/out/cba/rivers.ndjs
 - [x] `nqn` unchanged: `export` re-run, `data/out/nqn` byte-identical.
 - [x] Dev: `cordoba.localhost:3000` landing, `/map`, `/attributions` (APRHI credit) and `/cba/opengraph-image` answer 200; the hub lists both regions.
 - [ ] `npm run seed -- --region cba` twice (idempotent), then give the read-only app user `read@basin-explorer-cba` and run `npm run atlas:check -- --region cba`. Until then the `cba` map draws, but panels, search and ask have no data.
-- [ ] Landing image: `public/landing/cba/basin.png` (1400×900 map screenshot), imported in `regions/images.ts` in place of `null`.
+- [x] Landing image: `public/landing/cba/basin.png` (owner's screenshot of the whole map page, 1909×963), imported in `regions/images.ts`.
 - [ ] Browser on `cordoba.localhost:3000/map` (after the seed): the R3.7 checks above, Visible Land levels, the endorheic toggle (unmatched lines hide with their reaches), localities, Mar Chiquita and the reservoirs, sub-basin view with APRHI levels.
 - [ ] Review `regions/cba/content.ts` picks (featured Tercero, Dulce, Quinto; ask examples) and the `cba` landing copy in `regions/cba/messages/`.
 
