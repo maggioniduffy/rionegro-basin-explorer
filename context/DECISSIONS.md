@@ -474,3 +474,59 @@ From `DESIGN.md` and the Landing v3 handoff (`landing-handoff.zip`: template, ca
 - **Shared pieces** in `lib/og-image.tsx` (`OgFrame`, `OgEyebrow`, `OgBasin`, `OG_COLORS` mirroring `app/globals.css`). The logomark's paths are exported from `components/Icon.tsx`.
 - **Fonts:** static TTFs from Google Fonts (all SIL OFL 1.1), subset to Latin (≈90 KB together) in `lib/og-fonts/`; `next/font` gives no font data to `ImageResponse`. Instrument Serif has no "→", so the image avoids it.
 - **No basin stroke:** the basin path is pieced from z5 tiles, so a stroke draws the tile seams.
+
+## Córdoba R5: continuous river courses (2026-10-13)
+
+- **Problem (measured 2026-10-13).** A river was a list of HydroRIVERS reaches, and a drawn piece joined it only if its midpoint lay within 250 m / 1 km of one of them. In the plains the 15″ path strays from the mapped channel, so rivers broke apart: own-named km drawn but not joined (Quinto 117, Dulce 203, Tercero 94, Primero 66, Segundo 63, Jesús María 63) and holes with no piece at all (Quinto 104 km, Segundo 83, Dulce 66).
+- **Owner decisions:**
+  - Gaps are filled with IGN first (raw IGN, also inside the province, **only in gaps**: an exception to R3.3, applied in R5.2), then the HydroRIVERS path, drawn dashed with a legend note.
+  - Other-named or unnamed pieces that follow the channel are part of the river and keep their source name in the panel.
+  - River length = mapped course length (APRHI + IGN + HydroRIVERS in gaps), with the source stated; HydroATLAS values still come from the reaches.
+- **R5.0 measurements:**
+  - APRHI `TIPO`: Arroyo, Río, Bañado, Cañada, Paleocauce (20 lines, 78.6 km), Vertiente, Quebrada. Neither APRHI nor IGN has a canal class.
+  - `SISTEMATIZ = 'SI'` covers 2,562.9 km, including R. Quinto (115.9 km) and R. Jesús María (150 km), so it can't be used to exclude anything. Its meaning and Paleocauce's are unverified (PENDING.md).
+  - Line endpoints: 22.6 % meet within 1 m and only 2.4 % lie between 1 and 50 m, so `snapM` = 50.
+  - Same-name breaks: Jesús María 0.1 / 1,327.5 / 43,747 m; Quinto 0–600 m; Tercero 2.4–15 km.
+  - Holes: most have own lines within 2–5 km.
+    - Quinto in San Luis (-65.51,-33.67 → -65.16,-33.91) has no line within 5 km.
+    - Quinto's southern hole has 44 km of raw IGN within 5 km, inside the province.
+    - The Quinto APRHI and IGN lines don't meet at the province edge (≈ 59.7 km apart).
+    - The own lines of Primero, Jesús María and Dulce end 0–0.44 km from Mar Chiquita.
+- **R5.1 `pipeline:river-lines`** (`pipeline/lib/river-course.ts`; settings in `regions/cba/river-lines.config.json`, whose `$comment` explains each value). The step runs only for a region with that config: `nqn` has none and is unaffected.
+  - **Graph and course.**
+    - The nodes are piece endpoints snapped at 50 m; the edges are pieces, limited to the river's root(s) and to a 5 km corridor around its reaches, plus every own-named piece.
+    - The course is the cheapest source-to-mouth path. The cost per metre is own 1, unnamed 1.5, other name 3, straight gap 10.
+    - Paleocauce is excluded.
+    - Gap edges join the 6 nearest dangling ends of other components (`gapNeighbours`) within 60 km, plus the closest pair of nodes between every two components. The builder added both; the second was needed because the Dulce had no path without it.
+    - Gaps are only recorded (`gaps.json`); R5.2 fills them.
+  - **Anchors.** The source and the mouth anchor at the nearest junction touching an own-named piece within 10 km of the HydroRIVERS source and mouth (the 15″ ends can be km off the channel). If both resolve to one node, the river fails.
+  - **Extensions.**
+    - The mouth extends along own-named pieces to a mouth lake (Mar Chiquita, `aprhi-nat-1582`, within 500 m).
+    - The source extends upstream only, from the course end.
+    - Both may cross own-to-own breaks up to 600 m (`extensionGapM`, from the Quinto measurement).
+  - **Attach.** A line end within 500 m of a piece's interior attaches there, without splitting the piece. Jesús María's lower arm aprhi:826:2 starts 100.5 m from the interior of 826:0#20 and 1,327.5 m from the nearest piece end, which no endpoint snap would catch. Jesús María already reaches the lake through 826:0.
+  - **Arms.** Unclaimed own-named pieces joined to the course through own-named pieces become arms, crossing own-to-own breaks up to 600 m. This fixes the Quinto, where an APRHI piece with empty geometry (485 m) split the line. Arm km are not course km.
+  - **Claims and confluences.**
+    - Rivers are processed receivers first: a Kahn order over the HydroRIVERS NEXT_DOWN chain, ties in `names.json` order.
+    - A tributary's course ends where it reaches, or attaches within 500 m to, a piece an earlier river holds.
+    - Held nodes stop arm search and extensions.
+    - No piece is in two rivers.
+- **First run (two runs identical, all checks ok):**
+
+  | River        | Course km | Arms km | Notes                                  |
+  | ------------ | --------- | ------- | -------------------------------------- |
+  | Carcarañá    | 241.3     | 0.8     | –                                      |
+  | Tercero      | 361.4     | 1.9     | cut into the Carcarañá at 266 m        |
+  | Saladillo    | 114.7     | 0       | cut into the Carcarañá at 0 m          |
+  | Cuarto       | 265.4     | 39.8    | –                                      |
+  | Quinto       | 328.3     | 67.5    | path gaps 66.1 km                      |
+  | Dulce        | 580.6     | 49.9    | reaches Mar Chiquita                   |
+  | Salí         | 160.0     | 12.0    | –                                      |
+  | Primero      | 255.7     | 0       | mouth extended 34.4 km to Mar Chiquita |
+  | Segundo      | 216.3     | 0.3     | gap 20 km; reaches Mar Chiquita        |
+  | Jesús María  | 126.2     | 23.9    | 1 attach; reaches Mar Chiquita         |
+  | Conlara      | 122.6     | 10.7    | –                                      |
+  | Cruz del Eje | 58.1      | 2.2     | –                                      |
+  | Pichanas     | 58.8      | 18.5    | –                                      |
+  - Own-named share with arms is ≥ 0.95 for every river except the Segundo (0.943). The difference is its eastern arm aprhi:1167:0 (10.8 km), left out on purpose: per the owner's rule, the Segundo's branch is the one that reaches the lake through the Plujunta.
+  - **Not met by the lines** (`receiverNotReached`): the Salí's course stays 11.9 km from the Dulce's, and the Cuarto's 24.9 km from the Saladillo's, although HydroRIVERS joins them. R5.2's fill closes them.

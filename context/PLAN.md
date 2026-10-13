@@ -131,6 +131,18 @@ Original items:
 
 - [x] Hub landing listing the regions; each region's landing links back — `app/hub` on `basinexplorer.vercel.app` (dev `hub.localhost:3000`), regions at `rionegrobasinexplorer.vercel.app` and `cordobabasinexplorer.vercel.app` (Vercel refused nested names), back link where a hub exists (2026-10-12)
 
+### Phase R5 — Continuous river courses in Córdoba (`cba`)
+
+Plan approved 2026-10-13 ([DECISSIONS.md](DECISSIONS.md#córdoba-r5-continuous-river-courses-2026-10-13)): each of the 13 rivers is drawn as one course from source to mouth along the mapped lines; gaps filled with IGN, then HydroRIVERS (dashed); other-named and unnamed pieces on the course keep their source name; river length = mapped course length. Branch `phase-r5-cba-courses`.
+
+- [x] R5.0 Measurements (APRHI/IGN classes, lines near each hole, endpoint snap distances) — in DECISSIONS.md (2026-10-13)
+- [x] R5.1 `pipeline:river-lines`: course per river from the display lines (graph, Dijkstra bridges, anchors, extensions, attach, arms, confluence cuts) and `report.json` — 13 courses, all checks ok, two runs identical; own share with arms ≥ 0.95 except the Segundo (0.943, eastern arm out on purpose); Salí and Cuarto don't reach their receiver yet (2026-10-13)
+- [ ] R5.2 Gap fill: IGN raw lines (also inside the province, only in gaps), then HydroRIVERS geometry; `fill.parquet`
+- [ ] R5.3 Export and tiles: `river` from the course, fill pieces, `lengthKm` from the mapped course with per-source km; `nqn` byte-identical
+- [ ] R5.4 Map, panel, legend and i18n (HydroRIVERS fill dashed, "name in the source")
+- [ ] R5.5 Run and gate
+- **Done when:** all 13 rivers have a one-component course from source to mouth; every filled km names its source; ≥ 95 % of each river's own-named km are in its course (with arms); Primero, Jesús María and Dulce reach Mar Chiquita where their line does; the Quinto is drawn without breaks; reports ok, two runs identical, `nqn` byte-identical; `npm run check` green and new strings in EN and ES.
+
 ## Open decisions
 
 - PMTiles hosting (`/public` vs object storage)

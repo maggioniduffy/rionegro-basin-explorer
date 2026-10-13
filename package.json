@@ -20,6 +20,7 @@
     "pipeline:candidates": "tsx pipeline/steps/candidates.ts",
     "pipeline:osm-names": "tsx pipeline/steps/osm-names.ts",
     "pipeline:named": "tsx pipeline/steps/named.ts",
+    "pipeline:river-lines": "tsx pipeline/steps/river-lines.ts",
     "pipeline:export": "tsx pipeline/steps/export.ts",
     "pipeline:mask": "tsx pipeline/steps/mask.ts",
     "pipeline:tiles": "tsx pipeline/steps/tiles.ts",
