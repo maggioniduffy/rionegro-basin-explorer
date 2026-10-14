@@ -17,7 +17,10 @@ import {
   ownNameKeys,
   parseRiverLinesConfig,
   pieceKind,
+  planGapFill,
+  receiverPieces,
   snapClusters,
+  type FillEdge,
 } from "../../pipeline/lib/river-course";
 
 const config: RiverLinesConfig = {
@@ -33,6 +36,10 @@ const config: RiverLinesConfig = {
   anchorMaxM: 10000,
   extensionGapM: 500,
   attachM: 500,
+  fillCorridorM: 3000,
+  fillSnapM: 100,
+  fillMaxStretch: 2,
+  armMaxFromCourseM: 5000,
 };
 
 type P = [number, number];
@@ -551,7 +558,7 @@ describe("buildCourse", () => {
     expect(ids(far)).toEqual(["b3", "b2", "b1"]);
   });
 
-  it("stops the arm search at nodes another river holds", () => {
+  it("extends the course along own-named lines to a node another river holds (receiver extension) and stops there", () => {
     const pieces = [
       piece("c1", "own", [0, 0], [1000, 0]),
       piece("a1", "own", [1000, 0], [1000, 500]),
@@ -569,7 +576,11 @@ describe("buildCourse", () => {
         },
       },
     );
-    expect(r.arms.map((a) => a.id)).toEqual(["a1"]);
+    // a1 goes on to the node another river holds (the receiver): the course continues and ends
+    // there; a2 lies beyond it and is not entered
+    expect(ids(r)).toEqual(["a1", "c1"]);
+    expect(r.receiverExtension).toEqual({ km: 0.5, pieces: 1 });
+    expect(r.arms).toEqual([]);
   });
 
   it("lets the arm search cross a break up to extensionGapM between own-named lines, never into a held node", () => {
@@ -601,7 +612,8 @@ describe("buildCourse", () => {
         [endKey("a2", 0)]: { piece: "h", distM: 80, lon: 0, lat: 0 },
       },
     });
-    expect(held.arms.map((a) => a.id)).toEqual(["a1"]);
+    expect(ids(held)).toEqual(["a1", "c1"]);
+    expect(held.arms).toEqual([]);
     expect(held.armBreaks).toEqual([]);
   });
 
@@ -734,5 +746,50 @@ describe("processing order", () => {
         { slug: "b", receiver: "a" },
       ]),
     ).toThrow(/cycle/);
+  });
+});
+
+describe("gap fill", () => {
+  const edge = (
+    id: string,
+    a: [number, number],
+    b: [number, number],
+    cost?: number,
+  ): FillEdge => {
+    const lengthM = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    return {
+      id,
+      lengthM,
+      cost: cost ?? lengthM,
+      a: { x: a[0], y: a[1], start: a[0] === 0, end: a[0] === 1000 },
+      b: { x: b[0], y: b[1], start: b[0] === 0, end: b[0] === 1000 },
+    };
+  };
+  it("takes the cheapest IGN chain that joins both gap ends, else HydroRIVERS", () => {
+    const edges = [
+      edge("x1", [0, 0], [500, 0]),
+      edge("x2", [500, 10], [1000, 0]), // 10 m off the first end: within snap
+      edge("detour", [0, 0], [1000, 0], 5000),
+    ];
+    const plan = planGapFill(edges, 50);
+    expect(plan.src).toBe("ign");
+    if (plan.src === "ign")
+      expect(plan.chain.edges.map((e) => [e.id, e.reversed])).toEqual([
+        ["x1", false],
+        ["x2", false],
+      ]);
+    // the chain is broken by more than snapM: no IGN chain
+    expect(
+      planGapFill([edges[0]!, edge("x3", [600, 0], [1000, 0])], 50),
+    ).toEqual({ src: "hydrorivers" });
+  });
+  it("cuts only against the receiver's pieces", () => {
+    const held = new Map([
+      ["p2", "dulce"],
+      ["p1", "dulce"],
+      ["q1", "saladillo"],
+    ]);
+    expect(receiverPieces(held, "dulce")).toEqual(["p1", "p2"]);
+    expect(receiverPieces(held, null)).toEqual([]);
   });
 });

@@ -16,6 +16,14 @@
  * the course through own-named pieces, or attached to a course piece's interior within attachM
  * (nearCourse), are returned as arms. Breaks up to extensionGapM can be crossed by the extensions.
  *
+ * A course that is not cut and reaches no mouth lake continues, along own-named pieces and breaks
+ * up to extensionGapM, to the nearest node another river holds (the river it flows into): a lower
+ * course the mouth anchor did not reach (R5.2, the Cuarto into the Saladillo).
+ *
+ * R5.2 gap fill (planGapFill): where the course has a path gap, the step offers the IGN line
+ * pieces of the gap's corridor as edges; the cheapest chain that joins both ends fills the gap
+ * (IGN first, owner), otherwise the step cuts the river's HydroRIVERS reaches between the ends.
+ *
  * Coordinates are metres in a planar projection (the step uses South America Albers), with
  * lon/lat kept for the gaps and the cut. Every number comes from the config (RiverLinesConfig).
  */
@@ -49,6 +57,14 @@ export interface RiverLinesConfig {
   extensionGapM: number;
   /** An endpoint within this distance (m) of the interior of another piece attaches to it. */
   attachM: number;
+  /** Gap fill: IGN lines within this distance (m) of the gap's guide (straight line, HydroRIVERS path) are offered. */
+  fillCorridorM: number;
+  /** Gap fill: an IGN line end within this distance (m) of a gap end, or of another IGN line end, joins there. */
+  fillSnapM: number;
+  /** Gap fill: a chain or HydroRIVERS route is used only if no longer than this times the straight distance between the gap ends, plus 2 * fillSnapM. */
+  fillMaxStretch: number;
+  /** An arm piece farther than this (m) from the course (pieces and fill) is not part of the river. */
+  armMaxFromCourseM: number;
 }
 
 const POSITIVE = [
@@ -60,6 +76,10 @@ const POSITIVE = [
   "gapSearchM",
   "gapNeighbours",
   "lakeTouchM",
+  "fillCorridorM",
+  "fillSnapM",
+  "fillMaxStretch",
+  "armMaxFromCourseM",
 ] as const;
 const WEIGHTS = ["own", "unnamed", "other", "gap"] as const;
 
@@ -265,6 +285,10 @@ export interface CourseResult {
   /** Own-named pieces left out because both ends snap to one node. */
   collapsedOwn: { count: number; km: number };
   mouthExtension: { lakeId: string; km: number; pieces: number } | null;
+  /** Own-named continuation from the mouth anchor to a node another river holds (the course is cut there). */
+  receiverExtension: { km: number; pieces: number } | null;
+  /** Where the course ends (the node past any extension); null when it failed. */
+  mouthPoint: { x: number; y: number; lon: number; lat: number } | null;
   /** The mouth lake the course's mouth end itself touches (within lakeTouchM), extension or not. */
   mouthLake: { lakeId: string; distM: number } | null;
   sourceExtensionKm: number;
@@ -409,7 +433,7 @@ class Heap {
 /**
  * Dijkstra from `start`. `weight` gives an edge's cost, or null to skip it; `blocked` nodes are
  * never entered. Equal costs resolve to the smaller edge index, so the result does not depend
- * on iteration order.
+ * on iteration order. A `terminal` node can be reached but is not expanded.
  */
 function dijkstra(
   nodeCount: number,
@@ -418,6 +442,7 @@ function dijkstra(
   start: number | readonly number[],
   weight: (e: Edge) => number | null,
   blocked: (node: number) => boolean = () => false,
+  terminal: (node: number) => boolean = () => false,
 ) {
   const dist = new Array<number>(nodeCount).fill(Infinity);
   const prev = new Array<number>(nodeCount).fill(-1);
@@ -431,6 +456,7 @@ function dijkstra(
     const [d, u] = heap.pop();
     if (done[u]) continue;
     done[u] = true;
+    if (terminal(u)) continue;
     for (const ei of adj[u]!) {
       const e = edges[ei]!;
       const w = weight(e);
@@ -718,6 +744,8 @@ export function buildCourse(input: CourseInput): CourseResult {
     collapsedOwn: { count: 0, km: 0 },
     cut: null,
     mouthExtension: null,
+    receiverExtension: null,
+    mouthPoint: null,
     mouthLake: null,
     sourceExtensionKm: 0,
     arms: [],
@@ -770,7 +798,7 @@ export function buildCourse(input: CourseInput): CourseResult {
     }
   const kept = cutIndex < 0 ? path : path.slice(0, cutIndex);
   const mouthNode = cutIndex < 0 ? mth.node : walk[cutIndex]!;
-  const cutNode = cutIndex < 0 ? null : nodes[mouthNode]!;
+  let cutNode = cutIndex < 0 ? null : nodes[mouthNode]!;
 
   // Course items in walking order (source -> mouth).
   type Item =
@@ -860,7 +888,11 @@ export function buildCourse(input: CourseInput): CourseResult {
   const attachCands = [...attachBest.values()].sort(
     (p, q) =>
       p.near.distM - q.near.distM ||
-      (pieces[p.arm]!.id < pieces[q.arm]!.id ? -1 : 1),
+      (pieces[p.arm]!.id < pieces[q.arm]!.id
+        ? -1
+        : pieces[p.arm]!.id > pieces[q.arm]!.id
+          ? 1
+          : 0),
   );
   for (const c of attachCands) {
     const down = downNodeOfPiece.get(c.course);
@@ -1006,6 +1038,36 @@ export function buildCourse(input: CourseInput): CourseResult {
             pieces: r.pieceCount,
           };
         }
+      }
+    }
+  }
+
+  // 6b. No mouth lake reached and no cut: the own-named lines may go on past the mouth anchor
+  // to a node another river holds (R5.2). The course ends there, as a cut at a confluence.
+  let receiverExtension: CourseResult["receiverExtension"] = null;
+  if (cutNode === null && mouthExtension === null) {
+    const toHeld = dijkstra(
+      nodes.length,
+      extEdges,
+      extAdj,
+      mouthNode,
+      extWeight,
+      (v) => courseNodes.has(v),
+      (v) => nodes[v]!.claimed.length > 0,
+    );
+    let held = -1;
+    nodes.forEach((n, i) => {
+      if (n.claimed.length === 0 || toHeld.dist[i] === Infinity) return;
+      if (held < 0 || toHeld.dist[i]! < toHeld.dist[held]!) held = i;
+    });
+    if (held >= 0) {
+      const ext = walkBack(extEdges, toHeld.prev, mouthNode, held);
+      if (ext !== null && ext.length > 0) {
+        const r = extensionItems(ext, mouthNode, "mouth-extension", true);
+        downItems = r.items;
+        mouthEnd = held;
+        cutNode = nodes[held]!;
+        receiverExtension = { km: r.km, pieces: r.pieceCount };
       }
     }
   }
@@ -1191,6 +1253,13 @@ export function buildCourse(input: CourseInput): CourseResult {
         }
       : null,
     mouthExtension,
+    receiverExtension,
+    mouthPoint: {
+      x: nodes[mouthEnd]!.x,
+      y: nodes[mouthEnd]!.y,
+      lon: nodes[mouthEnd]!.lon,
+      lat: nodes[mouthEnd]!.lat,
+    },
     mouthLake: nodes[mouthEnd]!.lake
       ? {
           lakeId: nodes[mouthEnd]!.lake!.id,
@@ -1273,4 +1342,148 @@ export function processingOrder(
     order.push(next.slug);
   }
   return order;
+}
+
+/**
+ * The pieces `receiver` holds. A course is cut only against the river it flows into (R5.1 review):
+ * a line end near any other earlier river's piece is not a confluence.
+ */
+export function receiverPieces(
+  claimedBy: ReadonlyMap<string, string>,
+  receiver: string | null,
+): string[] {
+  if (receiver === null) return [];
+  return [...claimedBy]
+    .filter(([, river]) => river === receiver)
+    .map(([id]) => id)
+    .sort();
+}
+
+/** A vertex of a fill candidate; `start` / `end` mark the ends of the gap it lies within fillSnapM of. */
+export interface FillPoint {
+  x: number;
+  y: number;
+  start?: boolean;
+  end?: boolean;
+}
+/** An IGN line part offered to fill a gap; `cost` is its length times the weight of its kind. */
+export interface FillEdge {
+  id: string;
+  lengthM: number;
+  cost: number;
+  a: FillPoint;
+  b: FillPoint;
+}
+export interface FillChain {
+  /** Edges from the gap's upstream end to its downstream end; reversed = walked from b to a. */
+  edges: { id: string; reversed: boolean }[];
+  lengthM: number;
+}
+export type GapFillPlan =
+  { src: "ign"; chain: FillChain } | { src: "hydrorivers" };
+
+/**
+ * Chooses the source of a gap's fill: the cheapest chain of IGN edges (endpoints within snapM
+ * are one node) from a node at the gap's upstream end to one at its downstream end; when none
+ * joins both ends, HydroRIVERS (the step cuts the river's reaches). Deterministic: edges are
+ * sorted by id and ties resolve to the smaller edge index.
+ */
+export function planGapFill(
+  edges: readonly FillEdge[],
+  snapM: number,
+): GapFillPlan {
+  const sorted = [...edges].sort((p, q) =>
+    p.id < q.id ? -1 : p.id > q.id ? 1 : 0,
+  );
+  const points = sorted.flatMap((e) => [e.a, e.b]);
+  const label = snapClusters(points, snapM);
+  const count = label.reduce((m, l) => Math.max(m, l + 1), 0);
+  const starts = new Set<number>();
+  const ends = new Set<number>();
+  points.forEach((p, i) => {
+    if (p.start) starts.add(label[i]!);
+    if (p.end) ends.add(label[i]!);
+  });
+  const graph: Edge[] = [];
+  sorted.forEach((e, i) => {
+    const a = label[2 * i]!;
+    const b = label[2 * i + 1]!;
+    if (a !== b) graph.push({ a, b, w: e.cost, lenM: e.lengthM, piece: i });
+  });
+  const adj: number[][] = Array.from({ length: count }, () => []);
+  graph.forEach((e, ei) => {
+    adj[e.a]!.push(ei);
+    adj[e.b]!.push(ei);
+  });
+  if (
+    [...starts].some((n) => ends.has(n)) ||
+    starts.size === 0 ||
+    ends.size === 0
+  )
+    return { src: "hydrorivers" };
+  const { dist, prev } = dijkstra(
+    count,
+    graph,
+    adj,
+    [...starts].sort((p, q) => p - q),
+    (e) => e.w,
+  );
+  let best = -1;
+  for (const n of [...ends].sort((p, q) => p - q))
+    if (dist[n]! < Infinity && (best < 0 || dist[n]! < dist[best]!)) best = n;
+  if (best < 0) return { src: "hydrorivers" };
+  const { root, path } = walkBackToRoot(graph, prev, best);
+  if (path.length === 0) return { src: "hydrorivers" };
+  // Walk the path from its root to read each edge's direction.
+  let u = root;
+  const chain: FillChain = { edges: [], lengthM: 0 };
+  for (const ei of path) {
+    const e = graph[ei]!;
+    chain.edges.push({ id: sorted[e.piece]!.id, reversed: e.a !== u });
+    chain.lengthM += e.lenM;
+    u = e.a === u ? e.b : e.a;
+  }
+  return { src: "ign", chain };
+}
+
+/** Vertices of a WKT LINESTRING ("LINESTRING (x y, x y)"); anything else throws. */
+export function parseLineWkt(wkt: string): [number, number][] {
+  const m = /^LINESTRING\s*\((.*)\)$/i.exec(wkt.trim());
+  if (!m)
+    throw new Error(
+      `river-lines: expected a LINESTRING, got ${wkt.slice(0, 40)}`,
+    );
+  return m[1]!.split(",").map((pair) => {
+    const [x, y] = pair.trim().split(/\s+/).map(Number);
+    if (
+      x === undefined ||
+      y === undefined ||
+      !Number.isFinite(x) ||
+      !Number.isFinite(y)
+    )
+      throw new Error(`river-lines: bad coordinate "${pair}"`);
+    return [x, y];
+  });
+}
+
+/** Concatenates vertex lists in order, dropping a vertex equal to the one before it. */
+export function joinLines(
+  parts: readonly (readonly (readonly [number, number])[])[],
+): [number, number][] {
+  const out: [number, number][] = [];
+  for (const part of parts)
+    for (const [x, y] of part) {
+      const last = out[out.length - 1];
+      if (!last || last[0] !== x || last[1] !== y) out.push([x, y]);
+    }
+  return out;
+}
+
+/** WKT LINESTRING of the vertices (at least two). */
+export function lineWkt(
+  points: readonly (readonly [number, number])[],
+): string {
+  if (points.length < 2)
+    throw new Error("river-lines: a line needs two vertices");
+  return `LINESTRING (${points.map(([x, y]) => `${x} ${y}`).join(", ")})`;
 }

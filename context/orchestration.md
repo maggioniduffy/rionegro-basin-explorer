@@ -139,10 +139,6 @@ Stop and ask me only for owner actions (PENDING.md / RUN_LOCAL.md) or a decision
 
 Non-blocking findings from reviews and gates. Each names the WP or phase where it lands; remove the row once fixed.
 
-| Finding                                                                                                                                                                                  | Found in    | Fix in |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------ |
-| `river-lines`: any earlier river's held piece can cut a course, not only the receiver's (`river-lines.ts:400-403`); limit cut targets to the receiver or flag a cut that doesn't meet it | R5.1 review | R5.2   |
-| `river-lines`: chained arm breaks have no total limit (Dulce 63, Conlara 51); report each arm's distance to the course or cap it                                                         | R5.1 review | R5.2   |
-| `river-lines`: an attachment nearest an extension piece is dropped (`river-lines.ts:410-418` vs `river-course.ts:847-853`); pass only main pieces as targets                             | R5.1 review | R5.2   |
-| `river-course.ts:860-864` attachment comparator returns 1 for equal ids; return 0                                                                                                        | R5.1 review | R5.2   |
-| Cuarto's 39.8 km arm may be its lower course to the Saladillo; check it when R5.2 closes `receiverNotReached` (Cuarto 24.9 km, Salí 11.9 km)                                             | R5.1 review | R5.2   |
+| Finding                                                                                                                                                                                               | Found in    | Fix in |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------ |
+| `river-lines` receiver extension stops at any node another river holds, not only the receiver's, and has no length limit (`river-course.ts:1048-1056`); pass the receiver's nodes as the terminal set | R5.2 review | R5.5   |

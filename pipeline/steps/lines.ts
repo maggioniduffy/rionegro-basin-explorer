@@ -28,12 +28,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { layerTable, type LayerConfig } from "../lib/basin-reference";
 import { type Row, lit, openDb, limitResources } from "../lib/duckdb";
 import { envelope, lengthSpheroidKm } from "../lib/geo";
-import {
-  ALBERS,
-  IGN_LINE_LAYERS,
-  IGN_ST_READ_OPTIONS,
-  createNameMap,
-} from "../lib/ign";
+import { ALBERS, createNameMap } from "../lib/ign";
+import { ignLayersOf, readIgnLines } from "../lib/ign-lines";
 import { requireInput } from "../lib/inputs";
 import { round } from "../lib/lines-gate";
 import { type StatusRules, mapStatus, pieceRuns } from "../lib/lines";
@@ -106,11 +102,7 @@ async function main() {
   };
   const ref = gate.referenceLines;
   const refFile = requireInput(rawPath(ref.path));
-  const ignLayers = config.ign.classes.map((cls) => {
-    const l = IGN_LINE_LAYERS.find((x) => x.cls === cls);
-    if (!l) throw new Error(`ign.classes: unknown IGN class "${cls}"`);
-    return { ...l, shp: requireInput(l.shp) };
-  });
+  const ignLayers = ignLayersOf(config.ign.classes);
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const basinDir = workPath("basin");
   for (const f of ["basin.geojson", "basins.geojson"])
@@ -202,15 +194,12 @@ async function main() {
              (SELECT count(*) FROM a_dedup) AS kept`);
 
     // 3. IGN lines touching the outline.
-    await db.conn.run(
-      `CREATE TABLE i_raw (cls VARCHAR, gid BIGINT, fna VARCHAR, geom GEOMETRY)`,
+    await readIgnLines(
+      db,
+      "i_raw",
+      ignLayers,
+      `ST_Intersects(geom, ${bbox}) AND ST_Intersects(geom, (SELECT geom FROM outline))`,
     );
-    for (const l of ignLayers)
-      await db.conn.run(`
-        INSERT INTO i_raw
-        SELECT ${lit(l.cls)}, CAST(gid AS BIGINT), fna, ST_Force2D(geom)
-        FROM ST_Read(${lit(l.shp)}, ${IGN_ST_READ_OPTIONS})
-        WHERE ST_Intersects(geom, ${bbox}) AND ST_Intersects(geom, (SELECT geom FROM outline))`);
     await createNameMap(db, "i_raw", "fna");
     await db.conn.run(`
       CREATE TABLE i_dedup AS

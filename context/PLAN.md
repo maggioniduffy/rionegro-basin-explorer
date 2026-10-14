@@ -137,7 +137,7 @@ Plan approved 2026-10-13 ([DECISSIONS.md](DECISSIONS.md#córdoba-r5-continuous-r
 
 - [x] R5.0 Measurements (APRHI/IGN classes, lines near each hole, endpoint snap distances) — in DECISSIONS.md (2026-10-13)
 - [x] R5.1 `pipeline:river-lines`: course per river from the display lines (graph, Dijkstra bridges, anchors, extensions, attach, arms, confluence cuts) and `report.json` — 13 courses, all checks ok, two runs identical; own share with arms ≥ 0.95 except the Segundo (0.943, eastern arm out on purpose); Salí and Cuarto don't reach their receiver yet (2026-10-13)
-- [ ] R5.2 Gap fill: IGN raw lines (also inside the province, only in gaps), then HydroRIVERS geometry; `fill.parquet`
+- [x] R5.2 Gap fill: IGN raw lines (also inside the province, only in gaps), then HydroRIVERS geometry; `fill.parquet` — 85 fills (IGN 42.6 km, HydroRIVERS 142.8 km), no gap left, Salí and Cuarto reach their receivers, one component per river (2026-10-13)
 - [ ] R5.3 Export and tiles: `river` from the course, fill pieces, `lengthKm` from the mapped course with per-source km; `nqn` byte-identical
 - [ ] R5.4 Map, panel, legend and i18n (HydroRIVERS fill dashed, "name in the source")
 - [ ] R5.5 Run and gate

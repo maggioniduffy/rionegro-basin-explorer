@@ -336,10 +336,10 @@ caveat list (APRHI reservoirs with Tipo = Presa, area, `Ano_inicio` with 0 and -
 
 ### `npm run pipeline:river-lines -- --region <id>`
 
-WP 5.1 (`cba` only): each approved river's course assembled from the display lines, following the mapped
-channel instead of the 15″ HydroRIVERS path. Needs `regions/<id>/river-lines.config.json` (a region without
-it stops with a message; `nqn` has none) and `lines`, `line-names`, `lakes`, `rivers` and `named` first.
-Runs after `named`, before `export`.
+WP 5.1 and 5.2 (`cba` only): each approved river's course assembled from the display lines, following the
+mapped channel instead of the 15″ HydroRIVERS path, with its gaps filled. Needs
+`regions/<id>/river-lines.config.json` (a region without it stops with a message; `nqn` has none) and `lines`,
+`line-names`, `lakes`, `rivers` and `named` first. Runs after `named`, before `export`.
 
 - **Order.** Receivers first: a river whose mouth reach drains (NEXT_DOWN chain in `rivers/reaches.parquet`)
   into another approved river is processed after it, ties in `names.json` order. The report lists the order
@@ -357,36 +357,53 @@ Runs after `named`, before `export`.
   mouth anchor (the upstream end of the river's most upstream reach and the downstream end of its mouth reach;
   each takes the nearest node touching an own-named piece within `anchorMaxM`, else the nearest node with a
   piece; the report says which rule; if both resolve to one node the river fails). A gap on the path is
-  recorded, never filled (WP 5.2). The course is cut at the first node another river holds: a shared
-  junction, or a line end within `attachM` of the interior of an earlier river's piece (a confluence).
-  Then extended past the mouth along own-named pieces to the shore of a `mouthLakeIds` lake (within
-  `lakeTouchM`), and upstream from the source anchor along own-named pieces to the node farthest from the
-  mouth along the graph (a braid that returns towards the mouth is not followed). Both extensions may cross a
-  break of up to `extensionGapM` between own-named lines (a gap of kind `extension`) and stop at nodes
-  another river holds; if the mouth anchor cannot reach the lake, the extension may leave the course at
-  another node, which then ends the course.
+  recorded in `gaps.json` and filled (see "Gap fill"). The course is cut at the first node another river
+  holds: a shared junction, or a line end within `attachM` of the interior of a piece of the river it flows
+  into (its receiver; a piece of any other river only cuts at a shared junction, and the check
+  `everyCutMeetsItsReceiver` fails if a cut meets a river other than the receiver). Then extended past the
+  mouth along own-named pieces to the shore of a `mouthLakeIds` lake (within `lakeTouchM`), or, when no lake is
+  reached and no cut was made, to the nearest node another river holds (`receiverExtended`: the Cuarto's lower
+  course to the Saladillo); and upstream from the source anchor along own-named pieces to the node farthest
+  from the mouth along the graph (a braid that returns towards the mouth is not followed). The extensions
+  may cross a break of up to `extensionGapM` between own-named lines (a gap of kind `extension`) and stop at
+  nodes another river holds; if the mouth anchor cannot reach the lake, the extension may leave the course
+  at another node, which then ends the course.
 - **Attachments.** The step measures, in a first pass, how far own-named line ends outside the course lie
-  from the interior of the course pieces; in a second pass a line end within `attachM` joins the course
+  from the interior of the main course pieces; in a second pass a line end within `attachM` joins the course
   there (gap kind `attach` with the distance). Pieces are never split; the attachment only adds connectivity.
-- **Arms.** Every unclaimed own-named piece joined to the course through own-named pieces, or attached to a
-  course piece's interior (owner, 2026-10-13: tramos that follow the river's channel are part of the river),
-  is added with role `arm` and no `order`; the search stops at nodes another river holds, and crosses breaks of
-  up to `extensionGapM` between the river's own-named lines (gap kind `arm-break`, with both pieces and the
-  distance). Arms are not in
-  the course km; the report gives their km apart.
+- **Arms.** Unclaimed own-named pieces joined to the course through own-named pieces only are added to the
+  river as arms (not counted in the course km), unless they lie farther than `armMaxFromCourseM` from the course
+  (pieces and fill); the report gives each river's five farthest arms and those left out.
+- **Gap fill (R5.2).** Each path gap of a course, and the break between a river's course and its receiver's
+  when no line joins them (`receiverNotReached`, kind `join`), gets one fill piece. IGN first (owner
+  exception to R3.3: the raw IGN lines of the classes in `lines.config.json`, inside the province too, but
+  only here): the cheapest chain (length times `weights`) of IGN line parts within `fillCorridorM` of the gap
+  that joins both ends, where a line end within `fillSnapM` of a gap end counts as at it and a line passing a
+  gap end is cut there. Otherwise the river's HydroRIVERS reaches between the ends, cut at the points nearest
+  them, with straight connectors to the exact ends (hydrorivers km). A chain or route longer than
+  `fillMaxStretch` times the straight distance between the ends (plus 2 `fillSnapM`) is a detour: the next
+  source is tried, and when the HydroRIVERS route is one too the fill is the straight line between the exact
+  ends, traced to the nearest reaches (`straightConnectors` in the report, hydrorivers km). Every fill piece
+  names its source features in `sourceIds` (`ign:<class>:<gid>`, `hyriv:<HYRIV_ID>`); for `form` = `connector` (a straight line, `src` still hydrorivers) they are the nearest reaches, not the source of the geometry.
 
 Outputs in `data/work/<id>/river-lines/`: `course.parquet` (pieceId, river, order, role; order 0 is the
-mouth end; role `own` or `bridge` for the course, `arm` with a null order), `gaps.json` (river, kind
-`path` / `extension` / `attach` / `arm-break`, orders either side, from/to lon-lat, km, reaches between) and `report.json`:
-processing order, per river the course km (own / bridge, by source), own-named km in the course against
-own-named km among the candidates (share, and with arms; warns below `ownShareTarget` until calibrated),
-arm km, the five biggest own-named lines left out with their distance to the course, own-named pieces
-dropped because both ends snap to one node, arm breaks (count, km), pieces with an empty geometry in
-the corridor (`emptyGeometryPieces`; drawn nowhere, not repaired), `receiverNotReached` (the river the data say
-it flows into, when no cut met it, with the nearest distance between the courses), the top bridge names, gaps, attachments, mouth and source
-extension, the cut (point, piece, distance); overlaps; checks (every river has a main course, no piece in
-two rivers, anchors within `anchorMaxM` of the reach ends, same file as the previous run: null on a first
-run, run the step twice). Heavy limits: DuckDB 2 GB, 2 threads.
+mouth end; role `own` or `bridge` for the course, `arm` with a null order), `fill.parquet` (pieceId
+`fill:ign:<n>` / `fill:hr:<n>`, river, `order` = order of the course piece just downstream of the gap (null
+for a join below the course), `upOrder`, kind `gap` / `join`, `src` `ign` / `hydrorivers`, `fill` = true,
+`form` `chain` / `route` / `connector`, `sourceIds`, `connectorM` (straight metres inside the piece: all of it for a connector, only the end connectors for a route, 0 for a chain), `lengthKm`, `geom` EPSG:4326), `gaps.json` (river, kind `path` / `extension` / `attach` /
+`arm-break`, orders either side, from/to lon-lat, km, reaches between, and `filledBy` for a path gap) and
+`report.json`: processing order, per river the course km (own / bridge, by source), own-named km in the course
+against own-named km among the candidates (share, and with arms; warns below `ownShareTarget` until
+calibrated), arm km, the five biggest own-named lines left out with their distance to the course, own-named
+pieces dropped because both ends snap to one node, arm breaks (count, km), pieces with an empty geometry in
+the corridor (`emptyGeometryPieces`; drawn nowhere, not repaired), `receiverNotReached` (the river the data
+say it flows into, when no cut met it, with the nearest distance between the courses and the join fill), the
+top bridge names, gaps, attachments, mouth and source extension, the cut (point, piece, distance), the filled
+km per source (`fill`, also at the top with the largest fills and the highest IGN chain stretch);
+overlaps; checks (every river has a main course, no piece in two rivers, anchors within `anchorMaxM` of the
+reach ends, `noGapLeft`: every path gap has a fill and the fill ends lie within `fillSnapM` of the gap ends,
+`receiversReached`: every river with a receiver is cut against it or joined to it, `everyCutMeetsItsReceiver`,
+same files as the previous run: null on a first run, run the step twice). Heavy limits: DuckDB 2 GB, 2 threads.
 
 ### `npm run pipeline:export`
 
