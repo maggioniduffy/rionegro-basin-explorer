@@ -1,10 +1,12 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
-import { LOCALES } from "@/i18n/config";
+import { isLocale, LOCALES } from "@/i18n/config";
+import { messagesFor } from "@/i18n/messages";
 import { MAP_PATH } from "@/lib/url-state";
-import { regionPath, type RegionId } from "@/regions";
+import { REGION_IDS, regionPath, type RegionId } from "@/regions";
 import footerArt from "../../public/landing/footer-art.png";
+import { Logomark } from "../Icon";
 import { Wordmark } from "./Wordmark";
 
 const HEADING =
@@ -16,19 +18,28 @@ const LINK = "text-secondary hover:text-text inline-flex min-h-10 items-center";
  * (decorative, art only: public/landing/footer-art.png has no text) faded into the page
  * (.footer-art in globals.css). `path` is the page's path inside the region. `overlap` (the
  * landing) pulls the footer up under the data note, which overlaps it: the top padding then
- * clears the note.
+ * clears the note. Without a `region` (the hub) the Explore and Data columns list every served
+ * region, named by its own messages, the name is the hub's title, and the language links point
+ * at the hub.
  */
 export async function SiteFooter({
   region,
   path,
   overlap = false,
 }: {
-  region: RegionId;
+  region?: RegionId;
   path: string;
   overlap?: boolean;
 }) {
   const t = await getTranslations("landing");
   const ls = await getTranslations("localeSwitcher");
+  const hub = await getTranslations("hub.metadata");
+  const raw = await getLocale();
+  const locale = isLocale(raw) ? raw : "en";
+  const regions = REGION_IDS.map((id) => ({
+    id,
+    title: messagesFor(id, locale).metadata.title,
+  }));
   return (
     <footer
       className={`text-footer relative overflow-hidden text-[15px] ${
@@ -44,28 +55,59 @@ export async function SiteFooter({
       >
         <div className="flex max-w-[340px] flex-col gap-3.5">
           <span className="text-text">
-            <Wordmark large />
+            {region ? (
+              <Wordmark large />
+            ) : (
+              <span className="flex items-center gap-2.5">
+                <Logomark width={34} className="shrink-0" />
+                <span className="font-sans text-[17px] font-medium tracking-[-0.01em]">
+                  {hub("title")}
+                </span>
+              </span>
+            )}
           </span>
           <span className="leading-[1.55]">{t("credit")}</span>
         </div>
         <div className="flex flex-wrap gap-x-[clamp(36px,6vw,96px)] gap-y-7">
           <div className="flex flex-col gap-1">
             <div className={HEADING}>{t("fExplore")}</div>
-            <Link
-              href={regionPath(region, MAP_PATH)}
-              className="text-accent hover:text-text inline-flex min-h-10 items-center font-semibold"
-            >
-              {t("open")} →
-            </Link>
-            <Link href="/" className={LINK}>
-              {t("hub")}
-            </Link>
+            {region ? (
+              <>
+                <Link
+                  href={regionPath(region, MAP_PATH)}
+                  className="text-accent hover:text-text inline-flex min-h-10 items-center font-semibold"
+                >
+                  {t("open")} →
+                </Link>
+                <Link href="/" className={LINK}>
+                  {t("hub")}
+                </Link>
+              </>
+            ) : (
+              regions.map((r) => (
+                <Link key={r.id} href={regionPath(r.id)} className={LINK}>
+                  {r.title}
+                </Link>
+              ))
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <div className={HEADING}>{t("fData")}</div>
-            <Link href={regionPath(region, "/attributions")} className={LINK}>
-              {t("attr")}
-            </Link>
+            {region ? (
+              <Link href={regionPath(region, "/attributions")} className={LINK}>
+                {t("attr")}
+              </Link>
+            ) : (
+              regions.map((r) => (
+                <Link
+                  key={r.id}
+                  href={regionPath(r.id, "/attributions")}
+                  className={LINK}
+                >
+                  {t("attr")} · {r.title}
+                </Link>
+              ))
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <div className={HEADING}>{t("fLang")}</div>
@@ -73,7 +115,7 @@ export async function SiteFooter({
             {LOCALES.map((l) => (
               <a
                 key={l}
-                href={`/${l}${regionPath(region, path)}`}
+                href={`/${l}${region ? regionPath(region, path) : ""}`}
                 lang={l}
                 hrefLang={l}
                 className={LINK}
