@@ -203,6 +203,8 @@ export interface CourseInput {
    * or, for the mouth extension, as the continuation.
    */
   nearCourse?: Readonly<Record<string, NearPiece>>;
+  /** Pieces of the river this one flows into; the only ones a receiver extension may end at. */
+  receiver?: ReadonlySet<string>;
   config: Pick<
     RiverLinesConfig,
     | "snapM"
@@ -1043,21 +1045,27 @@ export function buildCourse(input: CourseInput): CourseResult {
   }
 
   // 6b. No mouth lake reached and no cut: the own-named lines may go on past the mouth anchor
-  // to a node another river holds (R5.2). The course ends there, as a cut at a confluence.
+  // to a node the receiver holds (R5.2). The course ends there, as a cut at a confluence. A node
+  // only other rivers hold blocks the search (R5.2 review); its length is bounded by the
+  // own-named pieces and the breaks of up to extensionGapM it walks.
   let receiverExtension: CourseResult["receiverExtension"] = null;
-  if (cutNode === null && mouthExtension === null) {
+  const receiver = input.receiver ?? new Set<string>();
+  const atReceiver = (v: number) =>
+    nodes[v]!.claimed.some((p) => receiver.has(p));
+  if (cutNode === null && mouthExtension === null && receiver.size > 0) {
     const toHeld = dijkstra(
       nodes.length,
       extEdges,
       extAdj,
       mouthNode,
       extWeight,
-      (v) => courseNodes.has(v),
-      (v) => nodes[v]!.claimed.length > 0,
+      (v) =>
+        courseNodes.has(v) || (nodes[v]!.claimed.length > 0 && !atReceiver(v)),
+      atReceiver,
     );
     let held = -1;
     nodes.forEach((n, i) => {
-      if (n.claimed.length === 0 || toHeld.dist[i] === Infinity) return;
+      if (!atReceiver(i) || toHeld.dist[i] === Infinity) return;
       if (held < 0 || toHeld.dist[i]! < toHeld.dist[held]!) held = i;
     });
     if (held >= 0) {

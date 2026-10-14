@@ -70,7 +70,7 @@ const run = (
   mouth: P,
   claimed: string[] = [],
   cfg: Partial<RiverLinesConfig> = {},
-  near: Pick<CourseInput, "nearHeld" | "nearCourse"> = {},
+  near: Pick<CourseInput, "nearHeld" | "nearCourse" | "receiver"> = {},
 ) =>
   buildCourse({
     ...near,
@@ -574,6 +574,7 @@ describe("buildCourse", () => {
         nearHeld: {
           [endKey("a1", 1)]: { piece: "h", distM: 50, lon: 0, lat: 0 },
         },
+        receiver: new Set(["h"]),
       },
     );
     // a1 goes on to the node another river holds (the receiver): the course continues and ends
@@ -581,6 +582,22 @@ describe("buildCourse", () => {
     expect(ids(r)).toEqual(["a1", "c1"]);
     expect(r.receiverExtension).toEqual({ km: 0.5, pieces: 1 });
     expect(r.arms).toEqual([]);
+    // the same node held by a river that is not the receiver ends no extension
+    const other = run(
+      pieces,
+      [0, 0],
+      [1000, 0],
+      [],
+      {},
+      {
+        nearHeld: {
+          [endKey("a1", 1)]: { piece: "h", distM: 50, lon: 0, lat: 0 },
+        },
+        receiver: new Set(["r"]),
+      },
+    );
+    expect(other.receiverExtension).toBeNull();
+    expect(ids(other)).toEqual(["c1"]);
   });
 
   it("lets the arm search cross a break up to extensionGapM between own-named lines, never into a held node", () => {
@@ -611,6 +628,7 @@ describe("buildCourse", () => {
       nearHeld: {
         [endKey("a2", 0)]: { piece: "h", distM: 80, lon: 0, lat: 0 },
       },
+      receiver: new Set(["h"]),
     });
     expect(ids(held)).toEqual(["a1", "c1"]);
     expect(held.arms).toEqual([]);

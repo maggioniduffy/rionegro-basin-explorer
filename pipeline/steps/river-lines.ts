@@ -743,14 +743,16 @@ async function main() {
       // within attachM can cut the course against (R5.1 review); any piece another river holds
       // still ends the course where a line shares its junction.
       const receiver = receivers.find((r) => r.slug === slug)!.receiver;
+      const heldByReceiver = receiverPieces(claimedBy, receiver);
       const input = {
         pieces: candidates,
         claimed: new Set(claimedIds),
+        receiver: new Set(heldByReceiver),
         source: { x: num(last.sx), y: num(last.sy) },
         mouth: { x: num(first.ex), y: num(first.ey) },
         nearHeld: await near(
           candidates.filter((c) => !claimedBy.has(c.id)).map((c) => c.id),
-          receiverPieces(claimedBy, receiver),
+          heldByReceiver,
         ),
         config,
       };
