@@ -6,6 +6,7 @@ import { messagesFor } from "@/i18n/messages";
 import { MAP_PATH } from "@/lib/url-state";
 import { REGION_IDS, regionPath, type RegionId } from "@/regions";
 import footerArt from "../../public/landing/footer-art.png";
+import { Logomark } from "../Icon";
 import { Wordmark } from "./Wordmark";
 
 const HEADING =
@@ -18,7 +19,8 @@ const LINK = "text-secondary hover:text-text inline-flex min-h-10 items-center";
  * (.footer-art in globals.css). `path` is the page's path inside the region. `overlap` (the
  * landing) pulls the footer up under the data note, which overlaps it: the top padding then
  * clears the note. Without a `region` (the hub) the Explore and Data columns list every served
- * region, named by its own messages, and the language links point at the hub.
+ * region, named by its own messages, the name is the hub's title, and the language links point
+ * at the hub.
  */
 export async function SiteFooter({
   region,
@@ -31,6 +33,7 @@ export async function SiteFooter({
 }) {
   const t = await getTranslations("landing");
   const ls = await getTranslations("localeSwitcher");
+  const hub = await getTranslations("hub.metadata");
   const raw = await getLocale();
   const locale = isLocale(raw) ? raw : "en";
   const regions = REGION_IDS.map((id) => ({
@@ -52,7 +55,16 @@ export async function SiteFooter({
       >
         <div className="flex max-w-[340px] flex-col gap-3.5">
           <span className="text-text">
-            <Wordmark large />
+            {region ? (
+              <Wordmark large />
+            ) : (
+              <span className="flex items-center gap-2.5">
+                <Logomark width={34} className="shrink-0" />
+                <span className="font-sans text-[17px] font-medium tracking-[-0.01em]">
+                  {hub("title")}
+                </span>
+              </span>
+            )}
           </span>
           <span className="leading-[1.55]">{t("credit")}</span>
         </div>
