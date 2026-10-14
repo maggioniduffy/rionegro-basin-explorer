@@ -36,7 +36,18 @@
  *     length before lake clipping), `name` (display name, absent when it has none) and
  *     `review` = 1 when APRHI has the line under review. An unmatched piece has no id and no
  *     strahler.
+ *
+ * Regions with a river-lines.config.json (cba, R5) also read data/work/<r>/river-lines/
+ * (pipeline:river-lines; a missing file throws): a piece's `river` is its course's river
+ * (course.parquet) before its reach's; the fill pieces (fill.parquet) are drawn too, as pieces
+ * with `fill` = 1, `form` (chain | route | connector), `src` ("ign" | "hydrorivers"), no id,
+ * name or `flow` (no flow is sourced for them); and each river document in rivers.ndjson
+ * (pipeline:named) gets as lengthKm the km of its mapped course (pieces with role own or
+ * bridge, plus its fill pieces), its provenance.lengthKm saying how many km came from APRHI,
+ * IGN, HydroRIVERS and straight connectors. A river that has no course (or drops out of it) keeps the length last exported
+ * until pipeline:named reruns.
  */
+import { existsSync } from "node:fs";
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { lit, openDb } from "../lib/duckdb";
 import { requireInput } from "../lib/inputs";
@@ -196,6 +207,19 @@ const REFERENCE_STREAM_PROVENANCE = {
 async function main() {
   const reference = await isReferenceRegion();
   const mapLines = await loadMapLines();
+  // R5: the river courses and fill pieces of pipeline:river-lines, only for a region with a
+  // config (explicit, never guessed from which files exist; nqn has none).
+  const riverLines = existsSync(regionFile("river-lines.config.json"));
+  if (riverLines && mapLines !== "pieces")
+    throw new Error(
+      `regions/${REGION_ID}/river-lines.config.json needs map.config.json mapLines "pieces"`,
+    );
+  const courseFile = riverLines
+    ? requireInput(workPath("river-lines/course.parquet"))
+    : null;
+  const fillFile = riverLines
+    ? requireInput(workPath("river-lines/fill.parquet"))
+    : null;
   const reachesFile = requireInput(workPath("rivers/reaches.parquet"));
   const atlasFile = requireInput(workPath("rivers/riveratlas_basin.parquet"));
   const mappingFile = requireInput(workPath("named/river_reaches.parquet"));
@@ -276,6 +300,8 @@ async function main() {
   );
   let counts;
   let pieceCounts: Record<string, unknown> | undefined;
+  let riverLinesReport: Record<string, unknown> | undefined;
+  const courseLengths = new Map<string, { km: number; provenance: string }>();
   let streamsCheck: {
     streams: number;
     reachesInStreams: number;
@@ -442,7 +468,8 @@ async function main() {
         CREATE TABLE pieces AS
         SELECT l.pieceId, l.reach, l.source, l.class, l.status, l.length_m,
                o._id AS reach_found,
-               o.river, o.stream, coalesce(o.network, pnet.network) AS network,
+               ${riverLines ? "coalesce(c.river, o.river)" : "o.river"} AS river,
+               o.stream, coalesce(o.network, pnet.network) AS network,
                o.strahler, o.uplandKm2, o.nonPerennial1d,
                pn.name, lf.flow,
                coalesce(ST_SetCRS(g.geom, 'EPSG:4326'), ST_SetCRS(l.geom, 'EPSG:4326')) AS geom,
@@ -452,8 +479,40 @@ async function main() {
         LEFT JOIN piece_name pn ON pn.pieceId = l.pieceId
         LEFT JOIN piece_net pnet ON pnet.id = l.pieceId
         LEFT JOIN read_parquet(${lit(lineFlowFile!)}) lf ON lf.pieceId = l.pieceId
-        LEFT JOIN read_parquet(${lit(lineGeomFile)}) g ON g.pieceId = l.pieceId`);
-      await db.conn.run(`
+        LEFT JOIN read_parquet(${lit(lineGeomFile)}) g ON g.pieceId = l.pieceId
+        ${riverLines ? `LEFT JOIN read_parquet(${lit(courseFile!)}) c ON c.pieceId = l.pieceId` : ""}`);
+      if (riverLines) {
+        // Fill pieces have no reach: like an unmatched piece they take the network flag of
+        // the level-12 polygon under their midpoint. No flow is sourced for them (null).
+        await db.conn.run(`
+          CREATE TABLE fill_pts AS
+          SELECT pieceId AS id, ST_SetCRS(geom, 'EPSG:4326') AS geom
+          FROM read_parquet(${lit(fillFile!)})`);
+        await assignNetwork(
+          db,
+          "fill_pts",
+          "ST_PointOnSurface(geom)",
+          "fill_net",
+        );
+        await db.conn.run(`
+          COPY (SELECT * FROM (
+                  SELECT reach AS id, river, stream, network, strahler, uplandKm2, nonPerennial1d,
+                         pieceId AS piece, source AS src, class AS cls,
+                         round(length_m / 1000.0, 3) AS km, name,
+                         CASE WHEN status = 'en-revision' THEN 1 END AS review,
+                         CASE flow WHEN 'perennial' THEN 0 WHEN 'intermittent' THEN 1 END AS flow,
+                         NULL::INTEGER AS fill, NULL::VARCHAR AS form, geom
+                  FROM pieces WHERE NOT not_drawn
+                  UNION ALL
+                  SELECT NULL, f.river, NULL, fn.network, NULL, NULL, NULL,
+                         f.pieceId, f.src, NULL, round(f.lengthKm, 3), NULL, NULL, NULL,
+                         1, f.form, ST_SetCRS(f.geom, 'EPSG:4326')
+                  FROM read_parquet(${lit(fillFile!)}) f
+                  JOIN fill_net fn ON fn.id = f.pieceId
+                  WHERE NOT ST_IsEmpty(f.geom)) ORDER BY piece)
+          TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
+      } else {
+        await db.conn.run(`
         COPY (SELECT reach AS id, river, stream, network, strahler, uplandKm2, nonPerennial1d,
                      pieceId AS piece, source AS src, class AS cls,
                      round(length_m / 1000.0, 3) AS km, name,
@@ -462,6 +521,7 @@ async function main() {
                      geom
               FROM pieces WHERE NOT not_drawn ORDER BY pieceId)
         TO ${lit(reachesGeojson)} WITH (FORMAT gdal, DRIVER 'GeoJSON')`);
+      }
       [pieceCounts] = await db.all(`
         SELECT count(*)::INT AS pieces,
                sum((reach IS NOT NULL)::INT)::INT AS matched,
@@ -481,6 +541,109 @@ async function main() {
                  AS unmatched_endorheic_km,
                ${unmatchedOutside}::INT AS unmatched_outside_level12
         FROM pieces`);
+      if (riverLines) {
+        const [check] = await db.all(`
+          SELECT count(*)::INT AS course_pieces,
+                 count(DISTINCT pieceId)::INT AS course_unique,
+                 count(*) FILTER (pieceId NOT IN (SELECT pieceId FROM pieces))::INT AS course_unknown
+          FROM read_parquet(${lit(courseFile!)})`);
+        const [fillCheck] = await db.all(`
+          SELECT count(*)::INT AS pieces,
+                 sum(ST_IsEmpty(geom)::INT)::INT AS empty,
+                 sum((src = 'ign')::INT)::INT AS ign,
+                 sum((src = 'hydrorivers')::INT)::INT AS hydrorivers,
+                 sum((form = 'connector')::INT)::INT AS connectors,
+                 round(sum(lengthKm), 1) AS km,
+                 round(sum(lengthKm - cm) FILTER (src = 'ign'), 1) AS ign_km,
+                 round(sum(lengthKm - cm) FILTER (src = 'hydrorivers'), 1) AS hydrorivers_km,
+                 round(sum(cm), 1) AS connector_km,
+                 sum((river IS NULL)::INT)::INT AS without_river
+          FROM (SELECT *, CASE WHEN form = 'connector' THEN lengthKm
+                               ELSE coalesce(connectorM, 0) / 1000.0 END AS cm
+                FROM read_parquet(${lit(fillFile!)}))`);
+        // Mapped course per river: course pieces with role own or bridge (arms are not
+        // counted) at the length of their line, plus the river's fill pieces. A connector is
+        // a straight line between gap ends, never counted as HydroRIVERS geometry: for any fill
+        // piece its connectorM (all of it for form 'connector') is connector km and the rest
+        // counts for its src.
+        await db.conn.run(`
+          CREATE TABLE fill_cm AS
+          SELECT river, pieceId, src, lengthKm,
+                 CASE WHEN form = 'connector' THEN lengthKm
+                      ELSE coalesce(connectorM, 0) / 1000.0 END AS cm
+          FROM read_parquet(${lit(fillFile!)})`);
+        const kmRows = await db.all(`
+          SELECT river,
+                 sum(km) FILTER (part = 'aprhi') AS aprhi,
+                 sum(km) FILTER (part = 'ign') AS ign,
+                 sum(km) FILTER (part = 'hydrorivers') AS hydrorivers,
+                 sum(km) FILTER (part = 'connector') AS connector,
+                 sum(km) AS total
+          FROM (
+            SELECT c.river,
+                   CASE l.source WHEN 'aprhi' THEN 'aprhi' WHEN 'ign' THEN 'ign'
+                     ELSE error('piece ' || l.pieceId || ' has source ' || l.source) END AS part,
+                   l.length_m / 1000.0 AS km
+            FROM read_parquet(${lit(courseFile!)}) c
+            JOIN read_parquet(${lit(linesFile!)}) l ON l.pieceId = c.pieceId
+            WHERE c.role IN ('own', 'bridge')
+            UNION ALL
+            SELECT river,
+                   CASE WHEN src = 'ign' THEN 'ign' WHEN src = 'hydrorivers' THEN 'hydrorivers'
+                        ELSE error('fill ' || pieceId || ' has src ' || src) END,
+                   lengthKm - cm
+            FROM fill_cm
+            UNION ALL
+            SELECT river, 'connector', cm FROM fill_cm)
+          GROUP BY river ORDER BY river`);
+        const k1 = (v: unknown) => round(Number(v ?? 0), 1);
+        for (const r of kmRows) {
+          const aprhi = k1(r.aprhi);
+          const ign = k1(r.ign);
+          const hydrorivers = k1(r.hydrorivers);
+          const connector = k1(r.connector);
+          courseLengths.set(String(r.river), {
+            km: k1(r.total),
+            provenance:
+              `Length of the mapped course (pipeline:river-lines), not a HydroRIVERS LENGTH_KM sum: ${k1(r.total)} km = ` +
+              `${aprhi} km APRHI display lines + ${ign} km IGN lines (display lines and gap fill) + ` +
+              `${hydrorivers} km HydroRIVERS v1.0 reaches (gap fill routes) + ` +
+              `${connector} km straight connectors between the ends of a gap (not HydroRIVERS geometry). ` +
+              `Arm pieces are not counted. dropM and gradientMPerKm still use the HydroRIVERS path`,
+          });
+        }
+        riverLinesReport = {
+          coursePieces: check?.course_pieces,
+          fill: {
+            pieces: fillCheck?.pieces,
+            ign: fillCheck?.ign,
+            hydrorivers: fillCheck?.hydrorivers,
+            connectors: fillCheck?.connectors,
+            km: fillCheck?.km,
+            ignKm: fillCheck?.ign_km,
+            hydroriversKm: fillCheck?.hydrorivers_km,
+            connectorKm: fillCheck?.connector_km,
+            note: "no flow is sourced for fill pieces, so they carry no flow class",
+          },
+          riversWithCourse: kmRows.length,
+          rivers: kmRows.map((r) => ({
+            river: String(r.river),
+            lengthKm: k1(r.total),
+            aprhiKm: k1(r.aprhi),
+            ignKm: k1(r.ign),
+            hydroriversKm: k1(r.hydrorivers),
+            connectorKm: k1(r.connector),
+          })),
+          courseKmTotal: round(
+            kmRows.reduce((sum, r) => sum + Number(r.total ?? 0), 0),
+            1,
+          ),
+          courseUniquePieces: check?.course_pieces === check?.course_unique,
+          coursePiecesKnown: Number(check?.course_unknown) === 0,
+          everyFillDrawn: Number(fillCheck?.empty) === 0,
+          everyFillHasRiver: Number(fillCheck?.without_river) === 0,
+        };
+      }
     }
     [counts] = await db.all(`
       SELECT count(*)::INT AS n, (SELECT count(*) FROM ${lit(reachesFile)})::INT AS source_n,
@@ -643,6 +806,36 @@ async function main() {
     `${tilesDir}/basin.geojson`,
   );
 
+  // R5: each river document with a course takes the length of its mapped course (the other
+  // fields, HydroATLAS values included, stay pipeline:named's). The value is computed from
+  // the course files, never from the previous one, so a rerun gives the same file.
+  let courseRiversInDocs = true;
+  if (riverLines) {
+    const docs = (await readFile(riversNdjson, "utf8"))
+      .split("\n")
+      .filter((l) => l.trim() !== "")
+      .map(
+        (l) =>
+          JSON.parse(l) as {
+            _id: string;
+            lengthKm: number;
+            provenance: Record<string, string>;
+          },
+      );
+    const known = new Set(docs.map((d) => d._id));
+    courseRiversInDocs = [...courseLengths.keys()].every((id) => known.has(id));
+    for (const d of docs) {
+      const course = courseLengths.get(d._id);
+      if (!course) continue;
+      d.lengthKm = course.km;
+      d.provenance.lengthKm = course.provenance;
+    }
+    await writeFile(
+      riversNdjson,
+      docs.map((d) => JSON.stringify(d)).join("\n") + "\n",
+    );
+  }
+
   // Combined report from the step reports.
   const b = await readJson<BasinReport>(workPath("basin/report.json"));
   const r = await readJson<RiversReport>(workPath("rivers/report.json"));
@@ -673,6 +866,17 @@ async function main() {
             Number(pieceCounts.pieces) > 0 &&
             Number(pieceCounts.line_geom_unknown) === 0,
           everyMatchedPieceHasReach: Number(pieceCounts.matched_missing) === 0,
+        }
+      : {}),
+    ...(riverLinesReport
+      ? {
+          coursePiecesUniqueAndKnown:
+            riverLinesReport.courseUniquePieces === true &&
+            riverLinesReport.coursePiecesKnown === true,
+          everyFillPieceDrawn:
+            riverLinesReport.everyFillDrawn === true &&
+            riverLinesReport.everyFillHasRiver === true,
+          everyCourseRiverHasDocument: courseRiversInDocs,
         }
       : {}),
   };
@@ -736,6 +940,7 @@ async function main() {
           },
         }
       : {}),
+    ...(riverLinesReport ? { riverLines: riverLinesReport } : {}),
     intermittence: r.gires.byNetworkAndClass1Day,
   };
   const outReport = `${OUT_DIR}/report.json`;
@@ -748,6 +953,7 @@ async function main() {
       rel(reachesGeojson),
       rel(`${tilesDir}/basin.geojson`),
       rel(outReport),
+      ...(riverLines ? [rel(riversNdjson)] : []),
     ],
   });
 }

@@ -2,7 +2,7 @@
   "river": {
     "id": "tercero",
     "name": "Río Tercero",
-    "lengthKm": 274.8,
+    "lengthKm": 374.9,
     "strahler": 5,
     "dischargeM3s": 12.2,
     "flowsInto": {

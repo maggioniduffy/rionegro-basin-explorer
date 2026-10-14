@@ -11,7 +11,10 @@
     "noReachInTwoStreams": true,
     "everyStreamHasSubbasin": true,
     "everyPieceDrawnOrInLake": true,
-    "everyMatchedPieceHasReach": true
+    "everyMatchedPieceHasReach": true,
+    "coursePiecesUniqueAndKnown": true,
+    "everyFillPieceDrawn": true,
+    "everyCourseRiverHasDocument": true
   },
   "basin": {
     "areaKm2": 291118,
@@ -272,5 +275,131 @@
     "ignKm": 21827.1,
     "unmatchedEndorheicKm": 1012.4,
     "unmatchedOutsideLevel12": 41
+  },
+  "riverLines": {
+    "coursePieces": 1326,
+    "fill": {
+      "pieces": 85,
+      "ign": 31,
+      "hydrorivers": 54,
+      "connectors": 35,
+      "km": 185.4,
+      "ignKm": 42.6,
+      "hydroriversKm": 112.6,
+      "connectorKm": 30.2,
+      "note": "no flow is sourced for fill pieces, so they carry no flow class"
+    },
+    "riversWithCourse": 13,
+    "rivers": [
+      {
+        "river": "carcarana",
+        "lengthKm": 244.8,
+        "aprhiKm": 67.4,
+        "ignKm": 175.8,
+        "hydroriversKm": 0.8,
+        "connectorKm": 0.8
+      },
+      {
+        "river": "conlara",
+        "lengthKm": 129.4,
+        "aprhiKm": 7.8,
+        "ignKm": 118.5,
+        "hydroriversKm": 0.1,
+        "connectorKm": 3
+      },
+      {
+        "river": "cruz-del-eje",
+        "lengthKm": 58.1,
+        "aprhiKm": 58.1,
+        "ignKm": 0,
+        "hydroriversKm": 0,
+        "connectorKm": 0
+      },
+      {
+        "river": "cuarto",
+        "lengthKm": 305.2,
+        "aprhiKm": 305.2,
+        "ignKm": 0,
+        "hydroriversKm": 0,
+        "connectorKm": 0
+      },
+      {
+        "river": "dulce",
+        "lengthKm": 613.5,
+        "aprhiKm": 51.9,
+        "ignKm": 544.1,
+        "hydroriversKm": 6.4,
+        "connectorKm": 11
+      },
+      {
+        "river": "jesus-maria",
+        "lengthKm": 126.2,
+        "aprhiKm": 126.2,
+        "ignKm": 0,
+        "hydroriversKm": 0,
+        "connectorKm": 0
+      },
+      {
+        "river": "pichanas",
+        "lengthKm": 63.2,
+        "aprhiKm": 58.8,
+        "ignKm": 0,
+        "hydroriversKm": 3.6,
+        "connectorKm": 0.8
+      },
+      {
+        "river": "primero",
+        "lengthKm": 255.7,
+        "aprhiKm": 255.7,
+        "ignKm": 0,
+        "hydroriversKm": 0,
+        "connectorKm": 0
+      },
+      {
+        "river": "quinto",
+        "lengthKm": 407.7,
+        "aprhiKm": 231.9,
+        "ignKm": 96.4,
+        "hydroriversKm": 76.6,
+        "connectorKm": 2.8
+      },
+      {
+        "river": "saladillo",
+        "lengthKm": 117.4,
+        "aprhiKm": 114.7,
+        "ignKm": 0,
+        "hydroriversKm": 1.3,
+        "connectorKm": 1.3
+      },
+      {
+        "river": "sali",
+        "lengthKm": 181.5,
+        "aprhiKm": 0,
+        "ignKm": 160.4,
+        "hydroriversKm": 17.2,
+        "connectorKm": 3.9
+      },
+      {
+        "river": "segundo",
+        "lengthKm": 237,
+        "aprhiKm": 216.3,
+        "ignKm": 20.6,
+        "hydroriversKm": 0,
+        "connectorKm": 0
+      },
+      {
+        "river": "tercero",
+        "lengthKm": 374.9,
+        "aprhiKm": 361.4,
+        "ignKm": 0.5,
+        "hydroriversKm": 6.4,
+        "connectorKm": 6.5
+      }
+    ],
+    "courseKmTotal": 3114.5,
+    "courseUniquePieces": true,
+    "coursePiecesKnown": true,
+    "everyFillDrawn": true,
+    "everyFillHasRiver": true
   }
 }
