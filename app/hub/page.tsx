@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Logomark } from "@/components/Icon";
 import { Grain } from "@/components/landing/Grain";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { LocaleLinks } from "@/components/landing/SiteHeader";
 import { MobileMenu } from "@/components/MobileMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -39,7 +40,7 @@ export default async function HubPage() {
   const locale = isLocale(raw) ? raw : "en";
 
   return (
-    <div className="bg-bg text-text relative flex min-h-full w-full flex-col overflow-x-clip">
+    <div className="bg-bg text-text relative flex w-full flex-1 flex-col overflow-x-clip">
       <Grain />
       <header className="relative z-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-[clamp(20px,5vw,64px)] py-[18px]">
         <span className="flex min-h-11 items-center gap-2.5">
@@ -114,6 +115,7 @@ export default async function HubPage() {
           </ul>
         </section>
       </main>
+      <SiteFooter path="/" />
     </div>
   );
 }
