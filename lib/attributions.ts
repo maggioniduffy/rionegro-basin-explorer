@@ -5,6 +5,7 @@
  * messages (attributions.*), keyed by `id`.
  */
 import type { KnownRegionId } from "@/regions";
+import { BASEMAP_CREDIT } from "./map/config";
 
 export type SourceId =
   | "hydrosheds"
@@ -14,6 +15,7 @@ export type SourceId =
   | "ign"
   | "aprhi"
   | "osm"
+  | "terrain"
   | "eox";
 
 export type Source = {
@@ -155,6 +157,17 @@ const SOURCES: Source[] = [
       url: "https://opendatacommons.org/licenses/odbl/1-0/",
     },
     credit: "© OpenStreetMap contributors",
+    citations: [],
+  },
+  {
+    id: "terrain",
+    name: "Terrain Tiles (AWS Open Data, Tilezen)",
+    url: "https://registry.opendata.aws/terrain-tiles/",
+    license: {
+      name: "Tilezen joerd attribution terms",
+      url: "https://github.com/tilezen/joerd/blob/master/docs/attribution.md",
+    },
+    credit: BASEMAP_CREDIT,
     citations: [],
   },
   {

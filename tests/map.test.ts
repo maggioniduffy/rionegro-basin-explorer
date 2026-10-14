@@ -1,4 +1,4 @@
-import { BASEMAP_TILE_URL } from "@/lib/map/config";
+import { BASEMAP_DEM_URL } from "@/lib/map/config";
 import { describe, expect, it } from "vitest";
 import { MASK_LEVEL_COUNT } from "../lib/map/config";
 import {
@@ -390,14 +390,16 @@ describe("buildStyle with the base map (satellite or OpenStreetMap)", () => {
     });
   });
 
-  it("draws the OpenStreetMap base under the mask, with its credit", () => {
+  it("draws the relief base under the mask, with its credit", () => {
     const style = withBase("map");
     const basemap = style.sources.basemap as {
+      type: string;
       tiles: string[];
       attribution: string;
     };
-    expect(basemap.tiles).toEqual([BASEMAP_TILE_URL]);
-    expect(basemap.attribution).toContain("OpenStreetMap");
+    expect(basemap.type).toBe("raster-dem");
+    expect(basemap.tiles).toEqual([BASEMAP_DEM_URL]);
+    expect(basemap.attribution).toContain("SRTM");
     const i = style.layers.findIndex((l) => l.id === BASEMAP_LAYER_ID);
     expect(i).toBeGreaterThan(-1);
     expect(i).toBeLessThan(

@@ -1,12 +1,13 @@
 import { useTranslations } from "next-intl";
-import { FLOW_CLASSES, FLOW_STYLE, IGN_DETAIL_COLOR } from "@/lib/map/style";
+import { FLOW_CLASSES, FLOW_STYLE, RIVER_COLORS } from "@/lib/map/style";
+import { useMapStore } from "@/lib/store";
 
 /** Line swatch drawn like the map layer: solid, dashed, or thin. */
 export function Swatch({
   color,
   dash,
   widthScale,
-}: (typeof FLOW_STYLE)["unknown"]) {
+}: (typeof FLOW_STYLE)["unknown"] & { color: string }) {
   const width = 3 * widthScale;
   return (
     <svg width="28" height="8" aria-hidden className="shrink-0">
@@ -28,6 +29,7 @@ export function Swatch({
 
 export function Legend() {
   const t = useTranslations("legend");
+  const colors = RIVER_COLORS[useMapStore((s) => s.baseLayer)];
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -35,12 +37,12 @@ export function Legend() {
       <ul className="flex flex-col gap-1">
         {FLOW_CLASSES.map((c) => (
           <li key={c} className="flex items-center gap-2">
-            <Swatch {...FLOW_STYLE[c]} />
+            <Swatch {...FLOW_STYLE[c]} color={colors[c]} />
             <span>{t(c)}</span>
           </li>
         ))}
         <li className="flex items-center gap-2">
-          <Swatch color={IGN_DETAIL_COLOR} widthScale={0.6} />
+          <Swatch color={colors.detail} widthScale={0.6} />
           <span>{t("ignDetail")}</span>
         </li>
       </ul>
