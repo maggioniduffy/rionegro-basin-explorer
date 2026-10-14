@@ -137,10 +137,10 @@ Plan approved 2026-10-13 ([DECISSIONS.md](DECISSIONS.md#córdoba-r5-continuous-r
 
 - [x] R5.0 Measurements (APRHI/IGN classes, lines near each hole, endpoint snap distances) — in DECISSIONS.md (2026-10-13)
 - [x] R5.1 `pipeline:river-lines`: course per river from the display lines (graph, Dijkstra bridges, anchors, extensions, attach, arms, confluence cuts) and `report.json` — 13 courses, all checks ok, two runs identical; own share with arms ≥ 0.95 except the Segundo (0.943, eastern arm out on purpose); Salí and Cuarto don't reach their receiver yet (2026-10-13)
-- [x] R5.2 Gap fill: IGN raw lines (also inside the province, only in gaps), then HydroRIVERS geometry; `fill.parquet` — 85 fills (IGN 42.6 km, HydroRIVERS 142.8 km), no gap left, Salí and Cuarto reach their receivers, one component per river (2026-10-13)
-- [ ] R5.3 Export and tiles: `river` from the course, fill pieces, `lengthKm` from the mapped course with per-source km; `nqn` byte-identical
-- [ ] R5.4 Map, panel, legend and i18n (HydroRIVERS fill dashed, "name in the source")
-- [ ] R5.5 Run and gate
+- [x] R5.2 Gap fill: IGN raw lines (also inside the province, only in gaps), then HydroRIVERS geometry; `fill.parquet` — 85 fills (IGN 42.6 km, HydroRIVERS 112.6 km, straight connectors 30.2 km), no gap left, Salí and Cuarto reach their receivers, one component per river (2026-10-13)
+- [x] R5.3 Export and tiles: `river` from the course, fill pieces, `lengthKm` from the mapped course with per-source km; `nqn` byte-identical (2026-10-13)
+- [x] R5.4 Map, panel, legend and i18n (HydroRIVERS fill dashed, "name in the source") (2026-10-13)
+- [x] R5.5 Run and gate: receiver extension limited to the receiver; reports ok, two runs identical, `nqn` byte-identical, 615 tests; Segundo own share 0.943 accepted (owner's Plujunta choice, DECISSIONS.md) (2026-10-13)
 - **Done when:** all 13 rivers have a one-component course from source to mouth; every filled km names its source; ≥ 95 % of each river's own-named km are in its course (with arms); Primero, Jesús María and Dulce reach Mar Chiquita where their line does; the Quinto is drawn without breaks; reports ok, two runs identical, `nqn` byte-identical; `npm run check` green and new strings in EN and ES.
 
 ## Open decisions

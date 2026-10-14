@@ -8,12 +8,12 @@ one commit per WP; at most 2 sub-agents at once; DuckDB `memory_limit` 2GB, `thr
 ## Resume here
 
 - Branch `phase-r5-cba-courses`, based on `chore-orchestration`.
-  - `chore-orchestration` is not pushed or merged yet. Ask the owner: open a PR for it, or merge it into `main`.
+  - `chore-orchestration` is already merged into `main`.
 - Done:
   - WP 5.0, scouting.
   - WP 5.1, `pipeline:river-lines`, commit bea16bc.
 - Real run in `data/work/cba/river-lines/`: all checks ok, and two runs are identical.
-- WP 5.4 done. **Next: WP 5.5.** In RUN_LOCAL also check the dashed fill width (~1.8 px) and that a fill click opens the line panel. WP 5.3: Label HydroRIVERS fill by `form` (connectors carry `src: hydrorivers`); `lib/map/picked.ts` LINE_SOURCES drops hydrorivers pieces, so fill gets no panel. River length goes stale if a river leaves the course until `pipeline:named` reruns. WP 5.2: Export reads `fill.parquet` (`src`, `form`, `connectorM`, `kind`) and the Cuarto's new course; straight connectors (`form = connector`) must not be labelled as a HydroRIVERS path.
+- WP 5.2–5.4 done. WP 5.5: gate review blocked on fill minzoom/rank and "name in the source"; fix in progress (WP 5.5a). Next: owner steps in RUN_LOCAL.md "R5", then merge the PR.
 - Keep `Screencast-from-13-10-26-16_07_18.gif` out of every commit.
 
 ## Goal
