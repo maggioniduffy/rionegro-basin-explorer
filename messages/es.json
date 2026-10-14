@@ -64,6 +64,8 @@
     "title": "Régimen de flujo",
     "perennial": "Permanente",
     "unknown": "Sin predicción",
+    "fill": "Trazado modelado (HydroRIVERS) o unión recta, sin cauce mapeado",
+    "lengthNote": "La longitud del río es la del curso mapeado: APRHI, IGN y HydroRIVERS en los vacíos.",
     "subbasins": {
       "title": "Subcuencas",
       "hint": "Una subcuenca se elige en esta lista o con un clic sobre el terreno. Su superficie incluye todo lo anidado debajo, por eso se resalta el subárbol completo; los límites se ven siempre.",
@@ -178,7 +180,8 @@
       "sink": "una cuenca endorreica (drena hacia el interior)",
       "regionEdge": "un curso fuera de la región del mapa",
       "endsInSink": "Aguas abajo, su agua termina en una cuenca endorreica y no llega al mar.",
-      "endsAtEdge": "Aguas abajo, su agua sale de la región del mapa."
+      "endsAtEdge": "Aguas abajo, su agua sale de la región del mapa.",
+      "lengthSource": "Longitud del curso mapeado: APRHI, IGN y HydroRIVERS en los vacíos."
     },
     "stream": {
       "label": "Detalles del curso de agua",
@@ -294,13 +297,19 @@
         "length": "Longitud"
       },
       "source": "Fuente: FUENTE: Instituto Geográfico Nacional de la República Argentina. El IGN no avala ni patrocina esta aplicación.",
+      "sourceHydrorivers": "Fuente: HydroRIVERS v1.0 (Lehner y Grill, 2013). El trazado es modelado, no observado.",
       "sourceAprhi": "Fuente: FUENTE: Portal de Información Hídrica de Córdoba (Administración Provincial de Recursos Hídricos de Córdoba). La APRHI no avala ni patrocina esta aplicación.",
       "group": "Datos",
       "line": {
         "title": "Curso de agua mapeado",
         "unnamed": "Curso de agua sin nombre",
         "note": "Esta línea no coincide con ningún tramo de HydroRIVERS, por lo que no se muestran valores modelados (caudal, área de drenaje, régimen de flujo).",
-        "review": "Marcado como en revisión por el organismo que lo publica."
+        "review": "Marcado como en revisión por el organismo que lo publica.",
+        "sourceName": "Nombre en la fuente: {name}",
+        "fillRoute": "Trazado modelado (HydroRIVERS)",
+        "fillRouteNote": "Aquí no pasa ningún cauce mapeado, por eso el río se dibuja por el trazado de HydroRIVERS, un curso modelado que puede no seguir el cauce real. No se muestran valores modelados para este tramo.",
+        "fillConnector": "Unión recta a través de un vacío",
+        "fillConnectorNote": "Ningún cauce mapeado ni trazado modelado cruza este vacío, por eso el río se une con una línea recta que no es un cauce real. No se muestran valores modelados para este tramo."
       }
     }
   },

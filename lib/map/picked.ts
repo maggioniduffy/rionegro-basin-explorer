@@ -20,9 +20,16 @@ export type WaterKind = (typeof WATER_KINDS)[number];
 export const WATER_SOURCES = ["aprhi", "ign", "hydrolakes"] as const;
 export type WaterSource = (typeof WATER_SOURCES)[number];
 
-/** Who drew a displayed line piece (pipeline:lines `source`, tile property `src`). */
-export const LINE_SOURCES = ["aprhi", "ign"] as const;
+/**
+ * Who drew a displayed line piece (pipeline:lines `source`, tile property `src`);
+ * `hydrorivers` only on a fill piece (R5, `fill` = 1).
+ */
+export const LINE_SOURCES = ["aprhi", "ign", "hydrorivers"] as const;
 export type LineSource = (typeof LINE_SOURCES)[number];
+
+/** How a fill piece was made (pipeline:river-lines `form`, tile property `form`). */
+export const FILL_FORMS = ["chain", "route", "connector"] as const;
+export type FillForm = (typeof FILL_FORMS)[number];
 
 /** OSM place classes the localities layer carries (pipeline:localities). */
 export const PLACE_KINDS = ["city", "town", "village"] as const;
@@ -56,6 +63,10 @@ export type Picked =
       source: LineSource;
       km: number;
       review: boolean;
+      /** Slug of the approved river whose course the piece is on (cba, R5). */
+      river?: string;
+      /** Set on a fill piece (R5): how it was made. */
+      form?: FillForm;
     }
   | { kind: "dam" | "wall"; name: string | null }
   | { kind: "locality"; name: string; place: PlaceKind };
@@ -126,12 +137,18 @@ export function toPickedLine(props: Record<string, unknown>): Picked | null {
   if (text(props.piece) === null) return null;
   const source = LINE_SOURCES.find((k) => k === props.src);
   const km = positive(props.km);
+  const fill = Number(props.fill) === 1;
   if (!source || km === null) return null;
+  if (source === "hydrorivers" && !fill) return null;
+  const river = text(props.river);
+  const form = fill ? FILL_FORMS.find((k) => k === props.form) : undefined;
   return {
     kind: "line",
     name: text(props.name),
     source,
     km,
     review: Number(props.review) === 1,
+    ...(river ? { river } : {}),
+    ...(form ? { form } : {}),
   };
 }

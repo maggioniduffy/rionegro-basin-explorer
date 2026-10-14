@@ -24,6 +24,7 @@ import {
   maskLayerId,
   reachFilter,
   unmatchedFilter,
+  fillDashFilter,
   reachLayerId,
   PROVINCE_LAYER_ID,
   BASEMAP_LAYER_ID,
@@ -300,6 +301,47 @@ describe("reachFilter with the Display toggles", () => {
     expect(
       keeps(reachFilter("unknown", false, DEFAULT_LAYERS), { strahler: 1 }),
     ).toBe(true);
+  });
+});
+
+describe("cba course fill pieces", () => {
+  const route = {
+    piece: "fill:hr:q:1",
+    river: "quinto",
+    fill: 1,
+    form: "route",
+  };
+  const chain = {
+    piece: "fill:ign:q:2",
+    river: "quinto",
+    fill: 1,
+    form: "chain",
+  };
+  const onCourse = { piece: "aprhi:9#0", river: "quinto" };
+
+  it("draws route and connector fill dashed, never as a solid class", () => {
+    const connector = { ...route, form: "connector" };
+    expect(keeps(fillDashFilter(false, DEFAULT_LAYERS), route)).toBe(true);
+    expect(keeps(fillDashFilter(false, DEFAULT_LAYERS), connector)).toBe(true);
+    expect(keeps(fillDashFilter(false, DEFAULT_LAYERS), chain)).toBe(false);
+    expect(keeps(fillDashFilter(false, DEFAULT_LAYERS), onCourse)).toBe(false);
+    expect(keeps(reachFilter("unknown", false, DEFAULT_LAYERS), route)).toBe(
+      false,
+    );
+    expect(keeps(reachFilter("unknown", false, DEFAULT_LAYERS), chain)).toBe(
+      true,
+    );
+  });
+
+  it("draws a piece on a river's course with the river style, not as unmatched", () => {
+    expect(keeps(unmatchedFilter(false, DEFAULT_LAYERS), onCourse)).toBe(false);
+    expect(keeps(reachFilter("unknown", false, DEFAULT_LAYERS), onCourse)).toBe(
+      true,
+    );
+  });
+
+  it("opens the line panel for a fill piece, not its river", () => {
+    expect(reachFeatureSelection(route, undefined)).toBeNull();
   });
 });
 

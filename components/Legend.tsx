@@ -1,5 +1,12 @@
 import { useTranslations } from "next-intl";
-import { FLOW_CLASSES, FLOW_STYLE, RIVER_COLORS } from "@/lib/map/style";
+import { useRegion } from "@/components/RegionProvider";
+import { hasCourseFill } from "@/lib/map/config";
+import {
+  FILL_DASH,
+  FLOW_CLASSES,
+  FLOW_STYLE,
+  RIVER_COLORS,
+} from "@/lib/map/style";
 import { useMapStore } from "@/lib/store";
 
 /** Line swatch drawn like the map layer: solid, dashed, or thin. */
@@ -30,6 +37,7 @@ export function Swatch({
 export function Legend() {
   const t = useTranslations("legend");
   const colors = RIVER_COLORS[useMapStore((s) => s.baseLayer)];
+  const courseFill = hasCourseFill(useRegion());
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -45,7 +53,18 @@ export function Legend() {
           <Swatch color={colors.detail} widthScale={0.6} />
           <span>{t("ignDetail")}</span>
         </li>
+        {courseFill && (
+          <li className="flex items-center gap-2">
+            <Swatch
+              color={colors.unknown}
+              dash={FILL_DASH}
+              widthScale={FLOW_STYLE.unknown.widthScale}
+            />
+            <span>{t("fill")}</span>
+          </li>
+        )}
       </ul>
+      {courseFill && <p className="text-muted text-xs">{t("lengthNote")}</p>}
       <p className="text-muted text-xs">{t("modeledNote")}</p>
     </div>
   );

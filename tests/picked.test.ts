@@ -104,6 +104,27 @@ describe("lake source and line pieces (R3.7)", () => {
     });
   });
 
+  it("reads a fill piece: HydroRIVERS only as fill, with its river and form", () => {
+    const fill = {
+      piece: "fill:hr:quinto:1",
+      src: "hydrorivers",
+      km: 12.3,
+      river: "quinto",
+      form: "route",
+      fill: 1,
+    };
+    expect(toPickedLine(fill)).toEqual({
+      kind: "line",
+      name: null,
+      source: "hydrorivers",
+      km: 12.3,
+      review: false,
+      river: "quinto",
+      form: "route",
+    });
+    expect(toPickedLine({ ...fill, fill: undefined })).toBeNull();
+  });
+
   it("is null for a reach (no piece) or a piece without source or length", () => {
     expect(toPickedLine({ strahler: 3, network: "connected" })).toBeNull();
     expect(toPickedLine({ piece: "x", src: "osm", km: 1 })).toBeNull();

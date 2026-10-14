@@ -64,6 +64,8 @@
     "title": "Flow regime",
     "perennial": "Perennial",
     "unknown": "No prediction",
+    "fill": "Modeled path (HydroRIVERS) or straight link, no mapped channel",
+    "lengthNote": "River length is the mapped course: APRHI, IGN, and HydroRIVERS in gaps.",
     "subbasins": {
       "title": "Sub-basins",
       "hint": "Pick a sub-basin here or click the land. Its land includes everything nested under it, so the whole subtree is tinted; borders always show.",
@@ -178,7 +180,8 @@
       "sink": "an endorheic sink (it drains inland)",
       "regionEdge": "a course outside the mapped region",
       "endsInSink": "Downstream, its water ends in an endorheic sink and does not reach the sea.",
-      "endsAtEdge": "Downstream, its water leaves the mapped region."
+      "endsAtEdge": "Downstream, its water leaves the mapped region.",
+      "lengthSource": "Length of the mapped course: APRHI, IGN, and HydroRIVERS in gaps."
     },
     "stream": {
       "label": "Stream details",
@@ -294,13 +297,19 @@
         "length": "Length"
       },
       "source": "Source: FUENTE: Instituto Geográfico Nacional de la República Argentina. IGN does not endorse or sponsor this application.",
+      "sourceHydrorivers": "Source: HydroRIVERS v1.0 (Lehner & Grill, 2013). The path is modeled, not observed.",
       "sourceAprhi": "Source: FUENTE: Portal de Información Hídrica de Córdoba (Administración Provincial de Recursos Hídricos de Córdoba). APRHI does not endorse or sponsor this application.",
       "group": "Details",
       "line": {
         "title": "Mapped watercourse",
         "unnamed": "Unnamed watercourse",
         "note": "This line is not matched to a HydroRIVERS reach, so no modeled values (discharge, drainage area, flow regime) are shown for it.",
-        "review": "Marked as under review by the agency that publishes it."
+        "review": "Marked as under review by the agency that publishes it.",
+        "sourceName": "Name in the source: {name}",
+        "fillRoute": "Modeled path (HydroRIVERS)",
+        "fillRouteNote": "No mapped channel runs here, so the river is drawn along the HydroRIVERS path, a modeled course that may not follow the real channel. No modeled values are shown for this piece.",
+        "fillConnector": "Straight link across a gap",
+        "fillConnectorNote": "No mapped channel or modeled path crosses this gap, so the river is joined by a straight line that is not a real channel. No modeled values are shown for this piece."
       }
     }
   },

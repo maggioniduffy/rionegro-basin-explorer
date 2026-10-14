@@ -44,6 +44,8 @@ import {
   reachFilter,
   waterFilter,
   reachLayerId,
+  FILL_DASH_LAYER_ID,
+  fillDashFilter,
   UNMATCHED_LAYER_ID,
   unmatchedFilter,
   SELECTED_LAYER_ID,
@@ -288,6 +290,10 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     map.setFilter(
       UNMATCHED_LAYER_ID,
       unmatchedFilter(s.hideEndorheic, s.layers),
+    );
+    map.setFilter(
+      FILL_DASH_LAYER_ID,
+      fillDashFilter(s.hideEndorheic, s.layers),
     );
     for (const id of [
       LAKE_LAYER_ID,

@@ -43,6 +43,7 @@ export function riverColorPaint(
     [IGN_LAKE_FILL_LAYER_ID, "fill-color", colors.detail],
     [IGN_DETAIL_LAYER_ID, "line-color", colors.detail],
     [UNMATCHED_LAYER_ID, "line-color", colors.detail],
+    [FILL_DASH_LAYER_ID, "line-color", colors.unknown],
     ...FLOW_CLASSES.map(
       (c) =>
         [reachLayerId(c), "line-color", colors[c]] as [
@@ -63,6 +64,11 @@ export const FLOW_STYLE: Record<
   nonPerennial: { dash: [2, 1.5], widthScale: 0.9 },
   unknown: { widthScale: 0.6 },
 };
+
+/** The dash of a fill piece with no mapped channel: that of the non-perennial class. */
+export const FILL_DASH: [number, number] = FLOW_STYLE.nonPerennial.dash ?? [
+  2, 1.5,
+];
 
 /**
  * River colours per base, the same in both themes: they sit on the base, not on the UI. The
@@ -258,8 +264,14 @@ export function waterFilter(
 }
 /** Display line pieces no HydroRIVERS reach matched (cba): no flow model, own colour. */
 export const UNMATCHED_LAYER_ID = "reaches-unmatched";
+/**
+ * Fill pieces with no mapped channel (cba, R5: a HydroRIVERS path or a straight link across a
+ * gap, `fill` = 1 and `form` route or connector), drawn dashed in the river's unknown-class style.
+ */
+export const FILL_DASH_LAYER_ID = "reaches-fill-dash";
 export const REACH_LAYER_IDS = [
   UNMATCHED_LAYER_ID,
+  FILL_DASH_LAYER_ID,
   ...FLOW_CLASSES.map(reachLayerId),
 ];
 export const OUTLINE_LAYER_ID = "basin-outline";
@@ -335,13 +347,15 @@ export function selectionFilter(sel: Selection | null): FilterSpecification {
 /**
  * What a click on a reach tile feature opens: its approved river, else its stream (the
  * river wins on a reach that is in both; the stream stays reachable from search), else
- * the reach itself.
+ * the reach itself. A fill piece (cba, R5) opens the line panel, which names its river and
+ * says how the piece was drawn.
  */
 export function reachFeatureSelection(
   properties: Record<string, unknown>,
   featureId: unknown,
 ): Selection | null {
   const { river, stream } = properties;
+  if (Number(properties.fill) === 1) return null;
   if (typeof river === "string" && river) return { kind: "river", id: river };
   if (typeof stream === "string" && stream)
     return { kind: "stream", id: stream };
@@ -350,14 +364,24 @@ export function reachFeatureSelection(
 }
 
 /**
- * A display line piece (it has `piece`) with no matched reach (no `strahler`) and no IGN
- * class (no `flow`); nqn tiles have no pieces. tippecanoe omits null attributes, so a null value is a missing property.
+ * A display line piece (it has `piece`) with no matched reach (no `strahler`), no IGN
+ * class (no `flow`) and no river (a piece on an approved river's course uses the river's
+ * style); nqn tiles have no pieces. tippecanoe omits null attributes, so a null value is a
+ * missing property.
  */
 const UNMATCHED: ExpressionSpecification = [
   "all",
   ["has", "piece"],
   ["!", ["has", "strahler"]],
   ["!", ["has", "flow"]],
+  ["!", ["has", "river"]],
+];
+
+/** A fill piece with no mapped channel: a HydroRIVERS path or a straight connector (cba). */
+const FILL_DASHED: ExpressionSpecification = [
+  "all",
+  ["==", ["get", "fill"], 1],
+  ["in", ["get", "form"], ["literal", ["route", "connector"]]],
 ];
 
 /**
@@ -380,6 +404,7 @@ const CLASS_FILTER: Record<FlowClass, ExpressionSpecification> = {
     ["!", ["has", "nonPerennial1d"]],
     ["!", ["has", "flow"]],
     ["!", UNMATCHED],
+    ["!", FILL_DASHED],
   ],
 };
 
@@ -396,6 +421,15 @@ export function unmatchedFilter(
 ): FilterSpecification {
   if (!layers.rivers) return ["boolean", false];
   return hideEndorheic ? ["all", UNMATCHED, notEndorheic] : UNMATCHED;
+}
+
+/** Dashed fill pieces; hidden with all rivers or with the "no prediction" class they are drawn as. */
+export function fillDashFilter(
+  hideEndorheic: boolean,
+  layers: Pick<LayerVisibility, "rivers" | "flow">,
+): FilterSpecification {
+  if (!layers.rivers || !layers.flow.unknown) return ["boolean", false];
+  return hideEndorheic ? ["all", FILL_DASHED, notEndorheic] : FILL_DASHED;
 }
 
 /** One flow class's reaches; hidden with all rivers or by its own toggle. */
@@ -699,6 +733,19 @@ export function buildStyle(o: StyleOptions): StyleSpecification {
       "line-color": colors.detail,
       "line-opacity": 0.85,
       "line-width": reachWidth(FLOW_STYLE.unknown.widthScale),
+    },
+  });
+  layers.push({
+    id: FILL_DASH_LAYER_ID,
+    type: "line",
+    source: "rivers",
+    "source-layer": "reaches",
+    filter: fillDashFilter(o.hideEndorheic, o.layers),
+    layout: { "line-cap": "butt", "line-join": "round" },
+    paint: {
+      "line-color": colors.unknown,
+      "line-width": reachWidth(FLOW_STYLE.unknown.widthScale),
+      "line-dasharray": FILL_DASH,
     },
   });
   // Drawn smallest class first so perennial rivers sit on top.

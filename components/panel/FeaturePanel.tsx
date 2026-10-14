@@ -1,8 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { RiverResponse } from "@/lib/data/queries";
 import type { Picked } from "@/lib/map/picked";
 import { useMapStore } from "@/lib/store";
+import { useApi } from "@/lib/use-api";
 import { Group, PanelFrame, Row, useFormat } from "./parts";
 
 /**
@@ -14,6 +16,20 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
   const t = useTranslations("panel");
   const f = useFormat();
   const pick = useMapStore((s) => s.pick);
+  // A piece on an approved river's course takes the river's display name as its title.
+  const riverId = picked.kind === "line" ? (picked.river ?? null) : null;
+  const river = useApi<RiverResponse>(
+    riverId ? `/api/rivers/${encodeURIComponent(riverId)}` : null,
+  );
+  const riverName = river.status === "ok" ? river.data.name : null;
+  const sourceName =
+    picked.kind === "line" &&
+    riverName &&
+    picked.name &&
+    picked.name.trim().toLowerCase() !== riverName.trim().toLowerCase()
+      ? picked.name
+      : null;
+  const fillForm = picked.kind === "line" ? (picked.form ?? null) : null;
 
   // ICU select keys can't contain a hyphen.
   const waterKind =
@@ -27,7 +43,7 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
       case "detail":
         return picked.name ?? t("feature.detail.unnamed");
       case "line":
-        return picked.name ?? t("feature.line.unnamed");
+        return riverName ?? picked.name ?? t("feature.line.unnamed");
       case "water":
         return picked.name ?? t("feature.water.unnamed", { kind: waterKind });
       case "dam":
@@ -41,7 +57,11 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
     picked.kind === "detail"
       ? t("feature.detail.title")
       : picked.kind === "line"
-        ? t("feature.line.title")
+        ? fillForm === "route"
+          ? t("feature.line.fillRoute")
+          : fillForm === "connector"
+            ? t("feature.line.fillConnector")
+            : t("feature.line.title")
         : picked.kind === "water"
           ? t("feature.water.kind", { kind: waterKind })
           : picked.kind === "wall"
@@ -53,7 +73,11 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
     picked.kind === "detail"
       ? t("feature.detail.note")
       : picked.kind === "line"
-        ? t("feature.line.note")
+        ? fillForm === "route"
+          ? t("feature.line.fillRouteNote")
+          : fillForm === "connector"
+            ? t("feature.line.fillConnectorNote")
+            : t("feature.line.note")
         : picked.kind === "water"
           ? t("feature.water.note")
           : picked.kind === "locality"
@@ -67,6 +91,11 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
           {title}
         </h2>
         <p className="text-muted text-sm">{subtitle}</p>
+        {sourceName && (
+          <p className="text-muted text-xs">
+            {t("feature.line.sourceName", { name: sourceName })}
+          </p>
+        )}
         {picked.kind === "line" && picked.review && (
           <p className="text-warning text-xs">{t("feature.line.review")}</p>
         )}
@@ -95,14 +124,18 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
       )}
       <footer className="text-muted flex flex-col gap-1 border-t border-(--border) pt-3 text-xs">
         <p>{note}</p>
-        <p>
-          {picked.kind === "locality"
-            ? t("feature.locality.source")
-            : (picked.kind === "water" && picked.areaSource === "aprhi") ||
-                (picked.kind === "line" && picked.source === "aprhi")
-              ? t("feature.sourceAprhi")
-              : t("feature.source")}
-        </p>
+        {fillForm !== "connector" && (
+          <p>
+            {picked.kind === "locality"
+              ? t("feature.locality.source")
+              : picked.kind === "line" && picked.source === "hydrorivers"
+                ? t("feature.sourceHydrorivers")
+                : (picked.kind === "water" && picked.areaSource === "aprhi") ||
+                    (picked.kind === "line" && picked.source === "aprhi")
+                  ? t("feature.sourceAprhi")
+                  : t("feature.source")}
+          </p>
+        )}
       </footer>
     </PanelFrame>
   );

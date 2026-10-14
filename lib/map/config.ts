@@ -14,6 +14,13 @@ export const mapConfigFor = (region: RegionId) => MAP_CONFIGS[region];
 export const hasProvinceOutline = (region: RegionId) =>
   "provinceOutline" in MAP_CONFIGS[region];
 
+/**
+ * Whether the region's river lines include course fill pieces (R5: regions/<id>/river-lines.config.json
+ * exists), so the legend and the river panel say how the mapped course and its length are made.
+ */
+const COURSE_FILL: Record<RegionId, boolean> = { nqn: false, cba: true };
+export const hasCourseFill = (region: RegionId) => COURSE_FILL[region];
+
 /** Ids of every region with a map config (for tests). */
 export const MAP_CONFIG_REGIONS = Object.keys(MAP_CONFIGS) as RegionId[];
 

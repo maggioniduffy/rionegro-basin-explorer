@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { isMouthKind } from "@/lib/data/mouth";
 import type { RiverResponse } from "@/lib/data/queries";
+import { useRegion } from "@/components/RegionProvider";
+import { hasCourseFill } from "@/lib/map/config";
 import { useMapStore } from "@/lib/store";
 import {
   CAVEAT_BY_PATH,
@@ -18,6 +20,7 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
   const f = useFormat();
   const seaDistance = useSeaDistance();
   const select = useMapStore((s) => s.select);
+  const courseFill = hasCourseFill(useRegion());
   const modeled = (path: string) => river.modeled.includes(path);
   const caveats = CAVEAT_BY_PATH.filter(([path]) => modeled(path)).map(
     ([, c]) => c,
@@ -61,7 +64,14 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
       </header>
 
       <Group title={t("groups.course")}>
-        <Row label={t("fields.length")}>{f("km", river.lengthKm)}</Row>
+        <Row label={t("fields.length")}>
+          {f("km", river.lengthKm)}
+          {courseFill && (
+            <span className="text-muted block text-xs font-normal">
+              {t("river.lengthSource")}
+            </span>
+          )}
+        </Row>
         <Row label={t("fields.distanceToSea")}>
           {seaDistance(river.mouth.distanceToSeaKm, river.mouthKind)}
         </Row>
