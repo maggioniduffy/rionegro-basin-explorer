@@ -347,8 +347,9 @@ export function selectionFilter(sel: Selection | null): FilterSpecification {
 /**
  * What a click on a reach tile feature opens: its approved river, else its stream (the
  * river wins on a reach that is in both; the stream stays reachable from search), else
- * the reach itself. A fill piece (cba, R5) opens the line panel, which names its river and
- * says how the piece was drawn.
+ * the reach itself. A fill piece or a piece that keeps another name in its source (`srcName`,
+ * cba R5) opens the line panel, which names its river, the name in the source and how the
+ * piece was drawn.
  */
 export function reachFeatureSelection(
   properties: Record<string, unknown>,
@@ -356,6 +357,7 @@ export function reachFeatureSelection(
 ): Selection | null {
   const { river, stream } = properties;
   if (Number(properties.fill) === 1) return null;
+  if (typeof properties.srcName === "string" && properties.srcName) return null;
   if (typeof river === "string" && river) return { kind: "river", id: river };
   if (typeof stream === "string" && stream)
     return { kind: "stream", id: stream };

@@ -343,6 +343,17 @@ describe("cba course fill pieces", () => {
   it("opens the line panel for a fill piece, not its river", () => {
     expect(reachFeatureSelection(route, undefined)).toBeNull();
   });
+
+  it("opens the line panel for a piece that keeps another name in its source", () => {
+    const piece = { river: "rio-segundo", piece: "ign-1-0", src: "ign" };
+    expect(
+      reachFeatureSelection({ ...piece, srcName: "Arroyo Pilar" }, undefined),
+    ).toBeNull();
+    expect(reachFeatureSelection(piece, undefined)).toEqual({
+      kind: "river",
+      id: "rio-segundo",
+    });
+  });
 });
 
 describe("reachFeatureSelection", () => {

@@ -34,10 +34,10 @@
  *    line parts within fillCorridorM of the gap that joins both ends (ends within fillSnapM),
  *    cutting a line where it passes a gap end; else the river's HydroRIVERS reaches between the
  *    ends, cut at the points nearest them, with straight connectors to the exact ends (counted
- *    as HydroRIVERS km). Arms farther than armMaxFromCourseM from the course (pieces and fill)
+ *    as connector km, apart from HydroRIVERS). Arms farther than armMaxFromCourseM from the course (pieces and fill)
  *    are not part of the river.
  *
- * Output: data/work/<id>/river-lines/course.parquet (pieceId, river, order, role; order 0 is the
+ * Output: data/work/<id>/river-lines/course.parquet (pieceId, river, order, role, kind own | unnamed | other; order 0 is the
  * mouth end; role own | bridge for the course, arm for own-named pieces joined to it, with a
  * null order), fill.parquet (pieceId fill:ign:<n> | fill:hr:<n>, river, order = order of the
  * course piece just downstream of the gap (null below the course), upOrder, kind gap | join,
@@ -655,7 +655,7 @@ async function main() {
 
     const claimedBy = new Map<string, string>();
     const perRiver: Record<string, unknown>[] = [];
-    const csv: string[] = ["pieceId,river,order,role"];
+    const csv: string[] = ["pieceId,river,order,role,kind"];
     const gapRows: Record<string, unknown>[] = [];
     const overlaps: Record<string, unknown>[] = [];
     const csvRows: {
@@ -973,7 +973,7 @@ async function main() {
           river: slug,
           order: e.order,
           id: e.id,
-          line: `${e.id},${slug},${e.order},${e.role}`,
+          line: `${e.id},${slug},${e.order},${e.role},${e.kind}`,
         });
       }
       // Arms belong to the river (highlight, click) but are not in the course km.
@@ -986,7 +986,7 @@ async function main() {
           river: slug,
           order: null,
           id: a.id,
-          line: `${a.id},${slug},,arm`,
+          line: `${a.id},${slug},,arm,own`,
         });
       }
       const armsKm = Object.values(armKm).reduce((sum, v) => sum + v, 0);
@@ -1269,12 +1269,17 @@ async function main() {
       (m, r) => Math.max(m, num(r.endsOffM)),
       0,
     );
+    // Km of a fill piece that is a straight connector: all of a connector piece, else its
+    // connectorM (the export's split). The rest counts for the piece's src.
+    const connectorKmOf = (f: Record<string, unknown>) =>
+      f.form === "connector" ? num(f.lengthKm) : num(f.connectorM) / 1000;
+    const kmBySrc = (rows: Record<string, unknown>[], src: string) =>
+      rows
+        .filter((f) => f.src === src)
+        .reduce((sum, f) => sum + num(f.lengthKm) - connectorKmOf(f), 0);
     for (const r of perRiver) {
       const mine = fillRows.filter((f) => String(f.river) === r.river);
-      const kmBy = (src: string) =>
-        mine
-          .filter((f) => f.src === src)
-          .reduce((sum, f) => sum + num(f.lengthKm), 0);
+      const kmBy = (src: string) => kmBySrc(mine, src);
       const kmByForm = (form: string) =>
         mine
           .filter((f) => f.form === form)
@@ -1286,7 +1291,11 @@ async function main() {
         km: {
           ign: round(kmBy("ign"), 3),
           hydrorivers: round(kmBy("hydrorivers"), 3),
-          note: "hydrorivers km include the straight connectors to the exact gap ends",
+          connector: round(
+            mine.reduce((sum, f) => sum + connectorKmOf(f), 0),
+            3,
+          ),
+          note: "ign and hydrorivers km exclude the straight connectors (the export's split)",
           byForm: {
             chain: round(kmByForm("chain"), 3),
             route: round(kmByForm("route"), 3),
@@ -1304,10 +1313,6 @@ async function main() {
             3,
           ),
         },
-        hydroriversConnectorKm: round(
-          mine.reduce((sum, f) => sum + num(f.connectorM), 0) / 1000,
-          3,
-        ),
         join: join
           ? {
               pieceId: String(join.pieceId),
@@ -1317,13 +1322,7 @@ async function main() {
           : null,
       };
     }
-    const fillKmBySource = (src: string) =>
-      round(
-        fillRows
-          .filter((f) => f.src === src)
-          .reduce((sum, f) => sum + num(f.lengthKm), 0),
-        3,
-      );
+    const fillKmBySource = (src: string) => round(kmBySrc(fillRows, src), 3);
     const fillKmByForm = (form: string) =>
       round(
         fillRows
@@ -1372,7 +1371,7 @@ async function main() {
     await db.conn.run(`
       COPY (SELECT * FROM read_csv(${lit(csvFile)}, header = true,
               nullstr = '',
-              columns = {'pieceId': 'VARCHAR', 'river': 'VARCHAR', 'order': 'INTEGER', 'role': 'VARCHAR'})
+              columns = {'pieceId': 'VARCHAR', 'river': 'VARCHAR', 'order': 'INTEGER', 'role': 'VARCHAR', 'kind': 'VARCHAR'})
             ORDER BY river, "order" NULLS LAST, pieceId)
       TO ${lit(parquet)} (FORMAT parquet)`);
     await rm(csvFile);
@@ -1435,6 +1434,10 @@ async function main() {
         km: {
           ign: fillKmBySource("ign"),
           hydrorivers: fillKmBySource("hydrorivers"),
+          connector: round(
+            fillRows.reduce((sum, f) => sum + connectorKmOf(f), 0),
+            3,
+          ),
           byForm: {
             chain: fillKmByForm("chain"),
             route: fillKmByForm("route"),

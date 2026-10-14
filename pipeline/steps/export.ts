@@ -41,7 +41,8 @@
  * (pipeline:river-lines; a missing file throws): a piece's `river` is its course's river
  * (course.parquet) before its reach's; the fill pieces (fill.parquet) are drawn too, as pieces
  * with `fill` = 1, `form` (chain | route | connector), `src` ("ign" | "hydrorivers"), no id,
- * name or `flow` (no flow is sourced for them); and each river document in rivers.ndjson
+ * name or `flow` (no flow is sourced for them); a course piece whose kind (course.parquet) is
+ * 'other' also carries `srcName`, its name in the source; and each river document in rivers.ndjson
  * (pipeline:named) gets as lengthKm the km of its mapped course (pieces with role own or
  * bridge, plus its fill pieces), its provenance.lengthKm saying how many km came from APRHI,
  * IGN, HydroRIVERS and straight connectors. A river that has no course (or drops out of it) keeps the length last exported
@@ -472,6 +473,7 @@ async function main() {
                o.stream, coalesce(o.network, pnet.network) AS network,
                o.strahler, o.uplandKm2, o.nonPerennial1d,
                pn.name, lf.flow,
+               ${riverLines ? "c.kind AS course_kind," : ""}
                coalesce(ST_SetCRS(g.geom, 'EPSG:4326'), ST_SetCRS(l.geom, 'EPSG:4326')) AS geom,
                coalesce(ST_IsEmpty(g.geom), false) AS not_drawn
         FROM read_parquet(${lit(linesFile)}) l
@@ -501,12 +503,13 @@ async function main() {
                          round(length_m / 1000.0, 3) AS km, name,
                          CASE WHEN status = 'en-revision' THEN 1 END AS review,
                          CASE flow WHEN 'perennial' THEN 0 WHEN 'intermittent' THEN 1 END AS flow,
-                         NULL::INTEGER AS fill, NULL::VARCHAR AS form, geom
+                         NULL::INTEGER AS fill, NULL::VARCHAR AS form,
+                         CASE WHEN course_kind = 'other' THEN name END AS srcName, geom
                   FROM pieces WHERE NOT not_drawn
                   UNION ALL
                   SELECT NULL, f.river, NULL, fn.network, NULL, NULL, NULL,
                          f.pieceId, f.src, NULL, round(f.lengthKm, 3), NULL, NULL, NULL,
-                         1, f.form, ST_SetCRS(f.geom, 'EPSG:4326')
+                         1, f.form, NULL, ST_SetCRS(f.geom, 'EPSG:4326')
                   FROM read_parquet(${lit(fillFile!)}) f
                   JOIN fill_net fn ON fn.id = f.pieceId
                   WHERE NOT ST_IsEmpty(f.geom)) ORDER BY piece)
@@ -602,10 +605,12 @@ async function main() {
           const ign = k1(r.ign);
           const hydrorivers = k1(r.hydrorivers);
           const connector = k1(r.connector);
+          // The parts are rounded first and the total is their sum, so the stated parts add up.
+          const total = k1(aprhi + ign + hydrorivers + connector);
           courseLengths.set(String(r.river), {
-            km: k1(r.total),
+            km: total,
             provenance:
-              `Length of the mapped course (pipeline:river-lines), not a HydroRIVERS LENGTH_KM sum: ${k1(r.total)} km = ` +
+              `Length of the mapped course (pipeline:river-lines), not a HydroRIVERS LENGTH_KM sum: ${total} km = ` +
               `${aprhi} km APRHI display lines + ${ign} km IGN lines (display lines and gap fill) + ` +
               `${hydrorivers} km HydroRIVERS v1.0 reaches (gap fill routes) + ` +
               `${connector} km straight connectors between the ends of a gap (not HydroRIVERS geometry). ` +
@@ -628,14 +633,23 @@ async function main() {
           riversWithCourse: kmRows.length,
           rivers: kmRows.map((r) => ({
             river: String(r.river),
-            lengthKm: k1(r.total),
+            lengthKm: k1(
+              k1(r.aprhi) + k1(r.ign) + k1(r.hydrorivers) + k1(r.connector),
+            ),
             aprhiKm: k1(r.aprhi),
             ignKm: k1(r.ign),
             hydroriversKm: k1(r.hydrorivers),
             connectorKm: k1(r.connector),
           })),
           courseKmTotal: round(
-            kmRows.reduce((sum, r) => sum + Number(r.total ?? 0), 0),
+            kmRows.reduce(
+              (sum, r) =>
+                sum +
+                k1(
+                  k1(r.aprhi) + k1(r.ign) + k1(r.hydrorivers) + k1(r.connector),
+                ),
+              0,
+            ),
             1,
           ),
           courseUniquePieces: check?.course_pieces === check?.course_unique,

@@ -65,6 +65,11 @@ export type Picked =
       review: boolean;
       /** Slug of the approved river whose course the piece is on (cba, R5). */
       river?: string;
+      /**
+       * The piece's name in its source, set when it follows the river's channel under another
+       * name (tile property `srcName`, cba R5); the panel shows it under the river's name.
+       */
+      srcName?: string;
       /** Set on a fill piece (R5): how it was made. */
       form?: FillForm;
     }
@@ -141,6 +146,7 @@ export function toPickedLine(props: Record<string, unknown>): Picked | null {
   if (!source || km === null) return null;
   if (source === "hydrorivers" && !fill) return null;
   const river = text(props.river);
+  const srcName = text(props.srcName);
   const form = fill ? FILL_FORMS.find((k) => k === props.form) : undefined;
   return {
     kind: "line",
@@ -149,6 +155,7 @@ export function toPickedLine(props: Record<string, unknown>): Picked | null {
     km,
     review: Number(props.review) === 1,
     ...(river ? { river } : {}),
+    ...(srcName ? { srcName } : {}),
     ...(form ? { form } : {}),
   };
 }

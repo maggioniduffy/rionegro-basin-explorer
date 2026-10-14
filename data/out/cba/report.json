@@ -325,7 +325,7 @@
       },
       {
         "river": "dulce",
-        "lengthKm": 613.5,
+        "lengthKm": 613.4,
         "aprhiKm": 51.9,
         "ignKm": 544.1,
         "hydroriversKm": 6.4,
@@ -365,7 +365,7 @@
       },
       {
         "river": "saladillo",
-        "lengthKm": 117.4,
+        "lengthKm": 117.3,
         "aprhiKm": 114.7,
         "ignKm": 0,
         "hydroriversKm": 1.3,
@@ -381,7 +381,7 @@
       },
       {
         "river": "segundo",
-        "lengthKm": 237,
+        "lengthKm": 236.9,
         "aprhiKm": 216.3,
         "ignKm": 20.6,
         "hydroriversKm": 0,
@@ -389,14 +389,14 @@
       },
       {
         "river": "tercero",
-        "lengthKm": 374.9,
+        "lengthKm": 374.8,
         "aprhiKm": 361.4,
         "ignKm": 0.5,
         "hydroriversKm": 6.4,
         "connectorKm": 6.5
       }
     ],
-    "courseKmTotal": 3114.5,
+    "courseKmTotal": 3114.2,
     "courseUniquePieces": true,
     "coursePiecesKnown": true,
     "everyFillDrawn": true,

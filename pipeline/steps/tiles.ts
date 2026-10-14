@@ -4,7 +4,8 @@
  *   public/tiles/<region>/rivers.pmtiles  layers `reaches` (per-feature minzoom by Strahler order,
  *                                map.config.json; with mapLines "pieces" the display line
  *                                pieces, keyed by `piece`, with `rank` = the matched reach's
- *                                order or pieceOrderByClass), `basin` (outline) and `lakes`
+ *                                order or pieceOrderByClass; a river's piece with no order takes the rank of the river's
+ *                                pieces it touches, lib/piece-rank.ts), `basin` (outline) and `lakes`
  *                                (HydroLAKES polygons from pipeline:lakes, for outlines)
  *   public/tiles/<region>/mask.pmtiles    layers `mask` (Visible Land levels) and `endorheic` (land
  *                                visible only because of endorheic drainage, per level),
@@ -27,6 +28,7 @@
  * tippecanoe comes from PATH, or from $TIPPECANOE.
  */
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { requireInput } from "../lib/inputs";
@@ -37,7 +39,9 @@ import {
   stepMinzoom,
 } from "../lib/map-config";
 import { loadMapLines } from "../lib/map-lines";
-import { REGION_ID, ROOT, rel, workPath } from "../lib/paths";
+import { REGION_ID, ROOT, regionFile, rel, workPath } from "../lib/paths";
+import { lineEnds, propagatePieceRanks } from "../lib/piece-rank";
+import { parseRiverLinesConfig } from "../lib/river-course";
 import { writeReport } from "../lib/report";
 
 const TIPPECANOE = process.env.TIPPECANOE ?? "tippecanoe";
@@ -81,6 +85,8 @@ const REACH_PROPS = [
  * `flow`, IGN's mapped class (pipeline:line-flow; 0 perennial, 1 intermittent), which the
  * map draws in place of GIRES's `nonPerennial1d`. `fill` (1) and `form` (chain | route |
  * connector) mark the gap-fill pieces of pipeline:river-lines (null on every other piece).
+ * `srcName` is the name in its source of a piece on a river's course that carries another
+ * name (cba, R5; pipeline:export).
  */
 const PIECE_PROPS = [
   "piece",
@@ -92,6 +98,7 @@ const PIECE_PROPS = [
   "flow",
   "fill",
   "form",
+  "srcName",
 ] as const;
 
 function run(cmd: string, args: string[]): Promise<string> {
@@ -274,8 +281,37 @@ async function main() {
     : REACH_PROPS;
   const minzoomById = new Map<string, number>();
   const spanById = new Map<string, number>();
+  // R5: a piece of a river with no Strahler order (a fill piece, or a course piece no reach
+  // matched) is drawn at the rank of the river's pieces it touches, not at its class rank, so
+  // the river has no break in zoom or width. Only for a region with river-lines.config.json.
+  const riverLinesFile = regionFile("river-lines.config.json");
+  const fillSnapM =
+    pieces && existsSync(riverLinesFile)
+      ? parseRiverLinesConfig(
+          JSON.parse(await readFile(riverLinesFile, "utf8")),
+        ).fillSnapM
+      : null;
+  const pieceRanks =
+    fillSnapM === null
+      ? null
+      : propagatePieceRanks(
+          fc.features.map((f) => ({
+            id: String(f.properties[key]),
+            river:
+              typeof f.properties.river === "string" && f.properties.river
+                ? f.properties.river
+                : null,
+            ranked: typeof f.properties.strahler === "number",
+            rank: pieceOrder(mapConfig, f.properties),
+            ends: lineEnds(f.geometry),
+          })),
+          fillSnapM,
+        );
   const features = fc.features.map((f): Feature => {
-    const rank = pieces ? pieceOrder(mapConfig, f.properties) : undefined;
+    const rank = pieces
+      ? (pieceRanks?.ranks.get(String(f.properties[key])) ??
+        pieceOrder(mapConfig, f.properties))
+      : undefined;
     const minzoom = reachMinzoom(
       mapConfig,
       rank ?? Number(f.properties.strahler),
@@ -507,7 +543,10 @@ async function main() {
     const missingIds = expected
       .filter(([id]) => !got.has(id))
       .map(([id]) => id);
-    const subUnit = (id: string) => (spanById.get(id) ?? 0) * 2 ** z < 1;
+    // Under two units, not one: tippecanoe clips a line at tile edges, and a line of 1-2 units
+    // that crosses one leaves two parts under one unit, both dropped (R5: cba pieces of 1.07
+    // and 1.13 units at z4-z5 were lost this way once their rank put them at minzoom 0).
+    const subUnit = (id: string) => (spanById.get(id) ?? 0) * 2 ** z < 2;
     const missing = missingIds.length;
     const visibleMissing = missingIds.filter((id) => !subUnit(id));
     const missingVisible = visibleMissing.length;
@@ -526,7 +565,7 @@ async function main() {
       early,
     });
     console.log(
-      `z${z}: ${got.size}/${expected.length} reaches, missing ${missing} (${missingVisible} longer than a tile unit)`,
+      `z${z}: ${got.size}/${expected.length} reaches, missing ${missing} (${missingVisible} longer than two tile units)`,
     );
   }
   const levelCount = mapConfig.mask.baseHalfWidthKm.length + 1;
@@ -567,11 +606,19 @@ async function main() {
     ignNothingBeforeItsMinzoom: ignByLayer.every(
       (l) => l.presentBeforeFirstZoom === 0,
     ),
-    // Reaches shorter than one tile unit may be dropped (see spanUnitsZ0).
+    // Reaches shorter than two tile units may be dropped (see subUnit, spanUnitsZ0).
     everyReachFromItsMinzoom: reachesByZoom.every(
       (r) => r.missingVisible === 0,
     ),
     noReachBeforeItsMinzoom: reachesByZoom.every((r) => r.early === 0),
+    // R5: every piece of a river with no Strahler order took a rank from its river's pieces.
+    ...(pieceRanks
+      ? {
+          everyRiverPieceRanked: pieceRanks.unreached.every((u) =>
+            Number.isFinite(u.nearestM),
+          ),
+        }
+      : {}),
     // At maxzoom too, only sub-tile-unit reaches may be absent.
     allReachesAtMaxzoom:
       reachesByZoom.at(-1)?.expected === features.length &&
@@ -605,6 +652,17 @@ async function main() {
     maxzoom,
     reachMinzoomByStrahler: mapConfig.reachMinzoomByStrahler,
     reaches: features.length,
+    ...(pieceRanks
+      ? {
+          pieceRanks: {
+            note: "pieces of a river with no Strahler order take the largest rank of the river's pieces they touch at an endpoint (within fillSnapM), never below their class rank; a piece no chain reaches (unreached) takes the rank of the nearest ranked piece of its river, nearestM end to end",
+            fillSnapM,
+            reranked: pieceRanks.reached.length,
+            raised: pieceRanks.raised.length,
+            unreached: pieceRanks.unreached,
+          },
+        }
+      : {}),
     reachesByZoom,
     maskLevelsByZoom,
     ignByLayer,

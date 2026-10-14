@@ -22,13 +22,9 @@ export function FeaturePanel({ picked }: { picked: Picked }) {
     riverId ? `/api/rivers/${encodeURIComponent(riverId)}` : null,
   );
   const riverName = river.status === "ok" ? river.data.name : null;
-  const sourceName =
-    picked.kind === "line" &&
-    riverName &&
-    picked.name &&
-    picked.name.trim().toLowerCase() !== riverName.trim().toLowerCase()
-      ? picked.name
-      : null;
+  // The name the source gives a piece that follows the river's channel under another name
+  // (tile property srcName, set by pipeline:export), not a comparison with the river's name.
+  const sourceName = picked.kind === "line" ? (picked.srcName ?? null) : null;
   const fillForm = picked.kind === "line" ? (picked.form ?? null) : null;
 
   // ICU select keys can't contain a hyphen.
