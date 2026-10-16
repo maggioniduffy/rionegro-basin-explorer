@@ -46,7 +46,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 9. **Licenses and attribution:** keep `/pipeline/SOURCES.md` updated (source, URL, license, required citation, download date). Check the license before adding any new data source or imagery provider.
 10. **Workflow:** work one phase at a time from `context/PLAN.md`, in plan mode first, following `context/orchestration.md` (Opus orchestrates and reviews, Haiku scouts read, Sonnet builders code; one branch and PR per phase, one commit per work package). Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
 11. Dismiss visual and chromium tests unless called for
-12. Execute plan's steps one at a time.
+12. Always start tasks in PLAN MODE
 
 ## Regions
 
