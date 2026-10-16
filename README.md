@@ -2,7 +2,7 @@
 
 [English](#english) · [Español](#español)
 
-Live: https://rionegrobasinexplorer.vercel.app/
+Live: https://basinexplorer.vercel.app/ (hub with two explorers: [/rionegro](https://basinexplorer.vercel.app/rionegro) and [/cordoba](https://basinexplorer.vercel.app/cordoba))
 
 ---
 
@@ -13,9 +13,9 @@ and Río Negro). The map shows only the river system and a strip of land around 
 a reach or a sub-basin to open a panel with its metrics. The UI is in English and Spanish.
 Inspired by Amazon Basin Explorer.
 
-The same app is built to serve more regions, one per subdomain, sharing every component. The
-Río Negro basin (`nqn`) is live; Córdoba (`cba`) is in preparation and not served yet (see
-`regions/cba/README.md`).
+The same app serves more regions, one per path, sharing every component. The Río Negro basin
+(`nqn`, at `/rionegro`) and Córdoba (`cba`, at `/cordoba`, covering the Primero to Quinto rivers
+and Mar Chiquita) are both live (see `regions/cba/README.md`).
 
 ### Features
 
@@ -125,9 +125,9 @@ Un explorador satelital interactivo de la cuenca del Río Negro, en el norte de 
 alrededor. Al hacer clic en un río, un tramo o una subcuenca se abre un panel con sus métricas. La
 interfaz está en español e inglés. Inspirado en Amazon Basin Explorer.
 
-La misma app está pensada para servir más regiones, una por subdominio, compartiendo todos los
-componentes. La cuenca del Río Negro (`nqn`) está publicada; Córdoba (`cba`) está en preparación y
-todavía no se sirve (ver `regions/cba/README.md`).
+La misma app sirve más regiones, una por ruta, compartiendo todos los componentes. La cuenca del
+Río Negro (`nqn`, en `/rionegro`) y Córdoba (`cba`, en `/cordoba`, que abarca los ríos Primero a
+Quinto y Mar Chiquita) están publicadas (ver `regions/cba/README.md`).
 
 ### Funcionalidades
 
