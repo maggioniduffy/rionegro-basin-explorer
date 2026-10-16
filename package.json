@@ -51,6 +51,7 @@
     "@google/genai": "^2.28.0",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
+    "@vercel/analytics": "^2.0.1",
     "fuse.js": "^7.5.0",
     "groq-sdk": "^1.6.0",
     "maplibre-gl": "^6.11.2",
