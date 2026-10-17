@@ -11,6 +11,7 @@ import { Wordmark } from "./Wordmark";
 
 const HEADING =
   "text-text mb-1.5 font-mono text-xs font-medium tracking-[.16em] uppercase";
+const CAFECITO_URL = "https://cafecito.app/maggioniduffy";
 const LINK = "text-secondary hover:text-text inline-flex min-h-10 items-center";
 
 /**
@@ -67,6 +68,14 @@ export async function SiteFooter({
             )}
           </span>
           <span className="leading-[1.55]">{t("credit")}</span>
+          <a
+            href={CAFECITO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent hover:text-text inline-flex min-h-10 items-center font-semibold"
+          >
+            ☕ {t("cafecito")}
+          </a>
         </div>
         <div className="flex flex-wrap gap-x-[clamp(36px,6vw,96px)] gap-y-7">
           <div className="flex flex-col gap-1">
