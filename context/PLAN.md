@@ -59,6 +59,7 @@ Each phase lives in its own file under [phases/](phases/). Read this index, then
 | R4 — Hub                                 | [x]                                       | [r4-hub.md](phases/r4-hub.md)                         |
 | R5 — Continuous river courses in Córdoba | [x]                                       | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
 | F1 — Flow close-up (`nqn`)               | [~] code done; owner browser checks left  | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
+| I1 — Sharper imagery at high zoom (free) | [ ] candidates and licenses               | [i1-sharper-imagery.md](phases/i1-sharper-imagery.md) |
 
 ### Multi-region (R0–R5)
 
