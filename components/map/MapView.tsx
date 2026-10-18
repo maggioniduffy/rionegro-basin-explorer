@@ -522,13 +522,10 @@ export default function MapView() {
       if (!loaded) return;
       const hit = hitAt(map, e.point.x, e.point.y);
       const store = useMapStore.getState();
-      if (hit?.type === "picked")
-        store.pick(hit.picked, { keepIsolated: true });
-      else store.select(hit?.selection ?? null, { keepIsolated: true });
-      // After the selection, which clears it: the panel's "View flow" opens the section here.
       const click: [number, number] = [e.lngLat.lng, e.lngLat.lat];
-      store.setLastClick(click);
       // In flow mode a river with flow sections replaces the section, nearest the click.
+      // Switch before selecting: select() keeps flow for the section's own river, so flow
+      // never passes through "off" (which would reset the max zoom and the play state).
       if (store.flowSection && hit?.type === "selection") {
         const index = peekFlowIndex(region);
         const river = hit.selection.kind === "river" ? hit.selection.id : null;
@@ -538,6 +535,11 @@ export default function MapView() {
             : null;
         if (id) store.enterFlow(id, { fit: true });
       }
+      if (hit?.type === "picked")
+        store.pick(hit.picked, { keepIsolated: true });
+      else store.select(hit?.selection ?? null, { keepIsolated: true });
+      // After the selection, which clears it: the panel's "View flow" opens the section here.
+      store.setLastClick(click);
     });
     // Hovering a locality also names it; the click opens its panel.
     const nameTip = new Popup({

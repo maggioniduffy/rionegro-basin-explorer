@@ -56,7 +56,6 @@ export function FlowControls() {
         <div className="flex flex-wrap items-center justify-center gap-1">
           <button
             type="button"
-            aria-pressed={playing}
             onClick={() => setPlaying(!playing)}
             className={`${BTN} font-medium`}
           >

@@ -28,7 +28,12 @@ export function UrlSync() {
       const store = useMapStore.getState();
       if (!sameSelection(selection, store.selection))
         store.select(selection, { fit: true });
-      if (!hasFlow) return;
+      // A region without flow data never keeps a section, not even one left in the store
+      // by a soft navigation from another region.
+      if (!hasFlow) {
+        if (store.flowSection) store.exitFlow();
+        return;
+      }
       const flow = parseFlow(params);
       if (flow.section !== store.flowSection) {
         if (flow.section) store.enterFlow(flow.section, { fit: true });
