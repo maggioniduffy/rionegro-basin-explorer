@@ -6,15 +6,15 @@ hold what only the owner can do. CLAUDE.md rules always win over this file.
 
 ## 1. Roles and model routing
 
-| Role                | Model  | Where                               | Does                                                                                                                                                                                       | Never does                                                           |
-| ------------------- | ------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| **Orchestrator**    | Opus   | Main Claude Code session            | Reads PLAN.md, splits a phase into work packages (WPs) in plan mode, writes briefs, decides trade-offs, reviews diffs and reports, runs phase gates, records decisions, commits, opens PRs | Writes large feature code itself (small fixes after review are fine) |
-| **Scout**           | Haiku  | `.claude/agents/scout.md`           | Large-but-simple reading: `node_modules/next/dist/docs/`, library `.d.ts`/docs, codebase sweeps ("find every X"), test/log digests, i18n key audits, PR description drafts from `git log`  | Edits the repo; makes design decisions                               |
-| **Data inspector**  | Haiku  | `.claude/agents/data-inspector.md`  | Schema, nulls, ranges, geometry of any `data/` file (a scout for data)                                                                                                                     | Edits; runs pipeline steps                                           |
-| **License checker** | Sonnet | `.claude/agents/license-checker.md` | License / attribution text for `pipeline/SOURCES.md`                                                                                                                                       | Edits SOURCES.md itself                                              |
-| **Builder**         | Sonnet | `.claude/agents/builder.md`         | Implements one WP per brief (app or pipeline code), adds tests only where the brief asks (§2 Tests), runs `npm run check` once at the end                                                  | Commits, pushes, widens scope, runs heavy pipeline steps             |
-| **Pipeline runner** | Sonnet | `.claude/agents/pipeline-runner.md` | Runs pipeline steps for one region, reads each `report.json`, returns a verdict                                                                                                            | Fixes code                                                           |
-| **Reviewer**        | Opus   | `.claude/agents/reviewer.md`        | Independent check of a WP diff or a phase gate; runs the acceptance commands                                                                                                               | Fixes what it finds                                                  |
+| Role                | Model  | Where                               | Does                                                                                                                                                                                                                    | Never does                                                           |
+| ------------------- | ------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **Orchestrator**    | Opus   | Main Claude Code session            | Reads the PLAN.md index and the phase file, splits a phase into work packages (WPs) in plan mode, writes briefs, decides trade-offs, reviews diffs and reports, runs phase gates, records decisions, commits, opens PRs | Writes large feature code itself (small fixes after review are fine) |
+| **Scout**           | Haiku  | `.claude/agents/scout.md`           | Large-but-simple reading: `node_modules/next/dist/docs/`, library `.d.ts`/docs, codebase sweeps ("find every X"), test/log digests, i18n key audits, PR description drafts from `git log`                               | Edits the repo; makes design decisions                               |
+| **Data inspector**  | Haiku  | `.claude/agents/data-inspector.md`  | Schema, nulls, ranges, geometry of any `data/` file (a scout for data)                                                                                                                                                  | Edits; runs pipeline steps                                           |
+| **License checker** | Sonnet | `.claude/agents/license-checker.md` | License / attribution text for `pipeline/SOURCES.md`                                                                                                                                                                    | Edits SOURCES.md itself                                              |
+| **Builder**         | Sonnet | `.claude/agents/builder.md`         | Implements one WP per brief (app or pipeline code), adds tests only where the brief asks (§2 Tests), runs `npm run check` once at the end                                                                               | Commits, pushes, widens scope, runs heavy pipeline steps             |
+| **Pipeline runner** | Sonnet | `.claude/agents/pipeline-runner.md` | Runs pipeline steps for one region, reads each `report.json`, returns a verdict                                                                                                                                         | Fixes code                                                           |
+| **Reviewer**        | Opus   | `.claude/agents/reviewer.md`        | Independent check of a WP diff or a phase gate; runs the acceptance commands                                                                                                                                            | Fixes what it finds                                                  |
 
 Rule of thumb: _if the answer is a summary, send a scout (or the data inspector); if the answer is code, send a
 builder; if the answer is data, send the pipeline runner; if the answer is a decision or a verdict, Opus does it._
@@ -26,7 +26,7 @@ goes into the brief's Constraints.
 ## 2. The loop (one phase = one branch = one PR)
 
 ```
-Opus: read CLAUDE.md + PLAN.md phase + the DECISSIONS.md sections it links
+Opus: read CLAUDE.md + the PLAN.md index + context/phases/<id>.md + the DECISSIONS.md sections it links
   │
   ├─► scouts / data inspector (Haiku, parallel) → verify APIs, schemas, the code the phase touches → summaries
   │
@@ -38,7 +38,7 @@ Opus (plan mode): write WP briefs (template §3), order them → owner approves 
 Opus: read the report + diff; small fixes inline; otherwise re-brief the builder
   ├─► reviewer (Opus) on risky WPs (§5)
   │
-Opus: commit the WP ("feat(<phase>): …" / "fix(<phase>): …"), tick PLAN.md, add DECISSIONS.md entry, RUN_LOCAL.md steps
+Opus: commit the WP ("feat(<phase>): …" / "fix(<phase>): …"), tick the phase file, add DECISSIONS.md entry, RUN_LOCAL.md steps
   │
   └─ after the last WP: phase gate (§6) → reviewer → scout drafts the PR description → Opus pushes and opens the PR
 ```
@@ -75,7 +75,7 @@ Rules of the loop
 
 Goal: <one sentence, user-visible or report-visible outcome>
 Region(s): <nqn | cba | shared> — never fall back to another region's data
-Read first: CLAUDE.md · context/PLAN.md §<phase> · context/DECISSIONS.md §<sections> · <docs in node_modules/next/dist/docs/ if Next APIs are touched>
+Read first: CLAUDE.md · context/phases/<id>.md · context/DECISSIONS.md §<sections> · <docs in node_modules/next/dist/docs/ if Next APIs are touched>
 Files (create/modify): <explicit list>; anything else = ask first
 Inputs/contracts: <types, function signatures, Mongo fields, tile layer/property names, report.json checks, props>
 Constraints: <CLAUDE.md rules that matter here (i18n in both locales, no invented data, modeled-data caveat with its period, MONGODB_URI server-only, idempotent steps + report.json), memory facts, libs to use/not use>
@@ -114,20 +114,20 @@ Send the reviewer when a WP touches any of:
 
 ## 6. Phase gate
 
-A phase is done when its PLAN.md "Done when" holds. The gate, run by Opus with the reviewer:
+A phase is done when the "Done when" in its phase file holds. The gate, run by Opus with the reviewer:
 
 1. `npm run check` green on the branch.
 2. Every report the phase touched read by the pipeline runner; failed checks explained or fixed.
 3. i18n: scout confirms every new key exists in `en.json` and `es.json` (and in each served region's messages).
 4. Reviewer verdict on the whole phase diff (`git diff main...HEAD`).
 5. E2E / screenshots only if the phase is visual and the owner asks; otherwise listed in RUN_LOCAL.md.
-6. PLAN.md ticked, DECISSIONS.md entry written, RUN_LOCAL.md updated, PR opened.
+6. Phase file ticked and its PLAN.md row updated, DECISSIONS.md entry written, RUN_LOCAL.md updated, PR opened.
 
 ## 7. Session kickoff prompt (paste at the start of each phase)
 
 ```
 Phase <id>. You are the orchestrator (Opus). Read CLAUDE.md, context/orchestration.md §1–3 and §5–6,
-context/PLAN.md for Phase <id>, and the DECISSIONS.md sections it links.
+the context/PLAN.md index, context/phases/<id>.md (only that phase), and the DECISSIONS.md sections it links.
 1. Send scouts / data inspectors for anything the phase needs verified that DECISSIONS.md doesn't cover.
 2. In plan mode, write the WP briefs with the template and get my approval.
 3. Run builders WP by WP; pipeline runner for data WPs; reviewer for §5 WPs; commit per WP.

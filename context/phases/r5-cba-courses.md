@@ -1,22 +1,30 @@
-# Phase R5 — continuous river courses in Córdoba (`cba`): plan and resume notes
+<!-- Phase file. Index and status: [PLAN.md](../PLAN.md). -->
 
-Approved by the owner on 2026-10-13. Status checklist: [PLAN.md](PLAN.md#phase-r5--continuous-river-courses-in-córdoba-cba).
-Decisions and measurements: [DECISSIONS.md](DECISSIONS.md#córdoba-r5-continuous-river-courses-2026-10-13).
-Workflow: [orchestration.md](orchestration.md) (Opus orchestrates; builder, then pipeline-runner, then reviewer;
+# Phase R5 — Continuous river courses in Córdoba (`cba`)
+
+Plan approved 2026-10-13 ([DECISSIONS.md](../DECISSIONS.md#córdoba-r5-continuous-river-courses-2026-10-13)): each of the 13 rivers is drawn as one course from source to mouth along the mapped lines; gaps filled with IGN, then HydroRIVERS (dashed); other-named and unnamed pieces on the course keep their source name; river length = mapped course length. Branch `phase-r5-cba-courses`.
+
+- [x] R5.0 Measurements (APRHI/IGN classes, lines near each hole, endpoint snap distances) — in DECISSIONS.md (2026-10-13)
+- [x] R5.1 `pipeline:river-lines`: course per river from the display lines (graph, Dijkstra bridges, anchors, extensions, attach, arms, confluence cuts) and `report.json` — 13 courses, all checks ok, two runs identical; own share with arms ≥ 0.95 except the Segundo (0.943, eastern arm out on purpose); Salí and Cuarto don't reach their receiver yet (2026-10-13)
+- [x] R5.2 Gap fill: IGN raw lines (also inside the province, only in gaps), then HydroRIVERS geometry; `fill.parquet` — 85 fills (IGN 42.6 km, HydroRIVERS 112.6 km, straight connectors 30.2 km), no gap left, Salí and Cuarto reach their receivers, one component per river (2026-10-13)
+- [x] R5.3 Export and tiles: `river` from the course, fill pieces, `lengthKm` from the mapped course with per-source km; `nqn` byte-identical (2026-10-13)
+- [x] R5.4 Map, panel, legend and i18n (HydroRIVERS fill dashed, "name in the source") (2026-10-13)
+- [x] R5.5 Run and gate: receiver extension limited to the receiver; reports ok, two runs identical, `nqn` byte-identical, 615 tests; Segundo own share 0.943 accepted (owner's Plujunta choice, DECISSIONS.md) (2026-10-13)
+- **Done when:** all 13 rivers have a one-component course from source to mouth; every filled km names its source; ≥ 95 % of each river's own-named km are in its course (with arms); Primero, Jesús María and Dulce reach Mar Chiquita where their line does; the Quinto is drawn without breaks; reports ok, two runs identical, `nqn` byte-identical; `npm run check` green and new strings in EN and ES.
+
+## Plan and resume notes (was R5_PLAN.md)
+
+Approved by the owner on 2026-10-13. Status checklist: the checklist above.
+Decisions and measurements: [DECISSIONS.md](../DECISSIONS.md#córdoba-r5-continuous-river-courses-2026-10-13).
+Workflow: [orchestration.md](../orchestration.md) (Opus orchestrates; builder, then pipeline-runner, then reviewer;
 one commit per WP; at most 2 sub-agents at once; DuckDB `memory_limit` 2GB, `threads` 2; few tests, see §2).
 
-## Resume here
+### Status
 
-- Branch `phase-r5-cba-courses`, based on `chore-orchestration`.
-  - `chore-orchestration` is already merged into `main`.
-- Done:
-  - WP 5.0, scouting.
-  - WP 5.1, `pipeline:river-lines`, commit bea16bc.
-- Real run in `data/work/cba/river-lines/`: all checks ok, and two runs are identical.
-- WP 5.2–5.4 done. WP 5.5: gate review blocked on fill minzoom/rank and "name in the source"; fix in progress (WP 5.5a). Next: owner steps in RUN_LOCAL.md "R5", then merge the PR.
+- Done: WP 5.0–5.5 (5.5a fixed the gate findings), merged into `main`. Owner steps are in RUN_LOCAL.md "R5".
 - Keep `Screencast-from-13-10-26-16_07_18.gif` out of every commit.
 
-## Goal
+### Goal
 
 Each of the 13 rivers in `regions/cba/names.json` is drawn as one continuous course from source to mouth. The
 course follows the mapped lines (APRHI inside the province, IGN outside). Gaps are filled by precedence: IGN
@@ -31,7 +39,7 @@ first, then HydroRIVERS. `nqn` does not change. Streams are out of scope.
 - **River length.** The length of the mapped course (APRHI + IGN + HydroRIVERS in the gaps), with the source
   stated. HydroATLAS values still come from the reaches.
 
-## Work packages
+### Work packages
 
 | WP  | Agent                            | Then                                                                               |
 | --- | -------------------------------- | ---------------------------------------------------------------------------------- |
@@ -93,7 +101,7 @@ first, then HydroRIVERS. `nqn` does not change. Streams are out of scope.
   look at the Quinto, Primero, Jesús María, Segundo and Dulce in the browser.
 - Open the PR.
 
-## Done when
+### Done when
 
 - All 13 rivers have a course of one component, from source to mouth.
 - Every filled km names its source.

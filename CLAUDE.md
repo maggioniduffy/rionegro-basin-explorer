@@ -3,8 +3,8 @@
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
 Amazon Basin Explorer. One app serves several **regions**, one per path (`/rionegro`, `/cordoba`): `nqn` (the Río
-Negro basin, live) and `cba` (Córdoba, served since R3.8); see "Regions" below. See `context/PLAN.md` for open phases and status (completed phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
-decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `context/PLAN.md`).
+Negro basin, live) and `cba` (Córdoba, served since R3.8); see "Regions" below. See `context/PLAN.md` for the phase index and status; each phase's checklist and design live in `context/phases/<id>.md`, so read the index and only the current phase's file (completed early phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
+decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `context/PLAN.md` or a phase file).
 
 ## Stack
 
@@ -44,7 +44,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 7. **Pipeline steps must be idempotent** and write a `report.json` (counts, total km, orphan segments, area checks). Read the report to verify results instead of judging by eye.
 8. **Cost-conscious:** prefer free tiers (Atlas M0, Vercel hobby, PMTiles over tile servers). Flag anything that could add recurring cost.
 9. **Licenses and attribution:** keep `/pipeline/SOURCES.md` updated (source, URL, license, required citation, download date). Check the license before adding any new data source or imagery provider.
-10. **Workflow:** work one phase at a time from `context/PLAN.md`, in plan mode first, following `context/orchestration.md` (Opus orchestrates and reviews, Haiku scouts read, Sonnet builders code; one branch and PR per phase, one commit per work package). Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
+10. **Workflow:** work one phase at a time from its `context/phases/<id>.md` file (listed in `context/PLAN.md`), in plan mode first, following `context/orchestration.md` (Opus orchestrates and reviews, Haiku scouts read, Sonnet builders code; one branch and PR per phase, one commit per work package). Small commits. Update the phase file's checklist and its row in `context/PLAN.md` when its "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
 11. Dismiss visual and chromium tests unless called for
 12. Always start tasks in PLAN MODE
 
