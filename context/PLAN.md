@@ -46,20 +46,20 @@ Phases 0–6, the IGN gate, IGN streams, and the done items of Phases 7, 8 and D
 
 Each phase lives in its own file under [phases/](phases/). Read this index, then only the file of the phase you work on. A new phase gets a new file (checklist, owner decisions, design summary, "Done when") and a row here; tick items in the phase file and keep the row's status current.
 
-| Phase                                    | Status                                    | File                                                  |
-| ---------------------------------------- | ----------------------------------------- | ----------------------------------------------------- |
-| Phase 7 — Extras (ask box)               | [~] owner steps left                      | [p7-extras.md](phases/p7-extras.md)                   |
-| Phase 8 — Release                        | [ ] Atlas user on Vercel                  | [p8-release.md](phases/p8-release.md)                 |
-| Design v3 — Landing and restyle          | [ ] regenerate `basin.png`                | [design-v3.md](phases/design-v3.md)                   |
-| Design v6 — Landing v6 and restyle       | [~] e2e baselines and browser review left | [design-v6.md](phases/design-v6.md)                   |
-| R0 — Multi-region decisions & inputs     | [x]                                       | [r0-decisions.md](phases/r0-decisions.md)             |
-| R1 — Region refactor                     | [x]                                       | [r1-region-refactor.md](phases/r1-region-refactor.md) |
-| R2 — Córdoba gate                        | [x]                                       | [r2-cba-gate.md](phases/r2-cba-gate.md)               |
-| R3 — Córdoba pipeline & app              | [x] (original items list kept)            | [r3-cba-pipeline.md](phases/r3-cba-pipeline.md)       |
-| R4 — Hub                                 | [x]                                       | [r4-hub.md](phases/r4-hub.md)                         |
-| R5 — Continuous river courses in Córdoba | [x]                                       | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
-| F1 — Flow close-up (`nqn`)               | [~] code done; owner browser checks left  | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
-| I1 — Sharper imagery at high zoom (free) | [ ] candidates and licenses               | [i1-sharper-imagery.md](phases/i1-sharper-imagery.md) |
+| Phase                                      | Status                                    | File                                                  |
+| ------------------------------------------ | ----------------------------------------- | ----------------------------------------------------- |
+| Phase 7 — Extras (ask box)                 | [~] owner steps left                      | [p7-extras.md](phases/p7-extras.md)                   |
+| Phase 8 — Release                          | [ ] Atlas user on Vercel                  | [p8-release.md](phases/p8-release.md)                 |
+| Design v3 — Landing and restyle            | [ ] regenerate `basin.png`                | [design-v3.md](phases/design-v3.md)                   |
+| Design v6 — Landing v6 and restyle         | [~] e2e baselines and browser review left | [design-v6.md](phases/design-v6.md)                   |
+| R0 — Multi-region decisions & inputs       | [x]                                       | [r0-decisions.md](phases/r0-decisions.md)             |
+| R1 — Region refactor                       | [x]                                       | [r1-region-refactor.md](phases/r1-region-refactor.md) |
+| R2 — Córdoba gate                          | [x]                                       | [r2-cba-gate.md](phases/r2-cba-gate.md)               |
+| R3 — Córdoba pipeline & app                | [x] (original items list kept)            | [r3-cba-pipeline.md](phases/r3-cba-pipeline.md)       |
+| R4 — Hub                                   | [x]                                       | [r4-hub.md](phases/r4-hub.md)                         |
+| R5 — Continuous river courses in Córdoba   | [x]                                       | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
+| F1 — Flow close-up (`nqn`)                 | [~] code done; owner browser checks left  | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
+| I1 — Sharper imagery, more zoom, particles | [ ] candidates and licenses               | [i1-sharper-imagery.md](phases/i1-sharper-imagery.md) |
 
 ### Multi-region (R0–R5)
 
