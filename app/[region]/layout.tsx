@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { messagesFor } from "@/i18n/messages";
+import type { Locale } from "@/i18n/config";
 import { RegionProvider } from "@/components/RegionProvider";
 import { REGION_IDS, REGION_SLUGS, regionFromSlug } from "@/regions";
 
@@ -37,5 +40,16 @@ export default async function RegionLayout({
 }: LayoutProps<"/[region]">) {
   const region = regionFromSlug((await params).region);
   if (!region) notFound();
-  return <RegionProvider region={region}>{children}</RegionProvider>;
+  const locale = (await getLocale()) as Locale;
+  // The root layout is not re-rendered on a client navigation from the hub or another
+  // region, so its provider would keep that page's messages. This layout re-renders when
+  // the region param changes, so the nested provider always carries this region's messages.
+  return (
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messagesFor(region, locale)}
+    >
+      <RegionProvider region={region}>{children}</RegionProvider>
+    </NextIntlClientProvider>
+  );
 }
