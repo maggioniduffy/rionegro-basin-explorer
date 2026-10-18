@@ -9,6 +9,9 @@ export const FLOW_PARTICLES = 3000;
 /** Trail length in world positions per particle. Provisional. */
 export const FLOW_TRAIL = 8;
 
+/** Simulated seconds between trail samples (a trail spans FLOW_TRAIL x this). Provisional. */
+export const FLOW_TRAIL_DT_S = 0.06;
+
 /** Seconds for a particle at relative speed 1 to cross a 4 km section at 1x. Provisional. */
 export const FLOW_TRAVERSAL_S = 30;
 

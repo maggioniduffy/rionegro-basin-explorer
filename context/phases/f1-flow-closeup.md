@@ -60,7 +60,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
       reason, `report.json`, `public/flow/nqn/`); tests: window cut, station span
 - [x] F1.2 `lib/flow/` pure lib (schema, parametrisation, `inChannel`, speed field, colour scale, particle step);
       tests: 1–2 cases each
-- [ ] F1.3 WebGL custom layer and loop (visibility, reduced motion, zoom fade, E2E step hook)
+- [x] F1.3 WebGL custom layer and loop (visibility, reduced motion, zoom fade, E2E step hook)
 - [ ] F1.4 Store, URL (`flow`, `fs`), UrlSync, MapView (max zoom, fit, dim, click to switch, pan to adjacent),
       "View flow" buttons; test: url-state round trip
 - [ ] F1.5 FlowPanel, FlowControls, FlowLegend, zoom-out hint, EN/ES strings

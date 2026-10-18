@@ -4,6 +4,7 @@ import {
   FLOW_MAX_PARTICLE_AGE_S,
   FLOW_REFERENCE_LENGTH_M,
   FLOW_TRAIL,
+  FLOW_TRAIL_DT_S,
   FLOW_TRAVERSAL_S,
   FLOW_U_LIMIT,
 } from "./config";
@@ -46,6 +47,8 @@ export interface ParticleState {
   trail: Float32Array;
   /** Slot of the newest trail position (shared by all particles). */
   head: number;
+  /** Simulated seconds accumulated since the last trail sample was committed. */
+  trailClock: number;
   /** Scratch for a position, reused every frame. */
   scratch: Float64Array;
 }
@@ -90,6 +93,7 @@ export function createParticles(
     v: new Float32Array(count),
     trail: new Float32Array(count * FLOW_TRAIL * 2),
     head: 0,
+    trailClock: 0,
     scratch: new Float64Array(2),
   };
   for (let p = 0; p < count; p++) {
@@ -115,7 +119,13 @@ export function stepParticles(
   const step = Math.min(Math.max(dt, 0), FLOW_MAX_DT_S);
   const baseline = FLOW_REFERENCE_LENGTH_M / FLOW_TRAVERSAL_S;
   const jitter = FLOW_LATERAL_JITTER * Math.sqrt(step * multiplier);
-  state.head = (state.head + 1) % FLOW_TRAIL;
+  // A new trail sample is committed every FLOW_TRAIL_DT_S of simulated time; in between the
+  // head slot is overwritten with the live position, so the newest point is always current.
+  state.trailClock += step * multiplier;
+  if (state.trailClock >= FLOW_TRAIL_DT_S) {
+    state.trailClock %= FLOW_TRAIL_DT_S;
+    state.head = (state.head + 1) % FLOW_TRAIL;
+  }
   for (let p = 0; p < state.count; p++) {
     state.age[p] = state.age[p]! + step * multiplier;
     state.s[p] = state.s[p]! + state.v[p]! * baseline * step * multiplier;
