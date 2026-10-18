@@ -17,7 +17,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
   - The W̄ / W(s) term is continuity at constant depth.
 - **Discharge is modeled only for now** (HydroRIVERS `DIS_AV_CMS`, 1971–2000 natural mean). The schema has a
   `kind: "measured"` slot, so measured values can win later. No measured source exists in the repo: APRHI
-  `Líneas_de_ribera.CAUDAL_DE_` is a design flood, `cba` only. SNIH/BDHI is a follow-up (PENDING.md).
+  `Líneas_de_ribera.CAUDAL_DE_` is a design flood, `cba` only. SNIH/BDHI is a follow-up (below).
 - **Imagery stays EOxCloudless**. The max zoom is 14.5 in flow mode only (13 otherwise). Channels under 30 m are
   not offered (`narrow`).
 - **`nqn` named rivers first**; `cba` in a later phase.
@@ -64,7 +64,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
 - [x] F1.4 Store, URL (`flow`, `fs`), UrlSync, MapView (max zoom, fit, dim, click to switch, pan to adjacent),
       "View flow" buttons; test: url-state round trip
 - [x] F1.5 FlowPanel, FlowControls, FlowLegend, zoom-out hint, EN/ES strings
-- [x] F1.6 Gate: `e2e/flow.spec.ts` screenshot, SOURCES.md, DECISSIONS.md, RUN_LOCAL.md, PENDING.md, reviewer, PR
+- [x] F1.6 Gate: `e2e/flow.spec.ts` screenshot, SOURCES.md, DECISSIONS.md, reviewer gate (one block, fixed), PR
 
 ## Done when
 
@@ -75,3 +75,21 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
 - The legend and the caveats appear in EN and ES.
 - `npm run check` passes, and `e2e/flow.spec.ts` is green.
 - `flow-sections` reports are ok, two runs are identical, and `nqn` `data/out` is unchanged.
+
+## Owner checks (browser, local)
+
+- [x] `npm run pipeline:flow-sections -- --region nqn` twice: report ok, outputs identical, `nqn` `data/out` unchanged; `npm run check`; `e2e/flow.spec.ts` green.
+- [ ] `/rionegro/map`: select the Limay, press "View flow": the camera fits the section at about z14 and particles move inside the channel. Click the Neuquén while paused: the section switches without zooming out and stays paused. Pan past a section's end: the next one loads without a camera jump; "Upstream"/"Downstream" do the same.
+- [ ] Zoom out below z12: particles fade, "Zoom back in" re-fits. Play/pause, 0.5×–4×, Escape and "Exit flow view" work; the map returns to max z13.
+- [ ] A copied `?flow=…&fs=2` URL opens the same close-up at 2×. With reduced motion on, flow starts paused. Switching tabs and back causes no jump.
+- [ ] Cross-region: from `/rionegro/map?flow=limay-010` go to Attributions, then the Córdoba map via the footer: no flow panel, controls or dimmed rivers, no `flow=` in the URL.
+- [ ] EN/ES, light/dark, 1440 px and 390 px (controls at the top on phones; panel in the sheet). Known: the fit leaves no room for the control bar, so the downstream end can sit under it.
+- [ ] Río Negro on the EOX imagery: particles stay in the main channel (`span.maxSpanM` = 800 is provisional).
+- [ ] 60 fps on a mid laptop with particles on screen. Clicking empty map exits flow: confirm that's wanted.
+- [ ] Full `npm run test:e2e` once: the e2e build now sets `NEXT_PUBLIC_E2E=1` (test hooks only).
+
+## Follow-ups
+
+- **Measured discharge.** None in the repo. Candidate: SNIH/BDHI station means. Check the license, then the owner downloads the series; a step would snap stations to sections with `kind: "measured"`, which wins. APRHI `CAUDAL_DE_` is a design flood; not used.
+- **Flow mode for `cba`.** R5 courses exist, but there are few channel polygons, so most sections would use the estimated band.
+- **Sharper imagery.** Sentinel-2 is 10 m. Esri World Imagery's terms are unverified; check before considering it.

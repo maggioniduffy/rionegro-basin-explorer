@@ -54,7 +54,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 - **Routing.** The region is the first path segment, its slug (`regions/index.ts` `REGION_SLUGS`: `rionegro`, `cordoba`), which is the `app/[region]` param; ids stay internal. `proxy.ts` serves the hub at `/`, sets the `x-basin-region` header on region paths, redirects id paths (`/cba/…`) and the old per-region hosts (`regions/hosts.ts`) to the slug path. Server code gets the region from route params (`regionFromSlug`, or the header in `i18n/request.ts`); client code from `useRegion()`. Links and API calls go through `regionPath` / `useRegionPath()` (`useApi` adds it). No default region for a URL: an unknown path is a 404.
 - **Per region:** pipeline configs and `--region` (required), Mongo database (`regionDbName`: `nqn` keeps `basin-explorer`, others append `-<id>`), tiles (`public/tiles/<id>/`, versioned per region), UI strings that name the region, `content.ts` (featured rivers, landing sample picks, OG subtitle, ask prompt place and examples). Everything else is shared.
 - **Never** let a region's code path fall back to another region's data silently: no default region in pipeline commands, and tests check that every served region defines the same message keys and valid prompt slugs.
-- Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in `context/RUN_LOCAL.md` after each change.
+- Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in the phase file's "Owner checks" section after each change.
 
 ## Sub-agents, skills and background work
 

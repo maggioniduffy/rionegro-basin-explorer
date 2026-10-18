@@ -33,7 +33,7 @@ and a strip of land around it is visible, with river panels and a sub-basin view
 /pipeline            TS steps + README.md + SOURCES.md
 /data                raw/ (shared) work/<region>/ (gitignored) · out/<region>/ (NDJSON)
 /scripts             seed.ts
-CLAUDE.md  context/ (PLAN.md  phases/  PLAN_ARCHIVE.md  DECISSIONS.md  RUN_LOCAL.md  PENDING.md  DESIGN.md)
+CLAUDE.md  context/ (PLAN.md  phases/  PLAN_ARCHIVE.md  DECISSIONS.md  DESIGN.md)
 .claude/             agents/ and skills/ (committed)
 ```
 
@@ -46,24 +46,24 @@ Phases 0–6, the IGN gate, IGN streams, and the done items of Phases 7, 8 and D
 
 Each phase lives in its own file under [phases/](phases/). Read this index, then only the file of the phase you work on. A new phase gets a new file (checklist, owner decisions, design summary, "Done when") and a row here; tick items in the phase file and keep the row's status current.
 
-| Phase                                    | Status                                            | File                                                  |
-| ---------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
-| Phase 7 — Extras (ask box)               | [~] owner steps left                              | [p7-extras.md](phases/p7-extras.md)                   |
-| Phase 8 — Release                        | [ ] Atlas user on Vercel                          | [p8-release.md](phases/p8-release.md)                 |
-| Design v3 — Landing and restyle          | [ ] regenerate `basin.png`                        | [design-v3.md](phases/design-v3.md)                   |
-| Design v6 — Landing v6 and restyle       | [~] e2e baselines and browser review left         | [design-v6.md](phases/design-v6.md)                   |
-| R0 — Multi-region decisions & inputs     | [x]                                               | [r0-decisions.md](phases/r0-decisions.md)             |
-| R1 — Region refactor                     | [x]                                               | [r1-region-refactor.md](phases/r1-region-refactor.md) |
-| R2 — Córdoba gate                        | [x]                                               | [r2-cba-gate.md](phases/r2-cba-gate.md)               |
-| R3 — Córdoba pipeline & app              | [x] (original items list kept)                    | [r3-cba-pipeline.md](phases/r3-cba-pipeline.md)       |
-| R4 — Hub                                 | [x]                                               | [r4-hub.md](phases/r4-hub.md)                         |
-| R5 — Continuous river courses in Córdoba | [x]                                               | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
-| F1 — Flow close-up (`nqn`)               | [~] code done; browser checks left (RUN_LOCAL.md) | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
+| Phase                                    | Status                                    | File                                                  |
+| ---------------------------------------- | ----------------------------------------- | ----------------------------------------------------- |
+| Phase 7 — Extras (ask box)               | [~] owner steps left                      | [p7-extras.md](phases/p7-extras.md)                   |
+| Phase 8 — Release                        | [ ] Atlas user on Vercel                  | [p8-release.md](phases/p8-release.md)                 |
+| Design v3 — Landing and restyle          | [ ] regenerate `basin.png`                | [design-v3.md](phases/design-v3.md)                   |
+| Design v6 — Landing v6 and restyle       | [~] e2e baselines and browser review left | [design-v6.md](phases/design-v6.md)                   |
+| R0 — Multi-region decisions & inputs     | [x]                                       | [r0-decisions.md](phases/r0-decisions.md)             |
+| R1 — Region refactor                     | [x]                                       | [r1-region-refactor.md](phases/r1-region-refactor.md) |
+| R2 — Córdoba gate                        | [x]                                       | [r2-cba-gate.md](phases/r2-cba-gate.md)               |
+| R3 — Córdoba pipeline & app              | [x] (original items list kept)            | [r3-cba-pipeline.md](phases/r3-cba-pipeline.md)       |
+| R4 — Hub                                 | [x]                                       | [r4-hub.md](phases/r4-hub.md)                         |
+| R5 — Continuous river courses in Córdoba | [x]                                       | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
+| F1 — Flow close-up (`nqn`)               | [~] code done; owner browser checks left  | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
 
 ### Multi-region (R0–R5)
 
 One Next.js app serves every region (Option A, owner 2026-10-10); a region is a config folder, not a fork.
-Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10). Steps to run locally after each change: [RUN_LOCAL.md](RUN_LOCAL.md).
+Decisions: [DECISSIONS.md](DECISSIONS.md#multi-region-2026-10-10).
 
 ## Open decisions
 

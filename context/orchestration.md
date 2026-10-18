@@ -1,7 +1,7 @@
 # orchestration.md — how we build PLAN.md with three models
 
 This file says **who does what, in what order, and how we know it's done**. [PLAN.md](PLAN.md) says _what_ to
-build; [DECISSIONS.md](DECISSIONS.md) records _why_; [PENDING.md](PENDING.md) and [RUN_LOCAL.md](RUN_LOCAL.md)
+build; [DECISSIONS.md](DECISSIONS.md) records _why_; each phase file's "Owner checks" and "Follow-ups" sections
 hold what only the owner can do. CLAUDE.md rules always win over this file.
 
 ## 1. Roles and model routing
@@ -38,7 +38,7 @@ Opus (plan mode): write WP briefs (template §3), order them → owner approves 
 Opus: read the report + diff; small fixes inline; otherwise re-brief the builder
   ├─► reviewer (Opus) on risky WPs (§5)
   │
-Opus: commit the WP ("feat(<phase>): …" / "fix(<phase>): …"), tick the phase file, add DECISSIONS.md entry, RUN_LOCAL.md steps
+Opus: commit the WP ("feat(<phase>): …" / "fix(<phase>): …"), tick the phase file, add DECISSIONS.md entry and owner checks in the phase file
   │
   └─ after the last WP: phase gate (§6) → reviewer → scout drafts the PR description → Opus pushes and opens the PR
 ```
@@ -93,8 +93,8 @@ URL). Data-inspector briefs name the file, the region and the columns that matte
 ## 4. Owner actions (things only the owner can do)
 
 Atlas, Vercel, Upstash, Groq, `data/raw` downloads, a real browser, and any choice between data sources. They
-live in [PENDING.md](PENDING.md) (decisions and checks) and [RUN_LOCAL.md](RUN_LOCAL.md) (commands to run locally
-after a change); this file does not repeat them. When a WP is blocked by one, Opus says which one, keeps the rest of
+live in the phase file: "Owner checks" (commands and browser checks to run locally) and "Follow-ups"
+(open decisions); this file does not repeat them. When a WP is blocked by one, Opus says which one, keeps the rest of
 the phase moving, and stops to ask only if nothing else can run.
 
 ## 5. Reviewer triggers (risky WPs)
@@ -120,8 +120,8 @@ A phase is done when the "Done when" in its phase file holds. The gate, run by O
 2. Every report the phase touched read by the pipeline runner; failed checks explained or fixed.
 3. i18n: scout confirms every new key exists in `en.json` and `es.json` (and in each served region's messages).
 4. Reviewer verdict on the whole phase diff (`git diff main...HEAD`).
-5. E2E / screenshots only if the phase is visual and the owner asks; otherwise listed in RUN_LOCAL.md.
-6. Phase file ticked and its PLAN.md row updated, DECISSIONS.md entry written, RUN_LOCAL.md updated, PR opened.
+5. E2E / screenshots only if the phase is visual and the owner asks; otherwise listed in the phase file's owner checks.
+6. Phase file ticked and its PLAN.md row updated, DECISSIONS.md entry written, owner checks listed, PR opened.
 
 ## 7. Session kickoff prompt (paste at the start of each phase)
 
@@ -132,7 +132,7 @@ the context/PLAN.md index, context/phases/<id>.md (only that phase), and the DEC
 2. In plan mode, write the WP briefs with the template and get my approval.
 3. Run builders WP by WP; pipeline runner for data WPs; reviewer for §5 WPs; commit per WP.
 4. Run the phase gate, have a scout draft the PR description, push phase-<id>-<slug> and open a PR.
-Stop and ask me only for owner actions (PENDING.md / RUN_LOCAL.md) or a decision that changes PLAN.md.
+Stop and ask me only for owner actions (the phase file's owner checks) or a decision that changes PLAN.md.
 ```
 
 ## 8. Carried-over findings
