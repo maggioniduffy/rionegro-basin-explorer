@@ -405,6 +405,42 @@ reach ends, `noGapLeft`: every path gap has a fill and the fill ends lie within 
 `receiversReached`: every river with a receiver is cut against it or joined to it, `everyCutMeetsItsReceiver`,
 same files as the previous run: null on a first run, run the step twice). Heavy limits: DuckDB 2 GB, 2 threads.
 
+### `npm run pipeline:flow-sections -- --region <id>`
+
+F1.1 (`nqn` only for now): each named river's IGN course cut into 3-5 km sections for the flow close-up. Needs
+`regions/<id>/flow.config.json` (a region without it stops with a message) and `ign`, `rivers`, `named`,
+`lakes` and `export` first (it reads `data/out/<id>/reaches.ndjson` and `rivers.ndjson`, never writes there).
+All thresholds are in the config.
+
+- **Course.** `buildCourse` (`lib/river-course.ts`) over the IGN line pieces (`ign/lines.parquet`) within
+  `course.corridorM` of the river's reaches, own-named first, unnamed allowed; anchors are the ends of the
+  river's source and mouth reaches. No river claims pieces, so every course runs to its own mouth anchor.
+  A path gap (the IGN lines stop at reservoirs) is filled from the river's HydroRIVERS reaches when the route is
+  credible (`gapFill`), else a straight connector, and flagged `gap = 1` per station.
+- **Windows and stations.** n = max(1, round(L / `targetSectionKm`)) equal windows, ids `<slug>-<nnn>` from
+  the source; a station every `stationSpacingM`, tangent from the chord of +-`tangentWindowM`, left normal.
+- **Span.** At each station the normal line (+-`maxSearchM`) is cut by the BH140 "Corriente de agua"
+  polygons (`areas_de_aguas_continentales_BH140`, matched by geometry, not by name): the interval holding offset 0, else
+  the nearest within `maxOffsetM`; none, or wider than `maxSpanM`, falls back to a band of RiverATLAS
+  `ria_ha_csu` (hectares) x 10,000 / (reach `LENGTH_KM` x 1000), else no span (`src` 0 polygon, 1 band, 2 none);
+  then a running median over `smoothStations`. The band's river area covers the whole reach catchment, so it can
+  include small tributaries.
+- **Flowable.** Discharge is `DIS_AV_CMS` of the river's reach nearest the window midpoint (modeled, natural
+  1971-2000 mean, `kind: "modeled"`) with its `regulationPct`. Not flowable, first match wins: `noDischarge`,
+  `reservoir` (midpoint in a HydroLAKES polygon, any lake type), `noChannel` (fewer than `minSpanShare` of stations
+  with a span), `narrow` (median width under `minWidthM`).
+- **Outputs.** `public/flow/<id>/index.json` and `<sectionId>.json` (compact JSON, fixed key order, lon/lat to 6
+  decimals, metres to 0.1; two runs give the same bytes; the folder is emptied first), and in
+  `data/work/<id>/flow-sections/`: `report.json` (rivers, sections, course km against the sum of section km,
+  HydroRIVERS and straight gap km, station shares polygon / band / none overall and per river, width p50 / p95,
+  non-flowable counts by reason, bytes against `maxTotalBytes`, checks `allRiversHaveCourse`,
+  `sectionKmMatchesCourse`, `withinSizeBudget`, the run's `sha256` and whether it equals the previous run's) and
+  `courses.json` (pieces and fills per river). Rivers whose anchors lie beyond `course.anchorMaxM` are listed as a
+  warning (the IGN lines stop at a reservoir).
+- **Debug.** `--only <slug>` builds one river into `data/work/<id>/flow-sections/only/` and
+  `report.only.json`, leaving `public/` alone. Heavy limits: DuckDB 2 GB, 2 threads; the full `nqn` run takes
+  about 10 s.
+
 ### `npm run pipeline:export`
 
 Writes the Phase 1 artifacts:

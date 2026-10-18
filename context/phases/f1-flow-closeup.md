@@ -38,7 +38,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
     normal.
   - Fallback: a band from RiverATLAS `ria_ha_csu` / reach length, labelled "estimated width".
   - Spans over `maxSpanM` fall back to the band (BH140 Río Negro may include floodplain).
-- **Data.** Static and versioned: `public/flow/nqn/<v>/<sectionId>.json` plus an `index.json` per river.
+- **Data.** Static: the step writes `public/flow/nqn/<sectionId>.json` and one `index.json` for the region; the URL is versioned by a build-time content hash (`/flow/<region>/<hash>/…`, rewritten like the tiles, F1.4).
   Budget ≤ 8 MB, no route handler, no Mongo.
 - **Rendering.** One MapLibre `CustomLayerInterface`.
   - Particles live in (s, u) section coordinates and are stepped on the CPU with a seeded PRNG.
@@ -56,8 +56,8 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
 ## Work packages
 
 - [x] F1.0 Split PLAN.md into one file per phase (owner, 2026-10-18)
-- [ ] F1.1 `pipeline:flow-sections --region nqn` (IGN course, windows, BH140 spans, band fallback, discharge and
-      reason, `report.json`, `public/flow/nqn/<v>/`); tests: window cut, station span
+- [x] F1.1 `pipeline:flow-sections --region nqn` (IGN course, windows, BH140 spans, band fallback, discharge and
+      reason, `report.json`, `public/flow/nqn/`); tests: window cut, station span
 - [ ] F1.2 `lib/flow/` pure lib (schema, parametrisation, `inChannel`, speed field, colour scale, particle step);
       tests: 1–2 cases each
 - [ ] F1.3 WebGL custom layer and loop (visibility, reduced motion, zoom fade, E2E step hook)

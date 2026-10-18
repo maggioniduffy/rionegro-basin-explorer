@@ -1,0 +1,32 @@
+{
+  "$comment": "Settings of pipeline:flow-sections (F1.1): each named river's IGN course cut into 3-5 km sections, with the wet span across the channel every 20 m. course: buildCourse settings (lib/river-course.ts), copied from regions/cba/river-lines.config.json where they are not about a region's data (snapM 50, gapNeighbours, weights, extensionGapM 600, attachM 500, anchorMaxM 10000: not re-measured for nqn; the report lists each river's anchor distances and gaps); gapSearchM 150000: the IGN lines of the Limay stop at its reservoirs (no line crosses a water body), leaving gaps of 59 and 110-122 km between the pieces (measured 2026-10-18; at 60 and 100 km no path joins the source and the mouth), and a virtual gap edge is used only where no line connects (weight 10 per m); corridorM: IGN line pieces within this distance (m) of the river's HydroRIVERS reaches are candidates (nqn has no root, so no own-named-anywhere rule); mouthLakeIds is empty (no mouth-lake extension in nqn). gapFill: a path gap of the course is filled with the river's HydroRIVERS reaches between the gap ends when the route is no longer than maxStretch times the straight distance plus 2 * snapM (as river-lines), else with a straight connector; those stretches are flagged gap = 1 per station. sections: targetSectionKm gives n = max(1, round(L / targetSectionKm)) equal windows; a station every stationSpacingM; the tangent is the chord of +-tangentWindowM. span: BH140 'Corriente de agua' polygons within corridorM (m) of a course vertex are loaded; the normal line at a station is searched +-maxSearchM; with no water at offset 0 the nearest interval whose near edge is within maxOffsetM is taken; a span wider than maxSpanM falls back to the band (BH140 Rio Negro includes floodplain: at 1500, 18% of its polygon stations were over 800 m, p95 1209 m, against a main channel of about 150-400 m; 800 is provisional until checked on the imagery); intervals separated by less than mergeGapM merge (touching polygons); a running median over smoothStations (odd); gridCellM is the spatial grid cell. flowable: a section with fewer than minSpanShare of stations with a span is noChannel; a median width under minWidthM is narrow (owner, F1: channels under 30 m are not offered). maxTotalBytes: budget of public/flow/<id> (8 MB, F1 plan). All values are provisional until the first report is read.",
+  "course": {
+    "snapM": 50,
+    "corridorM": 5000,
+    "gapSearchM": 150000,
+    "gapNeighbours": 6,
+    "weights": { "own": 1, "unnamed": 1.5, "other": 3, "gap": 10 },
+    "mouthLakeIds": [],
+    "lakeTouchM": 500,
+    "anchorMaxM": 10000,
+    "extensionGapM": 600,
+    "attachM": 500
+  },
+  "gapFill": { "maxStretch": 2, "snapM": 100 },
+  "sections": {
+    "targetSectionKm": 4,
+    "stationSpacingM": 20,
+    "tangentWindowM": 60
+  },
+  "span": {
+    "corridorM": 1000,
+    "maxSearchM": 1500,
+    "maxOffsetM": 200,
+    "maxSpanM": 800,
+    "mergeGapM": 2,
+    "smoothStations": 5,
+    "gridCellM": 500
+  },
+  "flowable": { "minSpanShare": 0.8, "minWidthM": 30 },
+  "maxTotalBytes": 8000000
+}
