@@ -17,6 +17,11 @@ export interface RegionContent {
   landingSources: readonly string[];
   /** The OG image's line under the titles. Proper nouns only, so not translated. */
   ogSubtitle: string;
+  /**
+   * Section id (public/flow/<id>/index.json) the landing's flow announcement links to; absent
+   * for a region without flow data.
+   */
+  landingFlowSection?: string;
   llm: {
     /** "an interactive map of <place>" in the system prompt. */
     place: string;

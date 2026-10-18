@@ -428,6 +428,14 @@
     "dTag": "Data & transparency",
     "dH": "Modeled, not measured.",
     "d1": "Built on HydroRIVERS, HydroATLAS and HydroBASINS, with IGN data for Argentine watercourses.",
+    "flowNew": {
+      "tag": "New · in progress",
+      "h": "Watch the water move",
+      "p1": "Zoom into a river section on the satellite imagery and particles flow along the channel. Colour shows relative, illustrative speed: no source measures velocity.",
+      "p2": "The panel shows the section's mean discharge, a modeled natural long-term average for 1971–2000 (HydroRIVERS) that does not reflect current dam regulation, plus the channel width and its source. Available for some rivers so far and still being tuned: expect changes.",
+      "cta": "Try it on a section",
+      "alt": "Flow close-up of a river channel on satellite imagery, with particles coloured by relative speed, the section panel and the playback controls."
+    },
     "open": "Open map",
     "card": {
       "quick": "Jump to",
