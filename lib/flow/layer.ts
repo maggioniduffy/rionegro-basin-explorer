@@ -302,13 +302,16 @@ export function createFlowLayer(): {
           (map.getZoom() - (FLOW_MIN_ZOOM - FLOW_FADE_ZOOMS)) / FLOW_FADE_ZOOMS,
         ),
       );
-      // Animate only while it is visible and on screen, so a paused or zoomed-out map idles.
-      animating = playing && opacity > 0 && !document.hidden;
+      // Animate only with a section, while it is visible and on screen, so a paused,
+      // empty or zoomed-out map idles.
+      animating =
+        playing &&
+        track !== null &&
+        particles !== null &&
+        opacity > 0 &&
+        !document.hidden;
       if (animating) advance(dt);
-      if (!track || !particles || opacity <= 0) {
-        if (animating) map.triggerRepaint();
-        return;
-      }
+      if (!track || !particles || opacity <= 0) return;
 
       // Positions are relative to the track origin (float32); the origin is added in float64.
       translatedMatrix(

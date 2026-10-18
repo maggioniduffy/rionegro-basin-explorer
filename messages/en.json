@@ -313,6 +313,9 @@
       }
     }
   },
+  "flow": {
+    "view": "View flow"
+  },
   "attributions": {
     "back": "Back to the map",
     "title": "Sources and licenses",

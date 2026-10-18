@@ -313,6 +313,9 @@
       }
     }
   },
+  "flow": {
+    "view": "Ver flujo"
+  },
   "attributions": {
     "back": "Volver al mapa",
     "title": "Fuentes y licencias",

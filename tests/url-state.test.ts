@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  flowSearch,
   legacyMapPath,
+  parseFlow,
   parseSelection,
   sameSelection,
   selectionSearch,
@@ -111,5 +113,36 @@ describe("legacyMapPath", () => {
     ["/attributions", "r=limay", null],
   ])("%s?%s → %s", (path, qs, expected) => {
     expect(legacyMapPath(path, new URLSearchParams(qs))).toBe(expected);
+  });
+});
+
+describe("flow state", () => {
+  it("round-trips flow and fs and keeps the selection", () => {
+    const qs = flowSearch(params("r=limay&foo=1"), {
+      section: "limay-010",
+      speed: 2,
+    });
+    expect(qs).toBe("?r=limay&foo=1&flow=limay-010&fs=2");
+    expect(parseFlow(params(qs))).toEqual({ section: "limay-010", speed: 2 });
+    expect(parseSelection(params(qs))).toEqual({ kind: "river", id: "limay" });
+    expect(flowSearch(params(qs), { section: "limay-010", speed: 1 })).toBe(
+      "?r=limay&foo=1&flow=limay-010",
+    );
+    expect(selectionSearch(params(qs), null)).toBe(
+      "?foo=1&flow=limay-010&fs=2",
+    );
+  });
+  it("drops a bad id and a speed that is not offered", () => {
+    expect(parseFlow(params("flow=Bad Id&fs=2"))).toEqual({
+      section: null,
+      speed: 1,
+    });
+    expect(parseFlow(params("flow=limay-010&fs=3"))).toEqual({
+      section: "limay-010",
+      speed: 1,
+    });
+    expect(
+      flowSearch(params("flow=x&fs=2&r=limay"), { section: null, speed: 2 }),
+    ).toBe("?r=limay");
   });
 });

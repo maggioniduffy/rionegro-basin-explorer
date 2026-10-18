@@ -61,7 +61,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
 - [x] F1.2 `lib/flow/` pure lib (schema, parametrisation, `inChannel`, speed field, colour scale, particle step);
       tests: 1–2 cases each
 - [x] F1.3 WebGL custom layer and loop (visibility, reduced motion, zoom fade, E2E step hook)
-- [ ] F1.4 Store, URL (`flow`, `fs`), UrlSync, MapView (max zoom, fit, dim, click to switch, pan to adjacent),
+- [x] F1.4 Store, URL (`flow`, `fs`), UrlSync, MapView (max zoom, fit, dim, click to switch, pan to adjacent),
       "View flow" buttons; test: url-state round trip
 - [ ] F1.5 FlowPanel, FlowControls, FlowLegend, zoom-out hint, EN/ES strings
 - [ ] F1.6 Gate: `e2e/flow.spec.ts` screenshot, SOURCES.md, DECISSIONS.md, RUN_LOCAL.md, PENDING.md, reviewer, PR
