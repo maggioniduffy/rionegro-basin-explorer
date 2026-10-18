@@ -314,7 +314,51 @@
     }
   },
   "flow": {
-    "view": "Ver flujo"
+    "view": "Ver flujo",
+    "label": "Vista de flujo",
+    "sectionOf": "Tramo {k} de {n}",
+    "loading": "Cargando el tramo…",
+    "error": "No se pudo cargar el tramo.",
+    "discharge": "Caudal medio",
+    "kind": {
+      "modeled": "Modelado",
+      "measured": "Medido"
+    },
+    "noDischarge": "Sin valor de caudal",
+    "sourcePeriod": "{source}, {period}",
+    "sourcePeriodModeled": "{source}, media natural {period}",
+    "channel": {
+      "title": "Cauce",
+      "width": "Ancho",
+      "widthValue": "{min} – {max} (mediana {p50})",
+      "source": "Fuente del ancho",
+      "ign-polygon": "Contorno del cauce del IGN",
+      "estimated-band": "Ancho estimado (área del río de RiverATLAS, modelado)",
+      "mixed": "Mixta",
+      "none": "Ninguna",
+      "gap": "Parte de este curso sigue el trazado modelado de HydroRIVERS."
+    },
+    "regulation": "Grado de regulación",
+    "speedNote": "El color de las partículas indica una velocidad relativa e ilustrativa. Ninguna fuente mide la velocidad, por eso no son km/h ni m/s: es mayor en el centro del cauce y donde se angosta, suponiendo profundidad constante.",
+    "imagery": "Imágenes: Sentinel-2 sin nubes, 10 m. Se ven borrosas con este zoom.",
+    "controls": {
+      "label": "Controles del flujo",
+      "play": "Reproducir",
+      "pause": "Pausar",
+      "speed": "Velocidad de reproducción",
+      "speedOption": "{speed}×",
+      "upstream": "Aguas arriba",
+      "downstream": "Aguas abajo",
+      "exit": "Salir de la vista de flujo"
+    },
+    "legend": {
+      "slow": "Lenta",
+      "fast": "Rápida",
+      "caption": "Velocidad relativa (ilustrativa)"
+    },
+    "zoomHint": "Acercate para ver el flujo",
+    "zoomBack": "Volver a acercar",
+    "noFlow": "Este río no tiene vista de flujo: {reason, select, noDischarge {no tiene valor de caudal, así que no hay flujo para animar} reservoir {su curso pasa por lagos o embalses} narrow {el cauce mide menos de 30 m de ancho, demasiado angosto para las imágenes} other {no hay contorno del cauce ni ancho estimado}}."
   },
   "attributions": {
     "back": "Volver al mapa",

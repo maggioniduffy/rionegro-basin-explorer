@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { FlowSpeed } from "./flow/schema";
+import { parseSectionId, type FlowSpeed } from "./flow/schema";
 import type { Bbox } from "./data/schemas";
 import type { Picked } from "./map/picked";
 import type { FlowClass, Theme } from "./map/style";
@@ -118,6 +118,9 @@ interface MapState {
   exitFlow: () => void;
   setFlowSpeed: (s: FlowSpeed) => void;
   setFlowPlaying: (playing: boolean) => void;
+  /** The map is zoomed out past FLOW_MIN_ZOOM while flow mode is on; published by FlowController. */
+  flowZoomedOut: boolean;
+  setFlowZoomedOut: (v: boolean) => void;
   /**
    * Where the user last clicked the map (not in the URL), so "View flow" opens the section
    * under it. Any selection other than the click's own clears it.
@@ -146,6 +149,14 @@ export const useMapStore = create<MapState>()((set) => ({
   focus: null,
   select: (selection, opts) =>
     set((s) => ({
+      // Flow mode stays only for a selection of the section's own river (a map click on it).
+      ...(s.flowSection &&
+      !(
+        selection?.kind === "river" &&
+        selection.id === parseSectionId(s.flowSection)?.river
+      )
+        ? { flowSection: null, flowFitPending: false }
+        : {}),
       selection,
       picked: null,
       lastClick: null,
@@ -186,6 +197,8 @@ export const useMapStore = create<MapState>()((set) => ({
   exitFlow: () => set({ flowSection: null, flowFitPending: false }),
   setFlowSpeed: (flowSpeed) => set({ flowSpeed }),
   setFlowPlaying: (flowPlaying) => set({ flowPlaying }),
+  flowZoomedOut: false,
+  setFlowZoomedOut: (flowZoomedOut) => set({ flowZoomedOut }),
   lastClick: null,
   setLastClick: (lastClick) => set({ lastClick }),
 }));

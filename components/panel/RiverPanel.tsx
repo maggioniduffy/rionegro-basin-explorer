@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { isMouthKind } from "@/lib/data/mouth";
 import type { RiverResponse } from "@/lib/data/queries";
 import { useRegion } from "@/components/RegionProvider";
+import { NoFlowNote } from "@/components/flow/FlowPanel";
 import { useFlowIndex } from "@/lib/flow/data";
 import { nearestSection, riverHasFlow } from "@/lib/flow/pick";
 import { hasCourseFill } from "@/lib/map/config";
@@ -50,6 +51,7 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
             {tFlow("view")}
           </button>
         )}
+        {flowIndex && <NoFlowNote index={flowIndex} slug={river._id} />}
         <p className="text-muted text-sm">
           {t("river.flowsInto")}{" "}
           {river.flowsInto === "sea" ? (

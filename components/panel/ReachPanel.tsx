@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { ReachResponse } from "@/lib/data/queries";
+import { NoFlowNote } from "@/components/flow/FlowPanel";
 import { useFlowIndex } from "@/lib/flow/data";
 import { nearestSection, riverHasFlow } from "@/lib/flow/pick";
 import { useMapStore } from "@/lib/store";
@@ -65,6 +66,7 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
             {tFlow("view")}
           </button>
         )}
+        {flowIndex && river && <NoFlowNote index={flowIndex} slug={river} />}
         {stream && reach.streamName && (
           <button
             type="button"

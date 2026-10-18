@@ -138,6 +138,16 @@ export function FlowController({
     };
     map.on("moveend", onMoveEnd);
 
+    // Cheap: only writes the store when the boolean flips.
+    const onZoom = () => {
+      const out =
+        useMapStore.getState().flowSection !== null &&
+        map.getZoom() < FLOW_MIN_ZOOM;
+      if (out !== useMapStore.getState().flowZoomedOut)
+        useMapStore.getState().setFlowZoomedOut(out);
+    };
+    map.on("zoom", onZoom);
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
       const target = e.target as HTMLElement | null;
@@ -161,11 +171,26 @@ export function FlowController({
       if (s.flowSpeed !== prev.flowSpeed) controller.setSpeed(s.flowSpeed);
       if (s.flowPlaying !== prev.flowPlaying)
         controller.setPlaying(s.flowPlaying);
-      if (s.flowSection === prev.flowSection) return;
+      if (s.flowSection === prev.flowSection) {
+        // "Zoom back in" re-enters the same section: fit again without reloading it.
+        if (current && s.flowSection === current.id && s.flowFitPending) {
+          useMapStore.setState({ flowFitPending: false });
+          fitting = true;
+          map.fitBounds(current.bbox, {
+            padding: paddingRef.current(),
+            maxZoom: FLOW_MAXZOOM,
+            duration: 800,
+          });
+        }
+        return;
+      }
       if (!prev.flowSection && s.flowSection) enter();
       else void show(s.flowSection);
       // Nothing to animate once out: the layer would keep asking for repaints.
-      if (!s.flowSection) useMapStore.getState().setFlowPlaying(false);
+      if (!s.flowSection) {
+        useMapStore.getState().setFlowPlaying(false);
+        useMapStore.getState().setFlowZoomedOut(false);
+      }
     });
 
     return () => {
@@ -173,6 +198,8 @@ export function FlowController({
       unsubscribe();
       window.removeEventListener("keydown", onKey);
       map.off("moveend", onMoveEnd);
+      map.off("zoom", onZoom);
+      useMapStore.getState().setFlowZoomedOut(false);
       try {
         if (map.getLayer(FLOW_LAYER_ID)) map.removeLayer(FLOW_LAYER_ID);
         map.setMaxZoom(MAP_MAXZOOM);
