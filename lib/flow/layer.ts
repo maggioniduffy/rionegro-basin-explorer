@@ -315,7 +315,7 @@ export function createFlowLayer(): {
 
       // Positions are relative to the track origin (float32); the origin is added in float64.
       translatedMatrix(
-        options.modelViewProjectionMatrix,
+        options.defaultProjectionData.mainMatrix,
         track.originX,
         track.originY,
         matrix64,

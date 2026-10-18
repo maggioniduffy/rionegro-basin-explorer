@@ -36,6 +36,8 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_IMAGERY_TILE_URL: `${E2E_IMAGERY_HOST}/{z}/{x}/{y}.png`,
       NEXT_PUBLIC_IMAGERY_ATTRIBUTION: "E2E imagery",
+      // Test hooks only: window.__map (MapView) and window.__flowStep (lib/flow/layer.ts).
+      NEXT_PUBLIC_E2E: "1",
     },
   },
 });

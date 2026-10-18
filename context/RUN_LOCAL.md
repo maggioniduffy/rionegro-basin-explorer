@@ -321,3 +321,14 @@ The region is now the first path segment: `basinexplorer.vercel.app/cordoba`, `/
 - [ ] Browser, `/cordoba/map`: the Quinto, Primero, Jesús María, Segundo and Dulce are drawn without breaks from source to mouth; Primero, Jesús María and Dulce reach Mar Chiquita; selecting each highlights the whole course.
 - [ ] HydroRIVERS and connector fill is dashed (about 1.8 px wide); IGN fill looks like the river. Clicking a fill piece opens the line panel with the river name, "name in the source" and how it was drawn; a connector is not called a HydroRIVERS path.
 - [ ] Legend and river panel show the fill note and where the length comes from, in EN and ES; `/rionegro/map` shows neither.
+
+## F1: flow close-up (2026-10-18)
+
+- [x] `npm run pipeline:flow-sections -- --region nqn` twice: report ok, outputs identical, `nqn` `data/out` unchanged; `npm run check`; `npm run test:e2e -- e2e/flow.spec.ts` green.
+- [ ] Browser, `/rionegro/map`: select the Limay, press "View flow"; the camera fits the section at about z14 and particles move inside the channel. Click the Neuquén: the section is replaced. Pan along the Limay past a section's end: the next section loads without a camera jump; "Upstream"/"Downstream" do the same.
+- [ ] Zoom out below z12: particles fade and "Zoom back in" appears and re-fits. Play/pause, 0.5×–4×, Escape and "Exit flow view" work; the map returns to max z13.
+- [ ] Copy a `?flow=…&fs=2` URL into a new tab: same close-up at 2×. With reduced motion on (OS setting), flow starts paused. Switch tabs and back: no jump.
+- [ ] EN/ES, light/dark, 1440 px and 390 px (controls at the top on phones; panel in the sheet). Known: the fit leaves no room for the control bar at the bottom, so the downstream end of the section can sit under it.
+- [ ] Río Negro: check on the EOX imagery that the particles stay in the main channel (BH140 includes floodplain; `span.maxSpanM` = 800 is provisional in `regions/nqn/flow.config.json`).
+- [ ] Performance: 60 fps on a mid laptop (DevTools performance panel) with the particles on screen.
+- [ ] Other e2e baselines: `playwright.config.ts` now builds with `NEXT_PUBLIC_E2E=1` (test hooks only, no visual change); run the full `npm run test:e2e` once to confirm.

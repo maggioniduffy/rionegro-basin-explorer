@@ -81,6 +81,11 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
     GRanD as delivered inside RiverATLAS; GRanD itself is still not downloaded (see HydroLAKES).
   - `pop_ct_usu` (sheet A01, thousands): GPWv4 population count for 2010 (CIESIN, 2016,
     https://doi.org/10.7927/H4X63JVC).
+  - `ria_ha_csu` (hectares, river area within the reach's catchment): Phase F1 (2026-10-18) uses it
+    for the "estimated width" band of a flow section where no IGN channel outline exists:
+    width = `ria_ha_csu` × 10,000 / (`LENGTH_KM` × 1000) m. Modeled, and it can include small
+    tributaries in the catchment; the flow panel labels it "Estimated width (RiverATLAS river area,
+    modeled)". Same CC BY 4.0 citation as above (Linke et al., 2019).
 - Caveat (CLAUDE.md rule 4): discharge is a modeled natural average for 1971–2000 that does not
   reflect current dam regulation; population is a 2010 estimate; inundation is 1993–2004
   satellite data; regulation is based on GRanD v1.1 dams.
@@ -176,7 +181,9 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 - Local copy: `data/raw/ign/` (not downloaded by the pipeline).
   Six national layers in WGS84 (EPSG:4326) with attribute text in **ISO-8859-1** (per the `.cst`
   files; read with `open_options=['ENCODING=ISO-8859-1']`). Layer codes and `objeto` values:
-  - BH140 `Corriente de agua` (river polygons)
+  - BH140 `Corriente de agua` (river polygons). Used since Phase F1 (2026-10-18) by
+    `pipeline:flow-sections` for the wet span across the channel of each `nqn` flow section; the
+    attribution already shown for IGN covers it (no new source).
   - BH130 `Embalse` (reservoirs)
   - `Espejo de agua perenne`
   - `Espejo de agua intermitente`
