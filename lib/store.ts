@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { parseSectionId, type FlowSpeed } from "./flow/schema";
 import type { Bbox } from "./data/schemas";
 import type { Picked } from "./map/picked";
 import type { FlowClass, Theme } from "./map/style";
@@ -102,6 +103,30 @@ interface MapState {
   setShowMinimap: (v: boolean) => void;
   layers: LayerVisibility;
   setLayers: (patch: Partial<LayerVisibility>) => void;
+  /**
+   * Flow close-up (phase F1): the section being shown, or null. One at a time; mirrored in the
+   * URL (?flow=) by UrlSync. Entering keeps the selection as it is.
+   */
+  flowSection: string | null;
+  /** Playback multiplier (?fs=). */
+  flowSpeed: FlowSpeed;
+  /** Particles moving; not in the URL (starts paused under reduced motion). */
+  flowPlaying: boolean;
+  /** Fit the camera to the section once it has loaded. */
+  flowFitPending: boolean;
+  enterFlow: (id: string, opts?: { fit?: boolean }) => void;
+  exitFlow: () => void;
+  setFlowSpeed: (s: FlowSpeed) => void;
+  setFlowPlaying: (playing: boolean) => void;
+  /** The map is zoomed out past FLOW_MIN_ZOOM while flow mode is on; published by FlowController. */
+  flowZoomedOut: boolean;
+  setFlowZoomedOut: (v: boolean) => void;
+  /**
+   * Where the user last clicked the map (not in the URL), so "View flow" opens the section
+   * under it. Any selection other than the click's own clears it.
+   */
+  lastClick: [lng: number, lat: number] | null;
+  setLastClick: (lngLat: [number, number] | null) => void;
 }
 
 export const useMapStore = create<MapState>()((set) => ({
@@ -124,8 +149,17 @@ export const useMapStore = create<MapState>()((set) => ({
   focus: null,
   select: (selection, opts) =>
     set((s) => ({
+      // Flow mode stays only for a selection of the section's own river (a map click on it).
+      ...(s.flowSection &&
+      !(
+        selection?.kind === "river" &&
+        selection.id === parseSectionId(s.flowSection)?.river
+      )
+        ? { flowSection: null, flowFitPending: false }
+        : {}),
       selection,
       picked: null,
+      lastClick: null,
       isolatedIds: opts?.keepIsolated && selection ? s.isolatedIds : null,
       fitPending: Boolean(selection && opts?.fit),
       viewMode: selection?.kind === "subbasin" ? "subbasins" : s.viewMode,
@@ -154,4 +188,17 @@ export const useMapStore = create<MapState>()((set) => ({
   setShowMinimap: (showMinimap) => set({ showMinimap }),
   layers: DEFAULT_LAYERS,
   setLayers: (patch) => set((s) => ({ layers: { ...s.layers, ...patch } })),
+  flowSection: null,
+  flowSpeed: 1,
+  flowPlaying: false,
+  flowFitPending: false,
+  enterFlow: (id, opts) =>
+    set({ flowSection: id, flowFitPending: Boolean(opts?.fit) }),
+  exitFlow: () => set({ flowSection: null, flowFitPending: false }),
+  setFlowSpeed: (flowSpeed) => set({ flowSpeed }),
+  setFlowPlaying: (flowPlaying) => set({ flowPlaying }),
+  flowZoomedOut: false,
+  setFlowZoomedOut: (flowZoomedOut) => set({ flowZoomedOut }),
+  lastClick: null,
+  setLastClick: (lastClick) => set({ lastClick }),
 }));

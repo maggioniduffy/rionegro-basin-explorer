@@ -65,7 +65,10 @@ import {
   reachFeatureSelection,
   reachOrder,
 } from "@/lib/map/style";
+import { FlowController } from "@/components/flow/FlowController";
 import { useRegion } from "@/components/RegionProvider";
+import { peekFlowIndex } from "@/lib/flow/data";
+import { nearestSection, riverHasFlow } from "@/lib/flow/pick";
 import { useAdoptSavedBaseLayer } from "@/lib/use-saved-base-layer";
 import { initMaplibre } from "@/lib/map/init";
 import { setMainMap } from "@/lib/map/main-map";
@@ -114,6 +117,15 @@ function selectionPadding() {
   }).half;
   return { top: 80, bottom: sheet + 16, right: 32, left: 32 };
 }
+
+/** Reach lines dim to this opacity in flow mode, so the particles read against the channel. */
+const FLOW_DIMMED_REACH_OPACITY = 0.2;
+/** Their opacity otherwise (the style leaves it at the default 1, except the unmatched pieces). */
+const REACH_OPACITY: [string, number][] = [
+  [UNMATCHED_LAYER_ID, 0.85],
+  [FILL_DASH_LAYER_ID, 1],
+  ...FLOW_CLASSES.map((c): [string, number] => [reachLayerId(c), 1]),
+];
 
 /** Clicks within this many px of a line hit it; river lines are thin. */
 const HIT_TOLERANCE_PX = 6;
@@ -347,6 +359,20 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
       subbasinSelectedLineOpacity(s.viewMode),
     );
   }
+  const flowOn = s.flowSection !== null;
+  if (!prev || flowOn !== (prev.flowSection !== null)) {
+    for (const [id, opacity] of REACH_OPACITY)
+      map.setPaintProperty(
+        id,
+        "line-opacity",
+        flowOn ? FLOW_DIMMED_REACH_OPACITY : opacity,
+      );
+    map.setLayoutProperty(
+      SELECTED_LAYER_ID,
+      "visibility",
+      flowOn ? "none" : "visible",
+    );
+  }
   if (!prev || s.theme !== prev.theme) {
     const { mask, outline, lake } = THEME_COLORS[s.theme];
     map.setPaintProperty(BACKGROUND_LAYER_ID, "background-color", mask);
@@ -371,6 +397,8 @@ export default function MapView() {
   const mapRef = useRef<MapLibreMap | null>(null);
   // Client-only component (ssr: false), so document is available here.
   const [supported] = useState(webglSupported);
+  // Set once the style has loaded, so the flow layer can be added; null before and after.
+  const [flowMap, setFlowMap] = useState<MapLibreMap | null>(null);
 
   useEffect(() => {
     tRef.current = t;
@@ -494,9 +522,24 @@ export default function MapView() {
       if (!loaded) return;
       const hit = hitAt(map, e.point.x, e.point.y);
       const store = useMapStore.getState();
+      const click: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+      // In flow mode a river with flow sections replaces the section, nearest the click.
+      // Switch before selecting: select() keeps flow for the section's own river, so flow
+      // never passes through "off" (which would reset the max zoom and the play state).
+      if (store.flowSection && hit?.type === "selection") {
+        const index = peekFlowIndex(region);
+        const river = hit.selection.kind === "river" ? hit.selection.id : null;
+        const id =
+          index && river && riverHasFlow(index, river)
+            ? nearestSection(index, river, click)
+            : null;
+        if (id) store.enterFlow(id, { fit: true });
+      }
       if (hit?.type === "picked")
         store.pick(hit.picked, { keepIsolated: true });
       else store.select(hit?.selection ?? null, { keepIsolated: true });
+      // After the selection, which clears it: the panel's "View flow" opens the section here.
+      store.setLastClick(click);
     });
     // Hovering a locality also names it; the click opens its panel.
     const nameTip = new Popup({
@@ -533,11 +576,14 @@ export default function MapView() {
       loaded = true;
       const s = useMapStore.getState();
       applyState(map, s);
-      if (s.focus) fitTo(s.focus.bbox);
+      if (s.focus && !s.flowSection) fitTo(s.focus.bbox);
+      setFlowMap(map);
     });
     const unsubscribe = useMapStore.subscribe((s, prev) => {
       if (!loaded) return;
-      if (s.focus && s.focus !== prev.focus) fitTo(s.focus.bbox);
+      // Flow mode owns the camera (FlowController); a river fit would pull it out of the close-up.
+      if (s.focus && s.focus !== prev.focus && !s.flowSection)
+        fitTo(s.focus.bbox);
       if (s.units !== prev.units) scale.setUnit(s.units);
       // Only style state needs applying; other store fields don't touch the map.
       if (
@@ -548,7 +594,8 @@ export default function MapView() {
         s.viewMode === prev.viewMode &&
         s.isolatedIds === prev.isolatedIds &&
         s.layers === prev.layers &&
-        s.baseLayer === prev.baseLayer
+        s.baseLayer === prev.baseLayer &&
+        (s.flowSection === null) === (prev.flowSection === null)
       )
         return;
       setIdle(false);
@@ -561,6 +608,7 @@ export default function MapView() {
         delete window.__map;
         delete window.__mapHover;
       }
+      setFlowMap(null);
       setMainMap(null);
       map.remove();
       mapRef.current = null;
@@ -586,6 +634,7 @@ export default function MapView() {
           data-map-idle="false"
         />
       </div>
+      <FlowController map={flowMap} padding={selectionPadding} />
       <div className="absolute top-16 right-3 flex flex-col gap-2">
         <div className="flex flex-col overflow-hidden rounded-md border border-(--border) bg-(--panel) shadow">
           <button

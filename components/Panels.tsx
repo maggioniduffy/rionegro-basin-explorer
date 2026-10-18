@@ -1,5 +1,6 @@
 "use client";
 
+import { FlowControls } from "./flow/FlowControls";
 import { useIsDesktop } from "@/lib/use-desktop";
 import { Controls } from "./Controls";
 import { MobileSheet } from "./MobileSheet";
@@ -13,12 +14,17 @@ import { RightColumn } from "./RightColumn";
 export function Panels() {
   const desktop = useIsDesktop();
   if (desktop === null) return null;
-  return desktop ? (
+  return (
     <>
-      <Controls />
-      <RightColumn />
+      {desktop ? (
+        <>
+          <Controls />
+          <RightColumn />
+        </>
+      ) : (
+        <MobileSheet />
+      )}
+      <FlowControls />
     </>
-  ) : (
-    <MobileSheet />
   );
 }

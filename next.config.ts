@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
@@ -29,13 +29,42 @@ function tilesVersions(): Record<string, string> {
   return versions;
 }
 
+/**
+ * Content hash of each region's flow sections (public/flow/<region>/*.json), same idea as the
+ * tiles (lib/flow/data.ts flowPaths). A region without the folder has no entry, which is how
+ * the app knows it offers no flow mode.
+ */
+function flowVersions(): Record<string, string> {
+  const root = join(process.cwd(), "public", "flow");
+  const versions: Record<string, string> = {};
+  if (!existsSync(root)) return versions;
+  for (const region of readdirSync(root, { withFileTypes: true })) {
+    if (!region.isDirectory()) continue;
+    const dir = join(root, region.name);
+    const hash = createHash("sha256");
+    for (const file of readdirSync(dir).sort()) {
+      if (!file.endsWith(".json")) continue;
+      hash.update(file).update(readFileSync(join(dir, file)));
+    }
+    versions[region.name] = hash.digest("hex").slice(0, 12);
+  }
+  return versions;
+}
+
 const nextConfig: NextConfig = {
-  env: { NEXT_PUBLIC_TILES_VERSIONS: JSON.stringify(tilesVersions()) },
+  env: {
+    NEXT_PUBLIC_TILES_VERSIONS: JSON.stringify(tilesVersions()),
+    NEXT_PUBLIC_FLOW_VERSIONS: JSON.stringify(flowVersions()),
+  },
   async rewrites() {
     return [
       {
         source: "/tiles/:region/:version/:file",
         destination: "/tiles/:region/:file",
+      },
+      {
+        source: "/flow/:region/:version/:file",
+        destination: "/flow/:region/:file",
       },
       // Pages loaded before tiles moved per region (2026-10-10) still ask for
       // /tiles/<hash>/<file>; real files under /tiles/<region>/ are served first.
@@ -43,16 +72,12 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    const immutable = [
+      { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+    ];
     return [
-      {
-        source: "/tiles/:region/:version/:file",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
+      { source: "/tiles/:region/:version/:file", headers: immutable },
+      { source: "/flow/:region/:version/:file", headers: immutable },
     ];
   },
 };

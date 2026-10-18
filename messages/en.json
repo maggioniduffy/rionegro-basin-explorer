@@ -313,6 +313,53 @@
       }
     }
   },
+  "flow": {
+    "view": "View flow",
+    "label": "Flow close-up",
+    "sectionOf": "Section {k} of {n}",
+    "loading": "Loading the section…",
+    "error": "The section could not be loaded.",
+    "discharge": "Mean discharge",
+    "kind": {
+      "modeled": "Modeled",
+      "measured": "Measured"
+    },
+    "noDischarge": "No discharge value",
+    "sourcePeriod": "{source}, {period}",
+    "sourcePeriodModeled": "{source}, natural mean {period}",
+    "channel": {
+      "title": "Channel",
+      "width": "Width",
+      "widthValue": "{min} – {max} (median {p50})",
+      "source": "Width source",
+      "ign-polygon": "IGN channel outline",
+      "estimated-band": "Estimated width (RiverATLAS river area, modeled)",
+      "mixed": "Mixed",
+      "none": "None",
+      "gap": "Part of this course follows the modeled HydroRIVERS path."
+    },
+    "regulation": "Degree of regulation",
+    "speedNote": "Particle colour shows relative, illustrative speed. No source measures velocity, so it is not km/h or m/s: it is faster mid-channel and where the channel narrows, assuming constant depth.",
+    "imagery": "Imagery: Sentinel-2 cloudless, 10 m. It looks soft at this zoom.",
+    "controls": {
+      "label": "Flow controls",
+      "play": "Play",
+      "pause": "Pause",
+      "speed": "Playback speed",
+      "speedOption": "{speed}×",
+      "upstream": "Upstream",
+      "downstream": "Downstream",
+      "exit": "Exit flow view"
+    },
+    "legend": {
+      "slow": "Slow",
+      "fast": "Fast",
+      "caption": "Relative speed (illustrative)"
+    },
+    "zoomHint": "Zoom in to see the flow",
+    "zoomBack": "Zoom back in",
+    "noFlow": "No flow view for this river: {reason, select, noDischarge {no discharge value, so there is no flow to animate} reservoir {its course runs through lakes or reservoirs} narrow {the channel is narrower than 30 m, too narrow for the imagery} other {no channel outline or width estimate}}."
+  },
   "attributions": {
     "back": "Back to the map",
     "title": "Sources and licenses",

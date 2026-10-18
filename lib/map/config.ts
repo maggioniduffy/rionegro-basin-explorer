@@ -49,6 +49,14 @@ const TILES_VERSIONS = parseTilesVersions(
   process.env.NEXT_PUBLIC_TILES_VERSIONS,
 );
 
+/**
+ * Content hash of each region's public/flow/<region>/ (next.config.ts), same scheme as the
+ * tiles. A region with no entry has no flow data.
+ */
+export const FLOW_VERSIONS = parseTilesVersions(
+  process.env.NEXT_PUBLIC_FLOW_VERSIONS,
+);
+
 export function parseTilesVersions(
   raw: string | undefined,
 ): Record<string, string> {

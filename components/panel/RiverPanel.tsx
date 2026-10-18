@@ -4,6 +4,9 @@ import { useTranslations } from "next-intl";
 import { isMouthKind } from "@/lib/data/mouth";
 import type { RiverResponse } from "@/lib/data/queries";
 import { useRegion } from "@/components/RegionProvider";
+import { NoFlowNote } from "@/components/flow/FlowPanel";
+import { useFlowIndex } from "@/lib/flow/data";
+import { nearestSection, riverHasFlow } from "@/lib/flow/pick";
 import { hasCourseFill } from "@/lib/map/config";
 import { useMapStore } from "@/lib/store";
 import {
@@ -20,6 +23,10 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
   const f = useFormat();
   const seaDistance = useSeaDistance();
   const select = useMapStore((s) => s.select);
+  const enterFlow = useMapStore((s) => s.enterFlow);
+  const lastClick = useMapStore((s) => s.lastClick);
+  const tFlow = useTranslations("flow");
+  const flowIndex = useFlowIndex();
   const courseFill = hasCourseFill(useRegion());
   const modeled = (path: string) => river.modeled.includes(path);
   const caveats = CAVEAT_BY_PATH.filter(([path]) => modeled(path)).map(
@@ -32,6 +39,19 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
         <h2 className="font-display text-[26px] leading-tight font-normal">
           {river.name}
         </h2>
+        {flowIndex && riverHasFlow(flowIndex, river._id) && (
+          <button
+            type="button"
+            className="self-start text-sm underline decoration-dotted underline-offset-2"
+            onClick={() => {
+              const id = nearestSection(flowIndex, river._id, lastClick);
+              if (id) enterFlow(id, { fit: true });
+            }}
+          >
+            {tFlow("view")}
+          </button>
+        )}
+        {flowIndex && <NoFlowNote index={flowIndex} slug={river._id} />}
         <p className="text-muted text-sm">
           {t("river.flowsInto")}{" "}
           {river.flowsInto === "sea" ? (

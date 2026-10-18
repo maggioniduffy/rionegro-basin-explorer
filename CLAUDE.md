@@ -3,8 +3,8 @@
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
 Amazon Basin Explorer. One app serves several **regions**, one per path (`/rionegro`, `/cordoba`): `nqn` (the Río
-Negro basin, live) and `cba` (Córdoba, served since R3.8); see "Regions" below. See `context/PLAN.md` for open phases and status (completed phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
-decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `context/PLAN.md`).
+Negro basin, live) and `cba` (Córdoba, served since R3.8); see "Regions" below. See `context/PLAN.md` for the phase index and status; each phase's checklist and design live in `context/phases/<id>.md`, so read the index and only the current phase's file (completed early phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
+decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `context/PLAN.md` or a phase file).
 
 ## Stack
 
@@ -44,7 +44,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 7. **Pipeline steps must be idempotent** and write a `report.json` (counts, total km, orphan segments, area checks). Read the report to verify results instead of judging by eye.
 8. **Cost-conscious:** prefer free tiers (Atlas M0, Vercel hobby, PMTiles over tile servers). Flag anything that could add recurring cost.
 9. **Licenses and attribution:** keep `/pipeline/SOURCES.md` updated (source, URL, license, required citation, download date). Check the license before adding any new data source or imagery provider.
-10. **Workflow:** work one phase at a time from `context/PLAN.md`, in plan mode first, following `context/orchestration.md` (Opus orchestrates and reviews, Haiku scouts read, Sonnet builders code; one branch and PR per phase, one commit per work package). Small commits. Update the checklist when a phase's "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
+10. **Workflow:** work one phase at a time from its `context/phases/<id>.md` file (listed in `context/PLAN.md`), in plan mode first, following `context/orchestration.md` (Opus orchestrates and reviews, Haiku scouts read, Sonnet builders code; one branch and PR per phase, one commit per work package). Small commits. Update the phase file's checklist and its row in `context/PLAN.md` when its "Done when" criteria are met, and record the phase's decisions in `context/DECISSIONS.md`.
 11. Dismiss visual and chromium tests unless called for
 12. Always start tasks in PLAN MODE
 
@@ -54,7 +54,7 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 - **Routing.** The region is the first path segment, its slug (`regions/index.ts` `REGION_SLUGS`: `rionegro`, `cordoba`), which is the `app/[region]` param; ids stay internal. `proxy.ts` serves the hub at `/`, sets the `x-basin-region` header on region paths, redirects id paths (`/cba/…`) and the old per-region hosts (`regions/hosts.ts`) to the slug path. Server code gets the region from route params (`regionFromSlug`, or the header in `i18n/request.ts`); client code from `useRegion()`. Links and API calls go through `regionPath` / `useRegionPath()` (`useApi` adds it). No default region for a URL: an unknown path is a 404.
 - **Per region:** pipeline configs and `--region` (required), Mongo database (`regionDbName`: `nqn` keeps `basin-explorer`, others append `-<id>`), tiles (`public/tiles/<id>/`, versioned per region), UI strings that name the region, `content.ts` (featured rivers, landing sample picks, OG subtitle, ask prompt place and examples). Everything else is shared.
 - **Never** let a region's code path fall back to another region's data silently: no default region in pipeline commands, and tests check that every served region defines the same message keys and valid prompt slugs.
-- Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in `context/RUN_LOCAL.md` after each change.
+- Local checks the cloud session can't run (pipeline on `data/raw`, Atlas, Vercel, a browser) go in the phase file's "Owner checks" section after each change.
 
 ## Sub-agents, skills and background work
 

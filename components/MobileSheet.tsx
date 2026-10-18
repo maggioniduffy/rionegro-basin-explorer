@@ -83,7 +83,9 @@ export function MobileSheet() {
   const [dragHeight, setDragHeight] = useState<number | null>(null);
   const drag = useRef<{ y: number; h: number; moved: boolean } | null>(null);
   const heights = useHeights();
-  const hasDetails = useMapStore((s) => Boolean(s.selection ?? s.picked));
+  const hasDetails = useMapStore((s) =>
+    Boolean(s.selection ?? s.picked ?? s.flowSection),
+  );
   const height = dragHeight ?? heights[snap];
 
   // A new selection or clicked feature opens the details tab.
@@ -92,7 +94,8 @@ export function MobileSheet() {
       useMapStore.subscribe((s, prev) => {
         const opened =
           (s.selection && s.selection !== prev.selection) ||
-          (s.picked && s.picked !== prev.picked);
+          (s.picked && s.picked !== prev.picked) ||
+          (s.flowSection && !prev.flowSection);
         if (!opened) return;
         setTab("info");
         setSnap(atLeastHalf);
