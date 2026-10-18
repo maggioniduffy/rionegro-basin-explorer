@@ -58,7 +58,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
 - [x] F1.0 Split PLAN.md into one file per phase (owner, 2026-10-18)
 - [x] F1.1 `pipeline:flow-sections --region nqn` (IGN course, windows, BH140 spans, band fallback, discharge and
       reason, `report.json`, `public/flow/nqn/`); tests: window cut, station span
-- [ ] F1.2 `lib/flow/` pure lib (schema, parametrisation, `inChannel`, speed field, colour scale, particle step);
+- [x] F1.2 `lib/flow/` pure lib (schema, parametrisation, `inChannel`, speed field, colour scale, particle step);
       tests: 1–2 cases each
 - [ ] F1.3 WebGL custom layer and loop (visibility, reduced motion, zoom fade, E2E step hook)
 - [ ] F1.4 Store, URL (`flow`, `fs`), UrlSync, MapView (max zoom, fit, dim, click to switch, pan to adjacent),
