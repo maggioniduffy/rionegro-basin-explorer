@@ -24,6 +24,7 @@ const ICON_PATHS = {
   menu: "M4 7h16M4 12h16M4 17h16",
   chevron: "M9 6l6 6-6 6",
   separator: "M14 5l-4 14",
+  play: "M8 5.5v13l10-6.5z",
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

@@ -87,6 +87,9 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
 - [ ] Río Negro on the EOX imagery: particles stay in the main channel (`span.maxSpanM` = 800 is provisional).
 - [ ] 60 fps on a mid laptop with particles on screen. Clicking empty map exits flow: confirm that's wanted.
 - [ ] Full `npm run test:e2e` once: the e2e build now sets `NEXT_PUBLIC_E2E=1` (test hooks only).
+- [ ] Restart `npm run dev` after switching to this branch (`NEXT_PUBLIC_FLOW_VERSIONS` is computed at startup; without it no flow button shows).
+- [ ] Hub `/` then the Río Negro map via the link: the legend shows real text (no `legend.*` keys) in ES and EN; going on to Córdoba via the footer leaves no Río Negro strings.
+- [ ] Select the Limay (and a Limay reach): the filled "Ver flujo" button sits under the name, readable in light and dark, and enters flow.
 
 ## Follow-ups
 

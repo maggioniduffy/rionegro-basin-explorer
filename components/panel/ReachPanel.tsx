@@ -2,9 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import type { ReachResponse } from "@/lib/data/queries";
+import { FlowButton } from "@/components/flow/FlowButton";
 import { NoFlowNote } from "@/components/flow/FlowPanel";
 import { useFlowIndex } from "@/lib/flow/data";
-import { nearestSection, riverHasFlow } from "@/lib/flow/pick";
 import { useMapStore } from "@/lib/store";
 import { Caveats, Group, Row, useFormat, useSeaDistance } from "./parts";
 import { useSubbasinLabel } from "./subbasin-label";
@@ -20,9 +20,6 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
   const seaDistance = useSeaDistance();
   const label = useSubbasinLabel();
   const select = useMapStore((s) => s.select);
-  const enterFlow = useMapStore((s) => s.enterFlow);
-  const lastClick = useMapStore((s) => s.lastClick);
-  const tFlow = useTranslations("flow");
   const flowIndex = useFlowIndex();
   const river = reach.river;
   const stream = reach.stream;
@@ -54,18 +51,7 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
             {t("reach.showRiver", { river: reach.riverName })}
           </button>
         )}
-        {river && flowIndex && riverHasFlow(flowIndex, river) && (
-          <button
-            type="button"
-            className="self-start text-sm underline decoration-dotted underline-offset-2"
-            onClick={() => {
-              const id = nearestSection(flowIndex, river, lastClick);
-              if (id) enterFlow(id, { fit: true });
-            }}
-          >
-            {tFlow("view")}
-          </button>
-        )}
+        {river && flowIndex && <FlowButton index={flowIndex} slug={river} />}
         {flowIndex && river && <NoFlowNote index={flowIndex} slug={river} />}
         {stream && reach.streamName && (
           <button
