@@ -62,7 +62,7 @@ Each phase lives in its own file under [phases/](phases/). Read this index, then
 | I1 — Sharper imagery, more zoom, particles | [ ] candidates and licenses               | [i1-sharper-imagery.md](phases/i1-sharper-imagery.md)                 |
 | F2 — Water network from Sentinel-2 (`nqn`) | [x]                                       | [f2-water-network.md](phases/f2-water-network.md)                     |
 | F3 — Flow engine on the water network      | [~] PR #10; reservoir box and zoom to B1  | [f3-flow-network.md](phases/f3-flow-network.md)                       |
-| B1 — Content bucket and remote pipelines   | [ ] next to plan                          | [b1-bucket-remote-pipelines.md](phases/b1-bucket-remote-pipelines.md) |
+| B1 — Content bucket and remote pipelines   | [~] plan approved; paused before B1.1     | [b1-bucket-remote-pipelines.md](phases/b1-bucket-remote-pipelines.md) |
 
 ### Multi-region (R0–R5)
 
