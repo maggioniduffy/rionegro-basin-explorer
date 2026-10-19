@@ -65,7 +65,7 @@ multi-branch channel network and reservoir polygons from Sentinel-2 L2A (10 m) a
       2026-10-18).
 - [x] The `neuquen-139` reservoir (HydroLAKES 122976, unnamed) is not El Chañar, which lies a few km downstream
       (owner, 2026-10-18). Its name is unknown.
-- [ ] `uv run --project pipeline/py pytest` green.
+- [x] `uv run --project pipeline/py pytest` green (6 passed, 2026-10-18).
 
 ## Follow-ups
 
