@@ -258,9 +258,12 @@ Meanwhile builders write code against those names; nothing is uploaded until the
       `uploaded: 0` on the second run. Commit `content/versions.json` before setting Vercel `CONTENT_ORIGIN`.
       Done 2026-10-19: nqn 928 files (tiles `3768b61d8bf0`, flow `4a8bce066be4`), cba 5 tiles
       (`d7e595549414`, `--kind tiles`); second runs `uploaded: 0`.
-- [ ] Upload `data/work/nqn/lakes/lakes.geojson` to `basin-pipeline` with `flow-water:sync --mode push-inputs`.
-- [ ] Seed `basin-pipeline` with every non-error local `out/*.report.json` section and verify object key counts
+- [x] Upload `data/work/nqn/lakes/lakes.geojson` to `basin-pipeline` with `flow-water:sync --mode push-inputs`.
+- [x] Seed `basin-pipeline` with every non-error local `out/*.report.json` section and verify object key counts
       without printing object contents. This prevents the net publisher from dropping existing local nets.
+      Done 2026-10-19: 11 sections (`limay-076..083`, `limay-096`, `limay-110`, `neuquen-139`); bucket has 11
+      each of net/qa/report/water.tif and scene locks, 4 aux.xml, matching local. `limay-084` (scene lock, no
+      `out/`) not seeded.
 - [ ] Choose whether to register `flow-water.yml` through a small PR to `main` or wait for the phase PR; enable
       GitHub Actions pull-request creation.
 - [ ] After the workflow is available on GitHub, dispatch the already-done `limay-110` dry run and check its
