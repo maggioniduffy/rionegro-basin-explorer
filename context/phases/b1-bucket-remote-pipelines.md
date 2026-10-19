@@ -2,7 +2,7 @@
 
 # Phase B1 — Content bucket and remote pipelines
 
-Not started. Proposed by the owner on 2026-10-18, to run after F3. Nothing here is decided: plan it in plan mode
+Not started. Proposed by the owner on 2026-10-18, to run after F3 (PR #10). Next to plan (owner, 2026-10-19). Nothing here is decided: plan it in plan mode
 first, and verify every cost figure before choosing (Rule 8).
 
 ## Why
@@ -46,3 +46,13 @@ first, and verify every cost figure before choosing (Rule 8).
       `limay-097..limay-102`: lower El Chocón, the reach between the dams, Arroyito and below its dam), then
       `pipeline:flow-net-publish -- --region nqn`. Locally it would be
       `npm run pipeline:flow-water -- --region nqn --only limay-084..limay-095,limay-097..limay-102`.
+- [ ] B1.4 Reservoirs whole, not boxed (F3 browser pass, owner 2026-10-19). Today the water mask is computed on
+      the bounding box of a 1500 m buffer of each section's course (`corridorM`), so El Chocón's polygon ends in
+      straight edges in open water (`limay-076..083`), and particles show only at zoom ≥ 12 for one section at a
+      time. Options to plan:
+  - an AOI that grows to the whole water body that touches the course (e.g. bounded by the HydroLAKES polygon
+    plus a margin), or one reservoir net per lake shared by the sections that cross it;
+  - in the app, draw the neighbouring sections' nets (or the shared reservoir) together, and a lower minimum
+    zoom for reservoir drift.
+
+  Needs a rerun of the reservoir sections (remote, B1.2), then `flow-net-publish`.

@@ -66,20 +66,24 @@ reservoirs, and fallback to the F1 track when a section has no net.
 - [ ] After batch 1, open every `kind == "connector"` branch of `data/work/nqn/flow-water/out/*.qa.geojson` in
       QGIS over imagery: each bridges a real dry gap (dam, weir, bar) along the course, not a tributary or canal.
 
-- [ ] `npm run dev` (restart: the flow version hash is computed at startup), then on `/rionegro/map` in EN and ES:
-  - `?flow=limay-080`: slow drift inside El Chocón; panel says "Reservoir outline from Sentinel-2 imagery" and
-    shows the drift note.
-  - `?flow=limay-076`: dense network into the reservoir tail. Does it read as the real delta or as noise
-    (owner kept it published, 2026-10-19)?
-  - `?flow=limay-096`: two branches hand off into Arroyito; `?flow=limay-110`: braided arms and the shares note;
-    `?flow=neuquen-139`: branches into its reservoir, the 390 m connector.
-  - `?flow=limay-010`: unchanged F1 look, "Single track along the IGN course".
-  - Reservoir sections (`limay-078..083`) are offered by "View flow", Upstream/Downstream and a click.
-  - 60 fps with particles on screen, also inside a reservoir.
+- [x] Browser pass (owner, 2026-10-19). The UI counts sections from 1 ("Tramo 77 de 116" is `limay-076`).
+  - Sections with a network look right: `limay-110`, `neuquen-139`, `limay-096`, `limay-076` (UI 111, 140, 97,
+    77). `limay-076`'s dense network reads as the reservoir-tail delta (kept).
+  - Reservoir sections (`limay-077..083`) work, but show a rectangle of particles with straight edges in open
+    water, and the zoom limit hides the rest of the reservoir. Moved to phase B1 (see Follow-ups).
+- [ ] `?flow=limay-010`: unchanged F1 look, "Un solo trazado a lo largo del curso del IGN"; 60 fps with particles
+      inside a reservoir.
 - [ ] `/rionegro/attributions` shows the Sentinel-2 and Copernicus DEM cards; `/cordoba/attributions` does not.
 - [ ] `npx playwright test e2e/flow.spec.ts`: the `limay-010` baseline is unchanged (no net there).
 
 ## Follow-ups
+
+- **Reservoir box and zoom (owner, 2026-10-19; fix in B1).** The water mask is computed on the bounding box of a
+  1500 m buffer of each section's course (`regions/nqn/flow-water.config.json` `corridorM`), so a large reservoir
+  is cut by that box: the polygon, and the particles, end in straight edges in open water (`limay-076..083` in
+  El Chocón). Each section also draws only its own net, and particles show only at zoom ≥ 12
+  (`lib/flow/config.ts` `FLOW_MIN_ZOOM`, flow max 14.5), so a whole reservoir can't be seen. Needs a remote
+  rerun (B1).
 
 - **neuquen-139 wet-course coverage 0.93** (target 0.95): the course is uncovered at chainage 1280–1440,
   2700–3060 (inside the reservoir's course extent, outside its polygon) and 3660–4000 (dry in the mask past the
