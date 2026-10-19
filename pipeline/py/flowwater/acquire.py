@@ -8,7 +8,8 @@ Copernicus GLO-30 DEM on one UTM grid around the section's IGN course.
 2. Scenes: Earth Search STAC search on the AOI, items grouped by UTC acquisition date into
    "looks" (items of one date are mosaicked), ranked by mean cloud cover, then date, then id;
    the first `looks` are pinned in cache/<section>/scenes.lock.json with each asset's href and
-   raster:bands scale/offset/nodata as the item states them. A lock is reused without searching
+   raster:bands scale/offset/nodata as the item states them (the offset is zeroed when the item
+   says earthsearch:boa_offset_applied, see _asset_info). A lock is reused without searching
    until --reselect.
 3. Reads: WarpedVRT onto the grid (bilinear for the reflectance bands, nearest for SCL), raw
    uint16 DN + uint8 SCL cached in look-<date>.npz; reflectance() converts with the locked
@@ -43,8 +44,6 @@ log = logging.getLogger("flowwater")
 # Reflectance bands read from each item (SWIR is 20 m native: the MNDWI edge is effectively 20 m).
 BANDS = ("green", "red", "nir", "swir16")
 ASSETS = BANDS + ("scl",)
-# SCL classes counted as clear land or water in the report's valid fraction (F2.2 decides its own).
-SCL_CLEAR = (4, 5, 6)
 
 GDAL_ENV = {
     "AWS_NO_SIGN_REQUEST": "YES",
@@ -129,7 +128,12 @@ def _asset_info(item, name: str) -> dict:
         return info
     rb = (a.extra_fields.get("raster:bands") or [{}])[0]
     if "scale" in rb and "offset" in rb:
-        info.update(scale=rb["scale"], offset=rb["offset"], nodata=rb.get("nodata", 0))
+        # Earth Search re-harmonises baseline >= 04.00 COGs and says so with
+        # earthsearch:boa_offset_applied, but raster:bands still lists the -0.1 offset. Adding it
+        # again puts open water below 0 (green about -0.05, SWIR -0.08), so it is dropped here.
+        applied = item.properties.get("earthsearch:boa_offset_applied") is True
+        info.update(scale=rb["scale"], offset=0 if applied else rb["offset"],
+                    nodata=rb.get("nodata", 0), metaOffset=rb["offset"], boaOffsetApplied=applied)
         return info
     baseline = str(item.properties.get("s2:processing_baseline", ""))
     if baseline and baseline < "04.00":
@@ -276,7 +280,7 @@ def acquire(cfg: Config, region: str, section_id: str, reselect: bool = False) -
                     raise RuntimeError(f"look {lk['date']} {n}: items disagree on scale/offset {p}")
                 sc, off, nd = p.pop()
                 bands[n] = reflectance(dn[n], sc, off, nd)
-            clear = np.isin(dn["scl"], SCL_CLEAR) & (dn["green"] != 0)
+            clear = np.isin(dn["scl"], cfg.water.scl_valid) & (dn["green"] != 0)
             fractions.append(round(float(clear[aoi_mask].mean()), 4))
             looks.append(Look(lk["date"], [i["id"] for i in lk["items"]], bands, dn["scl"]))
 

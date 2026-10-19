@@ -3,6 +3,23 @@
   "crs": "EPSG:32719",
   "resolutionM": 10,
   "corridorM": 1500,
+  "water": {
+    "$comment": "Water mask of F2.2. Per look: water = SCL in sclValid (0 no data, 1 saturated, 3 cloud shadow, 8/9 cloud, 10 cirrus, 11 snow are dropped; 2 dark area and 7 unclassified are kept because dark deep water and turbid water land there) and MNDWI = (green-swir16)/(green+swir16) > mndwiMin and NDVI = (nir-red)/(nir+red) < ndviMax. A pixel is water when its water frequency over the valid looks is >= minFreq with at least minValidLooks valid looks. closingPx: side of the square binary closing (padded so the AOI border is not eroded). minIslandM2: enclosed non-water holes (islands, bars) smaller than this are filled; also the smallest ring kept in reservoir polygons. keepCorridorM: only 8-connected water components that touch the course buffered by this are kept. Provisional until the first report is read.",
+    "sclValid": [2, 4, 5, 6, 7],
+    "mndwiMin": 0.0,
+    "ndviMax": 0.1,
+    "minFreq": 0.5,
+    "minValidLooks": 3,
+    "closingPx": 3,
+    "minIslandM2": 2000,
+    "keepCorridorM": 150
+  },
+  "reservoir": {
+    "$comment": "Reservoir zones of F2.2: the morphological opening of the water mask by a disk of radius minHalfWidthM (every water pixel covered by a disk of that radius lying fully in water, so a river narrower than twice this is never a reservoir). Zone components under minAreaKm2 are dropped (they stay channel). simplifyM: Douglas-Peucker tolerance (m) of the polygons, topology preserved.",
+    "minHalfWidthM": 250,
+    "minAreaKm2": 0.5,
+    "simplifyM": 10
+  },
   "stac": {
     "url": "https://earth-search.aws.element84.com/v1",
     "collection": "sentinel-2-l2a",
