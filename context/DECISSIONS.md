@@ -16,6 +16,11 @@ The standing architecture decisions stay in PLAN.md; data licenses are in `pipel
   collected section reports without fetching scenes or processing water again.
 - Seed `basin-pipeline` with locally completed section reports, outputs and scene locks before the first remote
   dispatch. The publish gate only considers candidates in those reports and removes nets without candidates.
+- **Rewrite caching broke Range (2026-10-19).** With `x-vercel-enable-rewrite-caching`, Vercel's CDN stored the
+  first 206 of each `.pmtiles` (bytes `0-16383`) and returned it for every range, so production drew no vector
+  layers after #12. #13 removed the header and sets `Vercel-CDN-Cache-Control: no-store` on tile and flow routes;
+  three distinct ranges then matched on Preview and production. The cost: every request reaches r2.dev (rate
+  limited, "non-production"). The owner wants the cache back through Vercel, not a custom domain: B1.5, gated on distinct-range checks.
 
 ## Phase 0 (2026-09-29)
 

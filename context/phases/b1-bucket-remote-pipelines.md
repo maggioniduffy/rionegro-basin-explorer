@@ -242,13 +242,14 @@ Meanwhile builders write code against those names; nothing is uploaded until the
   immutable objects.
 - Vercel: transfer unchanged (100 GB Hobby).
 - Actions: $0 while the repo is public. **If it goes private**: 2,000 min/month and 2-CPU runners.
-- Possible: a custom domain (about $10/yr), only if B1.1's Range check fails.
+- B1.5 (Vercel cache): a Route Handler approach adds function invocations and Active CPU per range; to flag once
+  chosen. No custom domain (owner, 2026-10-19).
 
 ### Verification
 
 - `npm run check` per WP.
 - `content-publish` report (an idempotent second run).
-- Preview `curl -r` returns 206 and the cache HIT.
+- Preview `curl -r` on three distinct ranges: each returns its own `content-range` (and, after B1.5, a HIT).
 - Workflow run logs and the pulled `flow-water` / `flow-net-publish` reports.
 - Owner browser pass for B1.4.
 
@@ -264,14 +265,16 @@ Meanwhile builders write code against those names; nothing is uploaded until the
       Done 2026-10-19: 11 sections (`limay-076..083`, `limay-096`, `limay-110`, `neuquen-139`); bucket has 11
       each of net/qa/report/water.tif and scene locks, 4 aux.xml, matching local. `limay-084` (scene lock, no
       `out/`) not seeded.
-- [ ] Choose whether to register `flow-water.yml` through a small PR to `main` or wait for the phase PR; enable
-      GitHub Actions pull-request creation.
-- [ ] After the workflow is available on GitHub, dispatch the already-done `limay-110` dry run and check its
-      reports and version hash.
-- [ ] Set Vercel `CONTENT_ORIGIN` for Preview and Production. On a Preview, request at least three
+- [x] Choose whether to register `flow-water.yml` through a small PR to `main` or wait for the phase PR; enable
+      GitHub Actions pull-request creation. Done 2026-10-19: PR #11 (yml only); PR creation was already allowed.
+- [x] After the workflow is available on GitHub, dispatch the already-done `limay-110` dry run and check its
+      reports and version hash. Done 2026-10-19: run 39291050502 passed, flow version `4a8bce066be4` unchanged,
+      0 uploaded, no PR.
+- [x] Set Vercel `CONTENT_ORIGIN` for Preview and Production. On a Preview, request at least three
       _different_ byte ranges of one `.pmtiles` and check each `content-range` matches the request (a CDN HIT
       is not wanted: on 2026-10-19 rewrite caching served the first 206, `0-16383`, for every range and broke
-      production), and the map/flow load without console errors.
+      production), and the map/flow load without console errors. Done 2026-10-19 after #13: three ranges matched
+      on Preview (MISS), owner confirmed production works.
 - [ ] Only after that Preview check, untrack `public/tiles` and `public/flow` in a separate commit.
 
 ## Work packages (original proposal)
@@ -292,3 +295,19 @@ Meanwhile builders write code against those names; nothing is uploaded until the
     zoom for reservoir drift.
 
   Needs a rerun of the reservoir sections (remote, B1.2), then `flow-net-publish`.
+
+- [ ] B1.5 Vercel CDN cache for tiles and flow (owner, 2026-10-19: use Vercel's cache, no custom domain). Since
+      #13 nothing is cached: every PMTiles range goes through Vercel to r2.dev, which is rate-limited and
+      "non-production". Approaches to verify in Vercel's docs before building, cheapest first:
+  - The CDN caches the **whole object** and serves ranges from it: the rewrite (or a Route Handler) asks R2
+    without `Range` and returns a 200 with `s-maxage`/`Vercel-CDN-Cache-Control`. Works only if Vercel's CDN
+    answers a `Range` request from a cached 200; that is the first thing to check.
+  - Cache each range separately: a 206 keyed by URL + `Range` (`Vary: Range`, or the range moved into the URL by
+    the client's PMTiles source). Only if Vercel honours that key; the cached rewrite in #12 did not.
+  - A Route Handler slices ranges from a whole object held in Vercel's Runtime Cache or the `fetch` cache. Check
+    item size limits against the largest file (cba `mask.pmtiles`, 8.5 MB) and the cost of a function invocation
+    and Active CPU per range.
+
+  Out: a custom domain (owner). Gate: on a Preview, at least three distinct ranges of one `.pmtiles` each return
+  their own `content-range`, twice, and the second pass shows `x-vercel-cache: HIT`; the map and flow load with no
+  console errors; cost flags updated.
