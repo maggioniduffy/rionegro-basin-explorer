@@ -519,6 +519,31 @@ section; F3 (the particle engine) will read this network to follow braided arms 
     Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights
     reserved. See `SOURCES.md`; the GLO-30 licence text itself is not verified there.
 
+### `npm run pipeline:flow-net-publish -- --region <id>`
+
+F3.2 (`nqn` only for now): publishes the finished `flow-net/1` networks of `pipeline:flow-water` as compact
+`flow-net-pub/1` files for the F3 particle engine. `--region` is required.
+
+- **Inputs.** `data/work/<id>/flow-water/report.json` (the candidates: sections with an `inputsHash` and no
+  `error`), their `out/<sectionId>.net.json`, `public/flow/<id>/index.json`, and
+  `regions/<id>/flow-net-publish.config.json` (`shareTol`, `minWetCourseCoverage`, `maxTotalBytes`).
+- **QA gate.** A section is rejected, with a reason in the report, if: the net fails `flowNetSchema`;
+  `qa.cycles` is not 0; the attribution lacks "Contains modified Copernicus Sentinel data" or "Copernicus
+  WorldDEM-30"; (with branches) there is no source or reservoir outlet, no sink or reservoir, shares at a node with
+  2 or more outgoing branches do not sum to 1 within `shareTol`, or a branch is not reachable from a source or
+  reservoir outlet; neither `qa.wetCourseCoverage` nor the reservoirs' `sRange` share of the course reaches
+  `minWetCourseCoverage`; or the section is missing from `index.json` or is `narrow` or `noDischarge`. The app
+  falls back to the F1 track for rejected sections.
+- **Outputs.** `public/flow/<id>/<sectionId>.net.json` (format in `lib/flow/net-pub-schema.ts`: integer local
+  metres from the SW corner of the bbox, delta-encoded polylines, nodes as parallel arrays; codec in
+  `lib/flow/net-pub.ts`) and `public/flow/<id>/nets.json` (`ids`, `reservoirSections`: published sections whose
+  index reason is `reservoir` and that have a reservoir, which the app makes flowable). Stale `*.net.json` are
+  removed, nothing else. Same bytes on every run. Budget: `maxTotalBytes` (4 MB) for all of them, checked before
+  anything is written, separate from the 8 MB of the sections.
+- **`report.json`** (`data/work/<id>/flow-net-publish/`): `ok`, `checks`, counts (`candidates`, `published`,
+  `rejected`, `rejectedByReason`), `bytes`, `perSection` (raw and gzip bytes), `maxDecodeErrorM` (must stay under
+  1 m), `rejectedSections` with reasons.
+
 ### `npm run pipeline:export`
 
 Writes the Phase 1 artifacts:

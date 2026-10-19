@@ -40,7 +40,7 @@ reservoirs, and fallback to the F1 track when a section has no net.
 - [x] F3.0 Phase file, PLAN row, DECISSIONS entry, GLO-30 licence read (SOURCES.md)
 - [x] F3.1 flow-water: batches and resume, connectors before dead-end pruning, reservoir hub in/out, drift
       convergence, SCL class 2 measurement; pytest: 3 cases
-- [ ] F3.2 `pipeline:flow-net-publish` (QA gate, `flow-net-pub/1`, `nets.json`, 4 MB budget, report); vitest:
+- [x] F3.2 `pipeline:flow-net-publish` (QA gate, `flow-net-pub/1`, `nets.json`, 4 MB budget, report); vitest:
       round trip
 - [ ] F3.3 `lib/flow/network.ts`, net particles (hand-off, reservoir drift), branch speed; tests: shares, bounds
 - [ ] F3.4 Loading (`nets.json`, nets), FlowController and layer (shared origin, cached uniforms), flowability of
