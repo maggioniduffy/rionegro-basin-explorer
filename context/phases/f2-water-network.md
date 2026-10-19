@@ -57,7 +57,7 @@ multi-branch channel network and reservoir polygons from Sentinel-2 L2A (10 m) a
 
 ## Owner checks (local)
 
-- [ ] `uv` installed; `npm run pipeline:flow-water -- --region nqn --only limay-110,limay-078,limay-096,neuquen-139`
+- [x] `uv` installed; `npm run pipeline:flow-water -- --region nqn --only limay-110,limay-078,limay-096,neuquen-139`
       twice: `report.json` ok, outputs identical.
 - [x] Open `data/work/nqn/flow-water/out/*.qa.geojson` over imagery in QGIS: arms follow the water, reservoir
       outlines match the shore (owner, 2026-10-18: ok).
