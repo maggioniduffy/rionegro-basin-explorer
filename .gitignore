@@ -70,3 +70,6 @@ caudal.gif
 pipeline/py/.venv/
 __pycache__/
 .pytest_cache/
+# QGIS projects (local inspection)
+*.qgz
+*.qgs
