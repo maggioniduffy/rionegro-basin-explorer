@@ -59,8 +59,8 @@ multi-branch channel network and reservoir polygons from Sentinel-2 L2A (10 m) a
 
 - [ ] `uv` installed; `npm run pipeline:flow-water -- --region nqn --only limay-110,limay-078,limay-096,neuquen-139`
       twice: `report.json` ok, outputs identical.
-- [ ] Open `data/work/nqn/flow-water/out/*.qa.geojson` over imagery in QGIS: arms follow the water, reservoir
-      outlines match the shore.
+- [x] Open `data/work/nqn/flow-water/out/*.qa.geojson` over imagery in QGIS: arms follow the water, reservoir
+      outlines match the shore (owner, 2026-10-18: ok).
 - [x] `limay-096` r0 (0.67 km² at s = 0, off the course) is the El Chocón outflow above Arroyito (owner,
       2026-10-18).
 - [x] The `neuquen-139` reservoir (HydroLAKES 122976, unnamed) is not El Chañar, which lies a few km downstream
