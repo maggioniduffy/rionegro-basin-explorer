@@ -459,7 +459,7 @@ section; F3 (the particle engine) will read this network to follow braided arms 
 - **Batches and resume.** A section is skipped ("up to date" in the log) when its `net.json`, `qa.geojson` and
   `out/<id>.report.json` exist and the report's `inputsHash` matches: sha256 of the canonical region config, the
   section's `scenes.lock.json`, `public/flow/<id>/<sectionId>.json` and `FLOWWATER_VERSION` (`flowwater/cli.py`,
-  bumped whenever output logic changes). `--force` (or `--reselect`) reprocesses. Every output is written to a
+  bumped whenever output logic changes). `--force` (or `--reselect`) reprocesses. `--report-only` only rebuilds `report.json` from the `out/*.report.json` present. Every output is written to a
   temporary name and renamed. Ctrl-C between sections leaves the finished sections valid and still rebuilds
   `report.json`. The HydroLAKES file (`lakeIoU`) is part of the hash, and `water.tif` must exist.
 - **Config.** `regions/<id>/flow-water.config.json` (grid CRS and resolution, corridor, STAC window, water,
@@ -543,6 +543,37 @@ F3.2 (`nqn` only for now): publishes the finished `flow-net/1` networks of `pipe
 - **`report.json`** (`data/work/<id>/flow-net-publish/`): `ok`, `checks`, counts (`candidates`, `published`,
   `rejected`, `rejectedByReason`), `bytes`, `perSection` (raw and gzip bytes), `maxDecodeErrorM` (must stay under
   1 m), `rejectedSections` with reasons.
+
+### Content bucket and remote `flow-water`
+
+- `npm run content:publish -- --region <id> [--kind tiles|flow]` uploads only missing files to
+  `basin-content` as `<kind>/<region>/<content-hash>/<file>`, updates `content/versions.json`, and writes
+  `data/work/<id>/content-publish/report.json`. Every uploaded response is immutable; objects are never
+  overwritten or deleted.
+- `npm run content:pull -- --region <id> [--kind tiles|flow]` restores the version in that manifest to
+  `public/`, for a fresh clone or a CI runner. Both commands require `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
+  `R2_SECRET_ACCESS_KEY`, and `R2_CONTENT_BUCKET`; see `.env.example`. Do not put credentials in a
+  `NEXT_PUBLIC_` variable. **`content:pull` replaces** the local `public/<kind>/<region>/` directory (it is
+  emptied first), so local uncommitted tile or flow output there is lost.
+- `.github/workflows/flow-water.yml` is dispatch-only. It expands the same `--only` / `--rivers` selection
+  as the Python command, processes chunks in up to four jobs, and uses private `basin-pipeline` to resume
+  scene locks and output. Its publish job runs the net gate, uploads the new flow version, and opens a PR
+  containing only `content/versions.json`. `plan` refuses a dispatch with neither `only` nor `rivers`. The
+  publish job collects every `out/` report (plus scene locks and lakes) from `basin-pipeline`, rebuilds
+  `report.json` with `pipeline:flow-water --report-only` (no processing, no scene downloads), then runs the net
+  gate.
+- **One-time prerequisites before the first dispatch** (owner, local, with R2 credentials in `.env.local`):
+  1. `npm run content:publish -- --region <id>` for tiles and flow of each served region (`--kind tiles` for a
+     region with no `public/flow/<id>/`, such as `cba`; without it the run stops at flow), then commit
+     `content/versions.json` (Vercel needs it once `CONTENT_ORIGIN` is set; the build fails if a served region
+     has no tiles version).
+  2. `npm run flow-water:sync -- --region nqn --mode push-inputs` uploads
+     `data/work/nqn/lakes/lakes.geojson` to `basin-pipeline` as `inputs/nqn/lakes.geojson` (run `lakes` first).
+  3. `npm run flow-water:sync -- --region nqn --mode push --only <every id in local out/>` seeds
+     `basin-pipeline` with the sections already run locally. **Required:** the publish job only knows the
+     `out/` reports in the bucket, and `flow-net-publish` removes every `*.net.json` without a candidate, so
+     an unseeded bucket would unpublish every locally built net.
+  4. Repository secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`.
 
 ### `npm run pipeline:export`
 

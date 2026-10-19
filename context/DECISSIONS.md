@@ -4,6 +4,19 @@ Dated decisions made while working through [PLAN.md](PLAN.md), with the figures 
 behind them. When a choice revises an earlier one, the entry that changes it says so.
 The standing architecture decisions stay in PLAN.md; data licenses are in `pipeline/SOURCES.md`.
 
+## Phase B1 (2026-10-19)
+
+- Public PMTiles and flow JSON use Cloudflare R2 under immutable content-hash prefixes. The app keeps its
+  same-origin `/tiles/` and `/flow/` URLs through Vercel rewrites, with a committed version manifest for
+  deployments and fresh clones. Local development still serves `public/` when `CONTENT_ORIGIN` is absent.
+- R2 activation, the two buckets, secrets, first upload, untracking the current generated files, and the Vercel
+  Range/cache preview check are owner actions. They must happen in that order so a fresh checkout never loses
+  the currently tracked content before it is available remotely.
+- The remote workflow uses `flow-water --report-only` in its publish job to rebuild the aggregate report from
+  collected section reports without fetching scenes or processing water again.
+- Seed `basin-pipeline` with locally completed section reports, outputs and scene locks before the first remote
+  dispatch. The publish gate only considers candidates in those reports and removes nets without candidates.
+
 ## Phase 0 (2026-09-29)
 
 - Imagery: undecided until Phase 2. EOX is recorded in `SOURCES.md` (CC BY-NC-SA, verified); Esri's terms are still unverified.

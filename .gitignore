@@ -59,6 +59,10 @@ next-env.d.ts
 # MapLibre worker, copied from node_modules by scripts/copy-maplibre-worker.ts
 /public/maplibre/
 
+# Published to R2 by content:publish; local pipeline output only.
+/public/tiles/
+/public/flow/
+
 atlas-credentials.env
 # personal to-do list for the project owner
 PENDING.md
