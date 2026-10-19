@@ -1,5 +1,6 @@
 """Load and validate regions/<region>/flow-water.config.json."""
 
+import copy
 import json
 import sys
 from dataclasses import dataclass
@@ -68,11 +69,46 @@ def _fail(msg: str) -> "None":
     raise SystemExit(2)
 
 
-def load_config(region: str) -> Config:
+def parse_overrides(items: list[str]) -> dict[str, object]:
+    """CLI `key=value` strings -> {dotted key: value}; the value is JSON when it parses, else the raw string."""
+    out: dict[str, object] = {}
+    for item in items:
+        key, eq, val = item.partition("=")
+        if not eq or not key:
+            _fail(f"override {item!r}: expected key=value")
+        try:
+            out[key] = json.loads(val)
+        except ValueError:
+            out[key] = val
+    return out
+
+
+def _apply_overrides(raw: dict, overrides: dict[str, object]) -> dict:
+    """Deep copy of `raw` with each dotted key replaced; the key must name an existing leaf."""
+    out = copy.deepcopy(raw)
+    for key, val in overrides.items():
+        *parents, leaf = key.split(".")
+        node = out
+        for seg in parents:
+            node = node.get(seg) if isinstance(node, dict) else None
+        if not isinstance(node, dict) or leaf not in node or isinstance(node[leaf], dict):
+            _fail(f"unknown config override {key!r}")
+        node[leaf] = val
+    return out
+
+
+def load_config(region: str, overrides: dict[str, object] | None = None) -> Config:
     path = config_path(region)
     if not path.is_file():
         _fail(f"region {region} has no flow-water.config.json")
     raw = json.loads(path.read_text())
+    if overrides:
+        raw = _apply_overrides(raw, overrides)
+    return parse_config(raw, path)
+
+
+def parse_config(raw: dict, path) -> Config:
+    """Build and validate a Config from the raw JSON dict; `path` only names the source in messages."""
     try:
         s = raw["stac"]
         w, rv, nw = raw["water"], raw["reservoir"], raw["network"]

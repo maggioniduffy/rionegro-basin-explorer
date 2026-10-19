@@ -34,7 +34,7 @@ from rasterio.enums import Resampling
 from rasterio.errors import RasterioIOError
 from rasterio.features import rasterize
 from rasterio.vrt import WarpedVRT
-from shapely.geometry import LineString, mapping
+from shapely.geometry import LineString, Polygon, box, mapping
 
 from flowwater.config import Config
 from flowwater.paths import flow_dir, work_dir
@@ -111,6 +111,28 @@ def build_grid(cfg: Config, lonlat: np.ndarray) -> tuple[Grid, np.ndarray, LineS
     width, height = round((maxx - minx) / r), round((maxy - miny) / r)
     transform = Affine(r, 0, minx, 0, -r, maxy)
     return Grid(cfg.crs, transform, width, height), course_xy, aoi
+
+
+def grid_from_bbox(cfg: Config, bbox: list[float]) -> tuple[Grid, Polygon]:
+    """Grid over a lon1,lat1,lon2,lat2 box (EPSG:4326), snapped outward like build_grid, and its
+    projected AOI polygon (the box of the snapped bounds)."""
+    lon1, lat1, lon2, lat2 = (float(v) for v in bbox)
+    if not (lon1 < lon2 and lat1 < lat2):
+        raise ValueError(f"bbox must be lon1,lat1,lon2,lat2 with lon1 < lon2 and lat1 < lat2: {bbox}")
+    n = 20  # points per side
+    ring = ([(lon1 + (lon2 - lon1) * i / n, lat1) for i in range(n)]
+            + [(lon2, lat1 + (lat2 - lat1) * i / n) for i in range(n)]
+            + [(lon2 - (lon2 - lon1) * i / n, lat2) for i in range(n)]
+            + [(lon1, lat2 - (lat2 - lat1) * i / n) for i in range(n)])
+    tf = pyproj.Transformer.from_crs("EPSG:4326", cfg.crs, always_xy=True)
+    x, y = tf.transform([p[0] for p in ring], [p[1] for p in ring])
+    r = cfg.resolution_m
+    minx, miny, maxx, maxy = Polygon(np.column_stack([x, y])).bounds
+    minx, miny = math.floor(minx / r) * r, math.floor(miny / r) * r
+    maxx, maxy = math.ceil(maxx / r) * r, math.ceil(maxy / r) * r
+    width, height = round((maxx - minx) / r), round((maxy - miny) / r)
+    transform = Affine(r, 0, minx, 0, -r, maxy)
+    return Grid(cfg.crs, transform, width, height), box(minx, miny, maxx, maxy)
 
 
 def grid_lonlat_bbox(grid: Grid) -> list[float]:
@@ -267,7 +289,13 @@ def _npz_save(path: Path, **arrays) -> None:
 def acquire(cfg: Config, region: str, section_id: str, reselect: bool = False) -> Stack:
     lonlat, bbox = load_course(region, section_id)
     grid, course_xy, aoi = build_grid(cfg, lonlat)
-    cache = work_dir(region) / "cache" / section_id
+    return acquire_on_grid(cfg, section_id, grid, course_xy, aoi,
+                           work_dir(region) / "cache" / section_id, reselect)
+
+
+def acquire_on_grid(cfg: Config, section_id: str, grid: Grid, course_xy: np.ndarray, aoi,
+                    cache: Path, reselect: bool = False) -> Stack:
+    """Looks and DEM of one grid, cached in `cache`."""
     cache.mkdir(parents=True, exist_ok=True)
     warnings: list[str] = []
     aoi_mask = rasterize([(mapping(aoi), 1)], out_shape=(grid.height, grid.width),

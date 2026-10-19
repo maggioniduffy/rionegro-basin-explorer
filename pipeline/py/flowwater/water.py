@@ -33,7 +33,7 @@ from shapely.ops import unary_union
 from shapely.validation import make_valid
 from skimage.morphology import remove_small_holes
 
-from flowwater.acquire import BANDS, Stack
+from flowwater.acquire import BANDS, Look, Stack
 from flowwater.config import Config
 from flowwater.paths import work_dir
 
@@ -65,23 +65,30 @@ def _ratio(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.where(d > np.float32(1e-6), out, np.float32(np.nan)).astype(np.float32)
 
 
+def look_indices(cfg: Config, look: Look, scl_valid: tuple[int, ...] | None = None
+                 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """(mndwi, ndvi, valid, wet) of one look. `scl_valid` overrides water.sclValid."""
+    w = cfg.water
+    scl_valid = w.scl_valid if scl_valid is None else scl_valid
+    b = look.bands
+    mndwi = _ratio(b["green"], b["swir16"])
+    ndvi = _ratio(b["nir"], b["red"])
+    finite = np.isfinite(mndwi) & np.isfinite(ndvi)
+    for n in BANDS:
+        finite &= np.isfinite(b[n])
+    valid = np.isin(look.scl, scl_valid) & finite
+    with np.errstate(invalid="ignore"):
+        wet = valid & (mndwi > w.mndwi_min) & (ndvi < w.ndvi_max)
+    return mndwi, ndvi, valid, wet
+
+
 def water_frequency(cfg: Config, stack: Stack,
                     scl_valid: tuple[int, ...] | None = None) -> tuple[np.ndarray, np.ndarray]:
     """(water looks, valid looks) per pixel, both uint8. `scl_valid` overrides water.sclValid."""
-    w = cfg.water
-    scl_valid = w.scl_valid if scl_valid is None else scl_valid
     shp = (stack.grid.height, stack.grid.width)
     n_water, n_valid = np.zeros(shp, np.uint8), np.zeros(shp, np.uint8)
     for lk in stack.looks:
-        b = lk.bands
-        mndwi = _ratio(b["green"], b["swir16"])
-        ndvi = _ratio(b["nir"], b["red"])
-        finite = np.isfinite(mndwi) & np.isfinite(ndvi)
-        for n in BANDS:
-            finite &= np.isfinite(b[n])
-        valid = np.isin(lk.scl, scl_valid) & finite
-        with np.errstate(invalid="ignore"):
-            wet = valid & (mndwi > w.mndwi_min) & (ndvi < w.ndvi_max)
+        _, _, valid, wet = look_indices(cfg, lk, scl_valid)
         n_valid += valid
         n_water += wet
     return n_water, n_valid
