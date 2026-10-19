@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useRegion } from "@/components/RegionProvider";
 import {
@@ -10,7 +10,14 @@ import {
   Row,
   useFormat,
 } from "@/components/panel/parts";
-import { loadSection, peekSection } from "@/lib/flow/data";
+import {
+  loadNet,
+  loadNets,
+  loadSection,
+  peekNet,
+  peekSection,
+} from "@/lib/flow/data";
+import type { FlowNetPub } from "@/lib/flow/net-pub-schema";
 import type { FlowIndex, FlowReason, FlowSection } from "@/lib/flow/schema";
 import { useMapStore } from "@/lib/store";
 
@@ -67,6 +74,26 @@ export function FlowPanel({ id }: { id: string }) {
     peekSection(region, id) ?? (loaded?.id === id ? loaded.section : null);
   const failed = loaded?.id === id && loaded.section === null && !section;
 
+  // The section's published net, if any; undefined until known (no note shown meanwhile).
+  const [netLoaded, setNetLoaded] = useState<{
+    id: string;
+    net: FlowNetPub | null;
+  } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void loadNets(region)
+      .then((m) => (m.ids.includes(id) ? loadNet(region, id) : null))
+      .then((net) => {
+        if (alive) setNetLoaded({ id, net });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [region, id]);
+  const cached = peekNet(region, id);
+  const net = cached ?? (netLoaded?.id === id ? netLoaded.net : null);
+  const netKnown = cached !== undefined || netLoaded?.id === id;
+
   return (
     <PanelFrame
       label={t("label")}
@@ -75,14 +102,41 @@ export function FlowPanel({ id }: { id: string }) {
     >
       {!section && !failed && <p className="text-muted pr-8">{t("loading")}</p>}
       {failed && <p className="pr-8">{t("error")}</p>}
-      {section && <SectionDetails section={section} />}
+      {section && (
+        <SectionDetails
+          section={section}
+          net={netKnown ? (net ?? null) : undefined}
+        />
+      )}
     </PanelFrame>
   );
 }
 
-function SectionDetails({ section }: { section: FlowSection }) {
+/** Branches by kind and whether any node splits the flow (two or more branches leave it). */
+function netFacts(net: FlowNetPub) {
+  const out = new Map<number, number>();
+  for (const b of net.branches) out.set(b.from, (out.get(b.from) ?? 0) + 1);
+  return {
+    channels: net.branches.filter((b) => b.kind === "channel").length,
+    split: [...out.values()].some((n) => n >= 2),
+    reservoirs: net.reservoirs.length,
+  };
+}
+
+/** net: undefined while it loads, null for a section with no net (the single F1 track). */
+function SectionDetails({
+  section,
+  net,
+}: {
+  section: FlowSection;
+  net: FlowNetPub | null | undefined;
+}) {
   const t = useTranslations("flow");
   const f = useFormat();
+  const fmt = useFormatter();
+  const facts = net ? netFacts(net) : null;
+  const day = (d: string) =>
+    fmt.dateTime(new Date(d), { dateStyle: "medium", timeZone: "UTC" });
   const { discharge, channel } = section;
   const usesFill = section.stations.gap.some((g) => g === 1);
 
@@ -141,6 +195,28 @@ function SectionDetails({ section }: { section: FlowSection }) {
         <Row label={t("channel.source")}>{t(`channel.${channel.source}`)}</Row>
         {usesFill && (
           <p className="text-muted py-1.5 text-xs">{t("channel.gap")}</p>
+        )}
+        {net !== undefined && (
+          <p className="text-muted py-1.5 text-xs">
+            {net && facts
+              ? t(
+                  facts.channels > 0
+                    ? "channel.network"
+                    : "channel.reservoirOnly",
+                  {
+                    from: day(net.source.dates[0]),
+                    to: day(net.source.dates[1]),
+                    count: facts.channels,
+                  },
+                )
+              : t("channel.singleTrack")}
+          </p>
+        )}
+        {facts && facts.reservoirs > 0 && (
+          <p className="text-muted py-1.5 text-xs">{t("channel.reservoir")}</p>
+        )}
+        {facts?.split && (
+          <p className="text-muted py-1.5 text-xs">{t("channel.shares")}</p>
         )}
       </Group>
 

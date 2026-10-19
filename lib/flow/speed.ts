@@ -1,5 +1,6 @@
 import { FLOW_RATIO_CLAMP } from "./config";
 import { meanWidth, widthAt, type Track } from "./geometry";
+import type { FlowNetwork } from "./network";
 
 /**
  * Relative, illustrative speed (owner decision F1): no source holds velocity, so the model
@@ -46,5 +47,45 @@ export function maxRatio(track: Track): number {
 /** Relative speed in [0, 1] at (s, u). */
 export function relativeSpeed(track: Track, s: number, u: number): number {
   const v = (lateralProfile(u) * widthRatio(track, s)) / maxRatio(track);
+  return Math.min(1, Math.max(0, v));
+}
+
+/**
+ * Unnormalised centreline speed factor of a network branch at s: flux / local width with the
+ * width clamped like widthRatio (flux x clampedRatio / mean width), or the plain clamped
+ * width ratio when the network has no flux.
+ */
+export function branchSpeedFactor(
+  track: Track,
+  meanW: number,
+  flux: number,
+  useFlux: boolean,
+  s: number,
+): number {
+  const w = widthAt(track, s);
+  const ratio = w <= 0 ? FLOW_RATIO_CLAMP[1] : clampRatio(meanW / w);
+  if (!useFlux) return meanW > 0 ? ratio : 1;
+  return meanW > 0 ? (flux * ratio) / meanW : 0;
+}
+
+/**
+ * Relative speed in [0, 1] on network branch b at (s, u): lateral profile times the branch
+ * factor, normalised so the network maximum (u = 0, over every branch vertex) is 1. Same
+ * illustrative model as relativeSpeed (no velocity in any source).
+ */
+export function branchSpeed(
+  net: FlowNetwork,
+  b: number,
+  s: number,
+  u: number,
+): number {
+  const f = branchSpeedFactor(
+    net.tracks[b]!,
+    net.branchMeanW[b]!,
+    net.branchFlux[b]!,
+    net.useFlux,
+    s,
+  );
+  const v = (lateralProfile(u) * f) / net.speedNorm;
   return Math.min(1, Math.max(0, v));
 }

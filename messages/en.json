@@ -336,6 +336,11 @@
       "estimated-band": "Estimated width (RiverATLAS river area, modeled)",
       "mixed": "Mixed",
       "none": "None",
+      "network": "Channel network from Sentinel-2 imagery ({from} – {to}), {count, plural, one {# branch} other {# branches}}.",
+      "reservoirOnly": "Reservoir outline from Sentinel-2 imagery ({from} – {to}).",
+      "singleTrack": "Single track along the IGN course.",
+      "reservoir": "Inside the reservoir, particles drift slowly; the direction follows its inlets and outlets, or the river course where it has none, and is illustrative.",
+      "shares": "Branch shares are illustrative (by channel width), not measured discharge.",
       "gap": "Part of this course follows the modeled HydroRIVERS path."
     },
     "regulation": "Degree of regulation",
@@ -405,6 +410,12 @@
       },
       "terrain": {
         "usedFor": "Map base (\"Mapa\"): shaded relief drawn from these elevation tiles (SRTM, GMTED2010, ETOPO1), under the basin mask. Relief only: modeled elevation, not a measured value."
+      },
+      "sentinel2": {
+        "usedFor": "Flow close-up: water mask, channel network and reservoir outlines, derived offline from Sentinel-2 L2A scenes (via Element 84 Earth Search on AWS). Only the derived vectors are published."
+      },
+      "copdem": {
+        "usedFor": "Flow close-up: orientation of channel branches, derived offline. Only the derived vectors are published."
       },
       "eox": {
         "usedFor": "Satellite imagery.",

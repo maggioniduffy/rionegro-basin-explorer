@@ -6,12 +6,18 @@ from scipy import ndimage
 from shapely.geometry import LineString
 from skimage.morphology import skeletonize
 
+import math
+from types import SimpleNamespace
+
+import pyproj
 from affine import Affine
+from shapely.geometry import box
 
 from flowwater.config import NetworkConfig
+from flowwater.contract import reservoir_drift
 from flowwater.network import (
-    Guards, _direct, along_course, apply_flux, apply_shares, build_multigraph, capacity, clean_graph, count_cycles,
-    orient_edge, prune_core, width_grid,
+    Guards, _add_hubs, _direct, _link_hubs, along_course, apply_flux, apply_shares, build_multigraph, capacity,
+    clean_graph, connect_course_stubs, count_cycles, orient_edge, prune_core, width_grid,
 )
 
 NC = NetworkConfig(
@@ -115,3 +121,77 @@ def test_bypass_along_the_course_survives():
     near = along_course(LineString([(0, -55), (1100, -55)]), Affine(10, 0, 0, 0, -10, 0), 75.0)
     st = prune_core(G, 10.0, lambda p: False, {"r0"}, along=near, keep_m=200.0)
     assert st["slivers"] == 0 and G.number_of_edges() == 4
+
+
+def test_course_stub_across_a_dry_gap_is_kept_by_a_connector():
+    T = Affine(10, 0, 0, 0, -10, 0)
+    course = LineString([(0, -55), (2400, -55)])
+    r0 = box(1300, -100, 2200, -10)  # reservoir whose course extent starts 295 m past the stub end
+    G = nx.MultiGraph()
+    for n, p in {0: (5, 0), 1: (5, 40), 2: (5, 100), 3: (8, 150)}.items():
+        G.add_node(n, pos=np.array(p, float), s=p[1] * 10.0 + 5.0, **({"res": "r0"} if n == 3 else {}))
+    _edge(G, 0, 1, [(5, c) for c in range(0, 41)])
+    _edge(G, 1, 2, [(5, c) for c in range(40, 101)])  # stub along the course, free end at col 100
+    _edge(G, 1, 3, [(r, 40) for r in range(5, 19)] + [(18, c) for c in range(41, 151)]
+          + [(r, 150) for r in range(17, 7, -1)])  # detour 130 m off the course
+    along = along_course(course, T, 75.0)
+    is_border = lambda p: p[1] < 3
+    width = np.full((20, 300), 40.0)
+    n = connect_course_stubs(G, [("r0", r0)], course, T, NC, width, along, is_border)
+    assert n == 1
+    st = prune_core(G, 10.0, is_border, {"r0"}, along, NC.min_component_m)
+    assert st["deadEnds"] == 0 and 2 in G and G.degree(2) == 2
+    conn = [(u, v) for u, v, d in G.edges(data=True) if d["kind"] == "connector"]
+    assert len(conn) == 1 and 2 in conn[0] and G.nodes[(set(conn[0]) - {2}).pop()]["res"] == "r0"
+
+
+def test_channel_leaving_and_reentering_a_reservoir_is_no_cycle():
+    G = nx.MultiGraph()
+    for n in ("P1", "P2", "P3", "P4"):
+        G.add_node(n, res="r0")
+    D = nx.MultiDiGraph()
+    for u, v in [("A", "P1"), ("P2", "P3"), ("P4", "Z")]:  # P2 -> P3: a side channel across a bay
+        D.add_edge(u, v, kind="channel", capacity=1.0)
+    _add_hubs(D, G, [("r0", None)])
+    assert count_cycles(D) == 0
+    _link_hubs(D, [("r0", None)])
+    apply_shares(D)
+    assert apply_flux(D)
+    flux = lambda u, v: D.edges[u, v, 0]["flux"]
+    # inflow = 1 from A + the recirculated half of the outflow T, so T = 2
+    assert abs(flux("A", "P1") - 1) < 1e-9 and abs(flux("P2", "P3") - 1) < 1e-9
+    assert abs(flux("P4", "Z") - 1) < 1e-9 and abs(flux("res:r0:in", "res:r0:out") - 2) < 1e-9
+
+
+def test_drift_is_rotated_by_the_meridian_convergence():
+    def drift(lon):
+        x, y = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:32719", always_xy=True).transform(lon, -39.0)
+        poly = box(x - 500, y - 500, x + 500, y + 500)
+        course = LineString([(x, y - 2000), (x, y + 2000)])
+        pin, pout = SimpleNamespace(x=x, y=y - 400), SimpleNamespace(x=x, y=y + 400)  # grid north
+        return reservoir_drift(poly, [pin], [pout], course, "EPSG:32719")[0]
+
+    e, n = drift(-69.0)  # central meridian: grid north is true north
+    assert abs(e) < 1e-3 and abs(n - 1) < 1e-3
+    e, n = drift(-63.0)  # gamma = 6 deg x sin(-39 deg) = -3.8 deg: grid north lies west of true north
+    assert e < 0 and abs(e + math.sin(math.radians(6 * math.sin(math.radians(39))))) < 5e-3
+    assert abs(math.hypot(e, n) - 1) < 1e-3
+
+
+def test_reservoir_whose_only_outlet_reenters_it_is_the_drain():
+    G = nx.MultiGraph()
+    for n in ("P1", "P2", "P3"):
+        G.add_node(n, res="r0")
+    D = nx.MultiDiGraph()
+    for u, v in [("A", "P1"), ("P2", "P3")]:  # P2 -> P3 re-enters r0; nothing else drains
+        D.add_edge(u, v, kind="channel", capacity=1.0)
+    _add_hubs(D, G, [("r0", None)])
+    assert count_cycles(D) == 0
+    _link_hubs(D, [("r0", None)])
+    assert not D.has_edge("res:r0:in", "res:r0:out") and D.nodes["res:r0:out"]["closed"]
+    apply_shares(D)
+    assert apply_flux(D)
+    assert abs(D.edges["A", "P1", 0]["flux"] - 1) < 1e-9
+    assert D.edges["P2", "P3", 0]["flux"] == 0 and D.edges["res:r0:out", "P2", 0]["flux"] == 0
+    assert [n for n in D if D.in_degree(n) == 0 and D.out_degree(n) > 0 and not D.nodes[n].get("closed")] == ["A"]
+    assert D.out_degree("res:r0:in") == 0  # the reservoir is the sink

@@ -7,13 +7,18 @@ import {
   FLOW_TRAIL,
 } from "./config";
 import { buildTrack, type Track } from "./geometry";
+import { buildNetwork, type FlowNetwork } from "./network";
+import type { FlowNetPub } from "./net-pub-schema";
 import {
+  createNetParticles,
   createParticles,
   fillSegments,
   FLOW_VERTEX_FLOATS,
   hashSeed,
   mulberry32,
+  stepNetParticles,
   stepParticles,
+  type NetParticleState,
   type ParticleState,
 } from "./particles";
 import type { FlowSection } from "./schema";
@@ -37,8 +42,12 @@ declare global {
 }
 
 export interface FlowController {
-  /** Builds the track and seeds the particles from the section id; null clears the layer. */
-  setSection(section: FlowSection | null): void;
+  /**
+   * Seeds the particles from the section id; null clears the layer. With a net they run on
+   * its network (branches, reservoir drift); without one, or if the net seeds none, on the
+   * section's track as in F1.
+   */
+  setSection(section: FlowSection | null, net?: FlowNetPub | null): void;
   setPlaying(playing: boolean): void;
   setSpeed(multiplier: number): void;
   /** Advances n fixed 1/60 s steps whether or not playing, then repaints (e2e). */
@@ -149,6 +158,8 @@ interface GlState {
   uOpacity: WebGLUniformLocation | null;
   uPointSize: WebGLUniformLocation | null;
   uRound: WebGLUniformLocation | null;
+  uColors: WebGLUniformLocation | null;
+  uAt: WebGLUniformLocation | null;
 }
 
 export function createFlowLayer(): {
@@ -158,6 +169,10 @@ export function createFlowLayer(): {
   let map: MapLibreMap | null = null;
   let glState: GlState | null = null;
   let track: Track | null = null;
+  let network: FlowNetwork | null = null;
+  // Mercator origin the particle positions are relative to (the track's, or the network's).
+  let originX = 0;
+  let originY = 0;
   let particles: ParticleState | null = null;
   let rng: (() => number) | null = null;
   let playing = false;
@@ -186,21 +201,50 @@ export function createFlowLayer(): {
   };
 
   function advance(dt: number) {
-    if (track && particles && rng)
-      stepParticles(particles, track, dt, multiplier, rng);
+    if (!particles || !rng) return;
+    if (network)
+      stepNetParticles(
+        particles as NetParticleState,
+        network,
+        dt,
+        multiplier,
+        rng,
+      );
+    else if (track) stepParticles(particles, track, dt, multiplier, rng);
   }
 
   const controller: FlowController = {
-    setSection(section) {
+    setSection(section, net) {
       lastT = null;
+      network = null;
       if (!section) {
         track = null;
         particles = null;
         rng = null;
       } else {
-        track = buildTrack(section);
         rng = mulberry32(hashSeed(section.id));
-        particles = createParticles(track, FLOW_PARTICLES, rng);
+        let netParticles: NetParticleState | null = null;
+        if (net) {
+          const built = buildNetwork(net);
+          netParticles = createNetParticles(built, FLOW_PARTICLES, rng);
+          if (netParticles.count > 0) {
+            network = built;
+            track = null;
+            particles = netParticles;
+            originX = built.originX;
+            originY = built.originY;
+          } else {
+            // Nothing to seed on the net: the F1 track, with a fresh seed as in F1.
+            netParticles = null;
+            rng = mulberry32(hashSeed(section.id));
+          }
+        }
+        if (!netParticles) {
+          track = buildTrack(section);
+          particles = createParticles(track, FLOW_PARTICLES, rng);
+          originX = track.originX;
+          originY = track.originY;
+        }
       }
       repaint();
     },
@@ -267,6 +311,8 @@ export function createFlowLayer(): {
         uOpacity: gl.getUniformLocation(program, "u_opacity"),
         uPointSize: gl.getUniformLocation(program, "u_point_size"),
         uRound: gl.getUniformLocation(program, "u_round"),
+        uColors: gl.getUniformLocation(program, "u_colors"),
+        uAt: gl.getUniformLocation(program, "u_at"),
       };
       document.addEventListener("visibilitychange", onVisibility);
       if (process.env.NEXT_PUBLIC_E2E === "1")
@@ -305,19 +351,15 @@ export function createFlowLayer(): {
       // Animate only with a section, while it is visible and on screen, so a paused,
       // empty or zoomed-out map idles.
       animating =
-        playing &&
-        track !== null &&
-        particles !== null &&
-        opacity > 0 &&
-        !document.hidden;
+        playing && particles !== null && opacity > 0 && !document.hidden;
       if (animating) advance(dt);
-      if (!track || !particles || opacity <= 0) return;
+      if (!particles || opacity <= 0) return;
 
       // Positions are relative to the track origin (float32); the origin is added in float64.
       translatedMatrix(
         options.defaultProjectionData.mainMatrix,
-        track.originX,
-        track.originY,
+        originX,
+        originY,
         matrix64,
       );
       matrix32.set(matrix64);
@@ -336,8 +378,8 @@ export function createFlowLayer(): {
       gl.useProgram(g.program);
       gl.uniformMatrix4fv(g.uMatrix, false, matrix32);
       gl.uniform1f(g.uOpacity, opacity);
-      gl.uniform3fv(gl.getUniformLocation(g.program, "u_colors"), colors);
-      gl.uniform1fv(gl.getUniformLocation(g.program, "u_at"), stopAt);
+      gl.uniform3fv(g.uColors, colors);
+      gl.uniform1fv(g.uAt, stopAt);
       // Depth state is not ours; the particles sit on top of the map layers drawn before.
       gl.disable(gl.DEPTH_TEST);
 

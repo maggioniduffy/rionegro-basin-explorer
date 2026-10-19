@@ -1,0 +1,6 @@
+{
+  "$comment": "Settings of pipeline:flow-net-publish (F3.2): the QA gate and the size budget of the compact flow-net-pub/1 files in public/flow/<id>/. shareTol: at a node with 2 or more outgoing branches the shares must sum to 1 within this. minWetCourseCoverage: qa.wetCourseCoverage of the net, or the share of the course length covered by the reservoirs' sRange, must reach it (0.9 is provisional until the first reports are read). maxTotalBytes: budget of all *.net.json plus nets.json (4 MB, F3 plan), separate from the 8 MB of the sections in flow.config.json.",
+  "shareTol": 0.001,
+  "minWetCourseCoverage": 0.9,
+  "maxTotalBytes": 4000000
+}

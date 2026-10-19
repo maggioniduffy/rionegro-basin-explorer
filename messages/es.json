@@ -336,6 +336,11 @@
       "estimated-band": "Ancho estimado (área del río de RiverATLAS, modelado)",
       "mixed": "Mixta",
       "none": "Ninguna",
+      "network": "Red de cauces a partir de imágenes Sentinel-2 ({from} – {to}), {count, plural, one {# brazo} other {# brazos}}.",
+      "reservoirOnly": "Contorno del embalse a partir de imágenes Sentinel-2 ({from} – {to}).",
+      "singleTrack": "Un solo trazado a lo largo del curso del IGN.",
+      "reservoir": "Dentro del embalse las partículas derivan lentamente; la dirección sigue sus entradas y salidas, o el curso del río donde no las tiene, y es ilustrativa.",
+      "shares": "El reparto entre brazos es ilustrativo (según el ancho del cauce), no un caudal medido.",
       "gap": "Parte de este curso sigue el trazado modelado de HydroRIVERS."
     },
     "regulation": "Grado de regulación",
@@ -405,6 +410,12 @@
       },
       "terrain": {
         "usedFor": "Base de mapa (\"Mapa\"): relieve sombreado a partir de estas teselas de elevación (SRTM, GMTED2010, ETOPO1), bajo la máscara de la cuenca. Solo relieve: elevación modelada, no un valor medido."
+      },
+      "sentinel2": {
+        "usedFor": "Vista de cerca del flujo: máscara de agua, red de cauces y contornos de embalses, derivados sin conexión de escenas Sentinel-2 L2A (vía Element 84 Earth Search en AWS). Solo se publican los vectores derivados. El texto de atribución se cita tal como lo exige la licencia."
+      },
+      "copdem": {
+        "usedFor": "Vista de cerca del flujo: orientación de los brazos del cauce, derivada sin conexión. Solo se publican los vectores derivados. Los textos de atribución y de responsabilidad se citan tal como los exige la licencia, en inglés."
       },
       "eox": {
         "usedFor": "Imágenes satelitales.",
