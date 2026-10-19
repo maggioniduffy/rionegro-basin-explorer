@@ -59,6 +59,7 @@ const net = () => ({
   ],
   qa: {
     courseCoverage: 1,
+    wetCourseCoverage: 1,
     courseInWater: 1,
     insideWater: 1,
     f1InsideWater: 1,

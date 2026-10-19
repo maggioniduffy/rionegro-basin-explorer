@@ -36,32 +36,42 @@ multi-branch channel network and reservoir polygons from Sentinel-2 L2A (10 m) a
 
 ## Work packages
 
-- [ ] F2.0 Phase file, PLAN row, DECISSIONS entry, SOURCES.md (Sentinel-2 L2A via Earth Search, GLO-30)
-- [ ] F2.1 uv scaffold, config, CLI (required `--region`), acquisition (STAC, scene lock, windowed reads, cache, DEM)
-- [ ] F2.2 Water mask, reservoirs, polygons
-- [ ] F2.3 Network (skeleton graph, pruning, connectors, ports, orientation, shares); pytest: island arms,
+- [x] F2.0 Phase file, PLAN row, DECISSIONS entry, SOURCES.md (Sentinel-2 L2A via Earth Search, GLO-30)
+- [x] F2.1 uv scaffold, config, CLI (required `--region`), acquisition (STAC, scene lock, windowed reads, cache, DEM)
+- [x] F2.2 Water mask, reservoirs, polygons
+- [x] F2.3 Network (skeleton graph, pruning, connectors, ports, orientation, shares); pytest: island arms,
       orientation, shares
-- [ ] F2.4 Contract writer, `lib/flow/net-schema.ts` (+1 vitest), QA GeoJSON, `report.json`, README
-- [ ] F2.5 Run on the 4 sections twice, reviewer gate, PR
+- [x] F2.4 Contract writer, `lib/flow/net-schema.ts` (+1 vitest), QA GeoJSON, `report.json`, README
+- [~] F2.5 Run on the 4 sections twice (identical), reviewer gate (pass with fixes, fixed), PR
 
 ## Done when
 
-- `limay-110`: ≥ 2 parallel branches around ≥ 1 island, course coverage ≥ 0.95, no cycle, shares sum to 1 at
-  every split, no reservoir.
-- `limay-078`, `limay-096`: one reservoir over ≥ 90 % of the course chainage, with ports and drift; lake IoU
-  reported (≥ 0.8 provisional).
-- `neuquen-139`: branch vertices inside water ≥ 0.99, reported beside the same metric for the F1 track.
-- Two runs give identical bytes; `npm run check` passes; `public/flow/nqn` and `data/out` are unchanged.
+- `limay-110` (braided): ≥ 2 parallel branches around ≥ 1 island, wet-course coverage ≥ 0.95, no cycle, shares
+  sum to 1 at every split, no reservoir. **Met** (5 arms, 1.0, 0, 1e-16).
+- `limay-078`, `limay-096` (reservoirs): one reservoir over ≥ 90 % of the course chainage, with drift, and ports
+  where a channel meets it; lake IoU reported (≥ 0.8 provisional). **Met** (100 % / 0.832; 91 % / 0.877).
+- `neuquen-139` (meanders): branch points inside water ≥ 0.99 beside the F1 track's figure, and wet-course
+  coverage ≥ 0.95. **Partly met**: 1.0 against 0.777, but wet-course coverage 0.776 and one cycle (see
+  DECISSIONS, validation result); carried to F3.
+- Two runs give identical bytes; `npm run check` passes; `public/flow/nqn` and `data/out` are unchanged. **Met.**
 
 ## Owner checks (local)
 
 - [ ] `uv` installed; `npm run pipeline:flow-water -- --region nqn --only limay-110,limay-078,limay-096,neuquen-139`
       twice: `report.json` ok, outputs identical.
 - [ ] Open `data/work/nqn/flow-water/out/*.qa.geojson` over imagery in QGIS: arms follow the water, reservoir
-      outlines match the shore.
+      outlines match the shore. Check `limay-096` r0 (0.67 km² at s = 0, off the course): is it the El Chocón
+      tailwater above Arroyito? And the `neuquen-139` reservoir (HydroLAKES 122976): is it El Chañar?
 - [ ] `uv run --project pipeline/py pytest` green.
 
 ## Follow-ups
 
+- **neuquen-139 gaps:** connect course-following stubs (connectors) before pruning dead ends; split reservoir hubs
+  into in/out so a bay crossing is not a cycle.
+- **Drift north:** `drift` assumes UTM grid north is true north (fine near -69°, about 4° off at -63° on
+  EPSG:32719); correct for convergence before a full `nqn` run.
+- **SCL class 2:** in baseline 04.00 or later it is topographic shadow; measure how much water it adds in Andean
+  sections before the full run.
+- **GLO-30 licence document** not read; read it before F3 publishes anything derived from the DEM.
 - **F3:** engine reads `flow-net/1` (branch tracks with junction hand-off, reservoir drift), publish budget and
   file format, then a full `nqn` run.

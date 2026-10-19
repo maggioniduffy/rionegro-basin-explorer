@@ -377,12 +377,12 @@ Terms read 2026-10-18.
 - Citation (AWS registry): "Sentinel-2 Cloud-Optimized GeoTIFFs was accessed on DATE from
   https://registry.opendata.aws/sentinel-2-l2a-cogs."
 - Access: no account or key; anonymous STAC and S3. No usage limits stated.
-- Scale and offset: item `raster:bands` list scale 0.0001 and offset -0.1 (the -1000 DN BOA offset of baseline
-  > = 04.00; collection `item_assets` say offset 0). But items also carry `earthsearch:boa_offset_applied: true`
-  > (checked 2026-10-18 on `S2A_19HES_20240426_0_L2A`, baseline 05.10, assets in `sentinel-cogs`): the DN is
-  > already harmonised, and adding -0.1 again puts open water below zero (green about -0.05, SWIR -0.08 on
-  > limay-096). The step reads scale per item and zeroes the offset when that flag is true; the lock records
-  > both the listed and the applied offset.
+- Scale and offset: item `raster:bands` list scale 0.0001 and offset -0.1 (the -1000 DN BOA offset of
+  baseline 04.00 or later; collection `item_assets` say offset 0). But items also carry `earthsearch:boa_offset_applied: true`
+  (checked 2026-10-18 on `S2A_19HES_20240426_0_L2A`, baseline 05.10, assets in `sentinel-cogs`): the DN is
+  already harmonised, and adding -0.1 again puts open water below zero (green about -0.05, SWIR -0.08 on
+  limay-096). The step reads scale per item and zeroes the offset when that flag is true; the lock records
+  both the listed and the applied offset.
 
 ### Copernicus DEM GLO-30 (`copernicus-dem-30m`)
 

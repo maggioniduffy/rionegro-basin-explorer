@@ -169,7 +169,7 @@ def build_net(cfg: Config, region: str, stack: Stack, wr: WaterResult, net: Netw
         })
 
     st, ws = net.stats, wr.stats
-    qa = {k: st.get(k) for k in ("courseCoverage", "courseInWater", "insideWater", "f1InsideWater",
+    qa = {k: st.get(k) for k in ("courseCoverage", "wetCourseCoverage", "courseInWater", "insideWater", "f1InsideWater",
                                  "cycles", "connectors", "parallelArms")}
     qa["lakeIoU"] = ws.get("lakeIoU")
 

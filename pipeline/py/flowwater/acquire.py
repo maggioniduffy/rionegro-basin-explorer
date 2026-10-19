@@ -171,7 +171,7 @@ def select_scenes(cfg: Config, bbox: list[float]) -> dict:
         looks.append({"date": date, "items": entries})
     return {
         "query": {"url": s.url, "collection": s.collection, "bbox": bbox, "datetime": s.datetime,
-                  "query": query},
+                  "query": query, "looks": s.looks},
         "selectedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "candidates": len(items),
         "skippedLooks": skipped,
@@ -179,11 +179,28 @@ def select_scenes(cfg: Config, bbox: list[float]) -> dict:
     }
 
 
+def check_lock(cfg: Config, lock: dict) -> None:
+    """Fail when the search settings differ from the ones the lock was made with (locks written
+    before `looks` was stored are compared without it)."""
+    s, q = cfg.stac, lock["query"]
+    now = {"url": s.url, "collection": s.collection, "datetime": s.datetime,
+           "maxCloud": s.max_cloud_pct, "looks": s.looks}
+    then = {"url": q.get("url"), "collection": q.get("collection"), "datetime": q.get("datetime"),
+            "maxCloud": q.get("query", {}).get("eo:cloud_cover", {}).get("lt"), "looks": q.get("looks")}
+    if q.get("looks") is None:
+        now.pop("looks")
+        then.pop("looks")
+    if now != then:
+        raise ValueError("config changed since the scene lock; rerun with --reselect")
+
+
 def get_lock(cfg: Config, cache: Path, bbox: list[float], reselect: bool) -> dict:
     path = cache / "scenes.lock.json"
     if path.is_file() and not reselect:
+        lock = json.loads(path.read_text())
+        check_lock(cfg, lock)
         log.info("scene lock reused: %s", path)
-        return json.loads(path.read_text())
+        return lock
     lock = select_scenes(cfg, bbox)
     path.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n")
     log.info("scene lock written: %d looks of %d candidate items", len(lock["looks"]), lock["candidates"])

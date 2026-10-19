@@ -5,7 +5,7 @@ multi-branch network with reservoirs as hubs, dam connectors, flow shares and fl
 1. Skeleton of the water mask restricted to the channel (the reservoir zone is part of the
    skeletonised area so channel ends reach the zone instead of retracting from it), read with skan
    into an nx.MultiGraph (parallel arms around an island stay two edges). Adjacent junction pixels
-   are contracted into one node; a self-loop is split at its farthest vertex.
+   are contracted into one node; self-loops (a ring hanging on one node) are dropped.
 2. Prune to a fixed point: spurs (terminal branches shorter than the larger of spurMinPx pixels and
    spurWidthFactor x the junction width, unless the free end is protected), then branches narrower
    than minBranchWidthM (unless they alone link protected ends), then short components.
@@ -114,6 +114,29 @@ def path_len_m(path: np.ndarray, res_m: float) -> float:
     return float(np.hypot(d[:, 0], d[:, 1]).sum() * res_m)
 
 
+def width_grid(edt_m: np.ndarray, res_m: float) -> np.ndarray:
+    """River width at a pixel, m. The EDT runs from a pixel centre to the nearest dry pixel centre,
+    so a strip of n pixels has a centre EDT of (n + 1) / 2 pixels and width 2 * EDT - res = n * res."""
+    return np.maximum(2.0 * edt_m - res_m, res_m).astype(np.float32)
+
+
+def half_width_grid(edt_m: np.ndarray, res_m: float) -> np.ndarray:
+    return np.maximum(edt_m - res_m / 2.0, res_m / 2.0).astype(np.float32)
+
+
+def along_course(course: LineString, t: Affine, tol_m: float) -> Callable[[np.ndarray], float]:
+    """Metres of a (row, col) pixel path whose segments lie within tol_m of the course."""
+    def along(path: np.ndarray) -> float:
+        if len(path) < 2:
+            return 0.0
+        xy = rc_to_xy(path, t)
+        mid = (xy[1:] + xy[:-1]) / 2.0
+        seg = np.hypot(*np.diff(xy, axis=0).T)
+        near = shapely.distance(shapely.points(mid), course) <= tol_m
+        return float(seg[near].sum())
+    return along
+
+
 def path_widths(path: np.ndarray, width_m: np.ndarray) -> np.ndarray:
     r = np.clip(np.rint(path[:, 0]).astype(int), 0, width_m.shape[0] - 1)
     c = np.clip(np.rint(path[:, 1]).astype(int), 0, width_m.shape[1] - 1)
@@ -183,23 +206,13 @@ def build_multigraph(skel: np.ndarray) -> nx.MultiGraph:
     return G
 
 
-def split_self_loops(G: nx.MultiGraph) -> int:
-    """Split every self-loop at its vertex farthest from the node, through a new node."""
-    n = 0
-    for u, v, k, d in list(G.edges(keys=True, data=True)):
-        if u != v:
-            continue
-        p = d["path"]
-        G.remove_edge(u, v, k)
-        far = int(np.argmax(np.hypot(*(p - p[0]).T)))
-        if far in (0, len(p) - 1):
-            continue  # a loop of one pixel
-        m = max(G.nodes) + 1
-        G.add_node(m, pos=p[far].copy())
-        G.add_edge(u, m, path=p[: far + 1], a=u, b=m, kind="channel", narrow=d["narrow"])
-        G.add_edge(m, u, path=p[far:], a=m, b=u, kind="channel", narrow=d["narrow"])
-        n += 1
-    return n
+def drop_self_loops(G: nx.MultiGraph) -> int:
+    """Drop every self-loop (a ring hanging on one node carries no through-flow); counted in
+    G.graph['selfLoops']."""
+    loops = [(u, v, k) for u, v, k in G.edges(keys=True) if u == v]
+    G.remove_edges_from(loops)
+    G.graph["selfLoops"] = G.graph.get("selfLoops", 0) + len(loops)
+    return len(loops)
 
 
 def merge_degree2(G: nx.MultiGraph) -> None:
@@ -221,8 +234,8 @@ def merge_degree2(G: nx.MultiGraph) -> None:
 
 def normalize(G: nx.MultiGraph) -> None:
     G.remove_nodes_from([n for n in list(G.nodes) if G.degree(n) == 0])
-    while split_self_loops(G):
-        pass
+    drop_self_loops(G)
+    G.remove_nodes_from([n for n in list(G.nodes) if G.degree(n) == 0])
     merge_degree2(G)
 
 
@@ -317,10 +330,12 @@ def clean_graph(G, res_m, width_m, guards: Guards, nc: NetworkConfig) -> dict:
 
 
 def prune_core(G, res_m: float, is_border: Callable[[np.ndarray], bool],
-               term_hubs: frozenset | set = frozenset()) -> dict:
+               term_hubs: frozenset | set = frozenset(),
+               along: Callable[[np.ndarray], float] = lambda p: 0.0, keep_m: float = 0.0) -> dict:
     """Keep only the flow-bearing core: drop slivers (branches with both ends ports of one
-    reservoir, and whole components attached to a single reservoir that hold no terminal) and
-    then, to a fixed point, every free end that is not a terminal (`is_border`: a grid-border or
+    reservoir, and whole components attached to a single reservoir that hold no terminal; either is
+    kept when at least keep_m of its branch length follows the course, per `along`), components with
+    no terminal and no port, and then, to a fixed point, every free end that is not a terminal (`is_border`: a grid-border or
     course-end free end; or a hub in `term_hubs`), whatever its length. Hubs join their ports (`res` node
     attribute); loops (islands) and paths between terminals survive. Returns the counters."""
     st = {"deadEnds": 0, "deadEndsKm": 0.0, "slivers": 0, "sliversKm": 0.0}
@@ -335,16 +350,21 @@ def prune_core(G, res_m: float, is_border: Callable[[np.ndarray], bool],
         changed = False
         for u, v, k, d in list(G.edges(keys=True, data=True)):
             r = G.nodes[u].get("res")
-            if u != v and r is not None and r == G.nodes[v].get("res"):
+            if u != v and r is not None and r == G.nodes[v].get("res") and along(d["path"]) < keep_m:
                 drop(u, v, k, "slivers")
                 changed = True
         for comp in sorted(nx.connected_components(G), key=min):
             hubs = {G.nodes[n]["res"] for n in comp if "res" in G.nodes[n]}
             free = any(G.degree(n) == 1 and "res" not in G.nodes[n] and is_border(G.nodes[n]["pos"])
                        for n in comp)
-            if len(hubs) == 1 and not free:
-                for u, v, k in list(G.subgraph(comp).edges(keys=True)):
+            edges = list(G.subgraph(comp).edges(keys=True))
+            if len(hubs) == 1 and not free and sum(along(G.edges[e]["path"]) for e in edges) < keep_m:
+                for u, v, k in edges:
                     drop(u, v, k, "slivers")
+                changed = True
+            elif not hubs and not free:  # no hub and no terminal: a ring or an island of water
+                for u, v, k in edges:
+                    drop(u, v, k, "deadEnds")
                 changed = True
         ports: dict[str, list] = {}
         for n in sorted(G.nodes):
@@ -740,7 +760,7 @@ def build_network(cfg: Config, stack: Stack, wr: WaterResult) -> Network:
     t = stack.grid.transform
     shape = wr.water.shape
     course = LineString(stack.course_xy)
-    width_m = (2.0 * wr.edt_m + res).astype(np.float32)
+    width_m = width_grid(wr.edt_m, res)
     guards = _guards(stack, wr, nc, res)
 
     G = build_multigraph(skeletonise(wr.channel, wr.water))
@@ -750,7 +770,9 @@ def build_network(cfg: Config, stack: Stack, wr: WaterResult) -> Network:
     assign_ports(G, wr.reservoirs, guards, t, nc)
     hubs = _term_hubs(stack, wr.reservoirs, nc)
     core = prune_core(G, res, lambda p: _is_terminal(p, shape, t, stack.course_xy, nc),
-                      {rid for rid, _ in wr.reservoirs})  # every reservoir is a terminal
+                      {rid for rid, _ in wr.reservoirs},  # every reservoir is a terminal
+                      along_course(course, t, nc.cover_tol_m), nc.min_component_m)
+    core["selfLoops"] = G.graph.get("selfLoops", 0)
     for _, _, d in G.edges(data=True):
         d["mean_width"] = float(path_widths(d["path"], width_m).mean())
     ends = [G.nodes[n]["s"] for n in G.nodes if G.degree(n) == 1 and "res" not in G.nodes[n]
@@ -803,9 +825,11 @@ def _assemble(D, G, wr, t, nc, res, flux_ok: bool, cycles: int) -> Network:
             hw = np.full(len(xy), d["mean_width"] / 2.0)
         else:
             r, c = _pix(xy_to_rc(xy, t), wr.edt_m.shape)
-            hw = wr.edt_m[r, c].astype(float) + res / 2.0
+            hw = half_width_grid(wr.edt_m, res)[r, c].astype(float)
         length = float(np.hypot(*np.diff(xy, axis=0).T).sum())
-        rows.append(((G.nodes[u]["s"], G.nodes[v]["s"], float(xy[0, 0]), float(xy[0, 1])), u, v, xy,
+        mid = LineString(xy).interpolate(0.5, normalized=True)
+        rows.append(((G.nodes[u]["s"], G.nodes[v]["s"], float(xy[0, 0]), float(xy[0, 1]), mid.x, mid.y),
+                     u, v, xy,
                      hw, length, d))
     rows.sort(key=lambda r: r[0])
     branches = []
@@ -849,6 +873,10 @@ def _qa(net: Network, G, D, wr, stack, course, t, nc, res, st, parallel, channel
     cp = [_resample(LineString(b.xy), 10.0) for b in chan]
     inside = inside_fraction(np.vstack(cp), wet, t) if cp else None
     f1 = inside_fraction(_resample(course, 10.0), wet, t)
+    in_wet = shapely.contains_xy(cov_geom, pts[:, 0], pts[:, 1]) if cov_geom is not None \
+        else np.zeros(len(pts), bool)
+    wet_pts = wet[_pix(xy_to_rc(pts, t), wet.shape)]
+    wet_cover = float(in_wet[wet_pts].mean()) if wet_pts.any() else None
     r4 = lambda x: None if x is None else round(x, 4)
     return {
         "branches": len(net.branches),
@@ -872,7 +900,9 @@ def _qa(net: Network, G, D, wr, stack, course, t, nc, res, st, parallel, channel
         "sliversDropped": {"count": st["slivers"], "km": round(st["sliversKm"], 3)},
         "entries": st["entries"],
         "exits": st["exits"],
+        "selfLoopsDropped": st["selfLoops"],
         "courseCoverage": r4(cover),
+        "wetCourseCoverage": r4(wet_cover),
         "courseInWater": r4(inside_fraction(pts, wet, t)),
         "insideWater": r4(inside),
         "f1InsideWater": r4(f1),

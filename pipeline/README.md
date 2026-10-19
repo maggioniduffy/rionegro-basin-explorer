@@ -475,7 +475,8 @@ section; F3 (the particle engine) will read this network to follow braided arms 
   `sources`, `sinks`, `ports`, `parallelArms` (independent loops of the channel graph), `orient` (branches by
   course / dem / tangent), `cycles`, `shareErrorMax`, what pruning dropped (`prunedSpurs`, `droppedNarrow`,
   `keptNarrow`, `droppedComponents`, `deadEndsDropped`, `sliversDropped`), `entries` / `exits`,
-  `courseCoverage` (share of the IGN course within `coverTolM` of a branch or reservoir), `courseInWater`,
+  `courseCoverage` (share of the IGN course within `coverTolM` of a branch or reservoir), `wetCourseCoverage` (the
+  same over the course samples that lie in water), `courseInWater`,
   `insideWater` (share of channel vertices on water) and `f1InsideWater` (the same for the F1 course));
   `out` (`netBytes`, `qaBytes`). A contract invariant that fails (unknown reference, array lengths, shares not
   summing to 1) makes that section an `error` and the run exits 1.

@@ -22,7 +22,7 @@ export const flowNetNodeKindSchema = z.enum([
 export const flowNetOrientSchema = z.enum(["course", "dem", "tangent"]);
 export const flowNetDriftFromSchema = z.enum(["ports", "course"]);
 
-const nodeSchema = z.object({
+const nodeSchema = z.strictObject({
   id: z.string().min(1),
   lon: num,
   lat: num,
@@ -32,7 +32,7 @@ const nodeSchema = z.object({
   reservoir: z.string().nullable(),
 });
 
-const branchSchema = z.object({
+const branchSchema = z.strictObject({
   id: z.string().min(1),
   from: z.string().min(1),
   to: z.string().min(1),
@@ -52,14 +52,14 @@ const branchSchema = z.object({
   s: z.tuple([num, num]),
 });
 
-const reservoirSchema = z.object({
+const reservoirSchema = z.strictObject({
   id: z.string().min(1),
   /** Outer ring first, then holes; closed, [lon, lat]. */
   rings: z.array(z.array(lonLat)),
   areaKm2: num,
   inlets: z.array(z.string()),
   outlets: z.array(
-    z.object({ node: z.string(), share: num, flux: nullableNum }),
+    z.strictObject({ node: z.string(), share: num, flux: nullableNum }),
   ),
   /** Unit vector [east, north]. */
   drift: lonLat,
@@ -68,20 +68,20 @@ const reservoirSchema = z.object({
 });
 
 export const flowNetSchema = z
-  .object({
+  .strictObject({
     schema: z.literal("flow-net/1"),
     id: z.string().min(1),
     region: z.string().min(1),
     /** [west, south, east, north] in degrees, of everything in the file. */
     bbox: z.tuple([num, num, num, num]),
-    source: z.object({
+    source: z.strictObject({
       imagery: z.string(),
       scenes: z.array(z.string()),
       dates: z.tuple([z.string(), z.string()]),
       dem: z.string(),
       attribution: z.string(),
     }),
-    model: z.object({
+    model: z.strictObject({
       shares: z.literal("illustrative"),
       capacityExponent: num,
     }),
@@ -89,8 +89,9 @@ export const flowNetSchema = z
     nodes: z.array(nodeSchema),
     branches: z.array(branchSchema),
     reservoirs: z.array(reservoirSchema),
-    qa: z.object({
+    qa: z.strictObject({
       courseCoverage: nullableNum,
+      wetCourseCoverage: nullableNum,
       courseInWater: nullableNum,
       insideWater: nullableNum,
       f1InsideWater: nullableNum,
