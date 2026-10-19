@@ -5,7 +5,7 @@
  * messages (attributions.*), keyed by `id`.
  */
 import type { KnownRegionId } from "@/regions";
-import { BASEMAP_CREDIT } from "./map/config";
+import { BASEMAP_CREDIT, FLOW_VERSIONS } from "./map/config";
 
 export type SourceId =
   | "hydrosheds"
@@ -16,7 +16,9 @@ export type SourceId =
   | "aprhi"
   | "osm"
   | "terrain"
-  | "eox";
+  | "eox"
+  | "sentinel2"
+  | "copdem";
 
 export type Source = {
   id: SourceId;
@@ -61,8 +63,10 @@ const APRHI: Source = {
 
 /** The sources a region credits, with its product name in the HydroSHEDS notice. */
 export function sourcesFor(region: KnownRegionId, product: string): Source[] {
-  const all = SOURCES.map((s) =>
-    s.id === "hydrosheds" ? { ...s, notice: hydroshedsNotice(product) } : s,
+  // Sentinel-2 and the Copernicus DEM are credited only where the region publishes flow nets.
+  const all = [...SOURCES, ...(FLOW_VERSIONS[region] ? FLOW_SOURCES : [])].map(
+    (s) =>
+      s.id === "hydrosheds" ? { ...s, notice: hydroshedsNotice(product) } : s,
   );
   if (region !== "cba") return all;
   // Córdoba: APRHI comes first among the agencies (precedence APRHI > IGN > HydroRIVERS),
@@ -181,6 +185,48 @@ const SOURCES: Source[] = [
     credit:
       "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2024)",
     citations: [],
+  },
+];
+
+/**
+ * Offline inputs of the flow close-up networks (SOURCES.md, F2). Texts verbatim from the
+ * licences; no logos, nothing that suggests endorsement (COP-DEM licence Art. 6(d)).
+ */
+const FLOW_SOURCES: Source[] = [
+  {
+    id: "sentinel2",
+    name: "Sentinel-2 L2A Cloud-Optimized GeoTIFFs (Element 84 Earth Search, AWS)",
+    url: "https://registry.opendata.aws/sentinel-2-l2a-cogs/",
+    license: {
+      name: "Copernicus Sentinel data legal notice",
+      url: "https://sentinels.copernicus.eu/documents/247904/690755/Sentinel_Data_Legal_Notice",
+    },
+    credit: "Contains modified Copernicus Sentinel data 2024",
+    citations: [
+      {
+        text: "Sentinel-2 Cloud-Optimized GeoTIFFs was accessed on 2026-10-18 from",
+        url: "https://registry.opendata.aws/sentinel-2-l2a-cogs",
+      },
+    ],
+  },
+  {
+    id: "copdem",
+    name: "Copernicus DEM GLO-30 (AWS Open Data)",
+    url: "https://registry.opendata.aws/copernicus-dem/",
+    license: {
+      name: "Licence for the use of the Copernicus WorldDEM-30",
+      url: "https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/DEM/resources/license/License-COPDEM-30.pdf",
+    },
+    credit:
+      "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+    notice:
+      "The organisations in charge of the Copernicus programme by law or by delegation do not incur any liability for any use of the Copernicus WorldDEM-30",
+    citations: [
+      {
+        text: "Copernicus Digital Elevation Model (DEM) was accessed on 2026-10-18 from",
+        url: "https://registry.opendata.aws/copernicus-dem",
+      },
+    ],
   },
 ];
 

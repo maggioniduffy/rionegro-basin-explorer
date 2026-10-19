@@ -46,7 +46,7 @@ reservoirs, and fallback to the F1 track when a section has no net.
 - [x] F3.3 `lib/flow/network.ts`, net particles (hand-off, reservoir drift), branch speed; tests: shares, bounds
 - [x] F3.4 Loading (`nets.json`, nets), FlowController and layer (shared origin, cached uniforms), flowability of
       reservoir sections
-- [ ] F3.5 FlowPanel / legend copy (network vs single track, reservoir drift, illustrative shares), attribution;
+- [x] F3.5 FlowPanel / legend copy (network vs single track, reservoir drift, illustrative shares), attribution;
       EN/ES
 - [ ] F3.6 Batch 1 run and publish, reviewer gate, PR
 
