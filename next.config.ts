@@ -80,9 +80,11 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // Browsers may keep these forever, but Vercel's CDN must not: it cached the
+    // first 206 of a rewrite to R2 and served it for every byte range (2026-10-19).
     const immutable = [
       { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-      { key: "x-vercel-enable-rewrite-caching", value: "1" },
+      { key: "Vercel-CDN-Cache-Control", value: "no-store" },
     ];
     return [
       { source: "/tiles/:region/:version/:file", headers: immutable },
