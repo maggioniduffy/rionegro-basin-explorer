@@ -268,8 +268,10 @@ Meanwhile builders write code against those names; nothing is uploaded until the
       GitHub Actions pull-request creation.
 - [ ] After the workflow is available on GitHub, dispatch the already-done `limay-110` dry run and check its
       reports and version hash.
-- [ ] Set Vercel `CONTENT_ORIGIN` for Preview and Production. On a Preview, verify a byte range returns 206,
-      a repeated request is a CDN HIT, and the map/flow load without console errors.
+- [ ] Set Vercel `CONTENT_ORIGIN` for Preview and Production. On a Preview, request at least three
+      _different_ byte ranges of one `.pmtiles` and check each `content-range` matches the request (a CDN HIT
+      is not wanted: on 2026-10-19 rewrite caching served the first 206, `0-16383`, for every range and broke
+      production), and the map/flow load without console errors.
 - [ ] Only after that Preview check, untrack `public/tiles` and `public/flow` in a separate commit.
 
 ## Work packages (original proposal)
