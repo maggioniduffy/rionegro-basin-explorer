@@ -428,6 +428,14 @@
     "dTag": "Datos y transparencia",
     "dH": "Modelado, no medido.",
     "d1": "Construido sobre HydroRIVERS, HydroATLAS y HydroBASINS, con datos del IGN para los cursos de agua argentinos.",
+    "flowNew": {
+      "tag": "Nuevo · en desarrollo",
+      "h": "Mirá cómo se mueve el agua",
+      "p1": "Acercate a un tramo de río sobre la imagen satelital y mirá las partículas fluir por el cauce. El color muestra una velocidad relativa e ilustrativa: ninguna fuente mide la velocidad.",
+      "p2": "El panel muestra el caudal medio del tramo, un promedio natural de largo plazo modelado para 1971–2000 (HydroRIVERS) que no refleja la regulación actual de las represas, y el ancho del cauce con su fuente. Disponible para algunos ríos por ahora y todavía en ajuste: esperá cambios.",
+      "cta": "Probalo en un tramo",
+      "alt": "Vista de cerca del flujo de un cauce sobre imagen satelital, con partículas coloreadas por velocidad relativa, el panel del tramo y los controles de reproducción."
+    },
     "open": "Abrir mapa",
     "card": {
       "quick": "Ir directo a",

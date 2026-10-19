@@ -1,0 +1,48 @@
+{
+  "$comment": "Settings of pipeline:flow-water (F2), the offline Python step that derives a water network per flow section from Sentinel-2 L2A and Copernicus GLO-30 (pipeline/py). crs: the metric grid of every section (UTM 19S covers the Río Negro basin); resolutionM: grid cell, the Sentinel-2 native 10 m (the SWIR band is 20 m native, so the MNDWI edge is effectively 20 m). corridorM: buffer (m) of the section's IGN course (public/flow/<id>/<section>.json stations) that defines the area of interest; the grid is its bounding box snapped outward to resolutionM. stac: url and collection of the Element84 Earth Search STAC (public, no key); datetime is the search interval (Jan-Apr 2024: low water and clear summer, the year of the EOX 2024 basemap); maxCloudPct keeps scenes with eo:cloud_cover below it; looks is how many acquisition dates are pinned per section (scenes of the same date are mosaicked; ranked by mean cloud cover, then date). The pinned scenes are written to data/work/<id>/flow-water/cache/<section>/scenes.lock.json and reused until --reselect. dem: urlTemplate of the GLO-30 COG tiles on AWS Open Data, one per degree, named by the floor of the latitude and longitude of the tile corner ({lat} like S39, {lon} like W069). All values are provisional until the first report is read.",
+  "crs": "EPSG:32719",
+  "resolutionM": 10,
+  "corridorM": 1500,
+  "water": {
+    "$comment": "Water mask of F2.2. Per look: water = SCL in sclValid (0 no data, 1 saturated, 3 cloud shadow, 8/9 cloud, 10 cirrus, 11 snow are dropped; 2 dark area and 7 unclassified are kept because dark deep water and turbid water land there) and MNDWI = (green-swir16)/(green+swir16) > mndwiMin and NDVI = (nir-red)/(nir+red) < ndviMax. A pixel is water when its water frequency over the valid looks is >= minFreq with at least minValidLooks valid looks. closingPx: side of the square binary closing (padded so the AOI border is not eroded). minIslandM2: enclosed non-water holes (islands, bars) smaller than this are filled; also the smallest ring kept in reservoir polygons. keepCorridorM: only 8-connected water components that touch the course buffered by this are kept. Provisional until the first report is read.",
+    "sclValid": [2, 4, 5, 6, 7],
+    "mndwiMin": 0.0,
+    "ndviMax": 0.1,
+    "minFreq": 0.5,
+    "minValidLooks": 3,
+    "closingPx": 3,
+    "minIslandM2": 2000,
+    "keepCorridorM": 150
+  },
+  "reservoir": {
+    "$comment": "Reservoir zones of F2.2: the morphological opening of the water mask by a disk of radius minHalfWidthM (every water pixel covered by a disk of that radius lying fully in water, so a river narrower than twice this is never a reservoir). Zone components under minAreaKm2 are dropped (they stay channel). simplifyM: Douglas-Peucker tolerance (m) of the polygons, topology preserved.",
+    "minHalfWidthM": 250,
+    "minAreaKm2": 0.5,
+    "simplifyM": 10
+  },
+  "network": {
+    "$comment": "Network of F2.3 from the channel mask (reservoir zones are hubs). The channel skeleton is read with skan into a multigraph; spurMinPx and spurWidthFactor: a terminal branch is a spur (pruned) when shorter than max(spurMinPx pixels, spurWidthFactor x the width at its junction end), unless its free end is protected (within portTouchM of a reservoir zone, or within 3 px of the grid border and within 2 x coverTolM of the course ends). minBranchWidthM: branches with a median width below it are removed unless they are the only link between protected ends (kept and flagged narrow). minComponentM: shorter graph components are dropped unless they hold a reservoir port. portTouchM: a free end this close to a reservoir zone is a port of it. connectorMaxM: along-course gap (m) between two flow components bridged by a flagged connector branch (dam or weir); larger gaps are reported as gapsLeft. orientMinM, demMinDropM: an edge is oriented by the course chainage when its ends are at least orientMinM apart along the course, else by the GLO-30 drop when at least demMinDropM, else by the course tangent. capacityExponent: capacity = mean width ^ exponent, the weight that splits flow at each branching (illustrative display model, not a measured discharge partition). chaikinIterations and simplifyM smooth and thin the branch geometry. coverTolM: distance (m) within which a branch counts as covering the course in the QA. All values are provisional.",
+    "spurMinPx": 15,
+    "spurWidthFactor": 1.5,
+    "minBranchWidthM": 30,
+    "minComponentM": 200,
+    "portTouchM": 20,
+    "connectorMaxM": 600,
+    "orientMinM": 40,
+    "demMinDropM": 1,
+    "capacityExponent": 1.5,
+    "chaikinIterations": 2,
+    "simplifyM": 3,
+    "coverTolM": 75
+  },
+  "stac": {
+    "url": "https://earth-search.aws.element84.com/v1",
+    "collection": "sentinel-2-l2a",
+    "datetime": "2024-01-01/2024-04-30",
+    "maxCloudPct": 20,
+    "looks": 8
+  },
+  "dem": {
+    "urlTemplate": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_{lat}_00_{lon}_00_DEM/Copernicus_DSM_COG_10_{lat}_00_{lon}_00_DEM.tif"
+  }
+}

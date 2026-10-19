@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { DataNote } from "@/components/landing/DataNote";
 import { ExploreCards } from "@/components/landing/ExploreCards";
+import { FlowUpdate } from "@/components/landing/FlowUpdate";
 import { Grain } from "@/components/landing/Grain";
 import { MapAccessCard } from "@/components/landing/MapAccessCard";
 import { SiteFooter } from "@/components/landing/SiteFooter";
@@ -50,6 +51,7 @@ export default async function LandingPage({ params }: PageProps<"/[region]">) {
         </section>
         <SourcesRow region={region} />
         <ExploreCards />
+        <FlowUpdate region={region} />
         <DataNote region={region} />
       </main>
       <SiteFooter region={region} path="/" overlap />

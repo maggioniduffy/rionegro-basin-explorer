@@ -15,6 +15,7 @@ export const nqnContent: RegionContent = {
     "IGN",
     "EOxCloudless",
   ],
+  landingFlowSection: "limay-055",
   ogSubtitle: "Limay · Neuquén · Río Negro",
   llm: {
     place: "the Río Negro basin (Patagonia, Argentina)",

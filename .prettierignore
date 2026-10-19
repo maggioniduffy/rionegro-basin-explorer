@@ -11,3 +11,5 @@ regions/*/og-shapes.json
 # Design handoff bundle (generated, not committed)
 /Rio Negro Landing v3.html
 public/flow/
+pipeline/py/.venv/
+pipeline/py/uv.lock

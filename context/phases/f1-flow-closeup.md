@@ -65,6 +65,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
       "View flow" buttons; test: url-state round trip
 - [x] F1.5 FlowPanel, FlowControls, FlowLegend, zoom-out hint, EN/ES strings
 - [x] F1.6 Gate: `e2e/flow.spec.ts` screenshot, SOURCES.md, DECISSIONS.md, reviewer gate (one block, fixed), PR
+- [x] F1.7 Landing announcement: `components/landing/FlowUpdate.tsx` ("New · in progress", owner screenshot, link to the Limay close-up); nqn only
 
 ## Done when
 
@@ -89,6 +90,7 @@ the store and the URL (`?flow=<sectionId>&fs=<mult>`).
 - [ ] Full `npm run test:e2e` once: the e2e build now sets `NEXT_PUBLIC_E2E=1` (test hooks only).
 - [ ] Restart `npm run dev` after switching to this branch (`NEXT_PUBLIC_FLOW_VERSIONS` is computed at startup; without it no flow button shows).
 - [ ] Hub `/` then the Río Negro map via the link: the legend shows real text (no `legend.*` keys) in ES and EN; going on to Córdoba via the footer leaves no Río Negro strings.
+- [ ] `/rionegro`: the "New · in progress" section appears after the three columns in ES and EN, light and dark, at 1440 px and 390 px, and "Probalo en un tramo" opens the Limay close-up (`flow=limay-055`). `/cordoba` shows no such section.
 - [ ] Select the Limay (and a Limay reach): the filled "Ver flujo" button sits under the name, readable in light and dark, and enters flow.
 
 ## Follow-ups
