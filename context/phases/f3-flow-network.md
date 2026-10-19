@@ -66,6 +66,19 @@ reservoirs, and fallback to the F1 track when a section has no net.
 - [ ] After batch 1, open every `kind == "connector"` branch of `data/work/nqn/flow-water/out/*.qa.geojson` in
       QGIS over imagery: each bridges a real dry gap (dam, weir, bar) along the course, not a tributary or canal.
 
+- [ ] `npm run dev` (restart: the flow version hash is computed at startup), then on `/rionegro/map` in EN and ES:
+  - `?flow=limay-080`: slow drift inside El Chocón; panel says "Reservoir outline from Sentinel-2 imagery" and
+    shows the drift note.
+  - `?flow=limay-076`: dense network into the reservoir tail. Does it read as the real delta or as noise
+    (owner kept it published, 2026-10-19)?
+  - `?flow=limay-096`: two branches hand off into Arroyito; `?flow=limay-110`: braided arms and the shares note;
+    `?flow=neuquen-139`: branches into its reservoir, the 390 m connector.
+  - `?flow=limay-010`: unchanged F1 look, "Single track along the IGN course".
+  - Reservoir sections (`limay-078..083`) are offered by "View flow", Upstream/Downstream and a click.
+  - 60 fps with particles on screen, also inside a reservoir.
+- [ ] `/rionegro/attributions` shows the Sentinel-2 and Copernicus DEM cards; `/cordoba/attributions` does not.
+- [ ] `npx playwright test e2e/flow.spec.ts`: the `limay-010` baseline is unchanged (no net there).
+
 ## Follow-ups
 
 - **neuquen-139 wet-course coverage 0.93** (target 0.95): the course is uncovered at chainage 1280–1440,
