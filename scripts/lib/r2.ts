@@ -20,18 +20,22 @@ export function r2Env(bucketVar: string): { bucket: string } {
   return { bucket: process.env[bucketVar] as string };
 }
 
+let client: S3Client | undefined;
+
+/** One shared client per process: a client per request opens a new TLS connection every time. */
 export function r2Client(): S3Client {
+  if (client) return client;
   const missing = REQUIRED.filter((key) => !process.env[key]);
   if (missing.length)
     throw new Error(
       `Missing env var(s): ${missing.join(", ")} (see .env.example)`,
     );
-  return new S3Client({
+  return (client = new S3Client({
     region: "auto",
     endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: process.env.R2_ACCESS_KEY_ID as string,
       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY as string,
     },
-  });
+  }));
 }
