@@ -2,7 +2,7 @@
 pipeline:flow-water — water network of the flow sections from Sentinel-2 and GLO-30 (F2, batches F3).
 Needs regions/<id>/flow-water.config.json and public/flow/<id>/ (pipeline:flow-sections).
 
-    flowwater --region <id> [--only id1,limay-076..limay-102] [--rivers limay,negro] [--force] [--reselect]
+    flowwater --region <id> [--only id1,limay-076..limay-102] [--rivers limay,negro] [--force] [--reselect] [--report-only]
 
 --region is required (no default region). Without --only and --rivers every section of
 public/flow/<id>/index.json is processed; the two combine as a union. A section whose outputs are up
@@ -184,6 +184,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--rivers", help="comma-separated river slugs (all their sections)")
     ap.add_argument("--force", action="store_true", help="reprocess sections whose outputs are up to date")
     ap.add_argument("--reselect", action="store_true", help="redo the STAC search and rewrite the scene locks")
+    ap.add_argument("--report-only", action="store_true",
+                    help="only rebuild report.json from the out/*.report.json present (no processing, no downloads)")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.region)
@@ -197,6 +199,11 @@ def main(argv: list[str] | None = None) -> int:
                         handlers=[logging.StreamHandler(sys.stdout),
                                   logging.FileHandler(wd / "flow-water.log", mode="w")])
     logging.getLogger("rasterio").setLevel(logging.WARNING)  # per-open boto3 notices
+    if args.report_only:
+        ok = rebuild_report(args.region, {"sectionsInRun": [], "skipped": [], "processed": [], "failed": [],
+                                          "interrupted": False, "force": False, "reportOnly": True})
+        log.info("report only: ok=%s", ok)
+        return 0  # failed sections are filtered by flow-net-publish, not by this exit code
     log.info("region %s: %d sections in this run", args.region, len(ids))
 
     skipped, processed, failed = [], [], []
