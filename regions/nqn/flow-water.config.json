@@ -1,0 +1,16 @@
+{
+  "$comment": "Settings of pipeline:flow-water (F2), the offline Python step that derives a water network per flow section from Sentinel-2 L2A and Copernicus GLO-30 (pipeline/py). crs: the metric grid of every section (UTM 19S covers the Río Negro basin); resolutionM: grid cell, the Sentinel-2 native 10 m (the SWIR band is 20 m native, so the MNDWI edge is effectively 20 m). corridorM: buffer (m) of the section's IGN course (public/flow/<id>/<section>.json stations) that defines the area of interest; the grid is its bounding box snapped outward to resolutionM. stac: url and collection of the Element84 Earth Search STAC (public, no key); datetime is the search interval (Jan-Apr 2024: low water and clear summer, the year of the EOX 2024 basemap); maxCloudPct keeps scenes with eo:cloud_cover below it; looks is how many acquisition dates are pinned per section (scenes of the same date are mosaicked; ranked by mean cloud cover, then date). The pinned scenes are written to data/work/<id>/flow-water/cache/<section>/scenes.lock.json and reused until --reselect. dem: urlTemplate of the GLO-30 COG tiles on AWS Open Data, one per degree, named by the floor of the latitude and longitude of the tile corner ({lat} like S39, {lon} like W069). All values are provisional until the first report is read.",
+  "crs": "EPSG:32719",
+  "resolutionM": 10,
+  "corridorM": 1500,
+  "stac": {
+    "url": "https://earth-search.aws.element84.com/v1",
+    "collection": "sentinel-2-l2a",
+    "datetime": "2024-01-01/2024-04-30",
+    "maxCloudPct": 20,
+    "looks": 8
+  },
+  "dem": {
+    "urlTemplate": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_{lat}_00_{lon}_00_DEM/Copernicus_DSM_COG_10_{lat}_00_{lon}_00_DEM.tif"
+  }
+}

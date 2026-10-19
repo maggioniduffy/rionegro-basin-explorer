@@ -22,6 +22,7 @@
     "pipeline:named": "tsx pipeline/steps/named.ts",
     "pipeline:river-lines": "tsx pipeline/steps/river-lines.ts",
     "pipeline:flow-sections": "tsx pipeline/steps/flow-sections.ts",
+    "pipeline:flow-water": "uv run --project pipeline/py --frozen flowwater",
     "pipeline:export": "tsx pipeline/steps/export.ts",
     "pipeline:mask": "tsx pipeline/steps/mask.ts",
     "pipeline:tiles": "tsx pipeline/steps/tiles.ts",

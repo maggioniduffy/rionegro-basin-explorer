@@ -43,6 +43,7 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "playwright-report/**",
     "public/maplibre/**",
+    "pipeline/py/.venv/**",
   ]),
 ]);
 

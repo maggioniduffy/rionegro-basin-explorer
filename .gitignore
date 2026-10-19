@@ -66,3 +66,7 @@ PENDING.md
 landing-handoff.*
 
 caudal.gif
+# flow-water Python project
+pipeline/py/.venv/
+__pycache__/
+.pytest_cache/
