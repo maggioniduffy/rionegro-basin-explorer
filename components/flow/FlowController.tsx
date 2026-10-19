@@ -7,7 +7,10 @@ import { FLOW_MAXZOOM, FLOW_MIN_ZOOM } from "@/lib/flow/config";
 import {
   flowPaths,
   loadFlowIndex,
+  loadNet,
+  loadNets,
   loadSection,
+  peekFlowIndex,
   peekSection,
 } from "@/lib/flow/data";
 import { buildTrack, lngLatToMercator, type Track } from "@/lib/flow/geometry";
@@ -87,14 +90,21 @@ export function FlowController({
         useMapStore.getState().exitFlow();
         return;
       }
-      const section = await loadSection(region, id);
+      // The index's flowable already counts the nets manifest's reservoir sections, which the
+      // section file itself marks as not flowable.
+      const manifest = await loadNets(region);
+      const [section, net] = await Promise.all([
+        loadSection(region, id),
+        // A failed net load logs (in loadNet) and falls back to the F1 track.
+        manifest.ids.includes(id) ? loadNet(region, id) : null,
+      ]);
       if (mine !== token) return;
-      if (!section || !section.flowable) {
+      if (!section) {
         useMapStore.getState().exitFlow();
         return;
       }
       current = section;
-      controller.setSection(section);
+      controller.setSection(section, net);
       const store = useMapStore.getState();
       if (store.flowFitPending) {
         useMapStore.setState({ flowFitPending: false });
@@ -106,8 +116,11 @@ export function FlowController({
         });
       }
       // The neighbours are what a pan can switch to; have them ready.
-      for (const n of [section.prev, section.next])
-        if (n) void loadSection(region, n);
+      for (const n of [section.prev, section.next]) {
+        if (!n) continue;
+        void loadSection(region, n);
+        if (manifest.ids.includes(n)) void loadNet(region, n);
+      }
     };
 
     const onMoveEnd = () => {
@@ -122,11 +135,13 @@ export function FlowController({
         const track = trackOf(section);
         return distanceToTrackM(track, mx - track.originX, my - track.originY);
       };
+      const index = peekFlowIndex(region);
       let best: FlowSection = current;
       let bestD = distance(current);
       for (const n of [current.prev, current.next]) {
         const other = n ? peekSection(region, n) : undefined;
-        if (!other?.flowable) continue;
+        const entry = index && n ? findSection(index, n) : null;
+        if (!other || !entry?.section.flowable) continue;
         const d = distance(other);
         if (d < bestD) {
           best = other;
