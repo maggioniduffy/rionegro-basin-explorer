@@ -18,6 +18,7 @@ import sys
 
 from flowwater.acquire import acquire
 from flowwater.config import load_config
+from flowwater.network import build_network
 from flowwater.paths import flow_dir, work_dir
 from flowwater.water import run_water
 
@@ -63,6 +64,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             st = acquire(cfg, args.region, sid, args.reselect)
             wr = run_water(cfg, args.region, st) if st.looks else None
+            net = build_network(cfg, st, wr) if wr is not None else None
         except Exception as e:  # keep going: the report lists the failed section
             log.exception("section %s failed", sid)
             sections[sid] = {"error": f"{type(e).__name__}: {e}"}
@@ -77,6 +79,7 @@ def main(argv: list[str] | None = None) -> int:
         }
         if wr is not None:
             sections[sid]["water"] = wr.stats
+            sections[sid]["network"] = net.stats
         if not st.looks:
             ok = False
         log.info("%s: %d looks, grid %dx%d, DEM %.3f", sid, len(st.looks), st.grid.height,
@@ -85,6 +88,7 @@ def main(argv: list[str] | None = None) -> int:
             log.info("%s: water %.3f km2, reservoir %.3f km2, %d reservoirs, lakeIoU %s", sid,
                      wr.stats["waterKm2"], wr.stats["reservoirKm2"], len(wr.reservoirs),
                      wr.stats["lakeIoU"])
+            log.info("%s: network %s", sid, net.stats)
     report = {
         "ok": ok,
         "region": args.region,
