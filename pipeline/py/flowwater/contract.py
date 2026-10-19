@@ -79,30 +79,44 @@ def _unit(v) -> list[float] | None:
     return None if n < 1e-9 else [v[0] / n, v[1] / n]
 
 
-def reservoir_drift(poly: Polygon, ports_in: list, ports_out: list, course: LineString):
-    """(unit [east, north], driftFrom, sRange or None). dx, dy are in the grid CRS (UTM), whose north
-    is the grid north to well under a degree over a section, so no convergence correction."""
+def to_true_north(u, crs: str, x: float, y: float) -> list[float]:
+    """Grid vector u = (dx, dy) at the grid point (x, y) -> unit (east, north) of the true compass.
+    True north is the direction of a short step along the meridian; the grid is rotated from it by the
+    meridian convergence (about (lon - central meridian) x sin(lat); EPSG:32719, central meridian -69,
+    is 4 degrees off at -63)."""
+    fwd = pyproj.Transformer.from_crs(crs, "EPSG:4326", always_xy=True)
+    inv = pyproj.Transformer.from_crs("EPSG:4326", crs, always_xy=True)
+    lon, lat = fwd.transform(x, y)
+    x2, y2 = inv.transform(lon, lat + 1e-4)  # ~11 m along the meridian
+    n = _unit([x2 - x, y2 - y])
+    return [u[0] * n[1] - u[1] * n[0], u[0] * n[0] + u[1] * n[1]]  # u . east, u . north
+
+
+def reservoir_drift(poly: Polygon, ports_in: list, ports_out: list, course: LineString, crs: str):
+    """(unit [east, north], driftFrom, sRange or None). The direction is found in the grid CRS (UTM,
+    `crs`) and rotated to true east / north by the meridian convergence at the polygon centroid."""
     if course.intersects(poly):
         s0, s1 = _course_extent(course, poly)
         s_range = [s0, s1]
     else:
         s_range = None
+    c = poly.centroid
     if ports_in and ports_out:
         a = np.mean([[p.x, p.y] for p in ports_in], axis=0)
         b = np.mean([[p.x, p.y] for p in ports_out], axis=0)
         u = _unit(b - a)
         if u is not None:
-            return u, "ports", s_range
+            return to_true_north(u, crs, c.x, c.y), "ports", s_range
     if s_range is not None and s_range[1] > s_range[0]:
         a, b = course.interpolate(s_range[0]), course.interpolate(s_range[1])
         u = _unit([b.x - a.x, b.y - a.y])
         if u is not None:
-            return u, "course", s_range
+            return to_true_north(u, crs, c.x, c.y), "course", s_range
     s_near = s_range[0] if s_range is not None else course.project(poly.centroid)
     u = _unit(course_tangent(course, s_near))
     if u is None:
         raise ValueError("no drift direction: degenerate course")
-    return u, "course", s_range
+    return to_true_north(u, crs, c.x, c.y), "course", s_range
 
 
 # ---------------------------------------------------------------- build
@@ -158,7 +172,7 @@ def build_net(cfg: Config, region: str, stack: Stack, wr: WaterResult, net: Netw
             lon, lat = _dedupe(*ll(np.asarray(ring.coords)))
             if len(lon) >= 4:
                 rings.append([[x, y] for x, y in zip(lon, lat)])
-        u, drift_from, s_range = reservoir_drift(poly, pin, pout, course)
+        u, drift_from, s_range = reservoir_drift(poly, pin, pout, course, cfg.crs)
         reservoirs.append({
             "id": rid, "rings": rings, "areaKm2": _r(poly.area / 1e6, 3),
             "inlets": [p.node for p in pin],

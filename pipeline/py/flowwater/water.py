@@ -65,9 +65,11 @@ def _ratio(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.where(d > np.float32(1e-6), out, np.float32(np.nan)).astype(np.float32)
 
 
-def water_frequency(cfg: Config, stack: Stack) -> tuple[np.ndarray, np.ndarray]:
-    """(water looks, valid looks) per pixel, both uint8."""
+def water_frequency(cfg: Config, stack: Stack,
+                    scl_valid: tuple[int, ...] | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """(water looks, valid looks) per pixel, both uint8. `scl_valid` overrides water.sclValid."""
     w = cfg.water
+    scl_valid = w.scl_valid if scl_valid is None else scl_valid
     shp = (stack.grid.height, stack.grid.width)
     n_water, n_valid = np.zeros(shp, np.uint8), np.zeros(shp, np.uint8)
     for lk in stack.looks:
@@ -77,12 +79,41 @@ def water_frequency(cfg: Config, stack: Stack) -> tuple[np.ndarray, np.ndarray]:
         finite = np.isfinite(mndwi) & np.isfinite(ndvi)
         for n in BANDS:
             finite &= np.isfinite(b[n])
-        valid = np.isin(lk.scl, w.scl_valid) & finite
+        valid = np.isin(lk.scl, scl_valid) & finite
         with np.errstate(invalid="ignore"):
             wet = valid & (mndwi > w.mndwi_min) & (ndvi < w.ndvi_max)
         n_valid += valid
         n_water += wet
     return n_water, n_valid
+
+
+def scl_class2_effect(cfg: Config, stack: Stack, n_water: np.ndarray, n_valid: np.ndarray) -> dict:
+    """Measurement only (sclValid is unchanged): SCL class 2 (dark area; topographic shadow in baseline
+    04.00 or later) is flipped, i.e. dropped when sclValid holds it, added when it does not, and the
+    pixels passing the frequency test (before closing, hole filling and the corridor filter) inside the
+    AOI are counted for both. deltaKm2 = flipped - current."""
+    w, r = cfg.water, cfg.resolution_m
+    inside = stack.aoi_mask if stack.aoi_mask is not None else np.ones(n_water.shape, bool)
+    has2 = 2 in w.scl_valid
+    flipped = tuple(c for c in w.scl_valid if c != 2) if has2 else tuple(sorted({*w.scl_valid, 2}))
+
+    def passing(nw, nv):
+        freq = np.where(nv > 0, nw / np.maximum(nv, 1), 0)
+        return (freq >= w.min_freq) & (nv >= w.min_valid_looks) & inside
+
+    cur = passing(n_water, n_valid)
+    alt = passing(*water_frequency(cfg, stack, flipped))
+    km2 = r * r / 1e6
+    class2 = sum(int((lk.scl[inside] == 2).sum()) for lk in stack.looks)
+    return {
+        "class2InSclValid": has2,
+        "variant": "class 2 not valid" if has2 else "class 2 valid",
+        "waterPx": int(cur.sum()), "waterKm2": round(float(cur.sum()) * km2, 3),
+        "variantWaterPx": int(alt.sum()), "variantWaterKm2": round(float(alt.sum()) * km2, 3),
+        "deltaPx": int(alt.sum()) - int(cur.sum()),
+        "deltaKm2": round((float(alt.sum()) - float(cur.sum())) * km2, 3),
+        "class2LookPixelsShare": round(class2 / max(len(stack.looks) * int(inside.sum()), 1), 4),
+    }
 
 
 def close_padded(mask: np.ndarray, px: int) -> np.ndarray:
@@ -219,6 +250,7 @@ def build_water(cfg: Config, region: str, stack: Stack) -> WaterResult:
     n_water, n_valid = water_frequency(cfg, stack)
     freq = np.where(n_valid > 0, n_water / np.maximum(n_valid, 1), 0).astype(np.float32)
     water = (freq >= w.min_freq) & (n_valid >= w.min_valid_looks)
+    scl2 = scl_class2_effect(cfg, stack, n_water, n_valid)
     water = close_padded(water, w.closing_px)
     water = fill_small_holes(water, w.min_island_m2, r)
     corridor = rasterize([(mapping(LineString(stack.course_xy).buffer(w.keep_corridor_m)), 1)],
@@ -245,6 +277,7 @@ def build_water(cfg: Config, region: str, stack: Stack) -> WaterResult:
         "reservoirs": [{"id": i, "areaKm2": round(p.area / 1e6, 3)} for i, p in reservoirs],
         "lakeIoU": iou,
         "lakes": lakes,
+        "sclClass2": scl2,
     }
     return WaterResult(freq, n_valid, water, channel, zone, edt_m, reservoirs, stats)
 

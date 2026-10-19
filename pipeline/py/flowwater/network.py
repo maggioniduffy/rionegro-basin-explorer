@@ -10,12 +10,16 @@ multi-branch network with reservoirs as hubs, dam connectors, flow shares and fl
    spurWidthFactor x the junction width, unless the free end is protected), then branches narrower
    than minBranchWidthM (unless they alone link protected ends), then short components.
 3. Chainage s of every node along the IGN course. Free ends touching a reservoir zone become ports of
-   its polygon (the hub). Flow components (graph + hubs) separated along the course by less than
-   connectorMaxM are bridged by a flagged connector; wider gaps are reported.
+   its polygon (the hub). A course-following stub (a free end inside the grid whose branch follows the
+   course for at least minComponentM) is first connected along the course across a dry gap of at most
+   connectorMaxM to the next reservoir or free end, then dead ends are pruned. Flow components (graph +
+   hubs) separated along the course by less than connectorMaxM are bridged by a flagged connector; wider
+   gaps are reported.
 4. Orientation per edge: course chainage, else the GLO-30 drop, else the course tangent. Capacity =
    mean width ** capacityExponent; share = capacity / sum over the out-edges of a node; flux flows
-   from the sources (total 1) in topological order. Shares and flux are an illustrative display
-   model, not a measured discharge partition.
+   from the sources (total 1) in topological order. A reservoir is two hubs, res:<id>:in (ports whose
+   branch flows into it) and res:<id>:out; the flux of the in hub passes to the out hub. Shares and flux
+   are an illustrative display model, not a measured discharge partition.
 5. Geometry: pixel paths are Chaikin-smoothed and simplified, with a half width per vertex.
 """
 
@@ -216,7 +220,8 @@ def drop_self_loops(G: nx.MultiGraph) -> int:
 
 
 def merge_degree2(G: nx.MultiGraph) -> None:
-    """Replace every degree-2 node joining two different neighbours by one edge (pixel order kept)."""
+    """Replace every degree-2 node joining two different neighbours by one edge (pixel order kept).
+    A node on a connector is kept, so the connector stays a flagged branch."""
     for u in sorted(G.nodes):
         if u not in G or G.degree(u) != 2:
             continue
@@ -224,6 +229,8 @@ def merge_degree2(G: nx.MultiGraph) -> None:
         if len(inc) != 2 or any(a == b for a, b, _, _ in inc):
             continue
         (_, p, k1, d1), (_, q, k2, d2) = inc
+        if "connector" in (d1["kind"], d2["kind"]):
+            continue
         if p == q:
             continue  # the two arms of a loop hanging on one node
         path = _dedupe(np.concatenate([_oriented(d1, p), _oriented(d2, u)]))
@@ -481,16 +488,34 @@ def apply_shares(D: nx.MultiDiGraph) -> float:
 
 def apply_flux(D: nx.MultiDiGraph) -> bool:
     """Flux per edge: total 1 split over the sources by the capacity of their out-edges, then
-    inflow(node) x share down the topological order. False (flux unset) when D has a cycle."""
-    if not nx.is_directed_acyclic_graph(nx.DiGraph(D)):
-        return False
+    inflow(node) x share down the topological order. When the in -> out links of reservoir hubs close
+    a loop (a channel leaves a reservoir and re-enters it), the node inflows solve
+    (I - A) x = injection instead. False (flux unset) when no flow can be solved."""
     start = {n: sum(d["capacity"] for *_, d in D.out_edges(n, data=True))
-             for n in D.nodes if D.in_degree(n) == 0 and D.out_degree(n) > 0}
+             for n in D.nodes if D.in_degree(n) == 0 and D.out_degree(n) > 0 and not D.nodes[n].get("closed")}
     total = sum(start.values())
-    for n in nx.topological_sort(D):
-        inflow = start[n] / total if n in start else sum(d["flux"] for *_, d in D.in_edges(n, data=True))
-        for *_, d in D.out_edges(n, data=True):
-            d["flux"] = inflow * d["share"]
+    if nx.is_directed_acyclic_graph(nx.DiGraph(D)):
+        for n in nx.topological_sort(D):
+            inflow = start[n] / total if n in start else sum(d["flux"] for *_, d in D.in_edges(n, data=True))
+            for *_, d in D.out_edges(n, data=True):
+                d["flux"] = inflow * d["share"]
+        return True
+    if not total > 0:
+        return False
+    nodes = list(D.nodes)
+    idx = {n: i for i, n in enumerate(nodes)}
+    A = np.zeros((len(nodes), len(nodes)))
+    for u, v, d in D.edges(data=True):
+        A[idx[v], idx[u]] += d["share"]
+    inj = np.array([start.get(n, 0.0) / total for n in nodes])
+    try:
+        x = np.linalg.solve(np.eye(len(nodes)) - A, inj)
+    except np.linalg.LinAlgError:
+        return False
+    if not np.isfinite(x).all() or x.min() < -1e-9 or x.max() > 1e6:
+        return False
+    for u, v, d in D.edges(data=True):
+        d["flux"] = float(x[idx[u]] * d["share"])
     return True
 
 
@@ -595,6 +620,14 @@ def _connect(G, polys, course, t, nc, res_m, a, b) -> bool:
         return False
     na, wa = _terminal_node(G, polys, course, t, ta, True)
     nb, wb = _terminal_node(G, polys, course, t, tb, False)
+    _add_connector(G, course, t, nc, na, nb, wa + wb)
+    return True
+
+
+def _add_connector(G, course: LineString, t: Affine, nc: NetworkConfig, na: int, nb: int,
+                   widths: list[float]) -> None:
+    """Flagged connector na -> nb that follows the course; width = mean of `widths` (minBranchWidthM
+    when empty)."""
     xa = rc_to_xy(G.nodes[na]["pos"][None], t)[0]
     xb = rc_to_xy(G.nodes[nb]["pos"][None], t)[0]
     sa, sb = course.project(Point(xa)), course.project(Point(xb))
@@ -602,10 +635,90 @@ def _connect(G, polys, course, t, nc, res_m, a, b) -> bool:
     xy = np.vstack([xa, np.array(course.interpolate(sa).coords)[0], np.array(mid.coords),
                     np.array(course.interpolate(sb).coords)[0], xb])
     rc = _dedupe(xy_to_rc(xy, t))
-    w = wa + wb
-    mw = float(np.mean(w)) if w else nc.min_branch_width_m
+    mw = float(np.mean(widths)) if widths else nc.min_branch_width_m
     G.add_edge(na, nb, path=rc, a=na, b=nb, kind="connector", narrow=False, mean_width=mw)
-    return True
+
+
+def connect_course_stubs(G, reservoirs, course: LineString, t: Affine, nc: NetworkConfig, width_m,
+                         along: Callable[[np.ndarray], float], is_border: Callable[[np.ndarray], bool]) -> int:
+    """Before dead ends are pruned: a course-following stub (a free end inside the grid, not a
+    terminal, whose branch has at least minComponentM within coverTolM of the course) is bridged along
+    the course across a dry gap of at most connectorMaxM to the nearest thing ahead of it: a reservoir
+    (a new port at its extreme chainage), a grid-border or course-end free end, or a stub facing it.
+    The target must lie within coverTolM of the course, and the gap must be uncovered: the course
+    between the two chainages must not already lie within coverTolM of another channel, so two
+    dead-end braids beside a wet main channel are never joined. Returns the number of connectors."""
+    polys = dict(reservoirs)
+    ext = {rid: _course_extent(course, p) for rid, p in reservoirs}
+    stubs: dict[int, int] = {}  # node -> +1 when the free end lies downstream of its branch, else -1
+    border = []
+    for n in sorted(G.nodes):
+        nd = G.nodes[n]
+        if G.degree(n) != 1 or "res" in nd:
+            continue
+        if is_border(nd["pos"]):
+            border.append(n)
+            continue
+        u, v, k = next(iter(G.edges(n, keys=True)))
+        d = G.edges[u, v, k]
+        if d["kind"] == "connector" or along(d["path"]) < nc.min_component_m:
+            continue
+        other = v if u == n else u
+        ds = nd["s"] - G.nodes[other]["s"]
+        if ds != 0:
+            stubs[n] = 1 if ds > 0 else -1
+    chan = [(u, v, k, rc_to_xy(d["path"], t)) for u, v, k, d in G.edges(keys=True, data=True)
+            if d["kind"] == "channel" and len(d["path"]) >= 2]
+
+    def uncovered(s_a: float, s_b: float, skip: set) -> bool:
+        """True when some 20 m sample of the course between s_a and s_b is farther than coverTolM from
+        every channel except the edges in `skip`."""
+        others = [LineString(xy) for u, v, k, xy in chan if (u, v, k) not in skip and (v, u, k) not in skip]
+        pts = _resample(substring(course, min(s_a, s_b), max(s_a, s_b)), 20.0)
+        if not others:
+            return True
+        cov = unary_union(others).buffer(nc.cover_tol_m, quad_segs=2)
+        return not bool(shapely.contains_xy(cov, pts[:, 0], pts[:, 1]).all())
+
+    added, taken = 0, set()
+    for n, sgn in sorted(stubs.items()):
+        if n in taken:
+            continue
+        s_n = G.nodes[n]["s"]
+        own = {next(iter(G.edges(n, keys=True)))}
+        best = None  # (gap, kind, ref)
+        for rid, (lo, hi) in sorted(ext.items()):
+            gap = (lo - s_n) if sgn > 0 else (s_n - hi)
+            if not (0 < gap <= nc.connector_max_m) or (best is not None and gap >= best[0]):
+                continue
+            s_t = lo if sgn > 0 else hi
+            if polys[rid].boundary.distance(course.interpolate(s_t)) <= nc.cover_tol_m \
+                    and uncovered(s_n, s_t, own):
+                best = (gap, "h", rid)
+        for m in sorted(set(stubs) | set(border)):
+            if m == n or m in taken or (m in stubs and stubs[m] != -sgn):
+                continue
+            gap = (G.nodes[m]["s"] - s_n) * sgn
+            if not (0 < gap <= nc.connector_max_m) or (best is not None and gap >= best[0]):
+                continue
+            xy = rc_to_xy(G.nodes[m]["pos"][None], t)[0]
+            if course.distance(Point(xy)) <= nc.cover_tol_m \
+                    and uncovered(s_n, G.nodes[m]["s"], own | set(G.edges(m, keys=True))):
+                best = (gap, "n", m)
+        if best is None:
+            continue
+        u, v, k = next(iter(G.edges(n, keys=True)))
+        wa = [float(path_widths(G.edges[u, v, k]["path"], width_m).mean())]
+        if best[1] == "h":
+            lo, hi = ext[best[2]]
+            nb, wb = _terminal_node(G, polys, course, t, (lo, hi, ("h", best[2])), sgn < 0)
+        else:
+            nb, wb = best[2], []
+            taken.add(nb)
+        taken.add(n)
+        _add_connector(G, course, t, nc, n, nb, wa + wb)
+        added += 1
+    return added
 
 
 # ---------------------------------------------------------------- geometry
@@ -725,21 +838,53 @@ def _direct(G, course: LineString, dem: np.ndarray, t: Affine, nc: NetworkConfig
     return D, counts
 
 
+def _hub_in(rid: str) -> str:
+    return f"{_res_node(rid)}:in"
+
+
+def _hub_out(rid: str) -> str:
+    return f"{_res_node(rid)}:out"
+
+
 def _add_hubs(D, G, reservoirs) -> None:
-    """Hub nodes res:<id>; port -> hub for a port that its branch flows into, hub -> port otherwise."""
+    """Two hubs per reservoir, res:<id>:in and res:<id>:out (internal, never written as nodes). A port
+    whose branch flows into it gets port -> in; any other port gets out -> port. A channel that leaves
+    and re-enters one reservoir therefore runs out -> ... -> in, which is not a cycle."""
     for rid, _ in reservoirs:
-        D.add_node(_res_node(rid))
+        D.add_node(_hub_in(rid))
+        D.add_node(_hub_out(rid))
     for n, d in G.nodes(data=True):
         if "res" not in d:
             continue
-        h = _res_node(d["res"])
         if D.in_degree(n) > 0:
+            h = _hub_in(d["res"])
             D.add_edge(n, h, kind="reservoir", mean_width=None)
             D.edges[n, h, 0]["capacity"] = sum(x["capacity"] for *_, x in D.in_edges(n, data=True))
         else:
+            h = _hub_out(d["res"])
             D.add_edge(h, n, kind="reservoir", mean_width=None)
             D.edges[h, n, 0]["capacity"] = sum(x["capacity"] for *_, x in D.out_edges(n, data=True)
                                                if x["kind"] != "reservoir")
+
+
+def _link_hubs(D, reservoirs) -> None:
+    """The water of a reservoir passes from its in hub to its out hub (total inflow = total outflow)
+    when it has both. Added after the cycle count: the hubs are separate for it. A reservoir whose out
+    side reaches no drain (a node without out-edges: a sink, a grid-border or course-end terminal, a
+    reservoir with no outlet) except by coming back into it is itself the drain, as when it has no
+    outlet: it gets no link, its in hub is a sink, and its out hub is flagged `closed` (never a source;
+    what leaves it carries flux 0)."""
+    cand = [rid for rid, _ in reservoirs if D.in_degree(_hub_in(rid)) > 0 and D.out_degree(_hub_out(rid)) > 0]
+    H = nx.DiGraph(D)
+    for rid in cand:
+        H.add_edge(_hub_in(rid), _hub_out(rid))
+    for rid in cand:
+        i, o = _hub_in(rid), _hub_out(rid)
+        if any(H.out_degree(n) == 0 for n in nx.descendants(H, o)):
+            D.add_edge(i, o, kind="reservoir", mean_width=None, link=True,
+                       capacity=sum(d["capacity"] for *_, d in D.in_edges(i, data=True)))
+        else:
+            D.nodes[o]["closed"] = True
 
 
 def _node_kind(D, n, is_port: bool) -> str:
@@ -769,12 +914,16 @@ def build_network(cfg: Config, stack: Stack, wr: WaterResult) -> Network:
         d["s"] = course.project(Point(rc_to_xy(d["pos"][None], t)[0]))
     assign_ports(G, wr.reservoirs, guards, t, nc)
     hubs = _term_hubs(stack, wr.reservoirs, nc)
-    core = prune_core(G, res, lambda p: _is_terminal(p, shape, t, stack.course_xy, nc),
+    is_border = lambda p: _is_terminal(p, shape, t, stack.course_xy, nc)
+    along = along_course(course, t, nc.cover_tol_m)
+    connect_course_stubs(G, wr.reservoirs, course, t, nc, width_m, along, is_border)
+    core = prune_core(G, res, is_border,
                       {rid for rid, _ in wr.reservoirs},  # every reservoir is a terminal
-                      along_course(course, t, nc.cover_tol_m), nc.min_component_m)
+                      along, nc.min_component_m)
     core["selfLoops"] = G.graph.get("selfLoops", 0)
     for _, _, d in G.edges(data=True):
-        d["mean_width"] = float(path_widths(d["path"], width_m).mean())
+        if d["kind"] != "connector":
+            d["mean_width"] = float(path_widths(d["path"], width_m).mean())
     ends = [G.nodes[n]["s"] for n in G.nodes if G.degree(n) == 1 and "res" not in G.nodes[n]
             and _is_terminal(G.nodes[n]["pos"], shape, t, stack.course_xy, nc)]
     half = course.length / 2.0
@@ -782,8 +931,11 @@ def build_network(cfg: Config, stack: Stack, wr: WaterResult) -> Network:
     st["exits"] = sum(s > half for s in ends) + list(hubs.values()).count("exit")
     st.update(core)
     # loops of the core channel graph, before connectors
-    parallel = G.number_of_edges() - G.number_of_nodes() + nx.number_connected_components(G)
-    channel_km = sum(path_len_m(d["path"], res) for _, _, d in G.edges(data=True)) / 1000.0
+    chan = nx.MultiGraph()
+    chan.add_nodes_from(G.nodes)
+    chan.add_edges_from((u, v, d) for u, v, d in G.edges(data=True) if d["kind"] == "channel")
+    parallel = chan.number_of_edges() - chan.number_of_nodes() + nx.number_connected_components(chan)
+    channel_km = sum(path_len_m(d["path"], res) for _, _, d in chan.edges(data=True)) / 1000.0
 
     connectors, gaps = add_connectors(G, wr.reservoirs, course, t, nc, res)
     for n, d in G.nodes(data=True):
@@ -795,8 +947,12 @@ def build_network(cfg: Config, stack: Stack, wr: WaterResult) -> Network:
         d["capacity"] = capacity(d["mean_width"], nc.capacity_exponent)
     _add_hubs(D, G, wr.reservoirs)
     cycles = count_cycles(D)
+    _link_hubs(D, wr.reservoirs)
     share_err = apply_shares(D)
-    flux_ok = apply_flux(D)
+    flux_ok = cycles == 0 and apply_flux(D)
+    if cycles == 0 and not flux_ok:
+        cycles = 1  # flux could not be solved: counted as a cycle, so flux is null exactly when cycles > 0
+    connectors = sum(d["kind"] == "connector" for *_, d in G.edges(data=True))
 
     net = _assemble(D, G, wr, t, nc, res, flux_ok, cycles)
     net.stats = _qa(net, G, D, wr, stack, course, t, nc, res, st, parallel, channel_km, connectors,
@@ -842,12 +998,12 @@ def _assemble(D, G, wr, t, nc, res, flux_ok: bool, cycles: int) -> Network:
     for n in used:
         if n not in ports:
             continue
-        h = _res_node(G.nodes[n]["res"])
+        rid = G.nodes[n]["res"]
         x, y = rc_to_xy(G.nodes[n]["pos"][None], t)[0]
-        if D.has_edge(n, h):
-            e, role = D.edges[n, h, 0], "inlet"
+        if D.has_edge(n, _hub_in(rid)):
+            e, role = D.edges[n, _hub_in(rid), 0], "inlet"
         else:
-            e, role = D.edges[h, n, 0], "outlet"
+            e, role = D.edges[_hub_out(rid), n, 0], "outlet"
         nports.append(NetPort(G.nodes[n]["res"], nid[n], role, float(x), float(y),
                               e.get("share"), e.get("flux") if flux_ok else None))
     nports.sort(key=lambda p: (p.reservoir, p.node))
@@ -885,7 +1041,7 @@ def _qa(net: Network, G, D, wr, stack, course, t, nc, res, st, parallel, channel
         "gapsLeft": gaps,
         "splits": kinds.count("split"),
         "joins": kinds.count("join"),
-        "sources": sum(D.in_degree(n) == 0 for n in ends),  # hubs included
+        "sources": sum(D.in_degree(n) == 0 and not D.nodes[n].get("closed") for n in ends),  # hubs included
         "sinks": sum(D.out_degree(n) == 0 for n in ends),
         "ports": len(net.ports),
         "parallelArms": parallel,

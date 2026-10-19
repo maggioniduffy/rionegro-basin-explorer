@@ -38,7 +38,7 @@ reservoirs, and fallback to the F1 track when a section has no net.
 ## Work packages
 
 - [x] F3.0 Phase file, PLAN row, DECISSIONS entry, GLO-30 licence read (SOURCES.md)
-- [ ] F3.1 flow-water: batches and resume, connectors before dead-end pruning, reservoir hub in/out, drift
+- [x] F3.1 flow-water: batches and resume, connectors before dead-end pruning, reservoir hub in/out, drift
       convergence, SCL class 2 measurement; pytest: 3 cases
 - [ ] F3.2 `pipeline:flow-net-publish` (QA gate, `flow-net-pub/1`, `nets.json`, 4 MB budget, report); vitest:
       round trip
@@ -60,8 +60,14 @@ reservoirs, and fallback to the F1 track when a section has no net.
 
 ## Owner checks (local)
 
-_Filled in as work packages land._
+- [ ] After batch 1, open every `kind == "connector"` branch of `data/work/nqn/flow-water/out/*.qa.geojson` in
+      QGIS over imagery: each bridges a real dry gap (dam, weir, bar) along the course, not a tributary or canal.
 
 ## Follow-ups
 
-_Filled in as work packages land._
+- **neuquen-139 wet-course coverage 0.93** (target 0.95): the course is uncovered at chainage 1280–1440,
+  2700–3060 (inside the reservoir's course extent, outside its polygon) and 3660–4000 (dry in the mask past the
+  reservoir). Not tuned further; the publish gate takes ≥ 0.9.
+- **SCL class 2 in the Andes:** it adds at most 0.008 km² on the four F2 sections, none of them in shadow; measure
+  again when an Andean batch (Aluminé, upper Neuquén) runs (`water.sclClass2` in each section report).
+- **Skip hash and code:** code changes are covered only by bumping `FLOWWATER_VERSION` (`cli.py`).

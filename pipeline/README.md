@@ -441,7 +441,7 @@ All thresholds are in the config.
   `report.only.json`, leaving `public/` alone. Heavy limits: DuckDB 2 GB, 2 threads; the full `nqn` run takes
   about 10 s.
 
-### `npm run pipeline:flow-water -- --region <id> [--only <ids>] [--reselect]`
+### `npm run pipeline:flow-water -- --region <id> [--only <ids>] [--rivers <slugs>] [--force] [--reselect]`
 
 F2 (`nqn` only for now): an offline Python step that derives, per flow section, a multi-branch channel network
 and reservoir polygons from Sentinel-2 L2A and the Copernicus GLO-30 DEM. F1 moves particles along one track per
@@ -451,26 +451,41 @@ section; F3 (the particle engine) will read this network to follow braided arms 
   `uv run --project pipeline/py --frozen flowwater`). The first run downloads Python 3.13 and the locked
   dependencies. It needs network access to AWS (Earth Search STAC, the `sentinel-cogs` and `copernicus-dem-30m`
   buckets); after the first run the windowed reads are cached in `data/work/<id>/flow-water/cache/`.
-- **Command.** `--region` is required (no default region). Without `--only` every section of
-  `public/flow/<id>/index.json` is processed; `--only limay-110,limay-078` takes section ids. `--reselect` redoes
-  the STAC search and rewrites the scene locks.
+- **Command.** `--region` is required (no default region). Without `--only` and `--rivers` every section of
+  `public/flow/<id>/index.json` is processed. `--only` takes section ids and inclusive ranges within one river
+  (`limay-110,limay-076..limay-102`; a mixed-river or reversed range is an error), `--rivers limay,negro` takes
+  every section of those river slugs; the two combine as a union. `--reselect` redoes the STAC search and
+  rewrites the scene locks.
+- **Batches and resume.** A section is skipped ("up to date" in the log) when its `net.json`, `qa.geojson` and
+  `out/<id>.report.json` exist and the report's `inputsHash` matches: sha256 of the canonical region config, the
+  section's `scenes.lock.json`, `public/flow/<id>/<sectionId>.json` and `FLOWWATER_VERSION` (`flowwater/cli.py`,
+  bumped whenever output logic changes). `--force` (or `--reselect`) reprocesses. Every output is written to a
+  temporary name and renamed. Ctrl-C between sections leaves the finished sections valid and still rebuilds
+  `report.json`. The HydroLAKES file (`lakeIoU`) is part of the hash, and `water.tif` must exist.
 - **Config.** `regions/<id>/flow-water.config.json` (grid CRS and resolution, corridor, STAC window, water,
   reservoir and network thresholds, DEM URL); a region without it stops with a message.
 - **Inputs.** `public/flow/<id>/<sectionId>.json` and `index.json` (the IGN course; read only) and
   `data/work/<id>/lakes/lakes.geojson` (HydroLAKES, only for the `lakeIoU` check; run `lakes` first, else the
   check is skipped with a warning).
 - **Outputs**, all in `data/work/<id>/flow-water/`, nothing in `public/` or `data/out/`:
+  `out/<sectionId>.report.json` (that section's part of the report, deterministic: no timings or dates),
   `out/<sectionId>.net.json` (schema `flow-net/1`: nodes, branches, reservoirs with ports and drift, `qa`;
   zod in `lib/flow/net-schema.ts`; compact JSON, same bytes on every run), `out/<sectionId>.qa.geojson`
   (reservoirs, branches, nodes and the IGN course in lon/lat, layers named in `properties.layer`, for QGIS),
   `out/<sectionId>.water.tif` (band 1 water frequency in percent, 255 = no valid look; band 2 class),
   `cache/<sectionId>/scenes.lock.json` (the pinned scenes), `report.json` and `flow-water.log`.
-- **`report.json`.** `ok`, `region`, `totals` (`sections`, `failed`, `looks`, `warnings`, `netBytesTotal`) and per
-  section either `error` or:
+- **`report.json`.** Rebuilt after every run from all `out/*.report.json` present (sorted by id), so batches
+  accumulate; `ok` is false if any present section failed. `ok`, `region`, `totals` (`sections`, `failed`,
+  `looks`, `warnings`, `netBytesTotal`, over all present sections), `lastRun` (the only place with timings:
+  `sectionsInRun`, `skipped`, `processed` with `elapsedS`, `failed`, `interrupted`, `force`) and per section
+  either `error` or:
   `looks` (date, item ids and valid-pixel fraction of each scene used), `demCoverage` (share of the grid with
   a DEM value), `grid` (CRS, height, width), `warnings`;
   `water` (`waterKm2`, `channelKm2`, `reservoirKm2` and `reservoirs` with their areas, `islands`,
-  `componentsKept` / `componentsDropped`, `droppedKm2`, `lakeIoU` against HydroLAKES in the corridor, `lakes`);
+  `componentsKept` / `componentsDropped`, `droppedKm2`, `lakeIoU` against HydroLAKES in the corridor, `lakes`,
+  `sclClass2`: measurement only, `sclValid` unchanged; pixels passing the frequency test in the AOI with the
+  configured mask and with SCL class 2 flipped (dropped if configured valid, added if not), `deltaPx` /
+  `deltaKm2` = flipped minus current, `class2LookPixelsShare`);
   `network` (`branches`, `channelKm`, `connectors` and `gapsLeft` along the course, `splits`, `joins`,
   `sources`, `sinks`, `ports`, `parallelArms` (independent loops of the channel graph), `orient` (branches by
   course / dem / tangent), `cycles`, `shareErrorMax`, what pruning dropped (`prunedSpurs`, `droppedNarrow`,
@@ -478,8 +493,15 @@ section; F3 (the particle engine) will read this network to follow braided arms 
   `courseCoverage` (share of the IGN course within `coverTolM` of a branch or reservoir), `wetCourseCoverage` (the
   same over the course samples that lie in water), `courseInWater`,
   `insideWater` (share of channel vertices on water) and `f1InsideWater` (the same for the F1 course));
-  `out` (`netBytes`, `qaBytes`). A contract invariant that fails (unknown reference, array lengths, shares not
+  `inputsHash`, `out` (`netBytes`, `qaBytes`). A contract invariant that fails (unknown reference, array lengths, shares not
   summing to 1) makes that section an `error` and the run exits 1.
+- **Network details (F3.1).** A course-following stub (a free end inside the grid whose branch has at least
+  `minComponentM` within `coverTolM` of the course) is bridged by a flagged `connector` along the course across
+  a dry gap of at most `connectorMaxM` before dead ends are pruned. Each reservoir is two internal hubs,
+  `res:<id>:in` and `res:<id>:out`, so a channel that leaves and re-enters one reservoir is not a cycle; its
+  flux is solved with the reservoir passing everything in to out. A reservoir whose out side reaches no drain except by re-entering it is itself the drain (no in-to-out link; what
+  leaves it carries flux 0). Flux is null exactly when `cycles` > 0 (an unsolvable flux counts as a cycle). A reservoir `drift` is rotated from
+  grid north to true north by the meridian convergence at its centroid.
 - **Tests.** `uv run --project pipeline/py pytest` (synthetic inputs, no network).
 - **Caveats.**
   - Scenes are pinned in `scenes.lock.json`, so reruns read the same imagery; the default window is January to
