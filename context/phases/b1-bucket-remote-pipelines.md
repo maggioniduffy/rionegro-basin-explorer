@@ -254,8 +254,10 @@ Meanwhile builders write code against those names; nothing is uploaded until the
 
 ## Owner checks
 
-- [ ] Publish `nqn` tiles and flow, then `cba` tiles; repeat each publish and confirm the reports show
+- [x] Publish `nqn` tiles and flow, then `cba` tiles; repeat each publish and confirm the reports show
       `uploaded: 0` on the second run. Commit `content/versions.json` before setting Vercel `CONTENT_ORIGIN`.
+      Done 2026-10-19: nqn 928 files (tiles `3768b61d8bf0`, flow `4a8bce066be4`), cba 5 tiles
+      (`d7e595549414`, `--kind tiles`); second runs `uploaded: 0`.
 - [ ] Upload `data/work/nqn/lakes/lakes.geojson` to `basin-pipeline` with `flow-water:sync --mode push-inputs`.
 - [ ] Seed `basin-pipeline` with every non-error local `out/*.report.json` section and verify object key counts
       without printing object contents. This prevents the net publisher from dropping existing local nets.

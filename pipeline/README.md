@@ -563,7 +563,8 @@ F3.2 (`nqn` only for now): publishes the finished `flow-net/1` networks of `pipe
   `report.json` with `pipeline:flow-water --report-only` (no processing, no scene downloads), then runs the net
   gate.
 - **One-time prerequisites before the first dispatch** (owner, local, with R2 credentials in `.env.local`):
-  1. `npm run content:publish -- --region <id>` for tiles and flow of each served region, then commit
+  1. `npm run content:publish -- --region <id>` for tiles and flow of each served region (`--kind tiles` for a
+     region with no `public/flow/<id>/`, such as `cba`; without it the run stops at flow), then commit
      `content/versions.json` (Vercel needs it once `CONTENT_ORIGIN` is set; the build fails if a served region
      has no tiles version).
   2. `npm run flow-water:sync -- --region nqn --mode push-inputs` uploads
