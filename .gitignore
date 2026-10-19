@@ -77,3 +77,6 @@ __pycache__/
 # QGIS projects (local inspection)
 *.qgz
 *.qgs
+
+# Local backups of agent definitions (originals are in git history)
+.claude/agents/*.bak
