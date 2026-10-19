@@ -12,6 +12,10 @@ The standing architecture decisions stay in PLAN.md; data licenses are in `pipel
 - R2 activation, the two buckets, secrets, first upload, untracking the current generated files, and the Vercel
   Range/cache preview check are owner actions. They must happen in that order so a fresh checkout never loses
   the currently tracked content before it is available remotely.
+- The remote workflow uses `flow-water --report-only` in its publish job to rebuild the aggregate report from
+  collected section reports without fetching scenes or processing water again.
+- Seed `basin-pipeline` with locally completed section reports, outputs and scene locks before the first remote
+  dispatch. The publish gate only considers candidates in those reports and removes nets without candidates.
 
 ## Phase 0 (2026-09-29)
 

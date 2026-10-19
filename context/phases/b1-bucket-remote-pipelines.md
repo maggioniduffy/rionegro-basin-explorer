@@ -2,14 +2,14 @@
 
 # Phase B1 — Content bucket and remote pipelines
 
-**Plan approved by the owner on 2026-10-19; paused before any code (owner).** Branch `phase-b1-bucket-remote-pipelines`
-(cut from `phase-f3-flow-network`; rebase on main after PR #10 merges). Resume at B1.0 (owner actions) and the WP B1.1
-builder brief, below in "Approved plan". The "Scope (proposed)" and "Open points" below are the original proposal, kept
-for history.
+**Plan approved by the owner on 2026-10-19.** Branch `phase-b1-bucket-remote-pipelines` (cut from
+`phase-f3-flow-network`; rebase on main after PR #10 merges). B1.1 and B1.2 implementation is committed as
+`b088bf9` and `bd9c845`; the workflow action SHA fix is `fb5b81a`. The B1.1/B1.2 owner uploads and live checks
+below remain pending. The "Scope (proposed)" and "Open points" sections are kept for history.
 
-**Partial, unreviewed B1.1 work left uncommitted in the working tree (2026-10-19):** `lib/content-hash.ts`,
-`scripts/lib/r2.ts`, and `@aws-sdk/client-s3` in `package.json` / `package-lock.json`. The builder was stopped mid-WP.
-On resume, read these against the B1.1 brief, then finish or discard them.
+**Owner-reported status (2026-10-19):** R2 buckets and repository secrets are configured; no objects have been
+uploaded. Only `check` is registered on GitHub because this phase branch has not been pushed. Public generated
+files remain tracked until the Vercel Preview Range/cache check passes.
 
 ## Why
 
@@ -251,6 +251,21 @@ Meanwhile builders write code against those names; nothing is uploaded until the
 - Preview `curl -r` returns 206 and the cache HIT.
 - Workflow run logs and the pulled `flow-water` / `flow-net-publish` reports.
 - Owner browser pass for B1.4.
+
+## Owner checks
+
+- [ ] Publish `nqn` tiles and flow, then `cba` tiles; repeat each publish and confirm the reports show
+      `uploaded: 0` on the second run. Commit `content/versions.json` before setting Vercel `CONTENT_ORIGIN`.
+- [ ] Upload `data/work/nqn/lakes/lakes.geojson` to `basin-pipeline` with `flow-water:sync --mode push-inputs`.
+- [ ] Seed `basin-pipeline` with every non-error local `out/*.report.json` section and verify object key counts
+      without printing object contents. This prevents the net publisher from dropping existing local nets.
+- [ ] Choose whether to register `flow-water.yml` through a small PR to `main` or wait for the phase PR; enable
+      GitHub Actions pull-request creation.
+- [ ] After the workflow is available on GitHub, dispatch the already-done `limay-110` dry run and check its
+      reports and version hash.
+- [ ] Set Vercel `CONTENT_ORIGIN` for Preview and Production. On a Preview, verify a byte range returns 206,
+      a repeated request is a CDN HIT, and the map/flow load without console errors.
+- [ ] Only after that Preview check, untrack `public/tiles` and `public/flow` in a separate commit.
 
 ## Work packages (original proposal)
 
