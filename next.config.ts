@@ -1,63 +1,53 @@
-import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { REGION_IDS } from "./regions/index";
+import { localVersions, type ContentKind } from "./lib/content-hash";
 
 const withNextIntl = createNextIntlPlugin();
 
-/**
- * Content hash of each region's PMTiles archives (public/tiles/<region>/), so their URLs
- * change only when the tiles do (lib/map/config.ts tilePaths). Files in /public are served
- * with max-age=0, so without it every range request goes back to the server. A versioned
- * URL can be cached for good: PMTiles cannot catch a stale cached header itself, because
- * it ignores weak ETags, which is what the server sends.
- */
-function tilesVersions(): Record<string, string> {
-  const root = join(process.cwd(), "public", "tiles");
-  const versions: Record<string, string> = {};
-  for (const region of readdirSync(root, { withFileTypes: true })) {
-    if (!region.isDirectory()) continue;
-    const dir = join(root, region.name);
-    const hash = createHash("sha256");
-    for (const file of readdirSync(dir).sort()) {
-      if (!file.endsWith(".pmtiles")) continue;
-      hash.update(file).update(readFileSync(join(dir, file)));
-    }
-    versions[region.name] = hash.digest("hex").slice(0, 12);
+type Versions = Record<ContentKind, Record<string, string>>;
+
+/** Local builds hash public output; deployed builds use the committed R2 manifest. */
+function versions(): Versions {
+  if (!process.env.CONTENT_ORIGIN)
+    return { tiles: localVersions("tiles"), flow: localVersions("flow") };
+  const manifest = join(process.cwd(), "content", "versions.json");
+  if (!existsSync(manifest))
+    throw new Error("CONTENT_ORIGIN requires content/versions.json");
+  const parsed: unknown = JSON.parse(readFileSync(manifest, "utf8"));
+  if (!parsed || typeof parsed !== "object")
+    throw new Error("content/versions.json must be an object");
+  const value = parsed as Partial<Versions>;
+  const result = { tiles: value.tiles ?? {}, flow: value.flow ?? {} };
+  // A served region without a published version would 404 its tiles silently.
+  for (const id of REGION_IDS) {
+    if (!result.tiles[id])
+      throw new Error(
+        `CONTENT_ORIGIN is set but content/versions.json has no tiles version for region ${id}: run content:publish`,
+      );
+    const hasFlow = existsSync(
+      join(process.cwd(), "regions", id, "flow.config.json"),
+    );
+    if (hasFlow && !result.flow[id])
+      throw new Error(
+        `CONTENT_ORIGIN is set but content/versions.json has no flow version for region ${id}: run content:publish --kind flow`,
+      );
   }
-  return versions;
+  return result;
 }
 
-/**
- * Content hash of each region's flow sections (public/flow/<region>/*.json), same idea as the
- * tiles (lib/flow/data.ts flowPaths). A region without the folder has no entry, which is how
- * the app knows it offers no flow mode.
- */
-function flowVersions(): Record<string, string> {
-  const root = join(process.cwd(), "public", "flow");
-  const versions: Record<string, string> = {};
-  if (!existsSync(root)) return versions;
-  for (const region of readdirSync(root, { withFileTypes: true })) {
-    if (!region.isDirectory()) continue;
-    const dir = join(root, region.name);
-    const hash = createHash("sha256");
-    for (const file of readdirSync(dir).sort()) {
-      if (!file.endsWith(".json")) continue;
-      hash.update(file).update(readFileSync(join(dir, file)));
-    }
-    versions[region.name] = hash.digest("hex").slice(0, 12);
-  }
-  return versions;
-}
+const contentVersions = versions();
+const contentOrigin = process.env.CONTENT_ORIGIN?.replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
   env: {
-    NEXT_PUBLIC_TILES_VERSIONS: JSON.stringify(tilesVersions()),
-    NEXT_PUBLIC_FLOW_VERSIONS: JSON.stringify(flowVersions()),
+    NEXT_PUBLIC_TILES_VERSIONS: JSON.stringify(contentVersions.tiles),
+    NEXT_PUBLIC_FLOW_VERSIONS: JSON.stringify(contentVersions.flow),
   },
   async rewrites() {
-    return [
+    const local = [
       {
         source: "/tiles/:region/:version/:file",
         destination: "/tiles/:region/:file",
@@ -70,10 +60,29 @@ const nextConfig: NextConfig = {
       // /tiles/<hash>/<file>; real files under /tiles/<region>/ are served first.
       { source: "/tiles/:version/:file", destination: "/tiles/nqn/:file" },
     ];
+    if (!contentOrigin) return local;
+    return [
+      {
+        source: "/tiles/:region/:version/:file",
+        destination: `${contentOrigin}/tiles/:region/:version/:file`,
+        basePath: false,
+      },
+      {
+        source: "/flow/:region/:version/:file",
+        destination: `${contentOrigin}/flow/:region/:version/:file`,
+        basePath: false,
+      },
+      {
+        source: "/tiles/:version/:file",
+        destination: `${contentOrigin}/tiles/nqn/:version/:file`,
+        basePath: false,
+      },
+    ];
   },
   async headers() {
     const immutable = [
       { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+      { key: "x-vercel-enable-rewrite-caching", value: "1" },
     ];
     return [
       { source: "/tiles/:region/:version/:file", headers: immutable },
