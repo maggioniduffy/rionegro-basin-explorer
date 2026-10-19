@@ -60,6 +60,7 @@ Each phase lives in its own file under [phases/](phases/). Read this index, then
 | R5 — Continuous river courses in Córdoba   | [x]                                       | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
 | F1 — Flow close-up (`nqn`)                 | [~] code done; owner browser checks left  | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
 | I1 — Sharper imagery, more zoom, particles | [ ] candidates and licenses               | [i1-sharper-imagery.md](phases/i1-sharper-imagery.md) |
+| F2 — Water network from Sentinel-2 (`nqn`) | [~] pipeline and contract                 | [f2-water-network.md](phases/f2-water-network.md)     |
 
 ### Multi-region (R0–R5)
 
