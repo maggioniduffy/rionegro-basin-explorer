@@ -441,6 +441,61 @@ All thresholds are in the config.
   `report.only.json`, leaving `public/` alone. Heavy limits: DuckDB 2 GB, 2 threads; the full `nqn` run takes
   about 10 s.
 
+### `npm run pipeline:flow-water -- --region <id> [--only <ids>] [--reselect]`
+
+F2 (`nqn` only for now): an offline Python step that derives, per flow section, a multi-branch channel network
+and reservoir polygons from Sentinel-2 L2A and the Copernicus GLO-30 DEM. F1 moves particles along one track per
+section; F3 (the particle engine) will read this network to follow braided arms and to drift in reservoirs.
+
+- **Prerequisites.** [`uv`](https://docs.astral.sh/uv/) (the npm script runs
+  `uv run --project pipeline/py --frozen flowwater`). The first run downloads Python 3.13 and the locked
+  dependencies. It needs network access to AWS (Earth Search STAC, the `sentinel-cogs` and `copernicus-dem-30m`
+  buckets); after the first run the windowed reads are cached in `data/work/<id>/flow-water/cache/`.
+- **Command.** `--region` is required (no default region). Without `--only` every section of
+  `public/flow/<id>/index.json` is processed; `--only limay-110,limay-078` takes section ids. `--reselect` redoes
+  the STAC search and rewrites the scene locks.
+- **Config.** `regions/<id>/flow-water.config.json` (grid CRS and resolution, corridor, STAC window, water,
+  reservoir and network thresholds, DEM URL); a region without it stops with a message.
+- **Inputs.** `public/flow/<id>/<sectionId>.json` and `index.json` (the IGN course; read only) and
+  `data/work/<id>/lakes/lakes.geojson` (HydroLAKES, only for the `lakeIoU` check; run `lakes` first, else the
+  check is skipped with a warning).
+- **Outputs**, all in `data/work/<id>/flow-water/`, nothing in `public/` or `data/out/`:
+  `out/<sectionId>.net.json` (schema `flow-net/1`: nodes, branches, reservoirs with ports and drift, `qa`;
+  zod in `lib/flow/net-schema.ts`; compact JSON, same bytes on every run), `out/<sectionId>.qa.geojson`
+  (reservoirs, branches, nodes and the IGN course in lon/lat, layers named in `properties.layer`, for QGIS),
+  `out/<sectionId>.water.tif` (band 1 water frequency in percent, 255 = no valid look; band 2 class),
+  `cache/<sectionId>/scenes.lock.json` (the pinned scenes), `report.json` and `flow-water.log`.
+- **`report.json`.** `ok`, `region`, `totals` (`sections`, `failed`, `looks`, `warnings`, `netBytesTotal`) and per
+  section either `error` or:
+  `looks` (date, item ids and valid-pixel fraction of each scene used), `demCoverage` (share of the grid with
+  a DEM value), `grid` (CRS, height, width), `warnings`;
+  `water` (`waterKm2`, `channelKm2`, `reservoirKm2` and `reservoirs` with their areas, `islands`,
+  `componentsKept` / `componentsDropped`, `droppedKm2`, `lakeIoU` against HydroLAKES in the corridor, `lakes`);
+  `network` (`branches`, `channelKm`, `connectors` and `gapsLeft` along the course, `splits`, `joins`,
+  `sources`, `sinks`, `ports`, `parallelArms` (independent loops of the channel graph), `orient` (branches by
+  course / dem / tangent), `cycles`, `shareErrorMax`, what pruning dropped (`prunedSpurs`, `droppedNarrow`,
+  `keptNarrow`, `droppedComponents`, `deadEndsDropped`, `sliversDropped`), `entries` / `exits`,
+  `courseCoverage` (share of the IGN course within `coverTolM` of a branch or reservoir), `courseInWater`,
+  `insideWater` (share of channel vertices on water) and `f1InsideWater` (the same for the F1 course));
+  `out` (`netBytes`, `qaBytes`). A contract invariant that fails (unknown reference, array lengths, shares not
+  summing to 1) makes that section an `error` and the run exits 1.
+- **Tests.** `uv run --project pipeline/py pytest` (synthetic inputs, no network).
+- **Caveats.**
+  - Scenes are pinned in `scenes.lock.json`, so reruns read the same imagery; the default window is January to
+    April 2024, the 8 dates with the least cloud cover. A river's extent at other times of year (or after
+    other releases from the dams) differs.
+  - MNDWI uses the SWIR band (B11), native 20 m resampled to 10 m, so the shore edge is effectively 20 m.
+  - Shares and flux are illustrative: capacity is mean width ^ 1.5, normalised at each split. They are a display
+    model like F1's relative speed, not a measured partition of discharge.
+  - Earth Search lists a -0.1 offset for the bands but sets `earthsearch:boa_offset_applied`; the step does not
+    add it again when the flag is true (it put open water below zero).
+  - Nothing is published to `public/` until F3 decides the file format and the size budget (the flow data is
+    already 7.6 of 8 MB).
+  - Attribution (each `.net.json` carries it in `source.attribution`): Contains modified Copernicus Sentinel
+    data (years of the scenes); produced using Copernicus WorldDEM-30 (c) DLR e.V. 2010-2014 and (c) Airbus
+    Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights
+    reserved. See `SOURCES.md`; the GLO-30 licence text itself is not verified there.
+
 ### `npm run pipeline:export`
 
 Writes the Phase 1 artifacts:
