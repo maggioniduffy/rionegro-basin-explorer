@@ -59,7 +59,7 @@ Each phase lives in its own file under [phases/](phases/). Read this index, then
 | R4 — Hub                                          | [x]                                                                | [r4-hub.md](phases/r4-hub.md)                         |
 | R5 — Continuous river courses in Córdoba          | [x]                                                                | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
 | F1 — Flow close-up (`nqn`)                        | [~] code done; owner browser checks left                           | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
-| I1 — Imagery, water tuning, reservoirs, CDN cache | [ ] I1.0 licenses + I1.P probe first; B1 leftovers merged here     | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
+| I1 — Imagery, water tuning, reservoirs, CDN cache | [~] I1.0–I1.1 done (IGN imagery, nqn); I1.P next                   | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
 | F2 — Water network from Sentinel-2 (`nqn`)        | [x]                                                                | [f2-water-network.md](phases/f2-water-network.md)     |
 | F3 — Flow engine on the water network             | [~] PR #10; reservoir box and zoom to I1.7                         | [f3-flow-network.md](phases/f3-flow-network.md)       |
 | B1 — Content bucket and remote pipelines          | [x] B1.1–B1.3 done; B1.4 → I1.7, B1.5 → I1.6 (file merged into I1) | [i1-imagery-water.md](phases/i1-imagery-water.md)     |

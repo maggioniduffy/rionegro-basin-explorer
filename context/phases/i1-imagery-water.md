@@ -33,7 +33,7 @@ Key facts found:
 
 ## Items (in order)
 
-- [ ] **I1.0 Imagery candidates and licenses** (license-checker, read-only). Runs in parallel with I1.6. For each
+- [x] **I1.0 Imagery candidates and licenses** (license-checker, read-only). Runs in parallel with I1.6. For each
       candidate, record the resolution over the basin, whether it's free with no recurring cost (no tier that bills
       once traffic grows), whether a key or account is needed, whether a public non-commercial site may use it, the
       required attribution, whether the browser may fetch tiles directly, and **whether data may be derived from it**
@@ -44,9 +44,12 @@ Key facts found:
   - Mapbox / MapTiler satellite free tiers: they need a token and bill above a quota, so flag the cost risk (Rule 8).
   - Any other free ≤2 m source the checker finds.
 
-  Output: a table for SOURCES.md and a recommendation.
+  Output: a table for SOURCES.md and a recommendation. **Done 2026-10-19**: Esri and Mapbox bill with traffic;
+  MapTiler Free is hard-capped but forbids server caching (plan B); IGN `mosaicos_vuelos` is free, keyless,
+  CORS-enabled and allows tracing, but its coverage is patchy (none at El Chocón). Table in `pipeline/SOURCES.md`.
 
-- [ ] **I1.1 Owner decision on the provider**; record it in DECISSIONS.md and `pipeline/SOURCES.md`.
+- [x] **I1.1 Owner decision on the provider**; record it in DECISSIONS.md and `pipeline/SOURCES.md`. Owner,
+      2026-10-19: IGN `mosaicos_vuelos` above EOX, **`nqn` only** (`cba` keeps EOX; no Córdoba imagery pursued).
 - [ ] **I1.P Water probe (`flow-water probe`)** _(builder; reviewer: data provenance)_. Goal:
       `npm run pipeline:flow-water-probe -- --region nqn --case <name> | --bbox lon1,lat1,lon2,lat2 [--section <id>] [--set water.mndwiMin=0.05 ...] [--sweep key=a,b,c] [--truth file.geojson]`
       writes `data/work/<region>/flow-water-probe/<case>/index.html` + `report.json` in seconds.
@@ -97,8 +100,9 @@ Key facts found:
     designed once I1.P is done.
 
 - [ ] **I1.2 + I1.4 High-res source and more zoom** _(builder; reviewer: license, cost)_. Blocked by I1.1.
-  - Add a second raster source that blends in above about z13–14 (Sentinel-2 below). Make it per region if coverage
-    differs. Put its URL and attribution in env vars like `NEXT_PUBLIC_IMAGERY_TILE_URL`. Keep the attribution and
+  - Add a second raster source (IGN `mosaicos_vuelos` WMTS, `pipeline/SOURCES.md`) that blends in above about
+    z13–14, EOX Sentinel-2 below filling its gaps. `nqn` only; `cba` keeps EOX. Map the IGN footprint over the
+    basin first (which reaches have tiles). Put its URL and attribution in env vars like `NEXT_PUBLIC_IMAGERY_TILE_URL`. Keep the attribution and
     the snapshot stamp (`lib/map/snapshot.ts`) correct for both sources.
   - Raise `MAP_MAXZOOM` (13) and `FLOW_MAXZOOM` (14.5, `lib/flow/config.ts`) to where the new imagery stays sharp
     (target z16–17 for flow, measured on screen, not guessed); set the raster source's `maxzoom` to the provider's
@@ -162,7 +166,7 @@ Key facts found:
 - Probe: HTML for a known section; cached rerun; pipeline output unchanged on a done section.
 - Tuning: per-case metrics table before/after recorded in DECISSIONS.md; remote rerun reports pass
   `flow-net-publish` checks.
-- Imagery: in both regions, the arms of a braided reach (e.g. the Río Negro near Choele Choel) are visible at
+- Imagery: in `nqn` (where IGN covers), the arms of a braided reach (e.g. the Río Negro near Choele Choel) are visible at
   z15–16; flow mode zooms past z14.5 with imagery that stays sharp; the provider's license is verified and recorded
   in SOURCES.md; there is no recurring cost; attribution shows on the map and in snapshots.
 - The particle density control works in EN and ES and holds ~60 fps at the default.
