@@ -42,3 +42,7 @@ first, and verify every cost figure before choosing (Rule 8).
 
 - [ ] B1.1 Bucket, and publishing tiles and flow files to it with content-hashed paths
 - [ ] B1.2 GitHub Actions workflow for `flow-water` in batches
+- [ ] B1.3 First remote batch: the rest of F3's batch 1, 18 sections (`limay-084..limay-095`,
+      `limay-097..limay-102`: lower El Chocón, the reach between the dams, Arroyito and below its dam), then
+      `pipeline:flow-net-publish -- --region nqn`. Locally it would be
+      `npm run pipeline:flow-water -- --region nqn --only limay-084..limay-095,limay-097..limay-102`.

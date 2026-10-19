@@ -13,8 +13,9 @@ reservoirs, and fallback to the F1 track when a section has no net.
 
 ## Owner decisions (2026-10-18)
 
-- **No full run.** The step runs in resumable batches; batch 1 is El Chocón and Arroyito only
-  (`limay-076..limay-102`, 27 sections). Later batches are owner commands (below).
+- **No full run.** The step runs in resumable batches. Batch 1 was planned as El Chocón and Arroyito
+  (`limay-076..limay-102`, 27 sections); the owner stopped it at 9 of them (`limay-076..083`, `limay-096`) to
+  test and move on (2026-10-18). The other 18 (`limay-084..095`, `limay-097..102`) run after phase B1.
 - **Reservoir sections become viewable** when a net that passes QA exists for them (slow 2D drift); without a
   net they stay not flowable, as in F1.
 - **Budget.** The 8 MB cap was a round number in the F1 plan, not an external limit (see DECISSIONS). Sections
@@ -51,9 +52,11 @@ reservoirs, and fallback to the F1 track when a section has no net.
 
 ## Done when
 
-- Batch 1 is published within the 4 MB net budget, byte-identical across two runs.
-- El Chocón (`limay-078..094`) and Arroyito (`limay-096..100`) are viewable with slow drift inside the polygon;
-  `limay-095` and `limay-101..102` stream along branches and hand off into and out of the reservoirs.
+- The 11 finished nets are published within the 4 MB net budget, byte-identical across two runs. **Met**
+  (11/11 pass the gate, 48 KB).
+- The upper El Chocón sections (`limay-078..083`) and Arroyito (`limay-096`) are viewable, with slow drift inside
+  the polygon; `limay-076..077` (reservoir tail), `limay-110` and `neuquen-139` stream along branches and hand off
+  into reservoirs where they have one.
 - Sections without a net behave exactly as in F1; `e2e/flow.spec.ts` (`limay-010`) unchanged.
 - neuquen-139 meets its F2 criteria, or the remaining shortfall is recorded.
 - `npm run check` green; new strings in both locales.
