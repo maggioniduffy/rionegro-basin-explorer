@@ -95,11 +95,13 @@ export function FlowController({
       const manifest = await loadNets(region);
       const [section, net] = await Promise.all([
         loadSection(region, id),
-        // A failed net load logs (in loadNet) and falls back to the F1 track.
+        // A failed net load logs (in loadNet); flowable sections fall back to the F1 track.
         manifest.ids.includes(id) ? loadNet(region, id) : null,
       ]);
       if (mine !== token) return;
-      if (!section) {
+      // Only a section flowable on its own may fall back to the F1 track; a reservoir section
+      // without its net has nothing to show.
+      if (!section || (!section.flowable && !net)) {
         useMapStore.getState().exitFlow();
         return;
       }

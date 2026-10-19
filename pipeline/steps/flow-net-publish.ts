@@ -226,7 +226,7 @@ async function main() {
   const checks = { withinBudget, maxDecodeErrorUnder1m: maxErrM < 1 };
   const ok = Object.values(checks).every(Boolean);
 
-  if (withinBudget) {
+  if (ok) {
     await mkdir(pubDir, { recursive: true });
     for (const f of await readdir(pubDir))
       if (f.endsWith(".net.json") && !ids.includes(f.slice(0, -9)))

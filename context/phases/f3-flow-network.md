@@ -48,7 +48,7 @@ reservoirs, and fallback to the F1 track when a section has no net.
       reservoir sections
 - [x] F3.5 FlowPanel / legend copy (network vs single track, reservoir drift, illustrative shares), attribution;
       EN/ES
-- [ ] F3.6 Batch 1 run and publish, reviewer gate, PR
+- [x] F3.6 Batch 1 run and publish, reviewer gate, PR
 
 ## Done when
 

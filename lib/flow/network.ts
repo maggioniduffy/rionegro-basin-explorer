@@ -60,6 +60,7 @@ export interface NetReservoir {
   inlets: number[];
   outlets: NetOutlet[];
   /** Point used when rejection sampling fails. */
+  /** A point known to be inside the polygon (anchor for sampling fallback and recovery). */
   fallbackX: number;
   fallbackY: number;
 }
@@ -82,6 +83,9 @@ export interface FlowNetwork {
   nodeKind: string[];
   nodeReservoir: Int32Array;
   nodeInlet: Int32Array;
+  /** Where a particle enters the node's reservoir: the node, or the nearest point inside the polygon. */
+  nodeEntryX: Float64Array;
+  nodeEntryY: Float64Array;
   outStart: Int32Array;
   outBranch: Int32Array;
   outCum: Float64Array;
@@ -168,6 +172,8 @@ export function buildNetwork(pub: FlowNetPub): FlowNetwork {
   }
 
   const nodeInlet = new Int32Array(nNodes).fill(-1);
+  const nodeEntryX = nodeX.slice();
+  const nodeEntryY = nodeY.slice();
   const reservoirs: NetReservoir[] = dec.reservoirs.map((r, ri) => {
     r.inlets.forEach((n) => {
       nodeInlet[n] = ri;
@@ -225,8 +231,7 @@ export function buildNetwork(pub: FlowNetPub): FlowNetwork {
         open: hasOut && (flux === null ? share > 0 : flux > 0),
       };
     });
-    const anchor = r.inlets[0] ?? r.outlets[0]?.[0];
-    return {
+    const res: NetReservoir = {
       ringX,
       ringY,
       bbox,
@@ -236,11 +241,18 @@ export function buildNetwork(pub: FlowNetPub): FlowNetwork {
       mPerUnit,
       inlets: r.inlets,
       outlets,
-      fallbackX:
-        anchor !== undefined ? nodeX[anchor]! : (bbox[0] + bbox[2]) / 2,
-      fallbackY:
-        anchor !== undefined ? nodeY[anchor]! : (bbox[1] + bbox[3]) / 2,
+      fallbackX: (bbox[0] + bbox[2]) / 2,
+      fallbackY: (bbox[1] + bbox[3]) / 2,
     };
+    const inside = insidePoint(res);
+    res.fallbackX = inside[0];
+    res.fallbackY = inside[1];
+    for (const n of r.inlets) {
+      const e = entryPoint(res, nodeX[n]!, nodeY[n]!);
+      nodeEntryX[n] = e[0];
+      nodeEntryY[n] = e[1];
+    }
+    return res;
   });
 
   // Seeding weights.
@@ -281,6 +293,8 @@ export function buildNetwork(pub: FlowNetPub): FlowNetwork {
     nodeKind: dec.nodes.kind,
     nodeReservoir: Int32Array.from(dec.nodes.reservoir),
     nodeInlet,
+    nodeEntryX,
+    nodeEntryY,
     outStart,
     outBranch,
     outCum,
@@ -310,4 +324,75 @@ export function insideReservoir(
     }
   }
   return inside;
+}
+
+/** Build-time: a point inside the polygon (first hit of a bbox grid scan, else the bbox centre). */
+function insidePoint(r: NetReservoir): [number, number] {
+  const b = r.bbox;
+  const cx = (b[0] + b[2]) / 2;
+  const cy = (b[1] + b[3]) / 2;
+  if (insideReservoir(r, cx, cy)) return [cx, cy];
+  const N = 24;
+  for (let i = 0; i < N; i++)
+    for (let j = 0; j < N; j++) {
+      const x = b[0] + ((i + 0.5) / N) * (b[2] - b[0]);
+      const y = b[1] + ((j + 0.5) / N) * (b[3] - b[1]);
+      if (insideReservoir(r, x, y)) return [x, y];
+    }
+  return [cx, cy];
+}
+
+/** Metres past the boundary an entering particle is placed (tried in order). */
+const ENTRY_MARGINS_M = [3, 6, 12, 25, 50];
+
+/**
+ * Build-time: where a particle entering at (px, py) starts. The point itself when inside; else
+ * the nearest boundary point moved inward by a small margin (the direction from the node to
+ * the boundary, then its opposite), else stepping from the boundary toward an inside point.
+ */
+function entryPoint(r: NetReservoir, px: number, py: number): [number, number] {
+  if (insideReservoir(r, px, py)) return [px, py];
+  let best = Infinity;
+  let qx = px;
+  let qy = py;
+  for (let k = 0; k < r.ringX.length; k++) {
+    const xs = r.ringX[k]!;
+    const ys = r.ringY[k]!;
+    for (let i = 0; i + 1 < xs.length; i++) {
+      const ax = xs[i]!;
+      const ay = ys[i]!;
+      const bx = xs[i + 1]! - ax;
+      const by = ys[i + 1]! - ay;
+      const len2 = bx * bx + by * by;
+      const t =
+        len2 > 0
+          ? Math.min(1, Math.max(0, ((px - ax) * bx + (py - ay) * by) / len2))
+          : 0;
+      const x = ax + bx * t;
+      const y = ay + by * t;
+      const d2 = (px - x) ** 2 + (py - y) ** 2;
+      if (d2 < best) {
+        best = d2;
+        qx = x;
+        qy = y;
+      }
+    }
+  }
+  const dl = Math.sqrt(best);
+  if (dl > 0) {
+    const dx = (qx - px) / dl;
+    const dy = (qy - py) / dl;
+    for (const sign of [1, -1])
+      for (const m of ENTRY_MARGINS_M) {
+        const x = qx + sign * dx * m * r.mPerUnit;
+        const y = qy + sign * dy * m * r.mPerUnit;
+        if (insideReservoir(r, x, y)) return [x, y];
+      }
+  }
+  for (let f = 0.05; f <= 1.0001; f += 0.05) {
+    const x = qx + (r.fallbackX - qx) * f;
+    const y = qy + (r.fallbackY - qy) * f;
+    if (insideReservoir(r, x, y)) return [x, y];
+  }
+  return [r.fallbackX, r.fallbackY];
 }

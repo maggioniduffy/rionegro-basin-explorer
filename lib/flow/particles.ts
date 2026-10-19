@@ -356,8 +356,8 @@ export function stepNetParticles(
         if (ri >= 0) {
           m = -1 - ri;
           state.mode[p] = m;
-          state.x[p] = net.nodeX[node]!;
-          state.y[p] = net.nodeY[node]!;
+          state.x[p] = net.nodeEntryX[node]!;
+          state.y[p] = net.nodeEntryY[node]!;
           state.s[p] = 0;
           break;
         }
@@ -400,7 +400,15 @@ function stepInReservoir(
   const y = state.y[p]!;
   let nx = x + res.driftX * len + jx;
   let ny = y + res.driftY * len + jy;
-  if (!insideReservoir(res, nx, ny)) {
+  if (!insideReservoir(res, x, y)) {
+    // Defensive: never rejected forever outside the polygon; walk toward a known inside point.
+    const dx = res.fallbackX - x;
+    const dy = res.fallbackY - y;
+    const dl = Math.hypot(dx, dy) || 1;
+    const k = Math.min(dl, Math.max(len, 1e-12));
+    nx = x + (dx / dl) * k;
+    ny = y + (dy / dl) * k;
+  } else if (!insideReservoir(res, nx, ny)) {
     nx = x + jx;
     ny = y + jy;
     if (!insideReservoir(res, nx, ny)) {

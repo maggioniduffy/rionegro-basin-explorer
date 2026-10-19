@@ -22,12 +22,12 @@ const ll = (x: number, y: number): [number, number] => [
  * Source A (index 0) splits 0.7 / 0.3 into arms B1 (1) and B2 (2) that rejoin, then C (3)
  * ends at the inlet of a 300 m x 200 m reservoir whose outlet feeds D (4). Metres east/north.
  */
-function syntheticNet() {
+function syntheticNet(inletX = 1510) {
   const nodePts: [number, number, FlowNet["nodes"][number]["kind"]][] = [
     [0, 0, "source"],
     [800, 0, "split"],
     [1200, 0, "join"],
-    [1510, 0, "port"],
+    [inletX, 0, "port"],
     [1780, 0, "port"],
     [2400, 0, "sink"],
   ];
@@ -121,7 +121,7 @@ function syntheticNet() {
         3,
         [
           [1200, 0],
-          [1510, 0],
+          [inletX, 0],
         ],
         1,
       ),
@@ -213,5 +213,35 @@ describe("flow network particles", () => {
     }
     expect(outside).toBe(0);
     expect(exited).toBeGreaterThan(0);
+  });
+
+  it("moves particles that enter through an inlet just outside the polygon", () => {
+    const net = syntheticNet(1495);
+    const rng = mulberry32(hashSeed("outside-inlet"));
+    const state = createNetParticles(net, 600, rng);
+    const px = new Float64Array(state.count);
+    const py = new Float64Array(state.count);
+    const still = new Int32Array(state.count);
+    let outside = 0;
+    let maxStill = 0;
+    for (let i = 0; i < 3000; i++) {
+      stepNetParticles(state, net, 0.05, 1, rng);
+      for (let p = 0; p < state.count; p++) {
+        const m = state.mode[p]!;
+        if (m >= 0) {
+          still[p] = 0;
+          continue;
+        }
+        if (!insideReservoir(net.reservoirs[-1 - m]!, state.x[p]!, state.y[p]!))
+          outside++;
+        still[p] =
+          state.x[p] === px[p] && state.y[p] === py[p] ? still[p]! + 1 : 0;
+        maxStill = Math.max(maxStill, still[p]!);
+        px[p] = state.x[p]!;
+        py[p] = state.y[p]!;
+      }
+    }
+    expect(outside).toBe(0);
+    expect(maxStill).toBeLessThan(60);
   });
 });
