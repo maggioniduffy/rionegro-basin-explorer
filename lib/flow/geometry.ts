@@ -72,12 +72,30 @@ function fillNulls(values: readonly (number | null)[]): Float64Array {
 
 export function buildTrack(section: FlowSection): Track {
   const { lon, lat, nMin, nMax } = section.stations;
+  return buildTrackFromLine(lon, lat, nMin, nMax);
+}
+
+/**
+ * Track from a lon/lat polyline with signed lateral bounds in metres per vertex. The origin
+ * is the Mercator position of the first vertex unless one is given (a network shares one
+ * origin across all its branches).
+ */
+export function buildTrackFromLine(
+  lon: readonly number[],
+  lat: readonly number[],
+  nMin: readonly (number | null)[],
+  nMax: readonly (number | null)[],
+  origin?: readonly [number, number],
+): Track {
   const n = lon.length;
   const x = new Float64Array(n);
   const y = new Float64Array(n);
   const mPerUnit = new Float64Array(n);
-  const [originX, originY] =
-    n > 0 ? lngLatToMercator(lon[0]!, lat[0]!) : [0, 0];
+  const [originX, originY] = origin
+    ? [origin[0], origin[1]]
+    : n > 0
+      ? lngLatToMercator(lon[0]!, lat[0]!)
+      : [0, 0];
   for (let i = 0; i < n; i++) {
     const [mx, my] = lngLatToMercator(lon[i]!, lat[i]!);
     x[i] = mx - originX;

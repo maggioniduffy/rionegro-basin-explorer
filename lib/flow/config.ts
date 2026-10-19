@@ -44,3 +44,19 @@ export const FLOW_LATERAL_JITTER = 0.2;
 
 /** Particles never leave |u| <= this, so they stay inside the channel edge. */
 export const FLOW_U_LIMIT = 0.98;
+
+/**
+ * Network mode (F3). All four values below are illustrative display choices, not measured.
+ * Share of the particles seeded in reservoirs when the net also has branches (split by area).
+ */
+export const FLOW_RESERVOIR_SEED_SHARE = 0.4;
+
+/** Reservoir drift speed relative to the network maximum (same m/s scale as branches). */
+export const FLOW_RESERVOIR_SPEED = 0.08;
+
+/** Heading jitter of a reservoir particle, as a fraction of its drift speed per axis. */
+export const FLOW_RESERVOIR_JITTER = 0.5;
+
+/** A reservoir particle enters an outlet branch within max(this, 1.5 x its half width) of the node. */
+export const FLOW_RESERVOIR_OUTLET_MIN_M = 30;
+export const FLOW_RESERVOIR_OUTLET_HW_FACTOR = 1.5;
