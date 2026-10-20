@@ -71,7 +71,11 @@ import { peekFlowIndex } from "@/lib/flow/data";
 import { nearestSection, riverHasFlow } from "@/lib/flow/pick";
 import { useAdoptSavedBaseLayer } from "@/lib/use-saved-base-layer";
 import { initMaplibre } from "@/lib/map/init";
-import { openedWithCameraHash } from "@/lib/map/camera-hash";
+import {
+  keepCameraHash,
+  openedWithCameraHash,
+  restoreCameraHash,
+} from "@/lib/map/camera-hash";
 import { setMainMap } from "@/lib/map/main-map";
 import { SnapshotButton } from "./SnapshotButton";
 import { SHEET_PEEK_PX, sheetHeights } from "@/lib/sheet";
@@ -412,6 +416,7 @@ export default function MapView() {
     const el = container.current;
     if (!el || !supported) return;
     initMaplibre();
+    restoreCameraHash();
     openedWithCameraHash(); // record the URL camera before the map starts rewriting it
     const initial = useMapStore.getState();
     const mapConfig = mapConfigFor(region);
@@ -614,6 +619,7 @@ export default function MapView() {
       }
       setFlowMap(null);
       setMainMap(null);
+      keepCameraHash();
       map.remove();
       mapRef.current = null;
     };

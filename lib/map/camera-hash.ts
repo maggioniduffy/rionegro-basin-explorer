@@ -15,3 +15,28 @@ export function openedWithCameraHash(): boolean {
   }
   return hadCameraHash;
 }
+
+/**
+ * MapLibre's `map.remove()` deletes the hash from the URL, so a remount (React StrictMode in
+ * dev, or any effect re-run) would lose the camera and fall back to the basin fit. The hash is
+ * kept before removal and put back before the next map is built on the same page; another page
+ * (a region switch) never inherits it.
+ */
+let kept: { pathname: string; hash: string } | null = null;
+
+export function keepCameraHash(): void {
+  const { pathname, hash } = window.location;
+  kept = hash ? { pathname, hash } : null;
+}
+
+export function restoreCameraHash(): void {
+  const k = kept;
+  kept = null;
+  const { pathname, search, hash } = window.location;
+  if (!k || hash || k.pathname !== pathname) return;
+  window.history.replaceState(
+    window.history.state,
+    "",
+    `${pathname}${search}${k.hash}`,
+  );
+}
