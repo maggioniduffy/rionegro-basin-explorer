@@ -5,6 +5,7 @@ box (or a whole section), renders every stage as a PNG and writes one self-conta
     flowwater-probe --region <id> (--case <name> | --bbox lon1,lat1,lon2,lat2 | --at "<url or z/lat/lon>"
                     [--size-km 3] | --section <id>) [--section <id>] [--set key=value ...]
                     [--sweep key=a,b,c] [--truth file.geojson] [--reselect]
+    flowwater-probe --region <id> --search "water.mndwiMin=-0.05..0.1:0.05,water.minFreq=0.4|0.5" [--set ...]
 
 --region is required (no default region). Target: --case reads regions/<id>/flow-water.cases.json
 ({"cases": [{name, bbox?, section?, truth?, note?}]}, truth relative to regions/<id>/flow-water-cases/);
@@ -31,7 +32,9 @@ import hashlib
 import html
 import io
 import json
+import itertools
 import logging
+import os
 import re
 import sys
 import time
@@ -77,6 +80,9 @@ def probe_dir(region: str) -> Path:
 
 
 def cases_path(region: str) -> Path:
+    """The cases file; FLOWWATER_PROBE_CASES=<path> replaces it (testing only)."""
+    if os.environ.get("FLOWWATER_PROBE_CASES"):
+        return Path(os.environ["FLOWWATER_PROBE_CASES"])
     return ROOT / "regions" / region / "flow-water.cases.json"
 
 
@@ -143,6 +149,51 @@ def parse_sweep(text: str) -> tuple[str, list]:
         except ValueError:
             out.append(v)
     return key, out
+
+
+SEARCH_ROOTS = ("water.", "reservoir.")  # --search scores the water mask: no network.* keys
+SEARCH_CAP = 200
+SEARCH_METRICS = ("iou", "fpKm2", "fnKm2", "armsMissed", "armsTotal")
+REGRESSION_TOL = 0.005
+
+
+def _expand_range(key: str, text: str) -> list:
+    """`a..b:step` -> inclusive values, rounded to the decimals of the step (exact float steps)."""
+    m = re.fullmatch(r"(-?\d+(?:\.\d+)?)\.\.(-?\d+(?:\.\d+)?):(\d+(?:\.\d+)?)", text)
+    if not m:
+        _die(f"--search {key}: {text!r} is neither a..b:step nor v1|v2|v3")
+    a, b, step = float(m.group(1)), float(m.group(2)), float(m.group(3))
+    if step <= 0 or b < a:
+        _die(f"--search {key}: {text!r} needs step > 0 and a <= b")
+    dec = len(m.group(3).partition(".")[2])
+    is_int = not any("." in g for g in m.groups())
+    n = int(np.floor((b - a) / step + 1e-9))
+    vals = [round(a + i * step, dec) for i in range(n + 1)]
+    return [int(v) for v in vals] if is_int else vals
+
+
+def parse_search(text: str) -> dict[str, list]:
+    """`key=a..b:step[,key2=v1|v2]` -> {key: values}; only water.* and reservoir.* keys."""
+    spec: dict[str, list] = {}
+    for part in text.split(","):
+        key, eq, vals = part.partition("=")
+        if not eq or not key or not vals:
+            _die(f"--search {part!r}: expected key=a..b:step or key=v1|v2|v3")
+        if not key.startswith(SEARCH_ROOTS):
+            _die(f"--search {key!r}: only water.* and reservoir.* keys can be searched")
+        if key in spec:
+            _die(f"--search {key!r} given twice")
+        if ".." in vals:
+            spec[key] = _expand_range(key, vals)
+        else:
+            out = []
+            for v in vals.split("|"):
+                try:
+                    out.append(json.loads(v))
+                except ValueError:
+                    out.append(v)
+            spec[key] = out
+    return spec
 
 
 # ---------------------------------------------------------------- data
@@ -367,9 +418,9 @@ def course_for(region: str, cfg: Config, section: str, grid: Grid, clip: bool) -
     return np.asarray(max(lines, key=lambda g: g.length).coords) if lines else None
 
 
-def run_stages(cfg: Config, stack: Stack, course_xy: np.ndarray | None) -> dict:
-    """The stages of build_water (same functions, same order) and, with a course, build_network."""
-    w, rv, r = cfg.water, cfg.reservoir, cfg.resolution_m
+def water_stages(cfg: Config, stack: Stack, course_xy: np.ndarray | None) -> dict:
+    """The stages of build_water up to the final kept mask (shared by the probe and --search)."""
+    w, r = cfg.water, cfg.resolution_m
     g = stack.grid
     n_water, n_valid = water_frequency(cfg, stack)
     freq = np.where(n_valid > 0, n_water / np.maximum(n_valid, 1), 0).astype(np.float32)
@@ -383,6 +434,16 @@ def run_stages(cfg: Config, stack: Stack, course_xy: np.ndarray | None) -> dict:
         kept = keep_corridor_components(filled, corridor, r)[0]
     else:
         kept = filled
+    return {"nValid": n_valid, "freq": freq, "thr": thr, "closed": closed, "filled": filled, "kept": kept}
+
+
+def run_stages(cfg: Config, stack: Stack, course_xy: np.ndarray | None) -> dict:
+    """The stages of build_water (same functions, same order) and, with a course, build_network."""
+    w, rv, r = cfg.water, cfg.reservoir, cfg.resolution_m
+    g = stack.grid
+    ws = water_stages(cfg, stack, course_xy)
+    n_valid, freq, thr, closed, filled, kept = (ws[k] for k in (
+        "nValid", "freq", "thr", "closed", "filled", "kept"))
     edt_m = edt_metres(kept, r)
     zone = reservoir_zone(kept, edt_m, r, rv.min_half_width_m, rv.min_area_km2)
     channel = kept & ~zone
@@ -625,6 +686,101 @@ def config_dict(cfg: Config) -> dict:
     return json.loads(json.dumps(asdict(cfg), sort_keys=True))
 
 
+def _subset(t: dict) -> dict:
+    return {k: t[k] for k in SEARCH_METRICS}
+
+
+def _mean_iou(per_case: dict) -> tuple[float | None, int]:
+    ious = [m["iou"] for m in per_case.values() if m["iou"] is not None]
+    return (round(sum(ious) / len(ious), 4) if ious else None), len(ious)
+
+
+def run_search(region: str, spec_text: str, overrides: dict, cfg: Config, reselect: bool, t0: float) -> int:
+    spec = parse_search(spec_text)
+    keys = sorted(spec)
+    total = 1
+    for k in keys:
+        total *= len(spec[k])
+    if total > SEARCH_CAP:
+        _die(f"--search: {total} variants exceed the cap of {SEARCH_CAP}; narrow the space "
+             f"(fewer keys, a larger step or fewer values)")
+    path = cases_path(region)
+    if not path.is_file():
+        _die(f"{path} not found")
+    cases = [c for c in json.loads(path.read_text())["cases"] if c.get("truth")]
+    if not cases:
+        _die(f"no case with truth in {path}")
+
+    # one stack, course and truth per case (water only: acquisition is untouched by the swept keys)
+    loaded = []
+    for c in cases:
+        section = c.get("section")
+        if section is not None and section not in load_index(region)[0]:
+            _die(f"case {c['name']}: unknown section {section!r}")
+        bbox = [float(v) for v in c["bbox"]] if c.get("bbox") else None
+        if bbox is None and section is None:
+            _die(f"case {c['name']}: a bbox or a section is needed")
+        if bbox is None:
+            grid, course_xy, aoi = build_grid(cfg, load_course(region, section)[0])
+        else:
+            grid, aoi = grid_from_bbox(cfg, bbox)
+            course_xy = course_for(region, cfg, section, grid, clip=True) if section else None
+        stack, _ = load_stack(cfg, region, grid, aoi,
+                              course_xy if course_xy is not None else np.empty((0, 2)),
+                              section, bbox, reselect)
+        if not stack.looks:
+            _die(f"case {c['name']}: no looks available for this grid")
+        tp = cases_dir(region) / c["truth"]
+        if not tp.is_file():
+            _die(f"truth file {tp} not found")
+        tw, tl, samples, _ = load_truth(tp, grid, cfg.resolution_m)
+        loaded.append((c["name"], stack, course_xy, tw, tl, samples))
+
+    combos = [dict(zip(keys, vals)) for vals in itertools.product(*(spec[k] for k in keys))]
+    variants = [{}] + combos  # variant 0 is the base config
+    scored = []
+    for i, ov in enumerate(variants):
+        vcfg = load_config(region, {**overrides, **ov}) if ov else cfg
+        per_case = {}
+        for name, stack, course_xy, tw, tl, samples in loaded:
+            kept = water_stages(vcfg, stack, course_xy)["kept"]
+            per_case[name] = _subset(truth_metrics(kept, tw, tl, samples, vcfg.resolution_m))
+        mean, n = _mean_iou(per_case)
+        scored.append({"order": i, "overrides": ov, "meanIou": mean, "casesScored": n, "perCase": per_case,
+                       "armsMissed": sum(m["armsMissed"] for m in per_case.values()),
+                       "fpKm2": round(sum(m["fpKm2"] for m in per_case.values()), 4),
+                       "fnKm2": round(sum(m["fnKm2"] for m in per_case.values()), 4)})
+    base = scored[0]
+    for s in scored:
+        s["regressions"] = [n for n, m in s["perCase"].items()
+                            if m["iou"] is not None and base["perCase"][n]["iou"] is not None
+                            and m["iou"] < base["perCase"][n]["iou"] - REGRESSION_TOL]
+    ranked = sorted(scored, key=lambda s: (-(s["meanIou"] if s["meanIou"] is not None else -1.0),
+                                           s["armsMissed"], round(s["fpKm2"] + s["fnKm2"], 4), s["order"]))
+    top = [{"rank": r + 1, "variant": s["order"], "overrides": s["overrides"], "meanIou": s["meanIou"],
+            "casesScored": s["casesScored"], "armsMissed": s["armsMissed"], "fpKm2": s["fpKm2"],
+            "fnKm2": s["fnKm2"], "regressions": s["regressions"], "perCase": s["perCase"]}
+           for r, s in enumerate(ranked[:20])]
+    norm = {"spec": {k: spec[k] for k in keys}, "baseOverrides": overrides}
+    h = hashlib.sha256(json.dumps(norm, sort_keys=True).encode()).hexdigest()[:8]
+    report = {"region": region, **norm, "cases": [c[0] for c in loaded], "variantsTotal": len(combos),
+              "baseline": {"overrides": overrides, "perCase": base["perCase"], "meanIou": base["meanIou"]},
+              "top": top}
+    outdir = probe_dir(region) / f"search-{h}"
+    report["lastRun"] = {"elapsedS": round(time.monotonic() - t0, 1)}
+    _write(outdir / "search.json", (json.dumps(report, indent=2, sort_keys=True) + "\n").encode())
+    names = [c[0] for c in loaded]
+    lines = ["rank var meanIou  " + " ".join(f"{n[:10]:>10}" for n in names) + "  overrides / regressions"]
+    for t in top:
+        ious = " ".join(f"{str(t['perCase'][n]['iou']):>10}" for n in names)
+        lines.append(f"{t['rank']:>4} {t['variant']:>3} {str(t['meanIou']):>7}  {ious}  "
+                     f"{json.dumps(t['overrides'], sort_keys=True) if t['overrides'] else 'baseline'}"
+                     f"{' REGR ' + ','.join(t['regressions']) if t['regressions'] else ''}")
+    log.info("search %s: %d variants + baseline on %d case(s)\n%s", h, len(combos), len(names), "\n".join(lines))
+    log.info("wrote %s in %.1f s", outdir / "search.json", time.monotonic() - t0)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="flowwater-probe", description=__doc__.strip().splitlines()[0])
     ap.add_argument("--region", required=True)
@@ -632,6 +788,8 @@ def main(argv: list[str] | None = None) -> int:
     target.add_argument("--case", help="name in regions/<id>/flow-water.cases.json")
     target.add_argument("--bbox", help="lon1,lat1,lon2,lat2")
     target.add_argument("--at", help='MapLibre URL fragment #zoom/lat/lon or "z/lat/lon"')
+    target.add_argument("--search", metavar="KEY=A..B:STEP[,KEY2=V1|V2]",
+                        help="score a grid of water.*/reservoir.* variants on every case with truth")
     ap.add_argument("--size-km", type=float, default=3.0, help="side of the --at square (default 3)")
     ap.add_argument("--section", help="section id: the pipeline grid, or the course of a bbox run")
     ap.add_argument("--set", action="append", default=[], metavar="KEY=VALUE", help="config override (dotted key)")
@@ -648,6 +806,12 @@ def main(argv: list[str] | None = None) -> int:
     section = args.section or case.get("section")
     overrides = parse_overrides(args.set)
     cfg = load_config(region, overrides)
+
+    if args.search:
+        for flag, val in (("--sweep", args.sweep), ("--truth", args.truth), ("--section", args.section)):
+            if val:
+                _die(f"{flag} cannot be combined with --search")
+        return run_search(region, args.search, overrides, cfg, args.reselect, t0)
 
     bbox = None
     if args.bbox:

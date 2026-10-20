@@ -534,6 +534,15 @@ Data comes from a section's complete pipeline cache when the grid lies inside it
 (`water.mndwiMin=0.05`), `--sweep` runs one key over several values. `--truth` (GeoJSON, labels `water`,
 `land`, `arm`) adds IoU, FP/FN km2 and missed arms to the report. The false-colour base is swir16/nir/green.
 
+`--search "water.mndwiMin=-0.05..0.1:0.05,water.minFreq=0.4|0.5|0.6"` is its own mode (exclusive with
+`--case/--bbox/--at`; `--sweep/--truth/--section` are rejected; `--set` is the base config). Specs are
+comma-separated `key=a..b:step` (inclusive, exact to the step's decimals) or `key=v1|v2|v3` (JSON values),
+`water.*` and `reservoir.*` keys only; the Cartesian product is capped at 200 variants. It scores the base
+config (variant 0) and every variant on each case of `flow-water.cases.json` that has `truth` (water mask
+only, CPU, no HTML) and writes `data/work/<id>/flow-water-probe/search-<hash>/search.json` with the top 20 by
+mean IoU (ties: fewer missed arms, then lower FP+FN km2) and the cases where a variant's IoU is more than
+0.005 below the baseline's. Testing only: `FLOWWATER_PROBE_CASES=<path>` replaces the cases file.
+
 ### `npm run pipeline:flow-net-publish -- --region <id>`
 
 F3.2 (`nqn` only for now): publishes the finished `flow-net/1` networks of `pipeline:flow-water` as compact
