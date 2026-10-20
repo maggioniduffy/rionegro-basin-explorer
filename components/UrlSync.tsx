@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRegion } from "@/components/RegionProvider";
 import { flowPaths } from "@/lib/flow/data";
+import { openedWithCameraHash } from "@/lib/map/camera-hash";
 import { useMapStore } from "@/lib/store";
 import {
   flowSearch,
@@ -22,12 +23,16 @@ export function UrlSync() {
   const region = useRegion();
   useEffect(() => {
     const hasFlow = flowPaths(region) !== null;
+    // A camera in the URL hash wins over the first selection / flow fit (later ones fit as usual).
+    let skipFit = openedWithCameraHash();
     const fromUrl = () => {
+      const fit = !skipFit;
+      skipFit = false;
       const params = new URLSearchParams(window.location.search);
       const selection = parseSelection(params);
       const store = useMapStore.getState();
       if (!sameSelection(selection, store.selection))
-        store.select(selection, { fit: true });
+        store.select(selection, { fit });
       // A region without flow data never keeps a section, not even one left in the store
       // by a soft navigation from another region.
       if (!hasFlow) {
@@ -36,7 +41,7 @@ export function UrlSync() {
       }
       const flow = parseFlow(params);
       if (flow.section !== store.flowSection) {
-        if (flow.section) store.enterFlow(flow.section, { fit: true });
+        if (flow.section) store.enterFlow(flow.section, { fit });
         else store.exitFlow();
       }
       if (flow.section && flow.speed !== store.flowSpeed)
