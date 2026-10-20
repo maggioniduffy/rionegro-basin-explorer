@@ -519,6 +519,21 @@ section; F3 (the particle engine) will read this network to follow braided arms 
     Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights
     reserved. See `SOURCES.md`; the GLO-30 licence text itself is not verified there.
 
+### `npm run pipeline:flow-water-probe -- --region <id> (--case <name> | --bbox lon1,lat1,lon2,lat2 | --at "<url or z/lat/lon>" [--size-km 3] | --section <id>) [--section <id>] [--set key=value ...] [--sweep key=a,b,c] [--truth file.geojson] [--reselect]`
+
+Water probe (I1.P): runs the water and network stages of `flow-water` on a small box or a section and writes
+`data/work/<id>/flow-water-probe/<name>/index.html` (one self-contained file: a PNG per stage with layer
+toggles, opacity sliders, areas, metrics, config and looks) and `report.json`, in seconds. Nothing in
+`out/` or the section caches is written. `--case` reads `regions/<id>/flow-water.cases.json`
+(`{"cases": [{name, bbox?, section?, truth?, note?}]}`, truth files in `regions/<id>/flow-water-cases/`);
+`--at` takes a MapLibre URL (`#zoom/lat/lon`) or `z/lat/lon`. Without `--case` the run is named
+`bbox-<hash>` (or the section id). With a bbox, `--section` gives the course clipped to the box (needed for
+the corridor filter and the network; without it every component is kept and there is no network).
+Data comes from a section's complete pipeline cache when the grid lies inside it (read only), else from
+`flow-water-probe/cache/<grid hash>/` (network on the first run). `--set` overrides config values
+(`water.mndwiMin=0.05`), `--sweep` runs one key over several values. `--truth` (GeoJSON, labels `water`,
+`land`, `arm`) adds IoU, FP/FN km2 and missed arms to the report. The false-colour base is swir16/nir/green.
+
 ### `npm run pipeline:flow-net-publish -- --region <id>`
 
 F3.2 (`nqn` only for now): publishes the finished `flow-net/1` networks of `pipeline:flow-water` as compact
