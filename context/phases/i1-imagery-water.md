@@ -50,7 +50,7 @@ Key facts found:
 
 - [x] **I1.1 Owner decision on the provider**; record it in DECISSIONS.md and `pipeline/SOURCES.md`. Owner,
       2026-10-19: IGN `mosaicos_vuelos` above EOX, **`nqn` only** (`cba` keeps EOX; no Córdoba imagery pursued).
-- [ ] **I1.P Water probe (`flow-water probe`)** _(builder; reviewer: data provenance)_. Goal:
+- [x] **I1.P Water probe (`flow-water probe`)** _(builder; reviewer: data provenance)_. Goal:
       `npm run pipeline:flow-water-probe -- --region nqn --case <name> | --bbox lon1,lat1,lon2,lat2 [--section <id>] [--set water.mndwiMin=0.05 ...] [--sweep key=a,b,c] [--truth file.geojson]`
       writes `data/work/<region>/flow-water-probe/<case>/index.html` + `report.json` in seconds.
   - `acquire.py`: `grid_from_bbox(cfg, bbox)` (same snapping as `build_grid`); reuse `select_scenes`, `get_lock`,
@@ -72,6 +72,10 @@ Key facts found:
   - Acceptance: `npm run check`; one pytest: `look_indices` equals the old inline computation on a synthetic look;
     probe run on a known section bbox (e.g. `limay-110`) produces the HTML; second run uses the cache (no network).
   - Output is local/gitignored; one can be published as a private artifact for review.
+  - **Done 2026-10-19** (`eecd20e` refactor, `cc7ead1` probe, `5eab304` search, `9493c39` map hash). limay-110
+    outputs byte-identical before/after; `--case limay-110` takes ~4 s from the pipeline cache (read-only crop) and
+    matches the pipeline (1.329 km², 16 branches); a 12-variant `--search` takes 0.2 s. Reviewer: pass, six
+    advisories fixed. Usage in `pipeline/README.md`.
 - [ ] **I1.T Tuning loop with the owner** (Opus + owner, data).
   1. Owner sends 2–3 hard captures + map URL (or coords). Each becomes a case.
   2. Truth: owner marks corrections (polygon or "missed arm here / false water here"); traced only on imagery whose
@@ -182,6 +186,12 @@ Key facts found:
 - Imagery provider: must have no tier that bills with traffic (I1.0).
 
 ## Owner checks
+
+- Camera hash (I1.P): open `/rionegro/map#14/-39.29/-65.66` → the camera lands there, not on the basin fit;
+  `/rionegro/map?r=<river id>#13/-39.0/-68.0` → the river panel opens, the camera stays at the hash, and a later
+  search pick fits as usual; `?flow=<section>#15/<lat>/<lon>` → flow opens at the hash; panning updates the hash and
+  keeps `?r=`/`?flow=`; without a hash the initial fit is unchanged; `/cordoba/map#12/-31.4/-64.2` works too.
+- Probe: open `data/work/nqn/flow-water-probe/limay-110/index.html` and check the layers read right.
 
 - Browser: zoom into the Río Negro near Choele Choel and the lower Limay at z15–16 in light and dark. The tiles
   should load without errors and the switch from Sentinel-2 should not be jarring.
