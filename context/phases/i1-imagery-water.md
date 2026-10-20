@@ -191,6 +191,8 @@ Key facts found:
   `/rionegro/map?r=<river id>#13/-39.0/-68.0` → the river panel opens, the camera stays at the hash, and a later
   search pick fits as usual; `?flow=<section>#15/<lat>/<lon>` → flow opens at the hash; panning updates the hash and
   keeps `?r=`/`?flow=`; without a hash the initial fit is unchanged; `/cordoba/map#12/-31.4/-64.2` works too.
+  **Passed (owner, 2026-10-19)** after `ef92883` (MapLibre's `map.remove()` deleted the hash on the dev remount).
+  Zoom stays capped at 13 until I1.2. The probe ran from a pasted `--at` (fresh acquisition, 61 s).
 - Probe: open `data/work/nqn/flow-water-probe/limay-110/index.html` and check the layers read right.
 
 - Browser: zoom into the Río Negro near Choele Choel and the lower Limay at z15–16 in light and dark. The tiles
