@@ -80,3 +80,5 @@ __pycache__/
 
 # Local backups of agent definitions (originals are in git history)
 .claude/agents/*.bak
+
+public/flow/*
