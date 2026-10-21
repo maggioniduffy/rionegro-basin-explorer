@@ -165,6 +165,29 @@ Key facts found:
     doesn't). The report shows the El Chocón polygon IoU against HydroLAKES 981 over the whole lake, and no straight
     AOI edge in open water (QA: the polygon touches the grid border only on land). Owner browser pass.
 
+- [ ] **I1.E — Flow-decision eval, review loop and label-free checks** (planned 2026-10-21, implement later).
+  Refines branch/flow-direction decisions against a fixed corrected set (Limay + Neuquén sections). Complements
+  I1.T (water-mask truth in GeoJSON): I1.E scores *decisions*, not mask pixels. Existing names are untouched.
+  - **Reach = flow section** (`limay-076`, id from `public/flow/nqn/index.json`), optional `arm` = stable branch key
+    (section id + branch start/end chainage `s[2]`; local `b0..` ids are unstable between runs).
+  - Names: cases `regions/nqn/flow-eval/cases.json`; script `npm run pipeline:flow-eval -- --region nqn`
+    (`--region` required). Not `pipeline/flow/fixtures/` or `pipeline:flow:eval`.
+  - Case: `{reachId, arm?, correctDecision, errorType, correctedAt, split: "dev"|"holdout"}`; `errorType` in
+    braided, flat, confluence, reservoir, anabranch, control. Sampled by type, split fixed by a deterministic hash
+    and never moved; holdout reported only; no reach ids in the algorithm.
+  - WP1 schema, validator and never-overwrite merge (existing `reachId`+`arm` kept, conflicts reported).
+  - WP2 additive per-branch `confidence` and `features` (angle, Strahler via HYRIV match or null, width, DEM
+    slope, distance to main channel) in `flow-net/1`; no model is trained, ML only when hundreds of corrections
+    exist and rules conflict (then propose and wait for approval).
+  - WP3 eval step: % correct overall / per errorType / per split, `data/work/nqn/flow-eval/report.json`
+    (deterministic), non-zero exit when a previously correct case turns wrong; `n=0` with no labels.
+  - WP4 review HTML: candidate arms with proposed flow, lowest confidence first; owner marks correct/incorrect
+    plus error type; export merges without overwriting.
+  - WP5 label-free checks in the report: cycles, outlet reachability, flow conservation at confluences; violations
+    listed for unreviewed sections. Only sections with a net (11 of 910 today).
+  - WP6 docs (`pipeline/README.md`, DECISSIONS.md). Python changes need `uv run pytest` (not in `npm run check`).
+  - Plan file: `~/.claude/plans/crystalline-gathering-sutton.md`.
+
 ## Done when
 
 - Probe: HTML for a known section; cached rerun; pipeline output unchanged on a done section.
