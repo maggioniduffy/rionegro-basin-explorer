@@ -87,6 +87,29 @@ Key facts found:
 
   Not reinforcement learning: a measured human-in-the-loop calibration; cases stay as regression checks.
 
+  **Second track: flow decisions (planned 2026-10-21, implement after the mask track works).** Besides the water
+  mask, the loop scores _decisions_: which arm carries flow and in which direction (`network.py`, `flow-net/1`).
+  Same registry, same probe, same report; no separate eval script or case file.
+  - **Cases.** `regions/nqn/flow-water.cases.json` entries gain an optional
+    `decisions: [{arm, correctDecision, errorType, correctedAt, split}]` next to `truth`. A reach is a flow section
+    id (`limay-076`, from `public/flow/nqn/index.json`); `arm` is a stable branch key (section id + branch start/end
+    chainage `s[2]`; local `b0..` ids change between runs). `errorType` in braided, flat, confluence, reservoir,
+    anabranch, control. Sample by type; no reach ids in the algorithm.
+  - **Split.** `dev` | `holdout` applies to decisions only, fixed by a deterministic hash and never moved; holdout is
+    reported, not tuned on. Mask cases (2–3 captures) are all `dev`; revisit if more are added.
+  - **D1 Schema and merge.** Validator and a never-overwrite merge (an existing `reachId`+`arm` is kept, conflicts
+    are reported).
+  - **D2 Branch features.** Additive per-branch `confidence` and `features` in `flow-net/1` (angle, Strahler via
+    HYRIV match or null, width, DEM slope, distance to main channel). No model is trained; ML only when hundreds of
+    corrections exist and rules conflict (then propose and wait for approval).
+  - **D3 Scoring.** The probe reports % correct overall / per errorType / per split next to IoU, deterministic, in
+    the case's `report.json`; non-zero exit when a previously correct decision turns wrong; `n=0` with no labels.
+  - **D4 Review mode.** The probe HTML gets a mode listing candidate arms with proposed flow, lowest confidence
+    first; the owner marks correct/incorrect plus error type; export merges without overwriting.
+  - **D5 Label-free checks.** Cycles, outlet reachability and flow conservation at confluences, listed for
+    unreviewed sections. Only sections with a net (11 of 910 today). Useful for I1.7: El Chocón is a reservoir case.
+  - **D6 Docs.** `pipeline/README.md`, DECISSIONS.md. Python changes need `uv run pytest` (not in `npm run check`).
+
   **Agent split to save tokens and load (owner, 2026-10-19):**
   - **Search is done by the probe, not by a model.** `--search key=a..b:step,...` runs a grid (or small random)
     search over config values on every case with truth, scored by IoU / FP / FN / missed branches, and writes a
@@ -164,29 +187,6 @@ Key facts found:
   - Acceptance: `npm run check`; one test for the group lookup (a section that maps to its group net, and one that
     doesn't). The report shows the El Chocón polygon IoU against HydroLAKES 981 over the whole lake, and no straight
     AOI edge in open water (QA: the polygon touches the grid border only on land). Owner browser pass.
-
-- [ ] **I1.E — Flow-decision eval, review loop and label-free checks** (planned 2026-10-21, implement later).
-  Refines branch/flow-direction decisions against a fixed corrected set (Limay + Neuquén sections). Complements
-  I1.T (water-mask truth in GeoJSON): I1.E scores *decisions*, not mask pixels. Existing names are untouched.
-  - **Reach = flow section** (`limay-076`, id from `public/flow/nqn/index.json`), optional `arm` = stable branch key
-    (section id + branch start/end chainage `s[2]`; local `b0..` ids are unstable between runs).
-  - Names: cases `regions/nqn/flow-eval/cases.json`; script `npm run pipeline:flow-eval -- --region nqn`
-    (`--region` required). Not `pipeline/flow/fixtures/` or `pipeline:flow:eval`.
-  - Case: `{reachId, arm?, correctDecision, errorType, correctedAt, split: "dev"|"holdout"}`; `errorType` in
-    braided, flat, confluence, reservoir, anabranch, control. Sampled by type, split fixed by a deterministic hash
-    and never moved; holdout reported only; no reach ids in the algorithm.
-  - WP1 schema, validator and never-overwrite merge (existing `reachId`+`arm` kept, conflicts reported).
-  - WP2 additive per-branch `confidence` and `features` (angle, Strahler via HYRIV match or null, width, DEM
-    slope, distance to main channel) in `flow-net/1`; no model is trained, ML only when hundreds of corrections
-    exist and rules conflict (then propose and wait for approval).
-  - WP3 eval step: % correct overall / per errorType / per split, `data/work/nqn/flow-eval/report.json`
-    (deterministic), non-zero exit when a previously correct case turns wrong; `n=0` with no labels.
-  - WP4 review HTML: candidate arms with proposed flow, lowest confidence first; owner marks correct/incorrect
-    plus error type; export merges without overwriting.
-  - WP5 label-free checks in the report: cycles, outlet reachability, flow conservation at confluences; violations
-    listed for unreviewed sections. Only sections with a net (11 of 910 today).
-  - WP6 docs (`pipeline/README.md`, DECISSIONS.md). Python changes need `uv run pytest` (not in `npm run check`).
-  - Plan file: `~/.claude/plans/crystalline-gathering-sutton.md`.
 
 ## Done when
 
