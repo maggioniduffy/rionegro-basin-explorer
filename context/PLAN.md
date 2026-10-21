@@ -37,32 +37,27 @@ CLAUDE.md  context/ (PLAN.md  phases/  PLAN_ARCHIVE.md  DECISSIONS.md  DESIGN.md
 .claude/             agents/ and skills/ (committed)
 ```
 
-## Archived phases
-
-Phases 0–6, the IGN gate, IGN streams, and the done items of Phases 7, 8 and Design v3 are in
-[PLAN_ARCHIVE.md](PLAN_ARCHIVE.md). Read it only when you need the history of a finished phase.
-
 ## Phases
 
 Each phase lives in its own file under [phases/](phases/). Read this index, then only the file of the phase you work on. A new phase gets a new file (checklist, owner decisions, design summary, "Done when") and a row here; tick items in the phase file and keep the row's status current.
 
-| Phase                                             | Status                                                             | File                                                  |
-| ------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
-| Phase 7 — Extras (ask box)                        | [~] owner steps left                                               | [p7-extras.md](phases/p7-extras.md)                   |
-| Phase 8 — Release                                 | [ ] Atlas user on Vercel                                           | [p8-release.md](phases/p8-release.md)                 |
-| Design v3 — Landing and restyle                   | [ ] regenerate `basin.png`                                         | [design-v3.md](phases/design-v3.md)                   |
-| Design v6 — Landing v6 and restyle                | [~] e2e baselines and browser review left                          | [design-v6.md](phases/design-v6.md)                   |
-| R0 — Multi-region decisions & inputs              | [x]                                                                | [r0-decisions.md](phases/r0-decisions.md)             |
-| R1 — Region refactor                              | [x]                                                                | [r1-region-refactor.md](phases/r1-region-refactor.md) |
-| R2 — Córdoba gate                                 | [x]                                                                | [r2-cba-gate.md](phases/r2-cba-gate.md)               |
-| R3 — Córdoba pipeline & app                       | [x] (original items list kept)                                     | [r3-cba-pipeline.md](phases/r3-cba-pipeline.md)       |
-| R4 — Hub                                          | [x]                                                                | [r4-hub.md](phases/r4-hub.md)                         |
-| R5 — Continuous river courses in Córdoba          | [x]                                                                | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
-| F1 — Flow close-up (`nqn`)                        | [~] code done; owner browser checks left                           | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
-| I1 — Imagery, water tuning, reservoirs, CDN cache | [~] I1.0–I1.1, I1.P done; I1.T (owner cases, mask + flow decisions) next                                  | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
-| F2 — Water network from Sentinel-2 (`nqn`)        | [x]                                                                | [f2-water-network.md](phases/f2-water-network.md)     |
-| F3 — Flow engine on the water network             | [~] PR #10; reservoir box and zoom to I1.7                         | [f3-flow-network.md](phases/f3-flow-network.md)       |
-| B1 — Content bucket and remote pipelines          | [x] B1.1–B1.3 done; B1.4 → I1.7, B1.5 → I1.6 (file merged into I1) | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
+| Phase                                             | Status                                                                   | File                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Phase 7 — Extras (ask box)                        | [~] owner steps left                                                     | [p7-extras.md](phases/p7-extras.md)                   |
+| Phase 8 — Release                                 | [ ] Atlas user on Vercel                                                 | [p8-release.md](phases/p8-release.md)                 |
+| Design v3 — Landing and restyle                   | [ ] regenerate `basin.png`                                               | [design-v3.md](phases/design-v3.md)                   |
+| Design v6 — Landing v6 and restyle                | [~] e2e baselines and browser review left                                | [design-v6.md](phases/design-v6.md)                   |
+| R0 — Multi-region decisions & inputs              | [x]                                                                      | [r0-decisions.md](phases/r0-decisions.md)             |
+| R1 — Region refactor                              | [x]                                                                      | [r1-region-refactor.md](phases/r1-region-refactor.md) |
+| R2 — Córdoba gate                                 | [x]                                                                      | [r2-cba-gate.md](phases/r2-cba-gate.md)               |
+| R3 — Córdoba pipeline & app                       | [x] (original items list kept)                                           | [r3-cba-pipeline.md](phases/r3-cba-pipeline.md)       |
+| R4 — Hub                                          | [x]                                                                      | [r4-hub.md](phases/r4-hub.md)                         |
+| R5 — Continuous river courses in Córdoba          | [x]                                                                      | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
+| F1 — Flow close-up (`nqn`)                        | [~] code done; owner browser checks left                                 | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
+| I1 — Imagery, water tuning, reservoirs, CDN cache | [~] I1.0–I1.1, I1.P done; I1.T (owner cases, mask + flow decisions) next | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
+| F2 — Water network from Sentinel-2 (`nqn`)        | [x]                                                                      | [f2-water-network.md](phases/f2-water-network.md)     |
+| F3 — Flow engine on the water network             | [~] PR #10; reservoir box and zoom to I1.7                               | [f3-flow-network.md](phases/f3-flow-network.md)       |
+| B1 — Content bucket and remote pipelines          | [x] B1.1–B1.3 done; B1.4 → I1.7, B1.5 → I1.6 (file merged into I1)       | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
 
 ### Multi-region (R0–R5)
 

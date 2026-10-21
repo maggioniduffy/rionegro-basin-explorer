@@ -3,7 +3,7 @@
 Interactive satellite river-and-tributary explorer for the Río Negro basin
 (Limay, Neuquén, Río Negro), with a sub-basin (subcuenca) view. Inspired by
 Amazon Basin Explorer. One app serves several **regions**, one per path (`/rionegro`, `/cordoba`): `nqn` (the Río
-Negro basin, live) and `cba` (Córdoba, served since R3.8); see "Regions" below. See `context/PLAN.md` for the phase index and status; each phase's checklist and design live in `context/phases/<id>.md`, so read the index and only the current phase's file (completed early phases are in `context/PLAN_ARCHIVE.md`; read it only when you need their history), and `context/DECISSIONS.md` for the dated
+Negro basin, live) and `cba` (Córdoba, served since R3.8); see "Regions" below. See `context/PLAN.md` for the phase index and status; each phase's checklist and design live in `context/phases/<id>.md`, so read the index and only the current phase's file, and `context/DECISSIONS.md` for the dated
 decisions made in each phase (read it before revisiting a choice; add new decisions there, not in `context/PLAN.md` or a phase file).
 
 ## Stack
@@ -66,13 +66,6 @@ decisions made in each phase (read it before revisiting a choice; add new decisi
 - Sub-agents follow the same Rules above (no invented data, flag uncertainty, never commit data or secrets).
 - Define reusable sub-agents in `.claude/agents/<name>.md` (Markdown with YAML frontmatter: `description`, `tools`, `model`). Grant only the tools needed. Use a cheaper model for inspection and lookups; keep the main model for design and decisions (Rule 8). Verify current model aliases and frontmatter fields in the Claude Code docs before writing them.
 - Agents: `scout` (Haiku, read and summarize docs/code/logs), `builder` (Sonnet, implements one work package), `reviewer` (Opus, independent verdict on a diff or phase gate), `data-inspector` (schema + summary stats, read-only), `pipeline-runner` (run a step, read the report, summarize), `license-checker` (license/citation lookup for `SOURCES.md`). Roles, brief template and reviewer triggers are in `context/orchestration.md`.
-
-### Skills (repeatable procedures)
-
-- If a task has been done by hand twice, or is clearly recurring, stop and propose a skill; create it once the user agrees, to avoid skill sprawl. Never create skills for one-offs.
-- Skills live in `.claude/skills/<name>/SKILL.md` with a `description` that says when to use it. Keep them short: the procedure, the commands, the checks and the expected report shape. Put logic in pipeline scripts, not in prose.
-- Candidates: `inspect-dataset` (schema and DuckDB summary without dumping rows), `run-pipeline-step`, `update-sources` (append to `SOURCES.md`), `add-ui-string` (same key in both locales), `screenshot-check`.
-- Commit `.claude/agents/` and `.claude/skills/`.
 
 ### Long-running commands
 
