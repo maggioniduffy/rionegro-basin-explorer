@@ -174,8 +174,10 @@ name = "flowwater"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "matplotlib" },
     { name = "networkx" },
     { name = "numpy" },
+    { name = "pillow" },
     { name = "pyproj" },
     { name = "pystac-client" },
     { name = "rasterio" },
@@ -192,8 +194,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "matplotlib" },
     { name = "networkx" },
     { name = "numpy" },
+    { name = "pillow" },
     { name = "pyproj" },
     { name = "pystac-client" },
     { name = "rasterio" },

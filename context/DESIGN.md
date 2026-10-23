@@ -200,14 +200,3 @@ are not translated.
 6. The design's links use relative `attributions` and `map`; implement them as locale-prefixed
    routes. Create the Attributions page (even minimal, fed from `SOURCES.md`) so the
    links are not dead.
-
-## 7. Acceptance
-
-- `npm run check` passes; all new strings exist in both locales.
-- Playwright screenshots (EN/ES x dark/light x 1440/390) of the landing, compared to the
-  reference screenshots; report any intentional deviation.
-- No horizontal scroll at 390px; tab order and visible focus rings on every interactive
-  element; animation off under `prefers-reduced-motion`.
-- Lighthouse a11y and performance pass on the landing (hero image is the LCP element).
-- Update the `PLAN.md` checklist only for what is actually done, and list the open
-  questions from section 6 in your final message.

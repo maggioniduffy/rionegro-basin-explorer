@@ -24,6 +24,7 @@
     "pipeline:flow-sections": "tsx pipeline/steps/flow-sections.ts",
     "pipeline:flow-net-publish": "tsx pipeline/steps/flow-net-publish.ts",
     "pipeline:flow-water": "uv run --project pipeline/py --frozen flowwater",
+    "pipeline:flow-water-probe": "uv run --project pipeline/py --frozen flowwater-probe",
     "content:publish": "tsx scripts/content-publish.ts",
     "content:pull": "tsx scripts/content-pull.ts",
     "flow-water:plan": "tsx scripts/flow-water-plan.ts",
