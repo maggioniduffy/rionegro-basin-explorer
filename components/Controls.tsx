@@ -92,6 +92,7 @@ export function Controls() {
           aria-expanded={open}
           aria-controls="map-controls-body"
           title={open ? t("minimize") : t("expand")}
+          aria-label={open ? t("minimize") : t("expand")}
           className="shrink-0 rounded-md p-1.5 hover:bg-(--panel-hover)"
         >
           <Icon

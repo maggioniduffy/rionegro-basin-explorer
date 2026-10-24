@@ -20,6 +20,8 @@ const ICON_PATHS = {
   snapshot:
     "M4 8h3l2-3h6l2 3h3v11H4zM15.5 13a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z",
   info: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 11v5M12 8v.01",
+  plus: "M12 5v14M5 12h14",
+  minus: "M5 12h14",
   close: "M6 6l12 12M18 6L6 18",
   menu: "M4 7h16M4 12h16M4 17h16",
   chevron: "M9 6l6 6-6 6",

@@ -5,7 +5,8 @@
   "localeSwitcher": {
     "label": "Idioma",
     "locale": "{locale, select, en {English} es {Español} other {Desconocido}}",
-    "short": "{locale, select, en {EN} es {ES} other {?}}"
+    "short": "{locale, select, en {EN} es {ES} other {?}}",
+    "switchTo": "Cambiar a {locale, select, en {English} es {español} other {desconocido}}"
   },
   "controls": {
     "label": "Controles del mapa",
