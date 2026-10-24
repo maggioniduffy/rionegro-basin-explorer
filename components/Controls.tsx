@@ -1,19 +1,54 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, type KeyboardEvent, useState } from "react";
 import { MASK_LEVEL_COUNT } from "@/lib/map/config";
 import { levelToPosition, positionToLevel } from "@/lib/map/mask";
 import { useMapStore } from "@/lib/store";
-import { Icon } from "./Icon";
+import { Icon, type IconName } from "./Icon";
 import { Legend } from "./Legend";
+import { DisplayOptionsContent } from "./OptionsPanel";
 import { SubbasinTree } from "./SubbasinTree";
 import { ViewModeToggle } from "./ViewModeToggle";
 
-/** The map controls panel, bottom left (desktop; phones get them in the bottom sheet). */
+const TABS = ["map", "display"] as const;
+type Tab = (typeof TABS)[number];
+const TAB_ICON: Record<Tab, IconName> = { map: "layers", display: "units" };
+
+/**
+ * The one left panel (desktop; phones get the same content in the bottom sheet): the
+ * map controls and the display options as tabs, bottom left. The chevron minimizes it
+ * to just the header row; clicking a tab while minimized opens it on that tab.
+ */
 export function Controls() {
   const t = useTranslations("controls");
+  const ts = useTranslations("sheet");
   const [open, setOpen] = useState(true);
+  const [tab, setTab] = useState<Tab>("map");
+
+  function chooseTab(next: Tab) {
+    setTab(next);
+    setOpen(true);
+  }
+
+  // Tabs pattern (WAI-ARIA): one tab stop; arrows, Home and End move between tabs.
+  function onTabKeyDown(e: KeyboardEvent<HTMLButtonElement>) {
+    const i = TABS.indexOf(tab);
+    const next =
+      e.key === "ArrowRight"
+        ? TABS[(i + 1) % TABS.length]
+        : e.key === "ArrowLeft"
+          ? TABS[(i - 1 + TABS.length) % TABS.length]
+          : e.key === "Home"
+            ? TABS[0]
+            : e.key === "End"
+              ? TABS[TABS.length - 1]
+              : null;
+    if (!next) return;
+    e.preventDefault();
+    chooseTab(next);
+    document.getElementById(`controls-tab-${next}`)?.focus();
+  }
 
   return (
     <section
@@ -22,34 +57,68 @@ export function Controls() {
         open ? "w-72" : "w-auto"
       }`}
     >
-      {/* Minimized, only this header stays; the map behind it is free to use. */}
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-controls="map-controls-body"
-        title={open ? t("minimize") : t("expand")}
-        className="flex shrink-0 items-center justify-between gap-3 rounded-[10px] px-4 py-2.5 font-medium hover:bg-(--panel-hover)"
-      >
-        <span className="flex items-center gap-2">
-          <Icon name="layers" />
-          {t("label")}
-        </span>
-        <Icon
-          name="chevron"
-          className={`transition-transform ${open ? "rotate-90" : "-rotate-90"}`}
-        />
-      </button>
+      {/* Minimized, only this header row stays; the map behind it is free to use. */}
+      <div className="flex shrink-0 items-center gap-1 p-1.5">
+        <div
+          role="tablist"
+          aria-label={t("label")}
+          className="flex min-w-0 flex-1 gap-1"
+        >
+          {TABS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`controls-tab-${id}`}
+              aria-selected={tab === id}
+              aria-controls="map-controls-body"
+              tabIndex={tab === id ? 0 : -1}
+              onClick={() => chooseTab(id)}
+              onKeyDown={onTabKeyDown}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm ${
+                open && tab === id
+                  ? "bg-(--panel-hover) font-medium"
+                  : "text-muted hover:bg-(--panel-hover)"
+              }`}
+            >
+              <Icon name={TAB_ICON[id]} />
+              {ts(`tabs.${id}`)}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls="map-controls-body"
+          title={open ? t("minimize") : t("expand")}
+          aria-label={open ? t("minimize") : t("expand")}
+          className="shrink-0 rounded-md p-1.5 hover:bg-(--panel-hover)"
+        >
+          <Icon
+            name="chevron"
+            className={`transition-transform ${open ? "rotate-90" : "-rotate-90"}`}
+          />
+        </button>
+      </div>
 
-      {/* Hidden rather than unmounted, so slider and checkbox keep their state. It scrolls
-          on its own when the sub-basin tree makes it taller than the screen allows; the
-          header stays put. */}
+      {/* Hidden rather than unmounted, so slider, checkbox and tree keep their state,
+          also across tabs. It scrolls on its own when the sub-basin tree makes it taller
+          than the screen allows; the header stays put. The minimap is mounted only
+          while visible, so it holds no WebGL context otherwise. */}
       <div
         id="map-controls-body"
+        role="tabpanel"
+        aria-labelledby={`controls-tab-${tab}`}
         hidden={!open}
-        className="flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-1 pb-4"
+        className="min-h-0 overflow-y-auto overscroll-contain px-4 pt-1 pb-4"
       >
-        <MapControlsContent />
+        <div hidden={tab !== "map"} className="flex flex-col gap-4">
+          <MapControlsContent />
+        </div>
+        <div hidden={tab !== "display"} className="flex flex-col gap-4">
+          <DisplayOptionsContent minimap={open && tab === "display"} />
+        </div>
       </div>
     </section>
   );

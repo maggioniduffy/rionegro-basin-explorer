@@ -14,10 +14,13 @@ import { Icon } from "./Icon";
  */
 export function ThemeToggle({
   compact = false,
+  iconOnly = false,
   className = "",
 }: {
   /** Below 640px, the icon only (the label stays for screen readers). */
   compact?: boolean;
+  /** A 36px icon button for a toolbar; the label becomes its accessible name. */
+  iconOnly?: boolean;
   className?: string;
 }) {
   const t = useTranslations("theme");
@@ -38,6 +41,22 @@ export function ThemeToggle({
     saveTheme(next);
   }
 
+  const label = theme === "dark" ? t("toLight") : t("toDark");
+
+  if (iconOnly) {
+    return (
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={label}
+        title={label}
+        className={`text-secondary hover:text-text inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-(--panel-hover) ${className}`}
+      >
+        <Icon name="theme" />
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -46,9 +65,7 @@ export function ThemeToggle({
       className={`border-line text-strong-muted hover:border-accent inline-flex min-h-9 shrink-0 cursor-pointer items-center gap-2 rounded-md border px-3 text-[13px] transition-colors ${className}`}
     >
       <Icon name="theme" />
-      <span className={compact ? "max-sm:sr-only" : undefined}>
-        {theme === "dark" ? t("toLight") : t("toDark")}
-      </span>
+      <span className={compact ? "max-sm:sr-only" : undefined}>{label}</span>
     </button>
   );
 }

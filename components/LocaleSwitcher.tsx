@@ -16,7 +16,12 @@ function saveLocale(locale: Locale) {
   document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE}; samesite=lax`;
 }
 
-export function LocaleSwitcher() {
+export function LocaleSwitcher({
+  compact = false,
+}: {
+  /** One 36px toolbar button showing the other locale's code. */
+  compact?: boolean;
+}) {
   const t = useTranslations("localeSwitcher");
   const locale = useLocale();
   const router = useRouter();
@@ -29,6 +34,23 @@ export function LocaleSwitcher() {
     if (!isLocale(nextLocale)) return;
     saveLocale(nextLocale);
     startTransition(() => router.refresh());
+  }
+
+  if (compact) {
+    const other = LOCALES.find((l) => l !== locale) ?? locale;
+    return (
+      <button
+        type="button"
+        lang={other}
+        aria-label={t("switchTo", { locale: other })}
+        title={t("switchTo", { locale: other })}
+        disabled={isPending}
+        onClick={() => onChange(other)}
+        className="text-secondary hover:text-text size-9 cursor-pointer rounded-md text-xs font-semibold transition-colors hover:bg-(--panel-hover) disabled:opacity-50"
+      >
+        {t("short", { locale: other })}
+      </button>
+    );
   }
 
   return (

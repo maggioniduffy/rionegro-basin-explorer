@@ -1,12 +1,13 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useRegion } from "@/components/RegionProvider";
 import {
   Caveats,
   Group,
   PanelFrame,
+  PanelVariant,
   Row,
   useFormat,
 } from "@/components/panel/parts";
@@ -17,6 +18,8 @@ import {
   peekNet,
   peekSection,
 } from "@/lib/flow/data";
+import { FlowControlBar } from "./FlowControls";
+import { FlowZoomHint } from "./FlowZoomHint";
 import type { FlowNetPub } from "@/lib/flow/net-pub-schema";
 import type { FlowIndex, FlowReason, FlowSection } from "@/lib/flow/schema";
 import { useMapStore } from "@/lib/store";
@@ -134,6 +137,7 @@ function SectionDetails({
   const t = useTranslations("flow");
   const f = useFormat();
   const fmt = useFormatter();
+  const floating = useContext(PanelVariant) === "floating";
   const facts = net ? netFacts(net) : null;
   const day = (d: string) =>
     fmt.dateTime(new Date(d), { dateStyle: "medium", timeZone: "UTC" });
@@ -143,13 +147,24 @@ function SectionDetails({
   return (
     <>
       <header className="flex flex-col gap-1 pr-8">
-        <h2 className="font-display text-[26px] leading-tight font-normal">
+        <h2
+          className={`font-display leading-tight font-normal ${
+            floating ? "text-[26px]" : "text-xl"
+          }`}
+        >
           {section.riverName}
         </h2>
         <p className="text-muted text-sm">
           {t("sectionOf", { k: section.index + 1, n: section.count })}
         </p>
       </header>
+
+      {floating && (
+        <div className="flex flex-col gap-2">
+          <FlowZoomHint />
+          <FlowControlBar />
+        </div>
+      )}
 
       <Group title={t("discharge")}>
         <Row label={t("discharge")} modeled={discharge?.kind === "modeled"}>
@@ -193,37 +208,38 @@ function SectionDetails({
               })}
         </Row>
         <Row label={t("channel.source")}>{t(`channel.${channel.source}`)}</Row>
-        {usesFill && (
-          <p className="text-muted py-1.5 text-xs">{t("channel.gap")}</p>
-        )}
-        {net !== undefined && (
-          <p className="text-muted py-1.5 text-xs">
-            {net && facts
-              ? t(
-                  facts.channels > 0
-                    ? "channel.network"
-                    : "channel.reservoirOnly",
-                  {
-                    from: day(net.source.dates[0]),
-                    to: day(net.source.dates[1]),
-                    count: facts.channels,
-                  },
-                )
-              : t("channel.singleTrack")}
-          </p>
-        )}
-        {facts && facts.reservoirs > 0 && (
-          <p className="text-muted py-1.5 text-xs">{t("channel.reservoir")}</p>
-        )}
-        {facts?.split && (
-          <p className="text-muted py-1.5 text-xs">{t("channel.shares")}</p>
-        )}
       </Group>
 
-      <p className="text-muted text-xs">{t("speedNote")}</p>
+      <details className="text-muted flex flex-col gap-1 text-xs">
+        <summary className="hover:text-text cursor-pointer py-1">
+          {t("notes")}
+        </summary>
+        <div className="flex flex-col gap-1.5 pt-1">
+          {usesFill && <p>{t("channel.gap")}</p>}
+          {net !== undefined && (
+            <p>
+              {net && facts
+                ? t(
+                    facts.channels > 0
+                      ? "channel.network"
+                      : "channel.reservoirOnly",
+                    {
+                      from: day(net.source.dates[0]),
+                      to: day(net.source.dates[1]),
+                      count: facts.channels,
+                    },
+                  )
+                : t("channel.singleTrack")}
+            </p>
+          )}
+          {facts && facts.reservoirs > 0 && <p>{t("channel.reservoir")}</p>}
+          {facts?.split && <p>{t("channel.shares")}</p>}
+          <p>{t("speedNote")}</p>
+          <p>{t("imagery")}</p>
+        </div>
+      </details>
 
       <Caveats caveats={["discharge", "regulation"]} />
-      <p className="text-muted -mt-2 text-xs">{t("imagery")}</p>
     </>
   );
 }
