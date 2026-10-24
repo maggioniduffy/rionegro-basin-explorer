@@ -5,8 +5,8 @@
  * 1. Candidates: the sections of data/work/<id>/flow-water/report.json with an inputsHash and no
  *    error; each out/<sectionId>.net.json is parsed with flowNetSchema.
  * 2. QA gate (regions/<id>/flow-net-publish.config.json): schema, no cycles, attribution text,
- *    sources/sinks/shares/orphans of the graph, course coverage (wet, reservoirs, or the net linking the
- *    section's ends along its main arm), and a section in
+ *    sources/sinks/shares/orphans of the graph, course coverage (the net linking the section's ends along its
+ *    main arm, crossing reservoirs, or the reservoirs' sRange share; IGN wet coverage is only reported), and a section in
  *    public/flow/<id>/index.json that is not narrow or noDischarge. A rejected section gets a
  *    reason in the report; the app falls back to the F1 track for it.
  * 3. Output: public/flow/<id>/<sectionId>.net.json and nets.json (ids, reservoirSections), in
@@ -41,7 +41,7 @@ import { endsLinked, startNodes, type LinkedPath } from "../lib/net-gate";
 const configSchema = z.strictObject({
   $comment: z.string().optional(),
   shareTol: z.number().positive(),
-  minWetCourseCoverage: z.number().min(0).max(1),
+  minReservoirCoverage: z.number().min(0).max(1),
   endsLinked: z.strictObject({
     endTolM: z.number().nonnegative(),
     minInsideWater: z.number().min(0).max(1),
@@ -150,8 +150,9 @@ async function main() {
     text: string;
     net: FlowNet;
     pub: FlowNetPub;
-    coverageBy: "wet" | "reservoirs" | "endsLinked";
+    coverageBy: "endsLinked" | "reservoirs";
     linkedPath: LinkedPath | null;
+    wetCourseCoverage: number | null;
   }[] = [];
   const rejected: { id: string; reasons: string[] }[] = [];
   let maxErrM = 0;
@@ -159,8 +160,9 @@ async function main() {
     const file = path.join(waterDir, "out", `${id}.net.json`);
     const reasons: string[] = [];
     let net: FlowNet | null = null;
-    let coverageBy: "wet" | "reservoirs" | "endsLinked" = "wet";
+    let coverageBy: "endsLinked" | "reservoirs" = "endsLinked";
     let linkedPath: LinkedPath | null = null;
+    let wetCourseCoverage: number | null = null;
     if (!existsSync(file)) reasons.push("net.json missing");
     else {
       const parsed = flowNetSchema.safeParse(
@@ -184,20 +186,19 @@ async function main() {
               net.reservoirs.flatMap((r) => (r.sRange ? [r.sRange] : [])),
             ) / net.courseLengthM
           : 0;
-      if (wet !== null && wet >= config.minWetCourseCoverage) {
-        coverageBy = "wet";
-      } else if (resCover >= config.minWetCourseCoverage) {
+      // The satellite network rules: ends linked first, then reservoir coverage. The IGN wet
+      // coverage (wet) is reported, never required.
+      const linked = endsLinked(net, config.endsLinked);
+      if (linked.linked) {
+        coverageBy = "endsLinked";
+        linkedPath = linked.path;
+      } else if (resCover >= config.minReservoirCoverage) {
         coverageBy = "reservoirs";
-      } else {
-        const linked = endsLinked(net, config.endsLinked);
-        if (linked.linked) {
-          coverageBy = "endsLinked";
-          linkedPath = linked.path;
-        } else
-          reasons.push(
-            `coverage: wet ${wet ?? "null"}, reservoirs ${resCover.toFixed(3)} < ${config.minWetCourseCoverage}; endsLinked: ${linked.reason}`,
-          );
-      }
+      } else
+        reasons.push(
+          `coverage: endsLinked: ${linked.reason}; reservoirs ${resCover.toFixed(3)} < ${config.minReservoirCoverage}`,
+        );
+      wetCourseCoverage = wet;
     }
     if (!indexReason.has(id)) reasons.push("not in index.json");
     else {
@@ -211,7 +212,15 @@ async function main() {
     }
     const pub = flowNetPubSchema.parse(encodeNet(net));
     maxErrM = Math.max(maxErrM, maxDecodeErrorM(net, decodeNet(pub)));
-    published.push({ id, text: json(pub), net, pub, coverageBy, linkedPath });
+    published.push({
+      id,
+      text: json(pub),
+      net,
+      pub,
+      coverageBy,
+      linkedPath,
+      wetCourseCoverage,
+    });
   }
 
   const ids = published.map((p) => p.id);
@@ -225,6 +234,7 @@ async function main() {
   const perSection = published.map((p) => ({
     id: p.id,
     coverageBy: p.coverageBy,
+    wetCourseCoverage: p.wetCourseCoverage,
     ...(p.linkedPath ? { linkedPath: p.linkedPath } : {}),
     bytes: Buffer.byteLength(p.text),
     gzipBytes: gzipSync(p.text).length,

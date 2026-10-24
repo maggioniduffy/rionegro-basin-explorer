@@ -60,6 +60,20 @@
     (`endsLinked`, DECISSIONS 2026-10-23). Check: `pipeline:flow-water --only limay-102` then `flow-net-publish`;
     the report must show `coverageBy: "endsLinked"` for limay-102.
 
+  **Cases (2026-10-24).**
+  - Cases 2-4: `limay-107`, `limay-109`, `limay-111` registered in `regions/nqn/flow-water.cases.json` (owner
+    captures: the IGN track ignores the main arm and crosses land); probe HTMLs sent to the owner for review,
+    truth lines to come from that review.
+  - WP-T2 (owner rule 2026-10-24, DECISSIONS): the satellite image rules the flow view. `flow-net-publish` passes
+    a net when `endsLinked` holds (now crossing reservoirs inlet to outlet) or reservoir coverage >=
+    `minReservoirCoverage`; IGN `wetCourseCoverage` is only reported. Sections without a net show the stopgap
+    note (`flow.channel.singleTrack`, EN/ES). Check done: `flow-net-publish` over the 15 local nets publishes
+    14; neuquen-139 is dropped (water ends in a reservoir ~390 m before the course end; owner: "Drop it for
+    now", revisit in I1.7).
+
+  **Owner checks (WP-T2).**
+  - Flow mode locally on a section without a net: the stopgap note shows in EN and ES.
+
   **Owner checks (WP-T1).**
   - View limay-102 in flow mode locally after a run and confirm the particles follow the main arm.
   - Approve a remote run (B1.2 dispatch) of the Limay sections without nets before it is dispatched.

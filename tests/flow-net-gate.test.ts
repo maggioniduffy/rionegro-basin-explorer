@@ -123,4 +123,62 @@ describe("endsLinked", () => {
     expect(endsLinked(build(nodes, arms, 0.5), opts).linked).toBe(false);
     expect(endsLinked(build(nodes, arms, null), opts).linked).toBe(false);
   });
+
+  it("crosses a reservoir from an inlet to an outlet", () => {
+    const ns: [string, number, "source" | "sink" | "split" | "join"][] = [
+      ["a", 0, "source"],
+      ["in", 4_000, "join"],
+      ["out", 6_000, "source"],
+      ["b", 10_000, "sink"],
+    ];
+    const n = build(ns, [
+      { id: "u", from: "a", to: "in", lenM: 4_000 },
+      { id: "d", from: "out", to: "b", lenM: 4_000 },
+    ]);
+    n.reservoirs = [
+      {
+        id: "r1",
+        rings: [],
+        areaKm2: 1,
+        inlets: ["in"],
+        outlets: [{ node: "out", share: 1, flux: null }],
+        drift: [1, 0],
+        driftFrom: "course",
+        sRange: [4_000, 6_000],
+      },
+    ];
+    const r = endsLinked(n, opts);
+    expect(r.linked).toBe(true);
+    expect(r.path?.from).toBe("a");
+    expect(r.path?.to).toBe("b");
+    expect(r.path?.viaReservoirs).toBe(1);
+    expect(r.skippedReservoirEdges).toBe(0);
+    // Without the reservoir the path stops at "in".
+    expect(endsLinked({ ...n, reservoirs: [] }, opts).linked).toBe(false);
+  });
+
+  it("ends the path at a reservoir that reaches the end of the course", () => {
+    const ns: [string, number, "source" | "sink" | "split" | "join"][] = [
+      ["a", 0, "source"],
+      ["in", 6_000, "join"],
+      ["out", 9_900, "source"],
+    ];
+    const n = build(ns, [{ id: "u", from: "a", to: "in", lenM: 6_000 }]);
+    n.reservoirs = [
+      {
+        id: "r1",
+        rings: [],
+        areaKm2: 1,
+        inlets: ["in"],
+        outlets: [{ node: "out", share: 1, flux: null }],
+        drift: [1, 0],
+        driftFrom: "course",
+        sRange: [6_000, 10_000],
+      },
+    ];
+    const r = endsLinked(n, opts);
+    expect(r.linked).toBe(true);
+    expect(r.path?.to).toBe("in");
+    expect(r.path?.viaReservoirs).toBe(0);
+  });
 });

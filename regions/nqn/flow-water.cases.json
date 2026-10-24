@@ -10,6 +10,21 @@
       "section": "limay-102",
       "truth": "limay-102.truth.geojson",
       "note": "owner capture 2026-10-23: particles follow a cut-off arm, not the main arm; section has no published net, so the map draws the IGN course, which runs on the cut-off arm"
+    },
+    {
+      "name": "limay-107",
+      "section": "limay-107",
+      "note": "owner capture 2026-10-24 (2): IGN-course track ignores the main arm twice"
+    },
+    {
+      "name": "limay-109",
+      "section": "limay-109",
+      "note": "owner capture 2026-10-24 (3): track ignores the main arm, crosses land, ignores the main arm again"
+    },
+    {
+      "name": "limay-111",
+      "section": "limay-111",
+      "note": "owner capture 2026-10-24 (4): track ignores one arm, crosses land, ignores one arm again, crosses land again"
     }
   ]
 }

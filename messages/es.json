@@ -338,7 +338,7 @@
       "none": "Ninguna",
       "network": "Red de cauces a partir de imágenes Sentinel-2 ({from} – {to}), {count, plural, one {# brazo} other {# brazos}}.",
       "reservoirOnly": "Contorno del embalse a partir de imágenes Sentinel-2 ({from} – {to}).",
-      "singleTrack": "Un solo trazado a lo largo del curso del IGN.",
+      "singleTrack": "Todavía no hay red de cauces satelital para este tramo: las partículas siguen un solo trazado a lo largo del curso del IGN.",
       "reservoir": "Dentro del embalse las partículas derivan lentamente; la dirección sigue sus entradas y salidas, o el curso del río donde no las tiene, y es ilustrativa.",
       "shares": "El reparto entre brazos es ilustrativo (según el ancho del cauce), no un caudal medido.",
       "gap": "Parte de este curso sigue el trazado modelado de HydroRIVERS."
