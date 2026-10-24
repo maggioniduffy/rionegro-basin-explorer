@@ -83,8 +83,10 @@
     nets live, neuquen-139 dropped as planned). 40 of the 60 planned sections published, limay-102, 107, 109 and
     111 among them; 20 rejected. The PR's `check` run failed to start (no jobs); the PR only bumps
     `content/versions.json`.
-  - Owner check (2026-10-24): limay-102, 107, 109 and 111 in flow mode on the preview: all four **Fail**.
-    Open: what fails, and whether the preview served flow version `12f7c7d90087`.
+  - Owner check (2026-10-24): limay-102, 107, 109 and 111 in flow mode on the phase preview (flow version
+    `12f7c7d90087`): all four follow the main arm. **Passed.** A first check had failed on production, which
+    still serves `de17735ad9ed` from `main`: no net for these four, so they animate on the IGN course until the
+    phase branch is merged.
   - Rejection reasons, from `flow-net-publish` run locally over the run's outputs (`flow-water:sync --mode pull`;
     the remote report is not kept by the workflow). All fail `endsLinked`, and reservoir coverage < 0.9:
     - no start within the course start tolerance: limay-001 to limay-013, limay-024 (reservoirs 0.428),
