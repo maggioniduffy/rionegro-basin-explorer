@@ -1,6 +1,12 @@
 {
-  "$comment": "Settings of pipeline:flow-net-publish (F3.2): the QA gate and the size budget of the compact flow-net-pub/1 files in public/flow/<id>/. shareTol: at a node with 2 or more outgoing branches the shares must sum to 1 within this. minWetCourseCoverage: qa.wetCourseCoverage of the net, or the share of the course length covered by the reservoirs' sRange, must reach it (0.9 is provisional until the first reports are read). maxTotalBytes: budget of all *.net.json plus nets.json (4 MB, F3 plan), separate from the 8 MB of the sections in flow.config.json.",
+  "$comment": "Settings of pipeline:flow-net-publish (F3.2): the QA gate and the size budget of the compact flow-net-pub/1 files in public/flow/<id>/. shareTol: at a node with 2 or more outgoing branches the shares must sum to 1 within this. The satellite image rules, not IGN (owner, 2026-10-24): a section passes when its net links the section's ends along the main arm (endsLinked, crossing reservoirs inlet to outlet) or when the share of the course length covered by the reservoirs' sRange reaches minReservoirCoverage (0.9, provisional). qa.wetCourseCoverage (IGN) is reported per section, never required. endsLinked (all values provisional): endTolM is how close to the course ends a start node and a sink must be (150 m = 2 x cover_tol_m of network.py), minInsideWater the least qa.insideWater, maxConnectorShare the most connector length on the linked path, minPathRatio the least path length as a share of courseLengthM. maxTotalBytes: budget of all *.net.json plus nets.json (4 MB, F3 plan), separate from the 8 MB of the sections in flow.config.json.",
   "shareTol": 0.001,
-  "minWetCourseCoverage": 0.9,
+  "minReservoirCoverage": 0.9,
+  "endsLinked": {
+    "endTolM": 150,
+    "minInsideWater": 0.95,
+    "maxConnectorShare": 0.1,
+    "minPathRatio": 0.5
+  },
   "maxTotalBytes": 4000000
 }
