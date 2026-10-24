@@ -62,8 +62,9 @@
 
   **Cases (2026-10-24).**
   - Cases 2-4: `limay-107`, `limay-109`, `limay-111` registered in `regions/nqn/flow-water.cases.json` (owner
-    captures: the IGN track ignores the main arm and crosses land); probe HTMLs sent to the owner for review,
-    truth lines to come from that review.
+    captures: the IGN track ignores the main arm and crosses land); owner reviewed the probe HTMLs
+    (2026-10-24): "the HTML are ok!", so the detector is right on all four cases and none needs mask tuning. Their
+    problem on the live site is only that they have no published net; the fix is the remote run plus publish.
   - WP-T2 (owner rule 2026-10-24, DECISSIONS): the satellite image rules the flow view. `flow-net-publish` passes
     a net when `endsLinked` holds (now crossing reservoirs inlet to outlet) or reservoir coverage >=
     `minReservoirCoverage`; IGN `wetCourseCoverage` is only reported. Sections without a net show the stopgap
