@@ -33,7 +33,7 @@ Server Components/Route Handlers, MapLibre + PMTiles, Zustand, next-intl EN+ES, 
 7. Pipeline steps are idempotent and write `report.json`; verify from it.
 8. Prefer free tiers; flag recurring cost.
 9. Keep `/pipeline/SOURCES.md` updated; check a license before adding a source or imagery provider.
-10. Work one phase at a time, one branch/PR per phase, one commit per work package (details in `context/orchestration.md`). Tick the phase file and its `PLAN.md` row when done; record decisions in `DECISSIONS.md`.
+10. Work one phase at a time, one branch/PR per phase, one commit per work package (details in `context/orchestration.md`). `context/orchestration.md` overrides any global "work inline by default" orchestrator rules: the main session plans, briefs, reviews diffs, commits and keeps the docs; `scout` does the reading and `builder` writes every code change, including small fixes found in review. Tick the phase file and its `PLAN.md` row when done; record decisions in `DECISSIONS.md`.
 11. Skip visual/chromium tests unless asked.
 12. Always start tasks in PLAN MODE.
 
