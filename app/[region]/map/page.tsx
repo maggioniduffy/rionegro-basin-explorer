@@ -38,18 +38,6 @@ export default async function MapPage({ params }: PageProps<"/[region]/map">) {
             <SearchBox />
           </div>
         </div>
-        <div className="bg-panel-glass border-line shadow-card pointer-events-auto hidden min-h-11 items-center gap-2 rounded-[10px] border px-1.5 backdrop-blur-[6px] sm:flex">
-          <Link
-            href={regionPath(region, "/attributions")}
-            aria-label={t("sources")}
-            title={t("sources")}
-            className="text-secondary hover:text-text inline-flex size-9 items-center justify-center rounded-md"
-          >
-            <Icon name="info" />
-          </Link>
-          <ThemeToggle compact />
-          <LocaleSwitcher />
-        </div>
         {/* Below 640px, the same controls in a menu; the wordmark and search stay. */}
         <div className="bg-panel-glass border-line shadow-card pointer-events-auto rounded-[10px] border backdrop-blur-[6px] sm:hidden">
           <MobileMenu className="rounded-[10px]">

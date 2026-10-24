@@ -5,7 +5,8 @@
   "localeSwitcher": {
     "label": "Language",
     "locale": "{locale, select, en {English} es {Español} other {Unknown}}",
-    "short": "{locale, select, en {EN} es {ES} other {?}}"
+    "short": "{locale, select, en {EN} es {ES} other {?}}",
+    "switchTo": "Switch to {locale, select, en {English} es {Español} other {Unknown}}"
   },
   "controls": {
     "label": "Map controls",
@@ -346,8 +347,11 @@
     "regulation": "Degree of regulation",
     "speedNote": "Particle colour shows relative, illustrative speed. No source measures velocity, so it is not km/h or m/s: it is faster mid-channel and where the channel narrows, assuming constant depth.",
     "imagery": "Imagery: Sentinel-2 cloudless, 10 m. It looks soft at this zoom.",
+    "notes": "Section notes",
     "controls": {
       "label": "Flow controls",
+      "show": "Show flow controls",
+      "hide": "Hide flow controls",
       "play": "Play",
       "pause": "Pause",
       "speed": "Playback speed",

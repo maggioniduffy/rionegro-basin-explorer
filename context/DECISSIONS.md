@@ -4,6 +4,21 @@ Dated decisions made while working through [PLAN.md](PLAN.md), with the figures 
 behind them. When a choice revises an earlier one, the entry that changes it says so.
 The standing architecture decisions stay in PLAN.md; data licenses are in `pipeline/SOURCES.md`.
 
+## Map UI compact (2026-10-24, branch `map-ui-compact`)
+
+- **Flow controls live in the flow panel on desktop (owner).** The 480 px floating bar ran under both side panels
+  between 768 and 1280 px. On desktop the icon row (play/pause, speed, upstream/downstream, legend) sits under the
+  section header and the panel's X exits flow mode; on phones it stays a floating icon bar at the top that
+  collapses to a pill. The long section notes fold into a closed "Section notes" disclosure; values, the
+  discharge source/period and the caveats stay visible (Rule 4).
+- **One left panel with Map / Display tabs (owner).** "Visualización" leaves the right column and becomes a tab of
+  the map controls panel, mirroring the phone sheet; the right column holds only the info panel, full height
+  between `--panel-top` and `--panel-bottom`. `optionsOpen` left the store.
+- **One map toolbar (owner).** Zoom, snapshot and, from 640 px up, sources, theme and language share one card at
+  the top right; the header keeps only the wordmark and search (phones keep the header menu).
+- **Delegation (owner).** `context/orchestration.md` overrides global "inline by default" orchestrator rules:
+  scouts read, builders write every code change, Opus plans, reviews and commits (CLAUDE.md rule 10).
+
 ## Phase I1 (2026-10-19)
 
 - **I1 and B1 merged (owner).** B1 closes with B1.1–B1.3 and the untrack done. Its leftovers move into I1: the

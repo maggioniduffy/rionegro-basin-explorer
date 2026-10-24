@@ -8,7 +8,7 @@ import type { Selection } from "./url-state";
 
 /** localStorage key for the km/mi choice; read on mount by UnitsToggle. */
 export const UNITS_STORAGE_KEY = "units";
-/** localStorage key for the overview map's show/hide; read on mount by OptionsPanel. */
+/** localStorage key for the overview map's show/hide; read on mount by the minimap. */
 export const MINIMAP_STORAGE_KEY = "minimap";
 /** localStorage key for the base map (satellite or map); read on mount (use-saved-base-layer). */
 export const BASE_LAYER_STORAGE_KEY = "baseLayer";
@@ -91,8 +91,6 @@ interface MapState {
    * Display options panel (bottom right). While it is open, the right column splits
    * in two halves: the info panel on top, the options below.
    */
-  optionsOpen: boolean;
-  setOptionsOpen: (v: boolean) => void;
   /** km/mi; panels and the scale bar follow it, independently of the locale. */
   units: UnitSystem;
   setUnits: (u: UnitSystem) => void;
@@ -178,8 +176,6 @@ export const useMapStore = create<MapState>()((set) => ({
     })),
   isolatedIds: null,
   setIsolatedIds: (isolatedIds) => set({ isolatedIds }),
-  optionsOpen: false,
-  setOptionsOpen: (optionsOpen) => set({ optionsOpen }),
   units: "metric",
   setUnits: (units) => set({ units }),
   baseLayer: "satellite",

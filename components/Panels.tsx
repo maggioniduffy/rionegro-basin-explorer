@@ -24,7 +24,7 @@ export function Panels() {
       ) : (
         <MobileSheet />
       )}
-      <FlowControls />
+      {!desktop && <FlowControls />}
     </>
   );
 }

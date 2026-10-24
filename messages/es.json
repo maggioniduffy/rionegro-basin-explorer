@@ -5,7 +5,8 @@
   "localeSwitcher": {
     "label": "Idioma",
     "locale": "{locale, select, en {English} es {Español} other {Desconocido}}",
-    "short": "{locale, select, en {EN} es {ES} other {?}}"
+    "short": "{locale, select, en {EN} es {ES} other {?}}",
+    "switchTo": "Cambiar a {locale, select, en {English} es {español} other {desconocido}}"
   },
   "controls": {
     "label": "Controles del mapa",
@@ -346,8 +347,11 @@
     "regulation": "Grado de regulación",
     "speedNote": "El color de las partículas indica una velocidad relativa e ilustrativa. Ninguna fuente mide la velocidad, por eso no son km/h ni m/s: es mayor en el centro del cauce y donde se angosta, suponiendo profundidad constante.",
     "imagery": "Imágenes: Sentinel-2 sin nubes, 10 m. Se ven borrosas con este zoom.",
+    "notes": "Notas del tramo",
     "controls": {
       "label": "Controles del flujo",
+      "show": "Mostrar controles del flujo",
+      "hide": "Ocultar controles del flujo",
       "play": "Reproducir",
       "pause": "Pausar",
       "speed": "Velocidad de reproducción",

@@ -50,7 +50,7 @@ Opus: commit the WP ("feat(<phase>): …" / "fix(<phase>): …"), tick the phase
 
 Rules of the loop
 
-- **One WP in flight at a time** (CLAUDE.md Rule 12). Only read-only agents (scouts, data inspectors, license
+- **One WP in flight at a time** (owner rule; CLAUDE.md Rule 10 covers the branch/commit cadence). Only read-only agents (scouts, data inspectors, license
   checker) run in parallel. Builders never run in parallel unless the owner asks; then only on disjoint file lists,
   each with `isolation: "worktree"`, and Opus merges.
 - **One writer per path**: one builder per file area, one pipeline runner per `data/work/<region>/<step>/`.

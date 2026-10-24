@@ -77,7 +77,7 @@ import {
   restoreCameraHash,
 } from "@/lib/map/camera-hash";
 import { setMainMap } from "@/lib/map/main-map";
-import { SnapshotButton } from "./SnapshotButton";
+import { MapToolbar } from "./MapToolbar";
 import { SHEET_PEEK_PX, sheetHeights } from "@/lib/sheet";
 import { useMapStore } from "@/lib/store";
 import type { Selection } from "@/lib/url-state";
@@ -645,32 +645,10 @@ export default function MapView() {
         />
       </div>
       <FlowController map={flowMap} padding={selectionPadding} />
-      <div className="absolute top-16 right-3 flex flex-col gap-2">
-        <div className="flex flex-col overflow-hidden rounded-md border border-(--border) bg-(--panel) shadow">
-          <button
-            type="button"
-            className="h-9 w-9 text-lg hover:bg-(--panel-hover)"
-            aria-label={t("zoomIn")}
-            title={t("zoomIn")}
-            onClick={() => mapRef.current?.zoomIn()}
-          >
-            +
-          </button>
-          <button
-            type="button"
-            className="h-9 w-9 border-t border-(--border) text-lg hover:bg-(--panel-hover)"
-            aria-label={t("zoomOut")}
-            title={t("zoomOut")}
-            onClick={() => mapRef.current?.zoomOut()}
-          >
-            −
-          </button>
-        </div>
-        {/* Not in the clipped group above: its error message sits outside it. */}
-        <div className="rounded-md border border-(--border) bg-(--panel) shadow">
-          <SnapshotButton />
-        </div>
-      </div>
+      <MapToolbar
+        onZoomIn={() => mapRef.current?.zoomIn()}
+        onZoomOut={() => mapRef.current?.zoomOut()}
+      />
     </>
   );
 }
