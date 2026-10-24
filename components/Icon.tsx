@@ -25,6 +25,9 @@ const ICON_PATHS = {
   chevron: "M9 6l6 6-6 6",
   separator: "M14 5l-4 14",
   play: "M8 5.5v13l10-6.5z",
+  pause: "M9 6v12M15 6v12",
+  upstream: "M12 6l-6 6 6 6M19 6l-6 6 6 6",
+  downstream: "M5 6l6 6-6 6M12 6l6 6-6 6",
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;
