@@ -74,6 +74,11 @@
 
   **Owner checks (WP-T2).**
   - Flow mode locally on a section without a net: the stopgap note shows in EN and ES.
+  - Remote run dispatched 2026-10-24 (owner): `flow-water.yml` on `phase-i1-imagery-water`, run 40070248647,
+    the 60 non-reservoir Limay sections (the 56 reservoir sections wait for I1.7), chunk 10. When it ends: read
+    its PR body (flow-water and flow-net-publish reports: published, rejected and reasons), merge the
+    `content/versions.json` PR into the phase branch, then check limay-102, 107, 109 and 111 in flow mode on the
+    preview.
 
   **Owner checks (WP-T1).**
   - View limay-102 in flow mode locally after a run and confirm the particles follow the main arm.
