@@ -79,6 +79,18 @@
     its PR body (flow-water and flow-net-publish reports: published, rejected and reasons), merge the
     `content/versions.json` PR into the phase branch, then check limay-102, 107, 109 and 111 in flow mode on the
     preview.
+  - Run 40070248647 result (2026-10-24): PR #17 merged into the phase branch (flow version `12f7c7d90087`, 60
+    nets live, neuquen-139 dropped as planned). 40 of the 60 planned sections published, limay-102, 107, 109 and
+    111 among them; 20 rejected. The PR's `check` run failed to start (no jobs); the PR only bumps
+    `content/versions.json`.
+  - Owner check (2026-10-24): limay-102, 107, 109 and 111 in flow mode on the preview: all four **Fail**.
+    Open: what fails, and whether the preview served flow version `12f7c7d90087`.
+  - Rejection reasons, from `flow-net-publish` run locally over the run's outputs (`flow-water:sync --mode pull`;
+    the remote report is not kept by the workflow). All fail `endsLinked`, and reservoir coverage < 0.9:
+    - no start within the course start tolerance: limay-001 to limay-013, limay-024 (reservoirs 0.428),
+      limay-056.
+    - no path from the course start to a sink at its end: limay-000, limay-031 (0.272), limay-048 (0.514),
+      limay-055, limay-068 (also 1 cycle).
 
   **Owner checks (WP-T1).**
   - View limay-102 in flow mode locally after a run and confirm the particles follow the main arm.
