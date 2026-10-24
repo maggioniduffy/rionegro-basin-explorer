@@ -5,7 +5,8 @@
  * 1. Candidates: the sections of data/work/<id>/flow-water/report.json with an inputsHash and no
  *    error; each out/<sectionId>.net.json is parsed with flowNetSchema.
  * 2. QA gate (regions/<id>/flow-net-publish.config.json): schema, no cycles, attribution text,
- *    sources/sinks/shares/orphans of the graph, wet course coverage, and a section in
+ *    sources/sinks/shares/orphans of the graph, course coverage (wet, reservoirs, or the net linking the
+ *    section's ends along its main arm), and a section in
  *    public/flow/<id>/index.json that is not narrow or noDischarge. A rejected section gets a
  *    reason in the report; the app falls back to the F1 track for it.
  * 3. Output: public/flow/<id>/<sectionId>.net.json and nets.json (ids, reservoirSections), in
@@ -35,11 +36,18 @@ import {
 import { decodeNet, encodeNet, maxDecodeErrorM } from "../../lib/flow/net-pub";
 import { regionFile, rel, REGION_ID, ROOT, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
+import { endsLinked, startNodes, type LinkedPath } from "../lib/net-gate";
 
 const configSchema = z.strictObject({
   $comment: z.string().optional(),
   shareTol: z.number().positive(),
   minWetCourseCoverage: z.number().min(0).max(1),
+  endsLinked: z.strictObject({
+    endTolM: z.number().nonnegative(),
+    minInsideWater: z.number().min(0).max(1),
+    maxConnectorShare: z.number().min(0).max(1),
+    minPathRatio: z.number().min(0).max(1),
+  }),
   maxTotalBytes: z.number().int().positive(),
 });
 
@@ -71,12 +79,7 @@ function graphReasons(net: FlowNet, shareTol: number): string[] {
     l.push(i);
     out.set(b.from, l);
   });
-  const outletNodes = new Set(
-    net.reservoirs.flatMap((r) => r.outlets.map((o) => o.node)),
-  );
-  const starts = net.nodes.filter(
-    (n) => n.kind === "source" || outletNodes.has(n.id),
-  );
+  const starts = startNodes(net);
   if (starts.length === 0) reasons.push("no source or reservoir outlet");
   if (!net.nodes.some((n) => n.kind === "sink") && net.reservoirs.length === 0)
     reasons.push("no sink or reservoir");
@@ -147,6 +150,8 @@ async function main() {
     text: string;
     net: FlowNet;
     pub: FlowNetPub;
+    coverageBy: "wet" | "reservoirs" | "endsLinked";
+    linkedPath: LinkedPath | null;
   }[] = [];
   const rejected: { id: string; reasons: string[] }[] = [];
   let maxErrM = 0;
@@ -154,6 +159,8 @@ async function main() {
     const file = path.join(waterDir, "out", `${id}.net.json`);
     const reasons: string[] = [];
     let net: FlowNet | null = null;
+    let coverageBy: "wet" | "reservoirs" | "endsLinked" = "wet";
+    let linkedPath: LinkedPath | null = null;
     if (!existsSync(file)) reasons.push("net.json missing");
     else {
       const parsed = flowNetSchema.safeParse(
@@ -177,13 +184,20 @@ async function main() {
               net.reservoirs.flatMap((r) => (r.sRange ? [r.sRange] : [])),
             ) / net.courseLengthM
           : 0;
-      if (
-        !(wet !== null && wet >= config.minWetCourseCoverage) &&
-        resCover < config.minWetCourseCoverage
-      )
-        reasons.push(
-          `coverage: wet ${wet ?? "null"}, reservoirs ${resCover.toFixed(3)} < ${config.minWetCourseCoverage}`,
-        );
+      if (wet !== null && wet >= config.minWetCourseCoverage) {
+        coverageBy = "wet";
+      } else if (resCover >= config.minWetCourseCoverage) {
+        coverageBy = "reservoirs";
+      } else {
+        const linked = endsLinked(net, config.endsLinked);
+        if (linked.linked) {
+          coverageBy = "endsLinked";
+          linkedPath = linked.path;
+        } else
+          reasons.push(
+            `coverage: wet ${wet ?? "null"}, reservoirs ${resCover.toFixed(3)} < ${config.minWetCourseCoverage}; endsLinked: ${linked.reason}`,
+          );
+      }
     }
     if (!indexReason.has(id)) reasons.push("not in index.json");
     else {
@@ -197,7 +211,7 @@ async function main() {
     }
     const pub = flowNetPubSchema.parse(encodeNet(net));
     maxErrM = Math.max(maxErrM, maxDecodeErrorM(net, decodeNet(pub)));
-    published.push({ id, text: json(pub), net, pub });
+    published.push({ id, text: json(pub), net, pub, coverageBy, linkedPath });
   }
 
   const ids = published.map((p) => p.id);
@@ -210,6 +224,8 @@ async function main() {
   const manifest = json({ region: REGION_ID, ids, reservoirSections }) + "\n";
   const perSection = published.map((p) => ({
     id: p.id,
+    coverageBy: p.coverageBy,
+    ...(p.linkedPath ? { linkedPath: p.linkedPath } : {}),
     bytes: Buffer.byteLength(p.text),
     gzipBytes: gzipSync(p.text).length,
     netBytes: Buffer.byteLength(json(p.net)),
@@ -240,6 +256,9 @@ async function main() {
     checks,
     candidates: candidates.length,
     published: published.length,
+    publishedByEndsLinked: published.filter(
+      (p) => p.coverageBy === "endsLinked",
+    ).length,
     rejected: rejected.length,
     rejectedByReason,
     bytes,

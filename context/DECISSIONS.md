@@ -17,4 +17,13 @@ The standing architecture decisions stay in PLAN.md; data licenses are in `pipel
   kept that lowers IoU on another case; cases stay as regression checks.
 - **Search runs in the probe, not in a model.** Codex-backed agents (pipeline-runner, data-inspector) run probes
   and return metric tables; Opus reads tables and picks the next hypothesis; the owner looks at the images.
+- **Publish gate accepts a net whose main arm links the section's ends (owner, 2026-10-23).** Owner: "when the
+  detected net links the section's ends along the main arm, accept it even if the IGN course leaves the water."
+  `flow-net-publish` still checks wet/reservoir coverage first; if that fails, `endsLinked` (`pipeline/lib/net-gate.ts`)
+  passes a net with a directed source-to-sink path within 150 m of both course ends, widest bottleneck, connector
+  share <= 0.1, length >= 0.5 of the course and `insideWater` >= 0.95 (provisional; 150 m = 2 x `cover_tol_m`).
+  Exception to "IGN is the authority" for the flow view only: names, lines and sections still follow IGN.
+  Evidence, limay-102: probe `wetCourseCoverage` 0.4369, `courseInWater` 0.5099; the IGN course runs on the cut-off
+  northern arm while the net follows the main arm. The gate reads the published net only: no Python change, no
+  `FLOWWATER_VERSION` bump, nets that pass today keep their bytes.
 - **Whole reservoirs after tuning.** I1.7 waits for I1.T so the reservoir nets use the tuned detection.

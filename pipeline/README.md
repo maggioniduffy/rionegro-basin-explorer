@@ -550,14 +550,21 @@ F3.2 (`nqn` only for now): publishes the finished `flow-net/1` networks of `pipe
 
 - **Inputs.** `data/work/<id>/flow-water/report.json` (the candidates: sections with an `inputsHash` and no
   `error`), their `out/<sectionId>.net.json`, `public/flow/<id>/index.json`, and
-  `regions/<id>/flow-net-publish.config.json` (`shareTol`, `minWetCourseCoverage`, `maxTotalBytes`).
+  `regions/<id>/flow-net-publish.config.json` (`shareTol`, `minWetCourseCoverage`, `endsLinked`, `maxTotalBytes`).
 - **QA gate.** A section is rejected, with a reason in the report, if: the net fails `flowNetSchema`;
   `qa.cycles` is not 0; the attribution lacks "Contains modified Copernicus Sentinel data" or "Copernicus
   WorldDEM-30"; (with branches) there is no source or reservoir outlet, no sink or reservoir, shares at a node with
   2 or more outgoing branches do not sum to 1 within `shareTol`, or a branch is not reachable from a source or
   reservoir outlet; neither `qa.wetCourseCoverage` nor the reservoirs' `sRange` share of the course reaches
-  `minWetCourseCoverage`; or the section is missing from `index.json` or is `narrow` or `noDischarge`. The app
+  `minWetCourseCoverage`, and the net does not link the section's ends (below); or the section is missing from `index.json` or is `narrow` or `noDischarge`. The app
   falls back to the F1 track for rejected sections.
+- **Ends linked** (`pipeline/lib/net-gate.ts`, owner decision 2026-10-23: accept a net that links the section's
+  ends along the main arm even if the IGN course leaves the water). Tried only when the wet/reservoir coverage
+  rule fails. It passes when a directed path through the branches runs from a start (source or reservoir outlet)
+  with `s <= endTolM` to a `sink` with `s >= courseLengthM - endTolM`; among such paths the one with the widest
+  bottleneck (min `halfWidthM`) is taken, and it needs connector length share <= `maxConnectorShare`, length >=
+  `minPathRatio` x `courseLengthM`, and `qa.insideWater` >= `minInsideWater` (null fails). Config keys
+  `endsLinked.{endTolM, minInsideWater, maxConnectorShare, minPathRatio}` (150, 0.95, 0.1, 0.5; provisional).
 - **Outputs.** `public/flow/<id>/<sectionId>.net.json` (format in `lib/flow/net-pub-schema.ts`: integer local
   metres from the SW corner of the bbox, delta-encoded polylines, nodes as parallel arrays; codec in
   `lib/flow/net-pub.ts`) and `public/flow/<id>/nets.json` (`ids`, `reservoirSections`: published sections whose
@@ -565,7 +572,8 @@ F3.2 (`nqn` only for now): publishes the finished `flow-net/1` networks of `pipe
   removed, nothing else. Same bytes on every run. Budget: `maxTotalBytes` (4 MB) for all of them, checked before
   anything is written, separate from the 8 MB of the sections.
 - **`report.json`** (`data/work/<id>/flow-net-publish/`): `ok`, `checks`, counts (`candidates`, `published`,
-  `rejected`, `rejectedByReason`), `bytes`, `perSection` (raw and gzip bytes), `maxDecodeErrorM` (must stay under
+  `publishedByEndsLinked`, `rejected`, `rejectedByReason`), `bytes`, `perSection` (raw and gzip bytes, `coverageBy`
+  `wet` | `reservoirs` | `endsLinked`, and the linked path's length, connector share and bottleneck for the last), `maxDecodeErrorM` (must stay under
   1 m), `rejectedSections` with reasons.
 
 ### Content bucket and remote `flow-water`

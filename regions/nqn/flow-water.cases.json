@@ -4,6 +4,12 @@
       "name": "limay-110",
       "section": "limay-110",
       "note": "known done section (F2/F3), probe smoke case"
+    },
+    {
+      "name": "limay-102",
+      "section": "limay-102",
+      "truth": "limay-102.truth.geojson",
+      "note": "owner capture 2026-10-23: particles follow a cut-off arm, not the main arm; section has no published net, so the map draws the IGN course, which runs on the cut-off arm"
     }
   ]
 }

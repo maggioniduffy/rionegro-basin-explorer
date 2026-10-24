@@ -51,3 +51,15 @@
   - Each round = one brief to the runner: cases, search space, metric to optimise, regression bound.
   - Possible later: a dedicated Codex agent for algorithm iteration under Opus control (owner, 2026-10-19), to be
     designed once I1.P is done.
+
+  **Cases (2026-10-23).**
+  - Case 1: `limay-102`, registered in `regions/nqn/flow-water.cases.json` with a main-arm truth line
+    (`flow-water-cases/limay-102.truth.geojson`). The particles followed a cut-off arm because the section has no
+    published net (the detector finds the main arm, but wet coverage 0.44 < 0.9 rejected it).
+  - WP-T1: `flow-net-publish` also passes a net that links the section's ends along the main arm
+    (`endsLinked`, DECISSIONS 2026-10-23). Check: `pipeline:flow-water --only limay-102` then `flow-net-publish`;
+    the report must show `coverageBy: "endsLinked"` for limay-102.
+
+  **Owner checks (WP-T1).**
+  - View limay-102 in flow mode locally after a run and confirm the particles follow the main arm.
+  - Approve a remote run (B1.2 dispatch) of the Limay sections without nets before it is dispatched.
