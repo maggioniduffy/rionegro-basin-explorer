@@ -159,7 +159,7 @@ export function PanelFrame({
       className={
         variant === "sheet"
           ? "relative flex flex-col gap-4 text-sm"
-          : "border-line bg-panel-glass shadow-card pointer-events-auto relative flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain rounded-[10px] border p-4 text-sm backdrop-blur-[6px] group-data-[split=true]:max-h-[calc(50%-0.375rem)]"
+          : "border-line bg-panel-glass shadow-card pointer-events-auto relative flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain rounded-[10px] border p-4 text-sm backdrop-blur-[6px]"
       }
     >
       <button
