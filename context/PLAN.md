@@ -55,6 +55,7 @@ Each phase lives in its own file under [phases/](phases/). Read this index, then
 | R5 — Continuous river courses in Córdoba          | [x]                                                                      | [r5-cba-courses.md](phases/r5-cba-courses.md)         |
 | F1 — Flow close-up (`nqn`)                        | [~] code done; owner browser checks left                                 | [f1-flow-closeup.md](phases/f1-flow-closeup.md)       |
 | I1 — Imagery, water tuning, reservoirs, CDN cache | [~] I1.0–I1.1, I1.P done; I1.T (owner cases, mask + flow decisions) next | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
+| W1 — DSWx-first water detection (parallel)        | [ ] idea; checks and dataset search pending                              | [w1-dswx-first.md](phases/w1-dswx-first.md)           |
 | F2 — Water network from Sentinel-2 (`nqn`)        | [x]                                                                      | [f2-water-network.md](phases/f2-water-network.md)     |
 | F3 — Flow engine on the water network             | [~] PR #10; reservoir box and zoom to I1.7                               | [f3-flow-network.md](phases/f3-flow-network.md)       |
 | B1 — Content bucket and remote pipelines          | [x] B1.1–B1.3 done; B1.4 → I1.7, B1.5 → I1.6 (file merged into I1)       | [i1-imagery-water.md](phases/i1-imagery-water.md)     |

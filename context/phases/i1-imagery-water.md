@@ -52,6 +52,7 @@ here; the detail, acceptance and done-notes of each item are in its file.
 | [ ]    | I1.6 Vercel CDN cache for tiles and flow                  | [i1-6-cdn-cache.md](i1/i1-6-cdn-cache.md)                       |
 | [ ]    | I1.7 Whole reservoirs (after I1.T)                        | [i1-7-reservoirs.md](i1/i1-7-reservoirs.md)                     |
 |        | Recurring cost flags and owner checks                     | [i1-costs-and-owner-checks.md](i1/i1-costs-and-owner-checks.md) |
+|        | Water source options (MODIS, DSWx, JRC, HLS)              | [i1-water-source-options.md](i1/i1-water-source-options.md)     |
 
 Order: I1.T before I1.7; I1.2 needs I1.1 (done); I1.3 follows I1.2; I1.5 and I1.6 can go any time.
 
