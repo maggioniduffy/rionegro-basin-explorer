@@ -13,6 +13,10 @@
 
   Not reinforcement learning: a measured human-in-the-loop calibration; cases stay as regression checks.
 
+  Principle (owner, 2026-10-28): the detector learns once and generalizes; it is not instructed in each section. No
+  per-section thresholds, rules or overrides: every change is global (config or algorithm) and must hold on all
+  cases. Extending to other rivers should then mostly come down to setting up their courses and sections.
+
   **Second track: flow decisions (planned 2026-10-21, implement after the mask track works).** Besides the water
   mask, the loop scores _decisions_: which arm carries flow and in which direction (`network.py`, `flow-net/1`).
   Same registry, same probe, same report; no separate eval script or case file.

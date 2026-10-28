@@ -31,6 +31,10 @@ Key facts found:
 - The URL doesn't carry the camera (`lib/url-state.ts`), so a screenshot alone has no coordinates.
 - `next.config.ts` headers: `Vercel-CDN-Cache-Control: no-store` on `/tiles|flow/:region/:version/:file`.
 
+**Detector principle (owner, 2026-10-28):** water detection learns once and generalizes; no per-section thresholds,
+rules or overrides. Extending to other rivers should mostly come down to setting up their courses and sections.
+Details in [i1-t-tuning.md](i1/i1-t-tuning.md).
+
 ## Items
 
 Read this index, then **only the file of the item you are working on**. IDs and checkboxes are the source of truth
