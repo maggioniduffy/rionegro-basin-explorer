@@ -58,7 +58,7 @@ Each phase lives in its own file under [phases/](phases/). Read this index, then
 | F2 — Water network from Sentinel-2 (`nqn`)        | [x]                                                                      | [f2-water-network.md](phases/f2-water-network.md)     |
 | F3 — Flow engine on the water network             | [~] PR #10; reservoir box and zoom to I1.7                               | [f3-flow-network.md](phases/f3-flow-network.md)       |
 | B1 — Content bucket and remote pipelines          | [x] B1.1–B1.3 done; B1.4 → I1.7, B1.5 → I1.6 (file merged into I1)       | [i1-imagery-water.md](phases/i1-imagery-water.md)     |
-| E1 — Effluent impact explorer (`cba`, hackathon)  | [~] E1.0 done; E1.1 next                                                 | [e1-effluents.md](phases/e1-effluents.md)             |
+| E1 — Effluent impact explorer (`cba`, hackathon)  | [~] E1.0–E1.1 done; E1.2 next                                            | [e1-effluents.md](phases/e1-effluents.md)             |
 
 ### Multi-region (R0–R5)
 

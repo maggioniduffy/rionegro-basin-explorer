@@ -25,7 +25,7 @@ literature range with its citation; every assumption is listed in the panel.
 
 - **Flow at a reach and date** (gauges `san-roque-inflow` above the dam, `centro-civico` below): Q_reach(t) = `dischargeM3s` (HydroRIVERS, 1971–2000 natural mean) ×
   Q_glofas(t) / Q_glofas_clim. GloFAS v4 via the Open‑Meteo Flood API, at hand-checked cells; the climatology is
-  GloFAS's own 1984–2022 reanalysis mean at the same cell. Scenarios: long-term mean, today, forecast day N
+  GloFAS's own reanalysis mean at the same cell (non-null from 1997-01-01 to 2022-07-31). Scenarios: long-term mean, today, forecast day N
   (p25/median/p75).
 - **River model** (`lib/effluent/`, pure TS, client-side): downstream walk on `nextDown` (edited links applied);
   complete mixing at the outfall; travel time L/v with v = a·Q^m; first-order decay (BOD, coliforms); Streeter‑Phelps
@@ -43,7 +43,7 @@ literature range with its citation; every assumption is listed in the panel.
 ## Checklist
 
 - [x] E1.0 Phase file, PLAN.md row, DECISSIONS.md entry, `pipeline/SOURCES.md` (Open‑Meteo/GloFAS; parameter references)
-- [ ] E1.1 `regions/cba/effluent.config.json` + `pipeline:effluent-net` → `regions/cba/effluent-net.json` + report.json
+- [x] E1.1 `regions/cba/effluent.config.json` + `pipeline:effluent-net` → `regions/cba/effluent-net.json` + report.json
 - [ ] E1.2 `lib/effluent/` pure model + `tests/effluent-model.test.ts`
 - [ ] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config)
 - [ ] E1.4 Effluent mode: store slice, `?ef=` URL param, overlay controller, legend, "Simulate a discharge here" in `ReachPanel`

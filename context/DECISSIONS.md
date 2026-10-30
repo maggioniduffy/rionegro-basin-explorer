@@ -12,11 +12,11 @@ hackathon (12–13 Nov 2026).
 - **User = the regulator; two demo reaches** (owner): Suquía through Bajo Grande (BOD/DO, coliforms) and the
   Cosquín/San Antonio into San Roque (TP, OECD model). Region `cba` only; nothing changes in `nqn`.
 - **Forecast = GloFAS via the Open‑Meteo Flood API** (owner), scaled to each reach by the ratio to GloFAS's own
-  1984–2022 mean at the gauge cell, so HydroRIVERS and GloFAS means are never mixed. Cells are hand-checked: the API
+  1997–2022 reanalysis mean at the gauge cell (the API documents 1984, but these cells are null before 1997), so HydroRIVERS and GloFAS means are never mixed. Cells are hand-checked: the API
   picks "the largest river in 5 km" (a test point at -31.383, -64.12 returned 0.06 m³/s, a tributary; Centro Cívico
   snapped to -31.425, -64.175 and returned 4.5–7 m³/s, 2026-10-29). **Two gauges** (2026-10-29 probes, 2015–2020
-  means): `centro-civico` cell -31.425, -64.175 (13.75 m³/s 1984–2022; HydroRIVERS 10.97) for the Suquía below the
-  dam, and `san-roque-inflow` cell -31.375, -64.475 (5.01 m³/s; ILEC total inflow 5.25) for everything upstream of
+  means): `centro-civico` cell -31.425, -64.175 (13.75 m³/s 1997–2022; HydroRIVERS 10.97) for the Suquía below the
+  dam, and `san-roque-inflow` cell -31.375, -64.475 (5.01 m³/s 2015–2020, 6.40 m³/s 1997–2022; ILEC total inflow 5.25) for everything upstream of
   the dam. Per-tributary cells were rejected: GloFAS's San Antonio cells give 0.03–0.56 m³/s against 1.63 m³/s
   (ILEC), and the Cosquín cell -31.325, -64.475 gives 2.28 m³/s against 2.87.
 - **No live gauge levels:** Omixom offers no public API and APRHI's portal publishes station metadata only

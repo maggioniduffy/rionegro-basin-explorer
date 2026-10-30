@@ -1,0 +1,138 @@
+{
+  "$comment": "Hand-edited inputs of pipeline:effluent-net and of the E1 screening model (context/phases/e1-effluents.md). Every number carries a source string; unverified = null, never invented.",
+  "mouthReach": 61472178,
+  "gauges": [
+    {
+      "id": "centro-civico",
+      "name": "Río Suquía – Centro Cívico",
+      "cell": { "lat": -31.425, "lon": -64.175 },
+      "source": "GloFAS v4 via Open-Meteo Flood API; cell hand-checked 2026-10-29 (DECISSIONS.md Phase E1)"
+    },
+    {
+      "id": "san-roque-inflow",
+      "name": "Embalse San Roque – inflow",
+      "cell": { "lat": -31.375, "lon": -64.475 },
+      "source": "GloFAS v4 via Open-Meteo Flood API; cell hand-checked 2026-10-29 (DECISSIONS.md Phase E1)"
+    }
+  ],
+  "gaugeSplit": {
+    "upstreamOfReach": 61476496,
+    "gauge": "san-roque-inflow",
+    "default": "centro-civico"
+  },
+  "lake": {
+    "id": "aprhi-emb-4",
+    "name": "Embalse San Roque",
+    "inReaches": [61476495, 61476899],
+    "outReach": 61476496,
+    "areaKm2": { "value": 16, "source": "INA-CIRSA Limnología 20; ILEC" },
+    "volumeHm3": { "value": 190, "source": "INA-CIRSA Limnología 20" },
+    "meanDepthM": { "value": 13, "source": "INA-CIRSA Limnología 20" },
+    "tpLoadTPerYr": {
+      "value": 190,
+      "source": "ILEC World Lake Database (domestic 45, agricultural 140, natural 5)"
+    },
+    "residenceYr": {
+      "low": 0.1,
+      "high": 1.1,
+      "source": "ILEC 0.1–0.7 yr; ≈1.1 yr from 190 hm³ / 166 hm³/yr"
+    }
+  },
+  "outfalls": [
+    {
+      "id": "bajo-grande",
+      "name": "EDAR Bajo Grande",
+      "reach": 61477479,
+      "location": "assumed at the reach's upstream end; outfall not verified (owner check)",
+      "flowM3s": {
+        "value": 2.8,
+        "source": "design capacity, two 5,000 m³/h modules (press, 2022)"
+      },
+      "effluent": {
+        "bodMgL": {
+          "value": 40,
+          "source": "permit limit, Decreto 847/16 Annex I as amended by Res. APRHI 31/2022 (compliance scenario)"
+        },
+        "coliformsPer100mL": {
+          "value": null,
+          "source": "Decreto 847/16 limit not verified; no public effluent data"
+        },
+        "tpMgL": {
+          "value": null,
+          "source": "not applicable below the dam; no public effluent data"
+        }
+      }
+    }
+  ],
+  "thresholds": {
+    "doMinMgL": {
+      "value": 5,
+      "source": "assumption: Córdoba sets no receiving-water DO objective"
+    },
+    "coliformsPer100mL": {
+      "value": 200,
+      "source": "assumption: US EPA 1976 Quality Criteria for Water, primary contact"
+    },
+    "bodMgL": {
+      "value": null,
+      "source": "no receiving-water BOD objective in Córdoba"
+    }
+  },
+  "coefficients": {
+    "kdPerDay": {
+      "low": 0.05,
+      "central": 0.2,
+      "high": 0.5,
+      "theta": 1.047,
+      "source": "range: Chapra 1997; Bowie et al. 1985 (secondary to untreated sewage); θ: Chapra 1997; central = assumption within the range"
+    },
+    "coliformDecayPerDay": {
+      "low": 0.5,
+      "central": 1.0,
+      "high": 2.0,
+      "theta": 1.07,
+      "source": "range: Chapra 1997; Bowie et al. 1985; θ: Chapra 1997; central = assumption within the range"
+    },
+    "kaRule": {
+      "value": "covar",
+      "theta": 1.024,
+      "source": "Covar 1976 selection of O'Connor-Dobbins / Churchill / Owens-Gibbs (Chapra 1997); θ 1.024: Chapra 1997"
+    },
+    "manningN": {
+      "low": 0.03,
+      "central": 0.04,
+      "high": 0.05,
+      "source": "UNC report on Suquía/Cosquín/San Antonio rating curves, Aug 2026"
+    },
+    "widthCoef": {
+      "low": 3,
+      "central": 5,
+      "high": 8,
+      "exponent": 0.5,
+      "source": "assumption: downstream hydraulic geometry W = a·Q^0.5 (Leopold & Maddock 1953, USGS PP 252)"
+    },
+    "minSlope": {
+      "value": 0.0002,
+      "source": "assumption: floor for zero RiverATLAS gradients"
+    },
+    "waterTempC": {
+      "value": 20,
+      "source": "assumption: editable in the panel"
+    },
+    "elevationM": {
+      "value": 400,
+      "source": "assumption: approximate elevation of Córdoba city, for DO saturation"
+    }
+  },
+  "background": {
+    "bodMgL": {
+      "value": 2,
+      "source": "assumption: typical unpolluted river (Chapra 1997)"
+    },
+    "coliformsPer100mL": {
+      "value": null,
+      "source": "no public data; panel input"
+    },
+    "doSaturationFrac": { "value": 0.9, "source": "assumption" }
+  }
+}
