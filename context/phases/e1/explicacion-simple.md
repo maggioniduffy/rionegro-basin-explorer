@@ -36,16 +36,21 @@ y como va a estar esta semana, ¿este vertido está bien? ¿Qué le pido a la pl
 ## Cómo se usa
 
 1. Entrás a la página de Córdoba y ves el mapa de los ríos.
-2. Tocás un tramo del Suquía y elegís "Simular un vertido acá", o elegís directamente el caso cargado de Bajo Grande.
-3. Ponés cuánto vierte la planta y qué tan cargada viene el agua. Si no sabés, arranca con lo máximo que permite el
-   permiso.
+2. **Elegís desde dónde se vierte:** tocás cualquier tramo de un río de la cuenca del Suquía y elegís "Simular un
+   vertido acá", o elegís directamente el caso cargado de Bajo Grande.
+3. **Ajustás el vertido:** cuánto vierte la planta, qué tan cargada viene el agua (materia orgánica, bacterias,
+   oxígeno) y cuánto la limpia la planta, con un control que va de 0 a 100 %. Si no sabés, arranca con lo máximo que
+   permite el permiso, y hay un botón para volver a eso.
 4. Elegís qué río querés mirar: un día "normal" (el promedio de muchos años), **hoy**, o **un día del pronóstico**.
 5. El mapa pinta de colores los tramos aguas abajo: dónde se pasa del umbral y hasta dónde.
 6. Un panelito al costado te da tres números: cuántos km de mancha, cuánto oxígeno queda en el peor punto y cuánto
    aguantaría el río.
 7. Si querés más, tocás **"Ver análisis completo"** y se abre otra página con gráficos: cómo baja y se recupera el
    oxígeno a lo largo del río, los escenarios lado a lado, la historia de otros años y qué días conviene verter.
-8. El link se puede compartir y abre exactamente lo mismo que estabas viendo.
+8. Para los que quieren tocar más, la página de análisis tiene una sección cerrada, **"Ajustes del modelo"**: el umbral
+   de oxígeno, la temperatura del agua y qué tan rápido se degrada todo (bajo, medio o alto, siempre dentro de lo que
+   dicen las fuentes).
+9. El link se puede compartir y abre exactamente lo mismo que estabas viendo, con todos los ajustes.
 
 Separamos el mapa de los gráficos para que el mapa no quede lleno de cosas: en el mapa va lo que tiene que ver con
 "dónde"; los gráficos van aparte.

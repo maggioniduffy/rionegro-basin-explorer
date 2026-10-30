@@ -38,6 +38,18 @@ Por eso la interfaz se divide en dos:
 | **Mapa** (`/cordoba`)                    | La pluma pintada sobre el río, el punto de vertido, la leyenda y un panel chico: entradas y tres números (largo de la pluma, oxígeno mínimo, carga admisible). Botón "Ver análisis completo →". |
 | **Análisis** (`/cordoba/effluents`)      | Perfil de oxígeno y coliformes por km, escenarios lado a lado, historia por mes, "cuándo verter", San Roque y todos los supuestos, períodos y fuentes.                                          |
 
+### El simulador de vertidos
+
+- **Desde dónde:** cualquier tramo de la cuenca del Suquía (los 223 tramos de la red), tocándolo en el mapa, o un
+  vertido cargado (Bajo Grande). Fuera de esa cuenca no aparece la opción. Si el vertido está aguas arriba del San
+  Roque, el modelo de río se corta en el lago y lo avisa.
+- **Ajustes básicos, en el panel del mapa:** caudal del efluente, DBO₅, coliformes, oxígeno del efluente, % de
+  remoción y escenario de caudal. Arranca con los valores del permiso y tiene un botón para volver a ellos.
+- **Ajustes avanzados, en la página de análisis** (sección "Ajustes del modelo", cerrada por defecto): umbrales de
+  oxígeno y coliformes, temperatura del agua y el nivel de cada coeficiente (bajo, central o alto, siempre dentro del
+  rango de su fuente).
+- Todo queda en la URL: el mapa y la página de análisis muestran la misma corrida y el link la reproduce.
+
 Las dos vistas comparten el escenario por la URL (`?ef=...`): el botón abre la página de análisis con el mismo vertido,
 caudal y escenario, y al tocar un km del perfil se vuelve al mapa en ese tramo. El link se puede compartir y sobrevive
 a una recarga. Los gráficos se cargan solo en la página de análisis, así que el mapa no se pone más pesado.

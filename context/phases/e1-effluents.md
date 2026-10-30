@@ -58,6 +58,20 @@ These two values are still unverified, so the config keeps them as null or label
   share state through the URL (`?ef=`, reach, scenario) with `regionPath`: "Full analysis →" opens the same
   scenario, and clicking a km on the profile goes back to the map at that reach. The chart code loads only on that
   page. The page 404s for a region without `effluent.config.json`.
+- **Discharge simulator (owner, 2026-10-30): pick where, adjust the parameters.**
+  - _Where:_ any reach of the effluent net (the 223-reach Suquía basin subgraph), by clicking it on the map
+    ("Simulate a discharge here" in `ReachPanel`) or by picking a configured outfall (Bajo Grande). A reach outside
+    the net gets no button; the panel says the simulator covers the Suquía basin only. The river model stops at San
+    Roque (`entersLake`), so an outfall upstream of the lake says so instead of continuing downstream.
+  - _Basic inputs, in the compact map panel:_ effluent flow, BOD₅, coliforms, effluent DO, removal % (a slider that
+    scales the load), flow scenario (mean / today / forecast day N). Defaults come from the config (permit-limit
+    scenario) and a "Reset" goes back to them.
+  - _Advanced inputs, in a closed "Model settings" section of the analysis page:_ DO threshold and coliform threshold,
+    water temperature, and each coefficient's level (kd, coliform decay, Manning n, width) as low / central / high
+    within its sourced range, with its citation. No free numbers outside the sourced ranges, except the thresholds
+    and the effluent values, which are assumptions and say so.
+  - Every input lives in the URL state, so the map and the analysis page show the same run and a shared link
+    reproduces it.
 - **Data:** `pipeline:effluent-net` writes `regions/cba/effluent-net.json` (Suquía basin subgraph, gauge cells and
   their GloFAS climatology, lake node) from `regions/cba/effluent.config.json`.
 - **Out of scope:** live gauge levels (Omixom has no public API; APRHI publishes station metadata only).
@@ -68,9 +82,9 @@ These two values are still unverified, so the config keeps them as null or label
 - [x] E1.1 `regions/cba/effluent.config.json` + `pipeline:effluent-net` → `regions/cba/effluent-net.json` + report.json
 - [x] E1.2 `lib/effluent/` pure model + `tests/effluent-model.test.ts`
 - [ ] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config)
-- [ ] E1.4 Effluent mode: store slice, `?ef=` URL param, overlay controller, legend, "Simulate a discharge here" in `ReachPanel`
-- [ ] E1.5 Compact `EffluentPanel` on the map: inputs, plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
-- [ ] E1.7 Analysis page `/[region]/effluents`: DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, URL state shared with the map, EN + ES
+- [ ] E1.4 Effluent mode: store slice, `?ef=` URL param (all simulator inputs), overlay controller, legend, "Simulate a discharge here" in `ReachPanel` for any reach of the effluent net, configured outfall picker
+- [ ] E1.5 Compact `EffluentPanel` on the map: basic simulator inputs (flow, BOD₅, coliforms, DO, removal %, scenario, reset), plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
+- [ ] E1.7 Analysis page `/[region]/effluents`: DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
 - [ ] E1.6 _(stretch)_ San Roque section on the analysis page: TP inflow, predicted TP range, trophic class
 - [ ] E1.H _(stretch)_ Historical runs over the GloFAS reanalysis on the analysis page: per month, % of days below the DO threshold and admissible-load percentiles
 - [ ] E1.W _(stretch)_ "When to discharge" on the analysis page: admissible load per forecast day (p25/median/p75), from the screening model, not ML

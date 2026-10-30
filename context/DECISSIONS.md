@@ -34,6 +34,11 @@ hackathon (12–13 Nov 2026).
   historical runs, "when to discharge", San Roque and the full assumptions. URL state (`?ef=`, reach, scenario) is
   shared between the two, and the chart code is not loaded on the map. "When to discharge" (E1.W) is computed from
   the screening model over the forecast, not ML.
+- **Discharge simulator: basic inputs on the map, model settings on the analysis page (owner, 2026-10-30).** Any
+  reach of the effluent net can be the outfall. The compact panel takes flow, BOD₅, coliforms, effluent DO, removal %
+  and scenario; thresholds, temperature and coefficient levels go in a closed "Model settings" section of the
+  analysis page, so the map panel stays small. Coefficients move only between their sourced low / central / high
+  levels (Rule 2); thresholds and effluent values are labelled assumptions. All inputs are URL state.
 
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
