@@ -53,6 +53,10 @@
           "value": 40,
           "source": "permit limit, Decreto 847/16 Annex I as amended by Res. APRHI 31/2022 (compliance scenario)"
         },
+        "doMgL": {
+          "value": 0,
+          "source": "assumption: worst case, no effluent DO data"
+        },
         "coliformsPer100mL": {
           "value": null,
           "source": "Decreto 847/16 limit not verified; no public effluent data"
@@ -114,6 +118,10 @@
     "minSlope": {
       "value": 0.0002,
       "source": "assumption: floor for zero RiverATLAS gradients"
+    },
+    "bodBottleRatePerDay": {
+      "value": 0.23,
+      "source": "Metcalf & Eddy (2003) typical BOD bottle rate at 20 °C; assumption for this effluent"
     },
     "waterTempC": {
       "value": 20,

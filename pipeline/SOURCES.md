@@ -561,3 +561,6 @@ Not datasets: published values used as model defaults or ranges. Each default in
   owner, citation pending their permission).
 - DO threshold 5 mg/L and coliform threshold 200 /100 mL (US EPA 1976 _Quality Criteria for Water_, primary
   contact) are **assumptions**, editable in the panel.
+- Effluent DO 0 mg/L at Bajo Grande ("worst case", no effluent DO data) is an **assumption**. The BOD bottle rate
+  0.23 /d (Metcalf & Eddy 2003, typical at 20 °C) converts BOD₅ to ultimate CBOD inside the model; also an
+  assumption for this effluent.

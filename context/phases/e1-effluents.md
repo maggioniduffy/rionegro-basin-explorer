@@ -44,7 +44,7 @@ literature range with its citation; every assumption is listed in the panel.
 
 - [x] E1.0 Phase file, PLAN.md row, DECISSIONS.md entry, `pipeline/SOURCES.md` (Open‑Meteo/GloFAS; parameter references)
 - [x] E1.1 `regions/cba/effluent.config.json` + `pipeline:effluent-net` → `regions/cba/effluent-net.json` + report.json
-- [ ] E1.2 `lib/effluent/` pure model + `tests/effluent-model.test.ts`
+- [x] E1.2 `lib/effluent/` pure model + `tests/effluent-model.test.ts`
 - [ ] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config)
 - [ ] E1.4 Effluent mode: store slice, `?ef=` URL param, overlay controller, legend, "Simulate a discharge here" in `ReachPanel`
 - [ ] E1.5 `EffluentPanel`: inputs, outputs, caveats with periods, assumptions, attribution (`lib/attributions.ts`), EN + ES
