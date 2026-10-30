@@ -14,6 +14,20 @@ load or receiving-water criterion); what a river can take depends on its flow.
 It is a **screening model**, not a calibrated water-quality model, and the UI says so. Every coefficient is a
 literature range with its citation; every assumption is listed in the panel.
 
+## Open data checks (owner, need a browser, before E1.5 ships)
+
+These two values are still unverified, so the config keeps them as null or labelled assumptions:
+
+1. **Regulatory limits.** Read the thermotolerant/fecal coliform limit in Decreto 847/16 Annex I (Punto I, surface
+   water) and the values for total P and ammonia N in Res. General APRHI 3/2025 (B.O. 22/04/2025). The official PDFs
+   block scripted access (HTTP 403; annex tables are images), so this needs a browser. Where it lands:
+   `regions/cba/effluent.config.json` → `outfalls[bajo-grande].effluent.coliformsPer100mL` (permit-limit scenario),
+   plus a TP limit for the San Roque tributaries; then `pipeline/SOURCES.md` "Parameter references".
+2. **Bajo Grande outfall location.** Find where EDAR Bajo Grande discharges into the Suquía (satellite imagery or an
+   official source) and confirm it lies on reach 61477479. Today the model assumes the outfall is at that reach's
+   upstream end, which is unverified. Where it lands: `outfalls[bajo-grande].reach` and `location` in the config;
+   rerun `npm run pipeline:effluent-net -- --region cba` if the reach changes.
+
 ## Demo reaches (owner, 2026-10-29)
 
 - **Suquía (river `primero`), Centro Cívico → Bajo Grande → downstream:** BOD + dissolved oxygen (Streeter‑Phelps)
@@ -71,8 +85,8 @@ screening model and no monitoring data, ML would only learn the model back.
 ## Owner checks
 
 - [ ] Register for the hackathon by 31 Oct (https://forms.gle/JPukJPq7qyHWxhDs8); read the 2 Nov instructions.
-- [ ] In a browser: the coliform limit in Decreto 847/16 Annex I and the Res. APRHI 3/2025 P/NH₃ values (scripted fetches get 403).
-- [ ] Locate the Bajo Grande outfall on imagery; confirm reach 61477479.
+- [ ] Regulatory limits in a browser (see "Open data checks" 1).
+- [ ] Bajo Grande outfall location (see "Open data checks" 2).
 - [ ] Ask the colleague for permission and their posterior H‑Q curve parameters (unlocks E1.R).
 - [ ] Browser check `/cordoba` on the phase preview; decide whether to ship to production before the event.
 
