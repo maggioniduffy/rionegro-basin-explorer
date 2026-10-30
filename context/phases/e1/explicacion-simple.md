@@ -84,50 +84,85 @@ Ese es el mensaje para el jurado: **un permiso fijo no sirve igual todos los dí
 
 ## Dónde entra el informe de la UNC
 
-🔵 El informe de Grosso Ribero, Olivieri y Viotti (UNC, agosto de 2026) sobre las curvas altura‑caudal del Suquía,
-el Cosquín y el San Antonio entra en tres lugares. El primero ya está; los otros dos los armamos con ustedes.
+### Qué hicieron, en criollo
+
+🔵 El informe de Grosso Ribero, Olivieri y Viotti (Ingeniería Ambiental, FCEFyN‑UNC, agosto de 2026) se llama
+_"Estimación del caudal en eventos de crecidas en ríos combinando modelos hidrodinámicos y mediciones remotas"_.
+Armaron **curvas altura‑caudal**: una "tabla de conversión" que te dice cuánta agua pasa con solo mirar la altura del
+río en una escala. Medir la altura es fácil y barato; medir el caudal (aforar) es caro y, en una crecida, peligroso.
+
+- **Dónde:** una sección por río. En el **Suquía es Centro Cívico**, y en el **Cosquín** y el **San Antonio**, los dos
+  ríos que llegan al San Roque.
+- **Con qué datos:** aforos con equipos acústicos del portal de APRHI, muy precisos para caudales bajos y medios, y
+  mediciones del Laboratorio de Hidráulica de la UNC que sacan la velocidad **filmando el río** (LSPIV), que son las
+  que permiten medir en crecida. Tiraron las filmaciones malas (con lluvia, de noche o sin nada flotando que seguir).
+- **Cómo:** con un programa (BaRatinAGE) que junta lo que se sabe de la forma del cauce con las mediciones y devuelve
+  la curva más probable **con su margen de error**. Probaron varias configuraciones por río y se quedaron con la mejor.
+- **Qué concluyen:** hacerlo así es más confiable que ajustar una sola curva a ojo, que subestima mucho las crecidas.
+
+### Dos cosas que hacen que encaje muy bien
+
+1. **Centro Cívico es justo el punto donde nosotros leemos el pronóstico europeo** para el Suquía. Con su curva
+   podemos poner lado a lado "lo que dice el pronóstico" y "lo que dice la escala", en el mismo lugar.
+2. **El Cosquín y el San Antonio son los ríos de nuestro caso del San Roque.**
+
+### Y una que hay que charlar
+
+El informe está pensado para **crecidas**, y a nosotros lo que más nos importa es la **seca**, que es cuando un
+vertido hace más daño. La parte baja de sus curvas se apoya en los aforos acústicos, que son los más precisos, pero
+ellos mismos cuentan que en el San Antonio lo más difícil de ajustar fueron los caudales muy bajos. Hay que preguntarles
+hasta qué altura para abajo confían en cada curva.
+
+Lo usamos en tres lugares. El primero ya está; los otros dos los armamos con ustedes.
 
 ### 1. Ya está adentro: qué tan rugoso es el lecho
 
-- **Qué tomamos:** el rango del coeficiente de rugosidad (Manning) que sale del informe, de 0,03 a 0,05.
+- **Qué tomamos:** el rango del coeficiente de rugosidad (Manning), de 0,03 a 0,05. Cubre lo que encontraron ellos:
+  0,04 en el Suquía en Centro Cívico, y 0,05, 0,04 y 0,03 en los distintos tramos del Cosquín.
 - **Para qué sirve:** con eso calculamos qué tan rápido corre el agua y qué tan profundo es cada tramo. De eso depende
   cuánto tarda la mancha en llegar a cada lugar y cuánto oxígeno recupera el río en el camino.
 - **Cómo se ve en la app:** no se ve como un número suelto. Es parte de la "banda" de resultados: la app muestra un
   valor central y un rango, y la rugosidad es una de las cosas que mueve ese rango.
-- **Qué falta:** que nos confirmen que está bien usarlo así y cómo quieren que los citemos. Hoy figura con la
-  aclaración "cita pendiente de permiso".
+- **Ojo:** ellos midieron una sección por río y nosotros usamos ese rango para todo el río. Es una extrapolación, y
+  conviene que nos digan si les parece razonable.
+- **Qué falta:** cómo quieren que los citemos. Hoy figura con la aclaración "cita pendiente".
 
 ### 2. Para el hackatón, si llegamos: "leí la escala, ¿cuánta agua es?"
 
 El pronóstico europeo es un modelo global, con una grilla de unos 5 km: sirve para la tendencia, no reemplaza una
-medición. Las curvas de ustedes permiten pasar de **la altura del agua en una escala** a **caudal**.
+medición. Sus curvas permiten pasar de **la altura del agua en la escala** a **caudal**.
 
 - **Qué agregaríamos:** en el panel, además de "promedio / hoy / pronóstico", una cuarta opción: **"Nivel medido"**.
-  Escribís la altura que marca la escala en una estación y la app la convierte en caudal con su curva.
+  Escribís la altura que marca la escala y la app la convierte en caudal con la curva de ese río. Arrancaríamos por
+  Centro Cívico, que es el que alimenta el caso de Bajo Grande.
 - **Para qué sirve:** que el regulador use un dato real del día en vez del pronóstico global, y que en la página de
   análisis se vea lado a lado "lo que dice el pronóstico" contra "lo que dice la escala".
 - **Qué necesitamos de ustedes:**
-  1. las estaciones con su ubicación y en qué tramo del río caen;
-  2. los parámetros de cada curva y el rango de alturas donde vale (sus valores finales, con la incertidumbre si la
-     tienen);
-  3. hasta qué altura se puede confiar en cada curva, para que la app avise si alguien escribe un nivel fuera de rango.
+  1. **la ecuación final de cada curva, tramo por tramo**, con las alturas donde cambia de tramo. En el Word están como
+     ecuaciones y no se pueden copiar como texto, así que nos sirve que nos pasen los números;
+  2. **el margen de error** de cada curva, para mostrarlo como banda;
+  3. **hasta dónde vale** cada curva, sobre todo para abajo (la seca), para que la app avise si alguien escribe un nivel
+     fuera de rango;
+  4. **dónde están exactamente** las secciones del Cosquín y el San Antonio, y a qué escala se refiere la altura
+     (dónde está el cero), para ubicarlas en nuestro mapa.
 - **Por qué es manual:** no hay forma pública de leer las escalas en tiempo real (Omixom no tiene una API abierta), así
   que por ahora el nivel se escribe a mano.
 
 ### 3. Después del hackatón: corregir el pronóstico
 
 El paso siguiente que más suma es **corregir el pronóstico europeo con las mediciones locales**: comparar muchos días
-de "lo que dijo GloFAS" con "lo que dio la curva" y aprender cuánto se equivoca y en qué condiciones. Ahí sí entra
-aprendizaje automático con sentido, porque hay datos reales para aprender. Con eso, todo lo demás (la mancha, el
-"cuánto aguanta", el "qué días verter") pasa a ser más confiable.
+de "lo que dijo GloFAS" con "lo que dio la curva" en Centro Cívico y aprender cuánto se equivoca y en qué condiciones.
+Los aforos que ellos ya juntaron (APRHI y el laboratorio de la UNC) son el punto de partida. Ahí sí entra aprendizaje
+automático con sentido, porque hay datos reales para aprender. Con eso, todo lo demás (la mancha, el "cuánto
+aguanta", el "qué días verter") pasa a ser más confiable.
 
 ### Resumen para ustedes
 
-| Qué                          | Estado               | Qué hace falta de ustedes                          |
-| ---------------------------- | -------------------- | -------------------------------------------------- |
-| Rugosidad del lecho          | Ya se usa            | OK para usarlo y forma de citarlo                  |
-| "Nivel medido" → caudal      | Para el hackatón     | Estaciones, parámetros de las curvas, rango válido |
-| Corregir el pronóstico       | Después del hackatón | Series de nivel o caudal medidos, si las tienen    |
+| Qué                     | Estado               | Qué hace falta de ustedes                                          |
+| ----------------------- | -------------------- | ------------------------------------------------------------------ |
+| Rugosidad del lecho     | Ya se usa            | Si el rango vale para todo el río y cómo citarlos                  |
+| "Nivel medido" → caudal | Para el hackatón     | Ecuaciones por tramo, margen de error, rango válido, ubicaciones   |
+| Corregir el pronóstico  | Después del hackatón | Las series de aforos y de nivel que ya juntaron, con fecha y hora  |
 
 ## Lo que tenemos que decir de frente
 
@@ -151,4 +186,3 @@ aprendizaje automático con sentido, porque hay datos reales para aprender. Con 
 
 1. Los límites exactos de la norma para bacterias y fósforo (hay que leerlos en el PDF oficial, a mano).
 2. Dónde está exactamente la salida de Bajo Grande al río (mirarlo en imagen satelital).
-3. 🔵 Con los chicos de la UNC: el OK para citarlos y los datos de las curvas.

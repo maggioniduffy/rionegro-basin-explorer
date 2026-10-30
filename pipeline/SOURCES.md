@@ -558,7 +558,10 @@ Not datasets: published values used as model defaults or ranges. Each default in
 - Coefficients: Chapra (1997) _Surface Water-Quality Modeling_; Bowie et al. (1985) EPA/600/3-85/040; OECD (1982)
   eutrophication model and trophic boundaries; Leopold & Maddock (1953) USGS PP 252; Manning n 0.03–0.05 from the
   UNC report on Suquía/Cosquín/San Antonio rating curves (Grosso Ribero, Olivieri, Viotti, Aug 2026; shared by the
-  owner, citation pending their permission).
+  owner, citation pending their permission). Title: "Estimación del caudal en eventos de crecidas en ríos combinando
+  modelos hidrodinámicos y mediciones remotas" (FCEFyN‑UNC). Bayesian H‑Q curves (BaRatinAGE) at one section per
+  river (Suquía at Centro Cívico) from APRHI PIHC hydroacoustic gaugings and UNC Hydraulics Lab LSPIV; final n 0.04
+  (Suquía secondary channel) and 0.05 / 0.04 / 0.03 (Cosquín controls). Built for floods; low-flow validity unconfirmed.
 - DO threshold 5 mg/L and coliform threshold 200 /100 mL (US EPA 1976 _Quality Criteria for Water_, primary
   contact) are **assumptions**, editable in the panel.
 - Effluent DO 0 mg/L at Bajo Grande ("worst case", no effluent DO data) is an **assumption**. The BOD bottle rate

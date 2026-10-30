@@ -381,7 +381,9 @@ Cómo leerlo:
 - El modelo de río **no cruza el embalse**: San Roque va con su propio modelo anual.
 - "Cuándo verter" sale del mismo modelo de cribado, no de aprendizaje automático, y hereda todos estos límites.
 - No hay niveles en tiempo real: Omixom no tiene API pública. Las curvas altura‑caudal del informe de la UNC (Grosso
-  Ribero, Olivieri y Viotti) pueden entrar como dato manual si sus autores lo autorizan.
+  Ribero, Olivieri y Viotti; BaRatinAGE, una sección por río) pueden entrar como nivel cargado a mano. La del Suquía
+  es en Centro Cívico, el mismo punto donde leemos GloFAS. Las curvas están pensadas para crecidas: falta confirmar
+  hasta dónde valen en estiaje. Detalle en [explicacion-simple.md](explicacion-simple.md#dónde-entra-el-informe-de-la-unc).
 
 ## Estado
 
