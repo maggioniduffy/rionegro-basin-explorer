@@ -3,13 +3,14 @@
 > Documento para el equipo y para preparar el pitch de **Hack to the Future** (Córdoba Cluster, 12 y 13 de noviembre
 > de 2026). Lo técnico en detalle está en [e1-effluents.md](../e1-effluents.md) y en
 > [DECISSIONS.md](../../DECISSIONS.md#phase-e1-effluent-impact-2026-10-29).
-> Estado al 29/10/2026: modelo y datos listos (E1.0–E1.2); falta la interfaz.
+> Estado al 30/10/2026: modelo y datos listos (E1.0–E1.2); falta la interfaz, que ahora se reparte entre el mapa y una
+> página de análisis aparte.
 
 ## En una frase
 
-Una herramienta en el mapa que, dado un punto de vertido y el caudal del río **hoy o en los próximos días**, muestra
-**hasta dónde llega la contaminación**, **cuánta carga puede recibir el río con ese caudal** y **cuánto habría que
-tratar el efluente** para no superar los límites.
+Una herramienta que, dado un punto de vertido y el caudal del río **hoy o en los próximos días**, muestra en el mapa
+**hasta dónde llega la contaminación**, y en una página de análisis **cuánta carga puede recibir el río**, **cuánto
+habría que tratar el efluente** y **qué días conviene verter**.
 
 ## El problema
 
@@ -26,16 +27,33 @@ tratar el efluente** para no superar los límites.
 Para el **regulador**: APRHI o un municipio. La pregunta que le resolvemos es _"con el caudal de hoy y el que viene,
 ¿este vertido está bien o no, y qué le pido a la planta?"_.
 
+## Dos vistas: el mapa y la página de análisis
+
+El mapa ya tiene paneles flotantes a los dos lados, y una serie de tiempo o un percentil no tienen nada de geográfico.
+Por eso la interfaz se divide en dos:
+
+| Vista                                    | Qué tiene                                                                                                                                                                                       |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mapa** (`/cordoba`)                    | La pluma pintada sobre el río, el punto de vertido, la leyenda y un panel chico: entradas y tres números (largo de la pluma, oxígeno mínimo, carga admisible). Botón "Ver análisis completo →". |
+| **Análisis** (`/cordoba/effluents`)      | Perfil de oxígeno y coliformes por km, escenarios lado a lado, historia por mes, "cuándo verter", San Roque y todos los supuestos, períodos y fuentes.                                          |
+
+Las dos vistas comparten el escenario por la URL (`?ef=...`): el botón abre la página de análisis con el mismo vertido,
+caudal y escenario, y al tocar un km del perfil se vuelve al mapa en ese tramo. El link se puede compartir y sobrevive
+a una recarga. Los gráficos se cargan solo en la página de análisis, así que el mapa no se pone más pesado.
+
 ## Qué responde
 
-| Pregunta                  | Qué muestra la app                                                    |
-| ------------------------- | --------------------------------------------------------------------- |
-| ¿Hasta dónde llega?       | Largo de la "pluma" en km por encima del umbral, coloreada en el mapa |
-| ¿Cuánto oxígeno queda?    | Oxígeno disuelto mínimo y en qué kilómetro ocurre                     |
-| ¿Cuánto aguanta el río?   | Concentración admisible del efluente para ese caudal                  |
-| ¿Qué hay que hacer?       | Porcentaje de remoción necesario                                      |
-| ¿Qué tan seguros estamos? | Una banda de incertidumbre (9 combinaciones de coeficientes)          |
-| ¿Y el lago?               | Fósforo esperado en San Roque y su estado trófico (extra)             |
+| Pregunta                     | Qué muestra la app                                                       | Dónde              |
+| ---------------------------- | ------------------------------------------------------------------------ | ------------------ |
+| ¿Hasta dónde llega?          | Largo de la "pluma" en km por encima del umbral, coloreada en el mapa    | Mapa               |
+| ¿Cuánto oxígeno queda?       | Oxígeno disuelto mínimo y en qué km; en análisis, la curva completa      | Mapa y análisis    |
+| ¿Cuánto aguanta el río?      | Concentración admisible del efluente para ese caudal                     | Mapa y análisis    |
+| ¿Qué hay que hacer?          | Porcentaje de remoción necesario                                         | Análisis           |
+| ¿Qué tan seguros estamos?    | Una banda de incertidumbre (9 combinaciones de coeficientes)             | Análisis           |
+| ¿Cambia con el caudal?       | Caudal medio, hoy y pronóstico, lado a lado                              | Análisis           |
+| ¿Cómo fue en el pasado?      | Por mes, % de días con oxígeno bajo el umbral (extra, E1.H)              | Análisis           |
+| ¿Cuándo conviene verter?     | Carga admisible por día del pronóstico, con su banda (extra, E1.W)       | Análisis           |
+| ¿Y el lago?                  | Fósforo esperado en San Roque y su estado trófico (extra, E1.6)          | Análisis           |
 
 ## Cómo funciona, sin vueltas
 
@@ -54,11 +72,14 @@ Para el **regulador**: APRHI o un municipio. La pregunta que le resolvemos es _"
    - Cada afluente que entra diluye todo.
 5. **Resultado.** Para cada tramo sabemos la concentración, y con eso el largo de la pluma, el mínimo de oxígeno y la
    carga admisible. La respuesta es lineal en la carga, así que el admisible sale directo, sin prueba y error.
-6. **Embalse (extra).** San Roque se trata como un tanque bien mezclado con el modelo **OECD/Vollenweider** para el
+6. **Cuándo verter (extra).** Como el admisible sale directo, se puede calcular para cada día del pronóstico y para
+   cada día de la serie histórica de GloFAS (1997–2022). No es aprendizaje automático: es el mismo modelo corrido
+   muchas veces.
+7. **Embalse (extra).** San Roque se trata como un tanque bien mezclado con el modelo **OECD/Vollenweider** para el
    fósforo.
 
-Todo el cálculo corre **en el navegador** y tarda milisegundos, así que al mover un control el mapa cambia al
-instante.
+Todo el cálculo corre **en el navegador** y tarda milisegundos, así que al mover un control el mapa y los gráficos
+cambian al instante.
 
 ## Flujo de datos
 
@@ -86,7 +107,9 @@ flowchart LR
   subgraph App["App (Next.js)"]
     API["/cordoba/api/discharge<br/>pronóstico del día (E1.3)"]
     MODEL["lib/effluent<br/>modelo de calidad"]
-    UI["Mapa + panel de vertidos<br/>(E1.4 y E1.5)"]
+    URL["Estado en la URL<br/>?ef= · tramo · escenario"]
+    MAP["Mapa + panel compacto<br/>/cordoba (E1.4 y E1.5)"]
+    PAGE["Página de análisis<br/>/cordoba/effluents (E1.7)"]
   end
 
   HR --> STEP
@@ -97,7 +120,10 @@ flowchart LR
   CFG --> MODEL
   GF -- "hoy + 30 días" --> API
   API --> MODEL
-  MODEL --> UI
+  MODEL --> MAP
+  MODEL --> PAGE
+  MAP <--> URL
+  PAGE <--> URL
 ```
 
 </details>
@@ -120,18 +146,22 @@ flowchart TD
   F --> G["Elige escenario:<br/>promedio histórico · hoy · pronóstico día N"]
   G --> H["El modelo corre en el navegador"]
   H --> I["Mapa: tramos coloreados aguas abajo"]
-  H --> J["Panel: pluma en km, oxígeno mínimo,<br/>admisible, remoción necesaria, incertidumbre"]
-  J --> K{"¿Supera el umbral?"}
-  K -- "Sí" --> L["Mueve el control de remoción<br/>o cambia de escenario"]
-  L --> H
+  H --> J["Panel compacto: pluma en km,<br/>oxígeno mínimo, admisible"]
+  J --> K{"¿Necesita más detalle?"}
   K -- "No" --> M["Comparte el link (?ef=...)<br/>con el mismo escenario"]
+  K -- "Sí" --> P["'Ver análisis completo →'<br/>/cordoba/effluents, mismo escenario"]
+  P --> Q["Perfil de oxígeno y coliformes por km,<br/>escenarios, remoción, incertidumbre"]
+  Q --> R["Historia por mes y 'cuándo verter'<br/>(extras)"]
+  Q --> S["Toca un km del perfil"]
+  S --> I
+  R --> M
 ```
 
 </details>
 
 ## Diagrama de clases (módulo `lib/effluent`)
 
-Lo que ya existe está en `lib/effluent/`. Los componentes marcados como `planned` son de E1.3–E1.5.
+Lo que ya existe está en `lib/effluent/`. Los componentes marcados como `planned` son de E1.3–E1.7 y E1.W.
 
 ![Diagrama de clases de lib/effluent](img/clases.svg)
 
@@ -284,7 +314,14 @@ classDiagram
   }
   class EffluentPanel {
     <<planned E1.5>>
-    entradas, resultados, supuestos
+    panel compacto en el mapa
+    entradas y 3 resultados
+  }
+  class EffluentAnalysisPage {
+    <<planned E1.7>>
+    /cordoba/effluents
+    perfil, escenarios, supuestos
+    historia (E1.H), cuándo verter (E1.W)
   }
 
   EffluentNet "1" *-- "many" NetReach
@@ -308,6 +345,9 @@ classDiagram
   DischargeRoute ..> Scenario : arma
   EffluentPanel ..> river : llama
   EffluentController ..> SimulationResult : pinta
+  EffluentAnalysisPage ..> river : llama
+  EffluentAnalysisPage ..> reservoir : llama (E1.6)
+  EffluentPanel ..> EffluentAnalysisPage : abre con ?ef=
 ```
 
 </details>
@@ -324,7 +364,8 @@ Cómo leerlo:
 - **Con caudal normal**, cumplir el permiso alcanza: el río se banca la carga.
 - **En estiaje**, lo que rompe el umbral no es la DBO sino que el efluente llega **sin oxígeno**. El modelo lo dice
   ("causa: oxígeno del efluente") en lugar de pedir "sacá el 100 % de la DBO".
-- Ese contraste es el corazón del pitch: **un permiso fijo no sirve igual todos los días**.
+- Ese contraste es el corazón del pitch: **un permiso fijo no sirve igual todos los días**. La página de análisis lo
+  muestra de un vistazo, con los escenarios lado a lado y, si llegamos, la carga admisible día por día.
 
 ## Supuestos y límites (lo que tenemos que decir de frente)
 
@@ -337,6 +378,7 @@ Cómo leerlo:
 - No hay datos públicos del efluente de Bajo Grande: por defecto usamos el **límite del permiso** (escenario de
   cumplimiento) y suponemos que llega sin oxígeno.
 - El modelo de río **no cruza el embalse**: San Roque va con su propio modelo anual.
+- "Cuándo verter" sale del mismo modelo de cribado, no de aprendizaje automático, y hereda todos estos límites.
 - No hay niveles en tiempo real: Omixom no tiene API pública. Las curvas altura‑caudal del informe de la UNC (Grosso
   Ribero, Olivieri y Viotti) pueden entrar como dato manual si sus autores lo autorizan.
 
@@ -347,11 +389,12 @@ Cómo leerlo:
 - [x] **E1.2** Modelo de calidad con tests, revisado
 - [ ] **E1.3** Ruta de pronóstico de caudal
 - [ ] **E1.4** Modo vertidos en el mapa
-- [ ] **E1.5** Panel con entradas, resultados y supuestos (español e inglés)
-- [ ] Extras: panel de San Roque (E1.6), "cuándo verter" con corridas históricas (E1.H), curvas de la UNC (E1.R),
-      partículas de flujo coloreadas (E1.F)
+- [ ] **E1.5** Panel compacto en el mapa (español e inglés)
+- [ ] **E1.7** Página de análisis `/cordoba/effluents`: perfil, escenarios y supuestos (español e inglés)
+- [ ] Extras: historia por mes (E1.H), "cuándo verter" (E1.W), San Roque (E1.6), curvas de la UNC (E1.R), partículas
+      de flujo coloreadas (E1.F)
 
-Rama `phase-e1-effluents`, subida a GitHub, sin PR todavía.
+El MVP es E1.0–E1.5 más E1.7, con objetivo el 8/11. Rama `phase-e1-effluents`, subida a GitHub, sin PR todavía.
 
 ## Pendientes del equipo (antes de mostrarlo)
 
@@ -368,6 +411,7 @@ En el orden en que suma valor:
 1. Corregir el sesgo de GloFAS con aforos locales y las curvas de la UNC.
 2. Calibrar los coeficientes cuando haya datos de monitoreo (INA‑CIRSA, CEQUIMAP).
 3. Recién ahí, aprendizaje automático: una política de "cuándo y cuánto verter" (almacenamiento y descarga
-   programada) optimizada sobre corridas históricas y de pronóstico.
+   programada) optimizada sobre corridas históricas y de pronóstico. Va en la misma página de análisis, sobre lo que
+   ya muestra E1.W.
 
 Sin datos de monitoreo, un modelo de ML solo aprendería de vuelta nuestro propio modelo. Por eso queda para después.
