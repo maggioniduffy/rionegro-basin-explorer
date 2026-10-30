@@ -74,7 +74,7 @@ These two values are still unverified, so the config keeps them as null or label
 - [ ] E1.6 _(stretch)_ San Roque section on the analysis page: TP inflow, predicted TP range, trophic class
 - [ ] E1.H _(stretch)_ Historical runs over the GloFAS reanalysis on the analysis page: per month, % of days below the DO threshold and admissible-load percentiles
 - [ ] E1.W _(stretch)_ "When to discharge" on the analysis page: admissible load per forecast day (p25/median/p75), from the screening model, not ML
-- [ ] E1.R _(optional)_ Gauge level → flow through the colleague's H‑Q curves (needs their parameters and permission)
+- [ ] E1.R _(optional)_ Gauge level → flow through the colleague's H‑Q curves (needs their parameters and permission; the report authors join the team, 2026-10-30): a "Measured level" scenario in the panel, GloFAS vs gauge on the analysis page
 - [ ] E1.F _(final, spike first)_ Flow particles coloured by concentration, on a net derived from reach centrelines
 - [ ] Gate (orchestration.md §6) and PR
 

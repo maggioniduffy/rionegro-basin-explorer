@@ -3,6 +3,7 @@
 > Documento para el equipo y para preparar el pitch de **Hack to the Future** (Córdoba Cluster, 12 y 13 de noviembre
 > de 2026). Lo técnico en detalle está en [e1-effluents.md](../e1-effluents.md) y en
 > [DECISSIONS.md](../../DECISSIONS.md#phase-e1-effluent-impact-2026-10-29).
+> Versión sin tecnicismos: [explicacion-simple.md](explicacion-simple.md).
 > Estado al 30/10/2026: modelo y datos listos (E1.0–E1.2); falta la interfaz, que ahora se reparte entre el mapa y una
 > página de análisis aparte.
 
