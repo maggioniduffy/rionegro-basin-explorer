@@ -50,6 +50,14 @@ These two values are still unverified, so the config keeps them as null or label
   OECD trophic classes; annual steady state, so annual-flow scenarios only.
 - **Map:** overlay layer on the existing `rivers`/`reaches` tiles, colour by `match ["id"]` built at runtime
   (the `FlowController` pattern). No tile rebuild.
+- **Map vs analysis page (owner, 2026-10-30).** The map keeps only what is spatial: the plume overlay, the outfall
+  marker, the legend and a compact `EffluentPanel` (inputs plus plume length, minimum DO and admissible load).
+  Charts go to a separate page, `/[region]/effluents` (next to `/[region]/attributions`): DO sag and coliform decay
+  along the km downstream, mean / today / forecast side by side, historical runs (E1.H), "when to discharge"
+  (admissible load per forecast day), San Roque (E1.6), and the full assumptions, periods and sources. Both views
+  share state through the URL (`?ef=`, reach, scenario) with `regionPath`: "Full analysis →" opens the same
+  scenario, and clicking a km on the profile goes back to the map at that reach. The chart code loads only on that
+  page. The page 404s for a region without `effluent.config.json`.
 - **Data:** `pipeline:effluent-net` writes `regions/cba/effluent-net.json` (Suquía basin subgraph, gauge cells and
   their GloFAS climatology, lake node) from `regions/cba/effluent.config.json`.
 - **Out of scope:** live gauge levels (Omixom has no public API; APRHI publishes station metadata only).
@@ -61,18 +69,23 @@ These two values are still unverified, so the config keeps them as null or label
 - [x] E1.2 `lib/effluent/` pure model + `tests/effluent-model.test.ts`
 - [ ] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config)
 - [ ] E1.4 Effluent mode: store slice, `?ef=` URL param, overlay controller, legend, "Simulate a discharge here" in `ReachPanel`
-- [ ] E1.5 `EffluentPanel`: inputs, outputs, caveats with periods, assumptions, attribution (`lib/attributions.ts`), EN + ES
-- [ ] E1.6 _(stretch)_ San Roque panel: TP inflow, predicted TP range, trophic class
-- [ ] E1.H _(stretch)_ Historical runs over the GloFAS reanalysis: per month, % of days below the DO threshold and admissible-load percentiles
+- [ ] E1.5 Compact `EffluentPanel` on the map: inputs, plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
+- [ ] E1.7 Analysis page `/[region]/effluents`: DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, URL state shared with the map, EN + ES
+- [ ] E1.6 _(stretch)_ San Roque section on the analysis page: TP inflow, predicted TP range, trophic class
+- [ ] E1.H _(stretch)_ Historical runs over the GloFAS reanalysis on the analysis page: per month, % of days below the DO threshold and admissible-load percentiles
+- [ ] E1.W _(stretch)_ "When to discharge" on the analysis page: admissible load per forecast day (p25/median/p75), from the screening model, not ML
 - [ ] E1.R _(optional)_ Gauge level → flow through the colleague's H‑Q curves (needs their parameters and permission)
 - [ ] E1.F _(final, spike first)_ Flow particles coloured by concentration, on a net derived from reach centrelines
 - [ ] Gate (orchestration.md §6) and PR
 
-Order: E1.0 → E1.5 is the MVP (target 8 Nov), then E1.6 / E1.R / E1.H, gate by 11 Nov. E1.F only if time is left.
+Order: E1.0 → E1.5 and E1.7 are the MVP (target 8 Nov), then E1.H / E1.W / E1.6 / E1.R, gate by 11 Nov. E1.F
+only if time is left.
 
 **Done when:** on `/cordoba`, clicking a reach on the Suquía and simulating a discharge colours the reaches
 downstream; switching mean / today / forecast changes the plume length and admissible load; the panel shows
-assumptions, periods and attribution in EN and ES; `?ef=` survives a reload; `/rionegro` is unchanged;
+periods and attribution, and "Full analysis →" opens `/cordoba/effluents` with the same scenario, whose profile
+and assumptions show in EN and ES; `?ef=` survives a reload on both pages; `/rionegro/effluents` is a 404 and
+`/rionegro` is unchanged;
 `pipeline:effluent-net` report ok; `npm run check` green.
 
 ## Roadmap after the hackathon (E2, not scheduled)

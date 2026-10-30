@@ -28,6 +28,12 @@ hackathon (12–13 Nov 2026).
   ~2.8 m³/s design capacity (press, 2022). The DO threshold (5 mg/L) is an assumption: Córdoba sets no DO objective.
 - **ML is post-hackathon (E2)**: without monitoring data it would only learn the screening model back. "When to
   discharge" is answered first by historical runs (E1.H): the response is linear in load.
+- **Charts on a separate page, not on the map (owner, 2026-10-30).** The map already has floating panels on both
+  sides, and time series and percentiles are not spatial. The map keeps the plume, the outfall, the legend and a
+  compact panel with three numbers; `/[region]/effluents` holds the downstream profile, scenario comparison,
+  historical runs, "when to discharge", San Roque and the full assumptions. URL state (`?ef=`, reach, scenario) is
+  shared between the two, and the chart code is not loaded on the map. "When to discharge" (E1.W) is computed from
+  the screening model over the forecast, not ML.
 
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
