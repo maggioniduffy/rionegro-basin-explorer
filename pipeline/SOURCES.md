@@ -25,6 +25,7 @@ taken from `pipeline/checksums.json` (UTC date), written by `pipeline:download`.
 | Imagery: IGN Argentina `mosaicos_vuelos` (WMTS)                 | High-zoom aerial imagery above EOX, `nqn` only (chosen I1.1; wired in I1.2)                                                                                         | IGN download "Términos y Condiciones" (no imagery-specific terms found)                                                               | Only for derived works; non-commercial use is fine                                                                                                                                                          | 2026-10-19 (terms via summarizer; service probed) | n/a (tiles)                                 |
 | Imagery: Esri World Imagery                                     | Rejected (I1.0)                                                                                                                                                     | Esri terms; ArcGIS Location Platform key                                                                                              | Billed above 2M tiles/month                                                                                                                                                                                 | 2026-10-19 (pricing via summarizer)               | n/a (tiles)                                 |
 | LLM: Groq (`openai/gpt-oss-20b`)                                | Ask box: routes a question to an existing id (no data shown)                                                                                                        | Groq terms (service, not data)                                                                                                        | n/a                                                                                                                                                                                                         | 2026-10-10 (training clause not verified)         | n/a (API)                                   |
+| Open-Meteo Flood API (GloFAS v4, Copernicus CEMS)               | E1: daily river discharge (forecast + p25/p75, 1984–2022 reanalysis mean) at 3 gauge cells in `cba`; scaled to reaches                                              | Open-Meteo data CC BY 4.0; GloFAS under the CEMS-FLOODS datasets licence (rev. 1)                                                     | Open-Meteo free API: non-commercial only (no subscriptions or ads); CEMS-FLOODS: no non-commercial clause seen                                                                                              | 2026-10-29 (caching, derived data not verified)   | n/a (API)                                   |
 | Rate limit/cache: Upstash Redis                                 | Ask box rate limit and shared cache                                                                                                                                 | Upstash terms (service, not data)                                                                                                     | n/a                                                                                                                                                                                                         | 2026-10-10 (overage terms not stated)             | n/a (API)                                   |
 
 ## HydroSHEDS core: HydroRIVERS, HydroBASINS
@@ -515,3 +516,48 @@ No value from them is ever shown. Terms were read on the providers' pages on 202
   the Vercel Marketplace in December 2024 (https://vercel.com/docs/redis).
 - Stored: hashed client IPs (salted SHA-256) as rate-limit keys and hashed questions as cache keys,
   never raw IPs or question text.
+
+## Open-Meteo Flood API (GloFAS v4), Phase E1 (2026-10-29)
+
+- Provider: Open-Meteo (https://open-meteo.com/en/docs/flood-api), endpoint
+  `https://flood-api.open-meteo.com/v1/flood`. Serves GloFAS v4 (Copernicus Emergency Management Service),
+  simulated daily river discharge on a 0.05° (~5 km) grid: forecast up to 30 days with ensemble statistics
+  (`river_discharge_p25`, `_p75`, ...), reanalysis 1984 to July 2022. Units m³/s. Values are **modelled**.
+- Cell choice: the API picks "the largest river in a 5 km area"; cells for `cba` gauges are hand-checked and fixed
+  in `regions/cba/effluent.config.json` (see DECISSIONS.md, Phase E1).
+- Licenses (read 2026-10-29 by the license-checker agent; quotes to re-check on the pages):
+  - Open-Meteo data: CC BY 4.0 (https://open-meteo.com/en/licence): credit with a link next to the data,
+    example `<a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>`, link to the licence, and say
+    the values were changed.
+  - GloFAS: CEMS-FLOODS datasets licence (https://ewds.climate.copernicus.eu/licences/cems-floods). Notice for
+    adapted data: "Contains modified Copernicus Emergency Management Service information [Year]" (unmodified:
+    "Generated using Copernicus Emergency Management Service information [Year]"). Our values are scaled, so the
+    "modified" notice applies.
+- Terms (https://open-meteo.com/en/terms): "You may only use the free API services for non-commercial
+  purposes", e.g. non-profit sites "that do not have subscriptions or advertising". Free limits: 600/minute,
+  5,000/hour, 10,000/day, 300,000/month per IP; long date ranges count as several calls (a 1984–2022 request
+  hit the minutely limit after ~10 calls on 2026-10-29).
+- **Not verified:** whether caching responses (we cache ~3 h) is allowed; how derived pollutant concentrations are
+  treated. Check with Open-Meteo / ECMWF before any commercial use.
+- Attribution in the app: both notices, in the effluent panel and on `/attributions` (`lib/attributions.ts`).
+
+## Parameter references for the effluent model, Phase E1 (2026-10-29)
+
+Not datasets: published values used as model defaults or ranges. Each default in
+`regions/cba/effluent.config.json` names one of these.
+
+- Decreto 847/2016, Provincia de Córdoba (https://www.cba.gov.ar/wp-content/4p96humuzp/2014/07/Vertido-de-Efluentes-Decreto-847.pdf),
+  Annex I amended by Res. APRHI 31/2022 (B.O. 08/07/2022): DBO₅ 40 mg/L; total P ≤ 0.5 mg/L for lakes, reservoirs and
+  their tributaries. **Not verified:** the thermotolerant coliform limit (annex tables are images) and the Res.
+  General 3/2025 values for P and ammonia N. No receiving-water DO objective exists.
+- EDAR Bajo Grande: about 2.8 m³/s design capacity (two 5,000 m³/h modules, press reports 2022). No published
+  effluent BOD or coliform data; outfall location not verified.
+- Embalse San Roque: INA‑CIRSA Limnología 20 (https://www.ina.gob.ar/archivos/publicaciones/Cirsa-Limnologia-20-eutrofico-san-roque.pdf)
+  and ILEC (https://wldb.ilec.or.jp/Display/html/3391): 16 km², 190 hm³, mean depth 13 m, inflows ≈ 5.25 m³/s,
+  TP load ≈ 190 t/yr (ILEC), residence 0.1–0.7 yr (ILEC) vs ≈ 1.1 yr from volume/inflow.
+- Coefficients: Chapra (1997) _Surface Water-Quality Modeling_; Bowie et al. (1985) EPA/600/3-85/040; OECD (1982)
+  eutrophication model and trophic boundaries; Leopold & Maddock (1953) USGS PP 252; Manning n 0.03–0.05 from the
+  UNC report on Suquía/Cosquín/San Antonio rating curves (Grosso Ribero, Olivieri, Viotti, Aug 2026; shared by the
+  owner, citation pending their permission).
+- DO threshold 5 mg/L and coliform threshold 200 /100 mL (US EPA 1976 _Quality Criteria for Water_, primary
+  contact) are **assumptions**, editable in the panel.

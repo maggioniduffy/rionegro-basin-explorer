@@ -4,6 +4,31 @@ Dated decisions made while working through [PLAN.md](PLAN.md), with the figures 
 behind them. When a choice revises an earlier one, the entry that changes it says so.
 The standing architecture decisions stay in PLAN.md; data licenses are in `pipeline/SOURCES.md`.
 
+## Phase E1: effluent impact (2026-10-29)
+
+Plan approved by the owner on 2026-10-29 ([e1-effluents.md](phases/e1-effluents.md)), for the Hack to the Future
+hackathon (12–13 Nov 2026).
+
+- **User = the regulator; two demo reaches** (owner): Suquía through Bajo Grande (BOD/DO, coliforms) and the
+  Cosquín/San Antonio into San Roque (TP, OECD model). Region `cba` only; nothing changes in `nqn`.
+- **Forecast = GloFAS via the Open‑Meteo Flood API** (owner), scaled to each reach by the ratio to GloFAS's own
+  1984–2022 mean at the gauge cell, so HydroRIVERS and GloFAS means are never mixed. Cells are hand-checked: the API
+  picks "the largest river in 5 km" (a test point at -31.383, -64.12 returned 0.06 m³/s, a tributary; Centro Cívico
+  snapped to -31.425, -64.175 and returned 4.5–7 m³/s, 2026-10-29). **Two gauges** (2026-10-29 probes, 2015–2020
+  means): `centro-civico` cell -31.425, -64.175 (13.75 m³/s 1984–2022; HydroRIVERS 10.97) for the Suquía below the
+  dam, and `san-roque-inflow` cell -31.375, -64.475 (5.01 m³/s; ILEC total inflow 5.25) for everything upstream of
+  the dam. Per-tributary cells were rejected: GloFAS's San Antonio cells give 0.03–0.56 m³/s against 1.63 m³/s
+  (ILEC), and the Cosquín cell -31.325, -64.475 gives 2.28 m³/s against 2.87.
+- **No live gauge levels:** Omixom offers no public API and APRHI's portal publishes station metadata only
+  (`Punto_de_medición_de_niveles` feature service). The colleague's H‑Q curves (UNC report, Aug 2026) enter as an
+  optional manual "gauge level" input once they share parameters and permission.
+- **Screening model, literature coefficients as ranges** (Chapra 1997; Bowie et al. 1985): kd 0.05–0.5 /d,
+  coliform decay 0.5–2 /d, ka by the Covar rule, v = a·Q^m. Bajo Grande's effluent concentrations are not public, so
+  the default is the permit limit (DBO₅ 40 mg/L, Decreto 847/16 + Res. APRHI 31/2022); its flow default is the
+  ~2.8 m³/s design capacity (press, 2022). The DO threshold (5 mg/L) is an assumption: Córdoba sets no DO objective.
+- **ML is post-hackathon (E2)**: without monitoring data it would only learn the screening model back. "When to
+  discharge" is answered first by historical runs (E1.H): the response is linear in load.
+
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
 - **Flow controls live in the flow panel on desktop (owner).** The 480 px floating bar ran under both side panels
