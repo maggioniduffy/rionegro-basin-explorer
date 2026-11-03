@@ -33,10 +33,10 @@ Para el **regulador**: APRHI o un municipio. La pregunta que le resolvemos es _"
 El mapa ya tiene paneles flotantes a los dos lados, y una serie de tiempo o un percentil no tienen nada de geográfico.
 Por eso la interfaz se divide en dos:
 
-| Vista                                    | Qué tiene                                                                                                                                                                                       |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Mapa** (`/cordoba`)                    | La pluma pintada sobre el río, el punto de vertido, la leyenda y un panel chico: entradas y tres números (largo de la pluma, oxígeno mínimo, carga admisible). Botón "Ver análisis completo →". |
-| **Análisis** (`/cordoba/effluents`)      | Perfil de oxígeno y coliformes por km, escenarios lado a lado, historia por mes, "cuándo verter", San Roque y todos los supuestos, períodos y fuentes.                                          |
+| Vista                               | Qué tiene                                                                                                                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mapa** (`/cordoba`)               | La pluma pintada sobre el río, el punto de vertido, la leyenda y un panel chico: entradas y tres números (largo de la pluma, oxígeno mínimo, carga admisible). Botón "Ver análisis completo →". |
+| **Análisis** (`/cordoba/effluents`) | Perfil de oxígeno y coliformes por km, escenarios lado a lado, historia por mes, "cuándo verter", San Roque y todos los supuestos, períodos y fuentes.                                          |
 
 ### El simulador de vertidos
 
@@ -56,17 +56,17 @@ a una recarga. Los gráficos se cargan solo en la página de análisis, así que
 
 ## Qué responde
 
-| Pregunta                     | Qué muestra la app                                                       | Dónde              |
-| ---------------------------- | ------------------------------------------------------------------------ | ------------------ |
-| ¿Hasta dónde llega?          | Largo de la "pluma" en km por encima del umbral, coloreada en el mapa    | Mapa               |
-| ¿Cuánto oxígeno queda?       | Oxígeno disuelto mínimo y en qué km; en análisis, la curva completa      | Mapa y análisis    |
-| ¿Cuánto aguanta el río?      | Concentración admisible del efluente para ese caudal                     | Mapa y análisis    |
-| ¿Qué hay que hacer?          | Porcentaje de remoción necesario                                         | Análisis           |
-| ¿Qué tan seguros estamos?    | Una banda de incertidumbre (9 combinaciones de coeficientes)             | Análisis           |
-| ¿Cambia con el caudal?       | Caudal medio, hoy y pronóstico, lado a lado                              | Análisis           |
-| ¿Cómo fue en el pasado?      | Por mes, % de días con oxígeno bajo el umbral (extra, E1.H)              | Análisis           |
-| ¿Cuándo conviene verter?     | Carga admisible por día del pronóstico, con su banda (extra, E1.W)       | Análisis           |
-| ¿Y el lago?                  | Fósforo esperado en San Roque y su estado trófico (extra, E1.6)          | Análisis           |
+| Pregunta                  | Qué muestra la app                                                    | Dónde           |
+| ------------------------- | --------------------------------------------------------------------- | --------------- |
+| ¿Hasta dónde llega?       | Largo de la "pluma" en km por encima del umbral, coloreada en el mapa | Mapa            |
+| ¿Cuánto oxígeno queda?    | Oxígeno disuelto mínimo y en qué km; en análisis, la curva completa   | Mapa y análisis |
+| ¿Cuánto aguanta el río?   | Concentración admisible del efluente para ese caudal                  | Mapa y análisis |
+| ¿Qué hay que hacer?       | Porcentaje de remoción necesario                                      | Análisis        |
+| ¿Qué tan seguros estamos? | Una banda de incertidumbre (9 combinaciones de coeficientes)          | Análisis        |
+| ¿Cambia con el caudal?    | Caudal medio, hoy y pronóstico, lado a lado                           | Análisis        |
+| ¿Cómo fue en el pasado?   | Por mes, % de días con oxígeno bajo el umbral (extra, E1.H)           | Análisis        |
+| ¿Cuándo conviene verter?  | Carga admisible por día del pronóstico, con su banda (extra, E1.W)    | Análisis        |
+| ¿Y el lago?               | Fósforo esperado en San Roque y su estado trófico (extra, E1.6)       | Análisis        |
 
 ## Cómo funciona, sin vueltas
 

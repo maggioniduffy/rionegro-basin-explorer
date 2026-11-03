@@ -163,11 +163,11 @@ aguanta", el "qué días verter") pasa a ser más confiable.
 
 ### Resumen para ustedes
 
-| Qué                     | Estado               | Qué hace falta de ustedes                                          |
-| ----------------------- | -------------------- | ------------------------------------------------------------------ |
-| Rugosidad del lecho     | Ya se usa            | Si el rango vale para todo el río y cómo citarlos                  |
-| "Nivel medido" → caudal | Para el hackatón     | Ecuaciones por tramo, margen de error, rango válido, ubicaciones   |
-| Corregir el pronóstico  | Después del hackatón | Las series de aforos y de nivel que ya juntaron, con fecha y hora  |
+| Qué                     | Estado               | Qué hace falta de ustedes                                         |
+| ----------------------- | -------------------- | ----------------------------------------------------------------- |
+| Rugosidad del lecho     | Ya se usa            | Si el rango vale para todo el río y cómo citarlos                 |
+| "Nivel medido" → caudal | Para el hackatón     | Ecuaciones por tramo, margen de error, rango válido, ubicaciones  |
+| Corregir el pronóstico  | Después del hackatón | Las series de aforos y de nivel que ya juntaron, con fecha y hora |
 
 ## Lo que tenemos que decir de frente
 

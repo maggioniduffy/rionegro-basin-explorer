@@ -13,3 +13,4 @@ regions/*/og-shapes.json
 public/flow/
 pipeline/py/.venv/
 pipeline/py/uv.lock
+.atl/
