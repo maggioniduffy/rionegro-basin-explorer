@@ -116,8 +116,8 @@ screening model and no monitoring data, ML would only learn the model back.
 - [ ] Regulatory limits in a browser (see "Open data checks" 1).
 - [ ] Bajo Grande outfall location (see "Open data checks" 2).
 - [ ] Ask the colleague for permission and their posterior H‑Q curve parameters (unlocks E1.R).
-- [ ] Live check of E1.3 (the agent sandbox could not reach Open‑Meteo from Node): `npm run dev`, then
-      `curl -s localhost:3000/cordoba/api/discharge | jq '.gauges[] | {id, today, n: (.days|length)}'` → 2 gauges, 29 days.
+- [x] Live check of E1.3 (2026-11-03): 2 gauges, 29 days, `/rionegro` 404. Needed `instrumentation.ts`: Node 24's
+      250 ms happy-eyeballs attempt timeout is shorter than the ~350 ms connect to Open‑Meteo on the owner's network.
 - [ ] Confirm Open‑Meteo's terms allow caching responses ~3 h (`pipeline/SOURCES.md`, "Not verified").
 - [ ] Browser check `/cordoba` on the phase preview; decide whether to ship to production before the event.
 
