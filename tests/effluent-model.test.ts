@@ -14,6 +14,7 @@ import {
   type Effluent,
   type SimulationInput,
 } from "@/lib/effluent/river";
+import { scenarioFor, type DischargeForecast } from "@/lib/effluent/forecast";
 import {
   parseEffluentConfig,
   parseEffluentNet,
@@ -174,5 +175,32 @@ describe("effluent model", () => {
       paramsFor: (levels) => paramsFromConfig(config, levels),
     });
     expect(band.runs).toBe(9);
+  });
+
+  it("scenarioFor returns per-gauge forecast flows and null when a value is missing", () => {
+    const day = (median: number | null) => ({
+      date: "2026-11-04",
+      median,
+      p25: null,
+      p75: null,
+    });
+    const forecast = (second: number | null): DischargeForecast => ({
+      fetchedAt: "2026-11-03T00:00:00.000Z",
+      gauges: realNet.gauges.map((g, i) => ({
+        id: g.id,
+        climatologyMeanM3s: g.climatologyMeanM3s,
+        today: null,
+        days: [day(i === 0 ? 7 : second)],
+      })),
+    });
+    const sel = { day: 0, stat: "median" } as const;
+    expect(scenarioFor(forecast(9), realNet, sel)).toEqual({
+      [realNet.gauges[0]!.id]: 7,
+      [realNet.gauges[1]!.id]: 9,
+    });
+    expect(scenarioFor(forecast(null), realNet, sel)).toBeNull();
+    const skewed = forecast(9);
+    skewed.gauges[1]!.days[0]!.date = "2026-11-05";
+    expect(scenarioFor(skewed, realNet, sel)).toBeNull();
   });
 });

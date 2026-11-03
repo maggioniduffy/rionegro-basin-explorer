@@ -5,6 +5,10 @@
 export const CACHE_PUBLIC =
   "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800";
 
+/** GloFAS is re-issued daily; the CDN keeps it three hours, browsers ten minutes. */
+export const CACHE_FORECAST =
+  "public, max-age=600, s-maxage=10800, stale-while-revalidate=3600";
+
 export function json(body: unknown, init?: { status?: number; cache?: string }) {
   return Response.json(body, {
     status: init?.status ?? 200,

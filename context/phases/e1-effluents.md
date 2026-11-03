@@ -81,7 +81,8 @@ These two values are still unverified, so the config keeps them as null or label
 - [x] E1.0 Phase file, PLAN.md row, DECISSIONS.md entry, `pipeline/SOURCES.md` (Open‑Meteo/GloFAS; parameter references)
 - [x] E1.1 `regions/cba/effluent.config.json` + `pipeline:effluent-net` → `regions/cba/effluent-net.json` + report.json
 - [x] E1.2 `lib/effluent/` pure model + `tests/effluent-model.test.ts`
-- [ ] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config)
+- [x] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config);
+      `lib/effluent/{registry,glofas,forecast}.ts`, `scenarioFor` (day 0 = tomorrow, UTC; null on missing or misaligned dates)
 - [ ] E1.4 Effluent mode: store slice, `?ef=` URL param (all simulator inputs), overlay controller, legend, "Simulate a discharge here" in `ReachPanel` for any reach of the effluent net, configured outfall picker
 - [ ] E1.5 Compact `EffluentPanel` on the map: basic simulator inputs (flow, BOD₅, coliforms, DO, removal %, scenario, reset), plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
 - [ ] E1.7 Analysis page `/[region]/effluents`: DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
@@ -115,6 +116,9 @@ screening model and no monitoring data, ML would only learn the model back.
 - [ ] Regulatory limits in a browser (see "Open data checks" 1).
 - [ ] Bajo Grande outfall location (see "Open data checks" 2).
 - [ ] Ask the colleague for permission and their posterior H‑Q curve parameters (unlocks E1.R).
+- [ ] Live check of E1.3 (the agent sandbox could not reach Open‑Meteo from Node): `npm run dev`, then
+      `curl -s localhost:3000/cordoba/api/discharge | jq '.gauges[] | {id, today, n: (.days|length)}'` → 2 gauges, 29 days.
+- [ ] Confirm Open‑Meteo's terms allow caching responses ~3 h (`pipeline/SOURCES.md`, "Not verified").
 - [ ] Browser check `/cordoba` on the phase preview; decide whether to ship to production before the event.
 
 ## Follow-ups
