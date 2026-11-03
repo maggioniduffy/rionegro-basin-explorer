@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Visor Neuquén, mockup</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.m{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+a:hover{color:var(--text)}
+button{font:inherit}
+.tx{position:relative;isolation:isolate;overflow:hidden;background-image:var(--tex);background-size:5px 5px}
+.tx::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(135deg,var(--shine) 0%,transparent 55%)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</helmet>
+<div style="--bg: {{c.bg}}; --surface: {{c.surface}}; --raised: {{c.raised}}; --border: {{c.border}}; --text: {{c.text}}; --muted: {{c.muted}}; --ctrl: {{c.ctrl}}; --onctrl: {{c.onctrl}}; --far: {{c.far}}; --mid: {{c.mid}}; --near: {{c.near}}; --peak: {{c.peak}}; --water: {{c.water}}; --casing: {{c.casing}}; --tex: {{c.tex}}; --shine: {{c.shine}}; --accent: {{accent}}; --secondary: #A4AF69; min-height: 900px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; line-height: 1.4">
+
+<header class="tx" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 6px 16px; min-height: 56px; box-sizing: border-box; background: var(--surface)">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg width="28" height="28" viewBox="0 0 28 28" role="img" aria-label="Clima Ideas"><rect width="28" height="28" rx="6" style="fill: var(--ctrl)"></rect><path d="M6 17 L11 9 L15 15 L18 11 L22 17" fill="none" style="stroke: var(--onctrl)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"></path><path d="M6 21 H22" style="stroke: var(--accent)" stroke-width="2" stroke-linecap="round"></path></svg>
+<span style="font-weight: 600">Clima Ideas</span>
+</div>
+<h1 style="margin: 0; font-size: 16px; font-weight: 600">Neuquén</h1>
+<nav aria-label="Secciones" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 520px">
+<a href="#" aria-current="page" style="padding: 9px 12px; border-radius: 8px; background: var(--raised); font-weight: 500">Mapa</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Ríos atmosféricos</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Crecidas</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Convección</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Aluviones</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Retrospectiva</a>
+<a href="#" style="padding: 8px 12px; border-radius: 8px; color: var(--muted); border: 1px dashed var(--border)">Experimental</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 16px">
+<span class="m" style="color: var(--muted); font-size: 12px">Datos de ejemplo · ERA5 hasta <span style="color: var(--text)">2025-12-31</span></span>
+<button type="button" aria-label="Cambiar tema claro u oscuro" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="M9 2.5 A6.5 6.5 0 0 1 9 15.5 Z" fill="currentColor"></path></svg>
+</button>
+</div>
+</header>
+
+<div style="flex: 1; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; align-items: stretch">
+
+<aside class="tx" aria-label="Capas y filtros" style="flex: 0 0 240px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 24px">
+<div>
+<h2 style="margin: 0 0 8px; font-size: 14px; font-weight: 600">Capas</h2>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" checked="{{s.rain}}" onChange="{{toggleRain}}" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Lluvia acumulada</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" checked="{{s.rivers}}" onChange="{{toggleRivers}}" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Ríos</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" checked="{{s.basin}}" onChange="{{toggleBasin}}" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Cuenca del evento</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" checked="{{s.towns}}" onChange="{{toggleTowns}}" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Localidades</label>
+</div>
+<div>
+<h2 style="margin: 0 0 8px; font-size: 14px; font-weight: 600">Fase ENSO</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 10px; background: var(--raised)">
+<sc-for list="{{ensoOpts}}" as="o" hint-placeholder-count="4">
+<button type="button" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="min-height: 40px; border: 0; border-radius: 7px; background: {{o.bg}}; color: {{o.fg}}; cursor: pointer">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+<div>
+<h2 style="margin: 0 0 8px; font-size: 14px; font-weight: 600">Período</h2>
+<div style="display: flex; gap: 8px">
+<button type="button" class="m" style="flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); font-size: 13px; cursor: pointer">1950</button>
+<button type="button" class="m" style="flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); font-size: 13px; cursor: pointer">2025</button>
+</div>
+</div>
+<p style="margin: auto 0 0; font-size: 12px; color: var(--muted)">Fuentes: ERA5 (Copernicus C3S), SMN, AIC. Relieve esquemático hasta cargar GLO-30.</p>
+</aside>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+
+<section aria-label="Mapa de relieve con lluvia acumulada" style="position: relative; flex: 1; min-height: 400px; border-radius: 8px; overflow: hidden; background: var(--surface)">
+<svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" width="100%" height="100%" role="img" aria-label="{{mapLabel}}" style="position: absolute; inset: 0; display: block">
+<g fill="none" stroke-linecap="round">
+<path d="{{t.d0}}" style="stroke: var(--far)" stroke-width="1.3"></path>
+<path d="{{t.d1}}" style="stroke: var(--mid)" stroke-width="1.8"></path>
+<path d="{{t.d2}}" style="stroke: var(--near)" stroke-width="2.3"></path>
+<path d="{{t.d3}}" style="stroke: var(--peak)" stroke-width="2.3"></path>
+</g>
+<path d="{{riverD}}" fill="none" style="stroke: var(--water)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+<g fill="none" stroke-linecap="round">
+<path d="{{rainMod}}" style="stroke: var(--casing)" stroke-width="3.4" opacity="0.5"></path>
+<path d="{{rainMod}}" style="stroke: var(--accent)" stroke-width="2.2" opacity="0.75"></path>
+<path d="{{rainHi}}" style="stroke: var(--casing)" stroke-width="4" opacity="0.8"></path>
+<path d="{{rainHi}}" style="stroke: var(--accent)" stroke-width="2.8"></path>
+</g>
+<path d="{{basinD}}" fill="none" style="stroke: var(--casing)" stroke-width="3.2" opacity="0.6"></path>
+<path d="{{basinD}}" fill="none" style="stroke: var(--accent)" stroke-width="1.6" stroke-dasharray="6 4"></path>
+<g opacity="{{townsOp}}">
+<path d="{{townD}}" style="fill: var(--text)"></path>
+<g class="m" font-size="12" style="fill: var(--text)">
+<text x="{{tw.neu.lx}}" y="{{tw.neu.ly}}">Neuquén</text>
+<text x="{{tw.chos.lx}}" y="{{tw.chos.ly}}">Chos Malal</text>
+<text x="{{tw.zap.lx}}" y="{{tw.zap.ly}}">Zapala</text>
+<text x="{{tw.cut.lx}}" y="{{tw.cut.ly}}">Cutral Có</text>
+<text x="{{tw.smda.lx}}" y="{{tw.smda.ly}}">San Martín de los Andes</text>
+</g>
+<g class="m" font-size="12" style="fill: var(--muted)">
+<text x="{{tw.dom.lx}}" y="{{tw.dom.ly}}">Domuyo</text>
+<text x="{{tw.lan.lx}}" y="{{tw.lan.ly}}">Lanín</text>
+</g>
+</g>
+<path d="{{reticleD}}" fill="none" style="stroke: var(--casing)" stroke-width="4" opacity="0.6"></path>
+<path d="{{reticleD}}" fill="none" style="stroke: var(--accent)" stroke-width="2.2"></path>
+<g style="fill: var(--muted)"><path d="M962 44 L968 30 L974 44 L968 40 Z"></path><text x="964" y="22" font-size="12" class="m">N</text></g>
+</svg>
+<div style="position: absolute; top: 12px; right: 12px; background: var(--surface); border-radius: 8px; padding: 10px 14px; text-align: right">
+<div class="m" style="font-size: 20px; font-weight: 500">{{clock}}</div>
+<div class="m" style="font-size: 12px; color: var(--muted)">hora {{s.hour}} de 72 · {{atPoint}} mm en el punto</div>
+</div>
+<div style="position: absolute; left: 12px; bottom: 12px; background: var(--surface); border-radius: 8px; padding: 8px 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 12px">
+<span style="font-weight: 500">Lluvia acumulada</span>
+<span style="display: flex; align-items: center; gap: 6px; color: var(--muted)"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="4.5" style="fill: var(--accent); stroke: var(--casing)" stroke-width="1" opacity="0.8"></circle></svg>20–50 mm</span>
+<span style="display: flex; align-items: center; gap: 6px; color: var(--muted)"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" style="fill: var(--accent); stroke: var(--casing)" stroke-width="1.6"></circle></svg>más de 50 mm</span>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch">
+
+<section class="tx" aria-labelledby="h-insp" style="flex: 1 1 300px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px; display: flex; flex-direction: column">
+<h2 id="h-insp" style="margin: 0; font-size: 16px; font-weight: 600">{{ev.type}} · {{ev.place}}</h2>
+<div style="color: var(--muted); font-size: 13px; margin-bottom: 8px">{{ev.range}}</div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 28px"><span style="color: var(--muted)">Lluvia en 72 h</span><span class="m" style="font-size: 18px; font-weight: 500">{{ev.mmStr}} <span style="font-size: 13px; color: var(--muted)">mm</span></span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 28px"><span style="color: var(--muted)">Máxima horaria</span><span class="m">{{ev.maxhStr}} <span style="color: var(--muted)">mm/h</span></span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 28px"><span style="color: var(--muted)">Período de retorno</span><span class="m">{{ev.rp}} años <span style="color: var(--muted)">(IC 90 % {{ev.ic}})</span></span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 28px"><span style="color: var(--muted)">Fase ENSO</span><span class="m">{{ev.ensoStr}}</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 28px"><span style="color: var(--muted)">Fuente</span><span class="m">{{ev.src}}</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 28px"><span style="color: var(--muted)">Período del dato</span><span class="m">1950–2025</span></div>
+<div style="display: flex; gap: 8px; margin-top: auto; padding-top: 12px">
+<button type="button" onClick="{{togglePlay}}" style="min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--ctrl); color: var(--onctrl); font-weight: 500; cursor: pointer">{{playLabel}}</button>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: var(--text)">Ver en Retrospectiva</a>
+</div>
+</section>
+
+<section class="tx" aria-labelledby="h-serie" style="flex: 1.6 1 420px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px">
+<h2 id="h-serie" style="margin: 0; font-size: 14px; font-weight: 600">Lluvia diaria frente a la climatología</h2>
+<div style="display: flex; gap: 12px; color: var(--muted); font-size: 12px; align-items: center">
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 12px; background: var(--text)"></span>Observado</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 10px; background: var(--secondary); opacity: 0.55"></span>Normal (p25–p75)</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 12px; background: var(--accent); outline: 1px solid var(--casing)"></span>Sobre p90</span>
+</div>
+</div>
+<p style="margin: 2px 0 8px; font-size: 13px; color: var(--muted)">{{finding}}</p>
+<svg viewBox="0 0 480 160" width="100%" role="img" aria-label="{{finding}}" style="display: block">
+<g style="stroke: var(--border)" stroke-width="1" stroke-dasharray="3 4"><path d="{{grid}}"></path></g>
+<path d="{{bandD}}" style="fill: var(--secondary)" opacity="0.55"></path>
+<path d="{{barsLo}}" style="fill: var(--text)"></path>
+<path d="{{barsHi}}" style="fill: var(--accent); stroke: var(--casing)" stroke-width="1"></path>
+<path d="M44 130 H472" style="stroke: var(--muted)" stroke-width="1"></path>
+<g class="m" font-size="12" text-anchor="end" style="fill: var(--muted)">
+<text x="36" y="{{ticks.y0}}">0</text>
+<text x="36" y="{{ticks.y1}}">{{ticks.v1}}</text>
+<text x="36" y="{{ticks.y2}}">{{ticks.v2}}</text>
+<text x="36" y="{{ticks.y3}}">{{ticks.v3}}</text>
+</g>
+<text x="4" y="10" class="m" font-size="12" style="fill: var(--muted)">mm</text>
+<g class="m" font-size="12" style="fill: var(--muted)">
+<text x="44" y="152">−30 d</text>
+<text x="151" y="152" text-anchor="middle">−15 d</text>
+<text x="{{dayX}}" y="152" text-anchor="middle" style="fill: var(--text)">{{dayLabel}}</text>
+<text x="365" y="152" text-anchor="middle">+15 d</text>
+<text x="472" y="152" text-anchor="end">+30 d</text>
+</g>
+</svg>
+</section>
+
+<section class="tx" aria-labelledby="h-ev" style="flex: 1 1 300px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px; display: flex; flex-direction: column">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
+<h2 id="h-ev" style="margin: 0; font-size: 14px; font-weight: 600">Eventos históricos <span class="m" style="font-weight: 400; color: var(--muted)">{{countStr}}</span></h2>
+<a href="#" style="color: var(--muted); font-size: 13px; padding: 8px 0">Ver todos</a>
+</div>
+<sc-for list="{{rows}}" as="e" hint-placeholder-count="5">
+<button type="button" onClick="{{e.pick}}" aria-pressed="{{e.selected}}" style="display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 48px; padding: 0 10px; margin: 0 -10px; border: 0; border-radius: 8px; background: {{e.bg}}; color: var(--text); text-align: left; cursor: pointer">
+<span style="width: 8px; height: 8px; border-radius: 50%; background: {{e.dot}}"></span>
+<span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{e.type}} <span style="color: var(--muted)">· {{e.place}}</span></span>
+<span class="m" style="font-size: 13px; text-align: right">{{e.mmStr}} mm<br><span style="color: var(--muted)">{{e.date}}</span></span>
+</button>
+</sc-for>
+<sc-if value="{{noRows}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 8px 0; color: var(--muted)">Ningún evento de ejemplo cae en esta fase.</p>
+</sc-if>
+</section>
+
+</div>
+
+<section class="tx" aria-label="Línea de tiempo y reproducción" style="background: var(--surface); border-radius: 8px; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px">
+<div style="display: flex; align-items: center; gap: 4px">
+<button type="button" aria-label="Evento anterior" onClick="{{prev}}" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 3 V13 L5 8 Z M3 3 V13" fill="currentColor" stroke="currentColor" stroke-width="1.6"></path></svg></button>
+<button type="button" aria-label="{{playLabel}}" onClick="{{togglePlay}}" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--ctrl); color: var(--onctrl); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="{{playIcon}}" fill="currentColor"></path></svg></button>
+<button type="button" aria-label="Evento siguiente" onClick="{{next}}" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3 V13 L11 8 Z M13 3 V13" fill="currentColor" stroke="currentColor" stroke-width="1.6"></path></svg></button>
+</div>
+<div style="flex: 1 1 420px; min-width: 0">
+<svg viewBox="0 0 900 56" preserveAspectRatio="none" width="100%" height="56" role="img" aria-label="Línea de tiempo 1950 a 2025 con fase ENSO por año y los eventos de ejemplo" style="display: block">
+<rect x="0" y="0" width="900" height="14" style="fill: var(--bg)"></rect>
+<path d="{{ninoD}}" style="fill: var(--ctrl)"></path>
+<path d="{{ninaD}}" style="fill: var(--border)"></path>
+<rect x="0" y="32" width="900" height="2" style="fill: var(--border)"></rect>
+<path d="{{ticksD}}" style="fill: var(--accent)" opacity="0.7"></path>
+<rect x="{{headX}}" y="16" width="5" height="40" style="fill: var(--accent)"></rect>
+</svg>
+<div class="m" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--muted)"><span>1950</span><span>1975</span><span>2000</span><span>2025</span></div>
+</div>
+<div style="display: flex; gap: 12px; font-size: 12px; color: var(--muted); align-items: center">
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: var(--ctrl)"></span>Niño</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: var(--border)"></span>Niña</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: var(--bg)"></span>Neutro</span>
+</div>
+</section>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#8EB8E5&quot;,&quot;#FDDA0D&quot;],&quot;default&quot;:&quot;#FDDA0D&quot;},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+// Sample data only: events, ONI and rainfall are illustrative, not observations.
+const EVENTS = [
+  { type: 'Aluvión', place: 'Norte neuquino', start: [2024, 3, 9, 18], mm: 64.2, maxh: 18.4, rp: 25, ic: '12–60', u: 0.30, v: 0.20, su: 0.09, sv: 0.08, src: 'ERA5 · reanálisis' },
+  { type: 'Crecida', place: 'Cuenca del río Neuquén', start: [2023, 6, 29, 0], mm: 112.5, maxh: 9.8, rp: 40, ic: '18–95', u: 0.36, v: 0.30, su: 0.14, sv: 0.12, src: 'ERA5 · AIC' },
+  { type: 'Lluvia extrema', place: 'Confluencia', start: [2022, 1, 29, 12], mm: 48.0, maxh: 31.0, rp: 15, ic: '8–35', u: 0.80, v: 0.62, su: 0.05, sv: 0.05, src: 'SMN · Neuquén Aero' },
+  { type: 'Río atmosférico', place: 'Cordillera sur', start: [2021, 6, 16, 6], mm: 142.8, maxh: 9.6, rp: 10, ic: '6–20', u: 0.12, v: 0.74, su: 0.07, sv: 0.2, src: 'ERA5 · reanálisis' },
+  { type: 'Lluvia extrema', place: 'Zapala', start: [2019, 2, 15, 15], mm: 37.5, maxh: 22.1, rp: 8, ic: '5–14', u: 0.43, v: 0.60, su: 0.06, sv: 0.06, src: 'SMN' }
+];
+const RIVERS = [
+  [[0.24, 0], [0.3, 0.18], [0.38, 0.28], [0.5, 0.36], [0.62, 0.48], [0.72, 0.56], [0.8, 0.62]],
+  [[0.3, 1], [0.45, 0.9], [0.58, 0.78], [0.7, 0.7], [0.8, 0.62]],
+  [[0.8, 0.62], [0.88, 0.66], [1, 0.72]]
+];
+const PLACES = { neu: [0.8, 0.62], chos: [0.33, 0.19], zap: [0.43, 0.6], cut: [0.6, 0.57], smda: [0.13, 0.84], dom: [0.22, 0.1], lan: [0.08, 0.9] };
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const ENSO_LABEL = { nino: 'El Niño', nina: 'La Niña', neutro: 'Neutro' };
+const LIGHT = { tex: 'radial-gradient(rgba(42, 52, 59, 0.09) 0.9px, transparent 1.3px)', shine: 'rgba(255, 255, 255, 0.45)', bg: '#F1EEE6', surface: '#F9F7F2', raised: '#EFECE4', border: '#DDD8CD', text: '#2A343B', muted: '#5F6468', ctrl: '#3E505B', onctrl: '#F5F2EA', far: '#A7AEAF', mid: '#77848A', near: '#4A5A64', peak: '#2A343B', water: '#3A6E8F', casing: '#2A343B' };
+const DARK = { tex: 'none', shine: 'transparent', bg: '#16212A', surface: '#1F2D37', raised: '#2A3A46', border: '#3E505B', text: '#ECE7DC', muted: '#A3AEB4', ctrl: '#4D6372', onctrl: '#ECE7DC', far: '#4E5F6A', mid: '#7D8D96', near: '#B3BEC4', peak: '#ECE7DC', water: '#7FA9C6', casing: '#16212A' };
+
+function oni(y) { return 1.1 * Math.sin(y * 1.7) + 0.6 * Math.sin(y * 0.53 + 2); }
+function phaseOf(o) { return o >= 0.5 ? 'nino' : o <= -0.5 ? 'nina' : 'neutro'; }
+function fmt(n, d) { return n.toFixed(d === undefined ? 1 : d).replace('.', ','); }
+function hash(i) { const s = Math.sin(i * 12.9898) * 43758.5453; return s - Math.floor(s); }
+function segDist(u, v, a, b) {
+  const dx = b[0] - a[0], dy = b[1] - a[1];
+  let t = ((u - a[0]) * dx + (v - a[1]) * dy) / (dx * dx + dy * dy);
+  t = Math.max(0, Math.min(1, t));
+  const x = a[0] + t * dx - u, y = a[1] + t * dy - v;
+  return Math.sqrt(x * x + y * y);
+}
+function riverDist(u, v) {
+  let m = 9;
+  for (const p of RIVERS) for (let i = 0; i < p.length - 1; i++) { const d = segDist(u, v, p[i], p[i + 1]); if (d < m) m = d; }
+  return m;
+}
+function H(u, v) {
+  const rc = 0.12 + 0.04 * Math.sin(v * 9);
+  let h = 0.9 * Math.exp(-Math.pow((u - rc) / 0.12, 2)) * (0.75 + 0.25 * Math.sin(u * 41 + v * 7) * Math.sin(v * 33));
+  h += 0.32 * Math.exp(-Math.pow((u - 0.3) / 0.11, 2)) * (0.6 + 0.4 * Math.sin(v * 14 + u * 5));
+  h += 0.6 * Math.exp(-((u - 0.22) * (u - 0.22) + (v - 0.1) * (v - 0.1)) / 0.002);
+  h += 0.5 * Math.exp(-((u - 0.08) * (u - 0.08) + (v - 0.9) * (v - 0.9)) / 0.0015);
+  h += 0.12 + 0.18 * (1 - u);
+  h += 0.035 * (Math.sin(u * 37 + v * 11) + 0.7 * Math.sin(u * 13 - v * 29) + 0.4 * Math.sin(u * 71 + v * 53));
+  h -= 0.16 * Math.exp(-Math.pow(riverDist(u, v) / 0.03, 2));
+  return Math.max(0.02, h);
+}
+// Oblique view from the south: far rows narrower and lifted less.
+function P(u, v) { const h = H(u, v), w = 820 + 140 * v; return [500 + (u - 0.5) * w, 80 + v * 310 - h * (50 + 40 * v)]; }
+function dot(p) { return 'M' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + 'h0'; }
+
+let TERRAIN = null;
+function terrain() {
+  if (TERRAIN) return TERRAIN;
+  const bands = [[], [], [], []], pts = [];
+  const nu = 150, nv = 66;
+  let k = 0;
+  for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) {
+    k++;
+    const u = (i + 0.5 + (hash(k) - 0.5) * 0.8) / nu, v = (j + 0.5 + (hash(k + 70000) - 0.5) * 0.8) / nv;
+    const h = H(u, v), s = dot(P(u, v));
+    bands[h > 0.95 ? 3 : v < 0.33 ? 0 : v < 0.66 ? 1 : 2].push(s);
+    pts.push({ u, v, s });
+  }
+  let riverD = '';
+  for (const p of RIVERS) for (let i = 0; i < p.length - 1; i++) for (let t = 0; t <= 20; t++) {
+    const u = p[i][0] + (p[i + 1][0] - p[i][0]) * t / 20, v = p[i][1] + (p[i + 1][1] - p[i][1]) * t / 20;
+    const q = P(u, v);
+    riverD += (t === 0 ? 'M' : 'L') + q[0].toFixed(1) + ' ' + q[1].toFixed(1);
+  }
+  const tw = {}; let townD = '';
+  for (const key in PLACES) {
+    const q = P(PLACES[key][0], PLACES[key][1]);
+    tw[key] = { lx: (q[0] + 8).toFixed(1), ly: (q[1] - 6).toFixed(1) };
+    if (key !== 'dom' && key !== 'lan') townD += 'M' + (q[0] - 3).toFixed(1) + ' ' + (q[1] - 3).toFixed(1) + 'h6v6h-6Z';
+    else townD += 'M' + q[0].toFixed(1) + ' ' + (q[1] - 5).toFixed(1) + 'l4 7h-8Z';
+  }
+  TERRAIN = { d: bands.map((a) => a.join('')), pts, riverD, tw, townD };
+  return TERRAIN;
+}
+function stamp(ms) {
+  const d = new Date(ms), p = (n) => String(n).padStart(2, '0');
+  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes());
+}
+
+class Component extends DCLogic {
+  componentWillUnmount() { if (this._iv) clearInterval(this._iv); }
+  st() {
+    const s = this.state || {};
+    return {
+      hour: s.hour ?? 72, sel: s.sel ?? 0, enso: s.enso ?? 'all', playing: !!s.playing,
+      rain: s.rain ?? true, rivers: s.rivers ?? true, basin: s.basin ?? true, towns: s.towns ?? true,
+      dark: s.dark ?? (this.props.theme === 'dark')
+    };
+  }
+  stop() { if (this._iv) { clearInterval(this._iv); this._iv = null; } }
+  select(i) { this.stop(); this.setState({ sel: (i + EVENTS.length) % EVENTS.length, hour: 72, playing: false }); }
+  renderVals() {
+    const s = this.st(), T = terrain(), e = EVENTS[s.sel];
+    const t0 = Date.UTC(e.start[0], e.start[1] - 1, e.start[2], e.start[3]);
+    const t1 = t0 + 72 * 3600e3, a = new Date(t0), b = new Date(t1);
+    const range = a.getUTCMonth() === b.getUTCMonth()
+      ? a.getUTCDate() + '–' + b.getUTCDate() + ' ' + MONTHS[b.getUTCMonth()] + ' ' + b.getUTCFullYear()
+      : a.getUTCDate() + ' ' + MONTHS[a.getUTCMonth()] + ' – ' + b.getUTCDate() + ' ' + MONTHS[b.getUTCMonth()] + ' ' + b.getUTCFullYear();
+    const evOni = oni(e.start[0]), evPhase = phaseOf(evOni);
+
+    // Rain accumulated so far at each relief point, centred on the event.
+    const frac = s.hour / 72, mod = [], hi = [];
+    if (s.rain) for (const p of T.pts) {
+      const du = (p.u - e.u) / e.su, dv = (p.v - e.v) / e.sv;
+      const acc = e.mm * frac * Math.exp(-(du * du + dv * dv));
+      if (acc > 50) hi.push(p.s); else if (acc > 20) mod.push(p.s);
+    }
+    const c = P(e.u, e.v), r = 20, l = 9, x = c[0], y = c[1];
+    const reticleD = 'M' + (x - r) + ' ' + (y - r + l) + 'V' + (y - r) + 'H' + (x - r + l) + 'M' + (x + r - l) + ' ' + (y - r) + 'H' + (x + r) + 'V' + (y - r + l)
+      + 'M' + (x + r) + ' ' + (y + r - l) + 'V' + (y + r) + 'H' + (x + r - l) + 'M' + (x - r + l) + ' ' + (y + r) + 'H' + (x - r) + 'V' + (y + r - l);
+    let basinD = '';
+    if (s.basin) for (let i = 0; i <= 16; i++) {
+      const ang = i / 16 * Math.PI * 2, w = 1 + 0.25 * Math.sin(3 * ang + s.sel);
+      const q = P(e.u + Math.cos(ang) * 0.05 * w, e.v + Math.sin(ang) * 0.045 * w);
+      basinD += (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1);
+    }
+
+    // Daily series: the three event days add up to the 72 h total.
+    const days = [];
+    for (let d = -30; d <= 30; d++) {
+      let val;
+      if (d === -2) val = e.mm * 0.15; else if (d === -1) val = e.mm * 0.3; else if (d === 0) val = e.mm * 0.55;
+      else { const q = hash(d * 3.1 + s.sel * 97 + 11); val = q > 0.8 ? (q - 0.8) * 24 : 0; }
+      const p75 = 2.4 + 1.1 * Math.sin((d + s.sel * 7) / 9);
+      days.push({ d, val, p75, p90: p75 * 2.2 });
+    }
+    const peak = e.mm * 0.55, step = [5, 10, 20, 25, 50, 100].find((q) => q * 3 >= peak * 1.05) || 100, ymax = step * 3;
+    const x0 = 44, x1 = 472, y0 = 130, yt = 14, bw = (x1 - x0) / days.length;
+    const ys = (v) => y0 - (v / ymax) * (y0 - yt);
+    let barsLo = '', barsHi = '', bandTop = '', bandBot = '';
+    days.forEach((q, i) => {
+      const bx = x0 + i * bw;
+      if (q.val > 0) {
+        const rect = 'M' + (bx + 1).toFixed(1) + ' ' + y0 + 'V' + ys(q.val).toFixed(1) + 'h' + (bw - 2).toFixed(1) + 'V' + y0 + 'Z';
+        if (q.val > q.p90) barsHi += rect; else barsLo += rect;
+      }
+      bandTop += (i ? 'L' : 'M') + (bx + bw / 2).toFixed(1) + ' ' + ys(q.p75).toFixed(1);
+    });
+    const bandD = bandTop + 'L' + (x1 - bw / 2).toFixed(1) + ' ' + y0 + 'L' + (x0 + bw / 2).toFixed(1) + ' ' + y0 + 'Z';
+    const day0 = days[30], ratio = day0.val / day0.p90;
+    const grid = [1, 2, 3].map((k) => 'M' + x0 + ' ' + ys(step * k).toFixed(1) + 'H' + x1).join('');
+
+    const filtered = EVENTS.map((ev, i) => ({ ev, i, ph: phaseOf(oni(ev.start[0])) })).filter((o) => s.enso === 'all' || o.ph === s.enso);
+    const rows = filtered.map((o) => ({
+      type: o.ev.type, place: o.ev.place, mmStr: fmt(o.ev.mm),
+      date: o.ev.start[0] + '-' + String(o.ev.start[1]).padStart(2, '0') + '-' + String(o.ev.start[2]).padStart(2, '0'),
+      selected: o.i === s.sel, bg: o.i === s.sel ? 'var(--raised)' : 'transparent', dot: o.i === s.sel ? 'var(--accent)' : 'transparent',
+      pick: () => this.select(o.i)
+    }));
+    const yx = (yr) => (yr - 1950) / 75 * 895;
+    let ninoD = '', ninaD = '';
+    for (let yr = 1950; yr <= 2025; yr++) {
+      const ph = phaseOf(oni(yr)), rr = 'M' + yx(yr).toFixed(1) + ' 0h' + (900 / 76).toFixed(2) + 'v14h-' + (900 / 76).toFixed(2) + 'Z';
+      if (ph === 'nino') ninoD += rr; else if (ph === 'nina') ninaD += rr;
+    }
+    const ticksD = filtered.filter((o) => o.i !== s.sel).map((o) => 'M' + yx(o.ev.start[0] + o.ev.start[1] / 12).toFixed(1) + ' 22h3v22h-3Z').join('');
+    const ensoOpts = [['all', 'Todas'], ['nino', 'El Niño'], ['nina', 'La Niña'], ['neutro', 'Neutro']].map(([k, label]) => ({
+      label, pressed: s.enso === k, bg: s.enso === k ? 'var(--ctrl)' : 'transparent', fg: s.enso === k ? 'var(--onctrl)' : 'var(--text)',
+      pick: () => this.setState({ enso: k })
+    }));
+    const sign = evOni >= 0 ? '+' : '−';
+
+    return {
+      s, c: s.dark ? DARK : LIGHT, accent: this.props.accent ?? '#8EB8E5',
+      t: { d0: T.d[0], d1: T.d[1], d2: T.d[2], d3: T.d[3] },
+      riverD: s.rivers ? T.riverD : '', townD: T.townD, tw: T.tw, townsOp: s.towns ? 1 : 0,
+      rainMod: mod.join(''), rainHi: hi.join(''), basinD, reticleD,
+      mapLabel: 'Relieve esquemático de Neuquén como nube de puntos, con la lluvia acumulada del evento seleccionado: ' + e.type + ', ' + e.place,
+      clock: stamp(t0 + s.hour * 3600e3), atPoint: fmt(e.mm * frac),
+      ev: {
+        type: e.type, place: e.place, range, mmStr: fmt(e.mm), maxhStr: fmt(e.maxh), rp: e.rp, ic: e.ic, src: e.src,
+        ensoStr: ENSO_LABEL[evPhase] + ' · ONI ' + sign + fmt(Math.abs(evOni))
+      },
+      finding: fmt(e.mm) + ' mm en 72 h; el día más lluvioso fue ' + fmt(ratio, 0) + ' veces el percentil 90 de esa fecha.',
+      barsLo, barsHi, bandD, grid,
+      ticks: { y0: y0 + 4, y1: (ys(step) + 4).toFixed(1), y2: (ys(step * 2) + 4).toFixed(1), y3: (ys(step * 3) + 4).toFixed(1), v1: step, v2: step * 2, v3: step * 3 },
+      dayX: (x0 + 30 * bw + bw / 2).toFixed(1), dayLabel: b.getUTCDate() + ' ' + MONTHS[b.getUTCMonth()],
+      rows, noRows: rows.length === 0, countStr: rows.length + ' de ' + EVENTS.length,
+      ensoOpts, ninoD, ninaD, ticksD, headX: yx(e.start[0] + e.start[1] / 12).toFixed(1),
+      playLabel: s.playing ? 'Pausar' : 'Reproducir 72 h',
+      playIcon: s.playing ? 'M4 3h3v10H4zM9 3h3v10H9z' : 'M4 2.5 V13.5 L13 8 Z',
+      togglePlay: () => {
+        if (this._iv) { this.stop(); this.setState({ playing: false }); return; }
+        this.setState({ playing: true, hour: s.hour >= 72 ? 0 : s.hour });
+        this._iv = setInterval(() => {
+          const h = ((this.state && this.state.hour) || 0) + 1;
+          if (h >= 72) { this.stop(); this.setState({ hour: 72, playing: false }); } else this.setState({ hour: h });
+        }, 110);
+      },
+      prev: () => this.select(s.sel - 1), next: () => this.select(s.sel + 1),
+      toggleRain: () => this.setState({ rain: !s.rain }), toggleRivers: () => this.setState({ rivers: !s.rivers }),
+      toggleBasin: () => this.setState({ basin: !s.basin }), toggleTowns: () => this.setState({ towns: !s.towns }),
+      toggleTheme: () => this.setState({ dark: !s.dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

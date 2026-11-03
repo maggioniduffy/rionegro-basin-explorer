@@ -85,7 +85,7 @@ These two values are still unverified, so the config keeps them as null or label
       `lib/effluent/{registry,glofas,forecast}.ts`, `scenarioFor` (day 0 = tomorrow, UTC; null on missing or misaligned dates)
 - [ ] E1.4 Effluent mode: store slice, `?ef=` URL param (all simulator inputs), overlay controller, legend, "Simulate a discharge here" in `ReachPanel` for any reach of the effluent net, configured outfall picker
 - [ ] E1.5 Compact `EffluentPanel` on the map: basic simulator inputs (flow, BOD₅, coliforms, DO, removal %, scenario, reset), plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
-- [ ] E1.7 Analysis page `/[region]/effluents`: DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
+- [ ] E1.7 Analysis page `/[region]/effluents` (layout guide: [e1/design/](e1/design/README.md)): DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
 - [ ] E1.6 _(stretch)_ San Roque section on the analysis page: TP inflow, predicted TP range, trophic class
 - [ ] E1.H _(stretch)_ Historical runs over the GloFAS reanalysis on the analysis page: per month, % of days below the DO threshold and admissible-load percentiles
 - [ ] E1.W _(stretch)_ "When to discharge" on the analysis page: admissible load per forecast day (p25/median/p75), from the screening model, not ML

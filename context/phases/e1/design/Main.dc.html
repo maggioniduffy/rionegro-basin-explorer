@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Visor Neuquén</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.m{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.sk{display:inline-block;height:10px;border-radius:2px;background:var(--raised)}
+a{color:inherit;text-decoration:none}
+a:hover{color:var(--text)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</helmet>
+<div style="--bg: {{bg}}; --surface: {{surface}}; --raised: {{raised}}; --border: {{border}}; --text: {{text}}; --muted: {{muted}}; --ctrl: {{ctrl}}; --onctrl: {{onctrl}}; --dot: {{dot}}; --accent: {{accent}}; --secondary: #A4AF69; min-height: 900px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; line-height: 1.4">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 6px 16px; min-height: 48px; box-sizing: border-box; background: var(--surface)">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg width="28" height="28" viewBox="0 0 28 28" role="img" aria-label="Clima Ideas"><rect width="28" height="28" rx="6" style="fill: var(--ctrl)"></rect><path d="M6 17 L11 9 L15 15 L18 11 L22 17" fill="none" stroke="#F5F2EA" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"></path><path d="M6 21 H22" style="stroke: var(--accent)" stroke-width="2" stroke-linecap="round"></path></svg>
+<span style="font-weight: 600">Clima Ideas</span>
+</div>
+<h1 style="margin: 0; font-size: 16px; font-weight: 600">Neuquén</h1>
+<nav aria-label="Secciones" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 520px">
+<a href="#" aria-current="page" style="padding: 9px 12px; border-radius: 8px; background: var(--raised); font-weight: 500">Mapa</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Ríos atmosféricos</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Crecidas</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Convección</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Aluviones</a>
+<a href="#" style="padding: 9px 12px; border-radius: 8px; color: var(--muted)">Retrospectiva</a>
+<a href="#" style="padding: 8px 12px; border-radius: 8px; color: var(--muted); border: 1px dashed var(--border)">Experimental</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 16px">
+<span class="m" style="color: var(--muted); font-size: 12px">Último dato <span style="color: var(--text)">0000-00-00</span> · ERA5 · maqueta</span>
+<button type="button" aria-label="Cambiar tema claro u oscuro" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="M9 2.5 A6.5 6.5 0 0 1 9 15.5 Z" fill="currentColor"></path></svg>
+</button>
+</div>
+</header>
+
+<div style="flex: 1; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; align-items: stretch">
+
+<aside aria-label="Capas y filtros" style="flex: 0 0 240px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 24px">
+<div>
+<h2 style="margin: 0 0 8px; font-size: 14px; font-weight: 600">Capas</h2>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" checked="checked" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Lluvia</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Temperatura</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" checked="checked" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Cuencas</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Ríos atmosféricos</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer"><input type="checkbox" checked="checked" style="width: 18px; height: 18px; margin: 0; accent-color: var(--ctrl)">Eventos históricos</label>
+</div>
+<div>
+<h2 style="margin: 0 0 8px; font-size: 14px; font-weight: 600">Fase ENSO</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 10px; background: var(--raised)">
+<button type="button" aria-pressed="true" style="min-height: 40px; border: 0; border-radius: 7px; background: var(--ctrl); color: var(--onctrl); font: inherit; cursor: pointer">Todas</button>
+<button type="button" aria-pressed="false" style="min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--text); font: inherit; cursor: pointer">El Niño</button>
+<button type="button" aria-pressed="false" style="min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--text); font: inherit; cursor: pointer">La Niña</button>
+<button type="button" aria-pressed="false" style="min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--text); font: inherit; cursor: pointer">Neutro</button>
+</div>
+</div>
+<div>
+<h2 style="margin: 0 0 8px; font-size: 14px; font-weight: 600">Período</h2>
+<div style="display: flex; gap: 8px">
+<button type="button" class="m" style="flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); font-size: 13px; cursor: pointer">1950</button>
+<button type="button" class="m" style="flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); font-size: 13px; cursor: pointer">hoy</button>
+</div>
+</div>
+</aside>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+
+<section aria-label="Mapa de relieve" style="position: relative; flex: 1; min-height: 380px; border-radius: 8px; overflow: hidden; background: var(--surface)">
+<svg viewBox="0 0 1000 440" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" role="img" aria-label="Relieve de Neuquén como nube de puntos: cordillera al oeste, meseta al centro y la Confluencia al este" style="position: absolute; inset: 0; display: block">
+<defs>
+<pattern id="dHigh" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.7" style="fill: var(--dot)"></circle></pattern>
+<pattern id="dMid" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1.3" style="fill: var(--dot)"></circle></pattern>
+<pattern id="dLow" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="1.1" style="fill: var(--dot)"></circle></pattern>
+<pattern id="dVal" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r="1.1" style="fill: var(--dot)"></circle></pattern>
+</defs>
+<path d="M470 0 H1000 V440 H480 L452 352 L522 282 L470 202 L540 130 L482 62 Z" fill="url(#dLow)" opacity="0.6"></path>
+<path d="M740 0 H800 L850 120 L820 260 L880 440 H800 L770 300 L790 180 Z" fill="url(#dVal)" opacity="0.75"></path>
+<path d="M250 0 H520 L482 62 L540 130 L470 202 L522 282 L452 352 L500 440 H250 Z" fill="url(#dMid)" opacity="0.85"></path>
+<path d="M0 0 H310 L286 46 L322 98 L270 150 L318 214 L262 270 L300 330 L250 390 L282 440 H0 Z" fill="url(#dHigh)"></path>
+<path d="M520 420 C640 330 740 320 800 300" fill="none" style="stroke: var(--ctrl)" stroke-width="1.6"></path>
+<path d="M560 0 C650 90 760 200 800 300" fill="none" style="stroke: var(--ctrl)" stroke-width="1.6"></path>
+<path d="M800 300 C860 340 900 400 960 440" fill="none" style="stroke: var(--ctrl)" stroke-width="2.2"></path>
+<path d="M150 120 L240 110 L262 180 L210 232 L150 210 Z" fill="none" style="stroke: var(--accent)" stroke-width="1.8" stroke-dasharray="6 4"></path>
+<g fill="none" style="stroke: var(--accent)" stroke-width="2.4"><path d="M160 144 V132 H172"></path><path d="M240 132 H252 V144"></path><path d="M252 196 V208 H240"></path><path d="M172 208 H160 V196"></path></g>
+<circle cx="206" cy="170" r="4.5" style="fill: var(--accent)"></circle>
+<rect x="794" y="294" width="12" height="12" style="fill: var(--text)"></rect>
+<g class="m" font-size="12" style="fill: var(--muted)"><text x="24" y="28">Cordillera</text><text x="560" y="420">Meseta</text><text x="822" y="292" style="fill: var(--text)">Confluencia</text><text x="880" y="230">Alto Valle</text></g>
+<g style="fill: var(--muted)"><path d="M956 56 L962 42 L968 56 L962 52 Z"></path><text x="956" y="34" font-size="12" class="m" text-anchor="start">N</text></g>
+</svg>
+<div style="position: absolute; top: 12px; right: 12px; background: var(--surface); border-radius: 8px; padding: 8px 12px; text-align: right">
+<div class="m" style="font-size: 20px; font-weight: 500">0000-00-00 00:00</div>
+<div class="m" style="font-size: 12px; color: var(--muted)">El Niño · <span class="sk" style="width: 28px; height: 8px"></span></div>
+</div>
+<div style="position: absolute; left: 12px; bottom: 12px; background: var(--surface); border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 8px">
+<span class="m" style="font-size: 12px; color: var(--muted)">0</span>
+<span style="display: flex; gap: 2px"><span style="width: 24px; height: 10px; background: var(--raised)"></span><span style="width: 24px; height: 10px; background: var(--border)"></span><span style="width: 24px; height: 10px; background: var(--muted)"></span><span style="width: 24px; height: 10px; background: var(--ctrl)"></span><span style="width: 24px; height: 10px; background: var(--text)"></span></span>
+<span class="m" style="font-size: 12px; color: var(--muted)">mm · 24 h</span>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch">
+
+<section aria-labelledby="h-insp" style="flex: 1 1 300px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px">
+<h2 id="h-insp" style="margin: 0 0 8px; font-size: 14px; font-weight: 600">Aluvión · <span class="sk" style="width: 96px; vertical-align: middle"></span></h2>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 30px"><span style="color: var(--muted)">Fecha</span><span class="m">0000-00-00</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 30px"><span style="color: var(--muted)">Lluvia en 24 h</span><span><span class="sk" style="width: 48px"></span> <span class="m" style="color: var(--muted)">mm</span></span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 30px"><span style="color: var(--muted)">Período de retorno</span><span><span class="sk" style="width: 40px"></span> <span class="m" style="color: var(--muted)">años</span></span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 30px"><span style="color: var(--muted)">Fase ENSO</span><span class="m">—</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 30px"><span style="color: var(--muted)">Fuente</span><span class="m">ERA5 · sin verificar</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 30px"><span style="color: var(--muted)">Período del dato</span><span class="m">0000–0000</span></div>
+</section>
+
+<section aria-labelledby="h-serie" style="flex: 1.6 1 420px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; margin-bottom: 8px">
+<h2 id="h-serie" style="margin: 0; font-size: 14px; font-weight: 600">Lluvia diaria frente a la climatología</h2>
+<div style="display: flex; gap: 12px; color: var(--muted); font-size: 12px; align-items: center">
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 2px; background: var(--text)"></span>Observado</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 8px; background: var(--secondary); opacity: 0.6"></span>Normal</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 3px; background: var(--accent)"></span>Desvío</span>
+</div>
+</div>
+<svg viewBox="0 0 480 160" width="100%" role="img" aria-label="Serie de lluvia diaria con banda normal y un desvío resaltado alrededor del evento" style="display: block">
+<g style="stroke: var(--border)" stroke-width="1" stroke-dasharray="3 4"><path d="M36 10 H470"></path><path d="M36 50 H470"></path><path d="M36 90 H470"></path></g>
+<path d="M36 130 H470" style="stroke: var(--muted)" stroke-width="1"></path>
+<g class="m" font-size="12" text-anchor="end" style="fill: var(--muted)"><text x="28" y="14">60</text><text x="28" y="54">40</text><text x="28" y="94">20</text><text x="28" y="134">0</text></g>
+<path d="M36 86 L120 80 L200 76 L280 82 L360 88 L440 84 L470 86 L470 112 L440 110 L360 114 L280 108 L200 104 L120 108 L36 112 Z" style="fill: var(--secondary)" opacity="0.5"></path>
+<path d="M316 10 V130" style="stroke: var(--muted)" stroke-width="1" stroke-dasharray="3 3"></path>
+<polyline points="36,100 76,96 116,92 156,98 196,90 236,70 276,30 316,18 356,62 396,96 436,100 470,98" fill="none" style="stroke: var(--text)" stroke-width="1.6" stroke-linejoin="round"></polyline>
+<polyline points="236,70 276,30 316,18 356,62" fill="none" style="stroke: var(--accent)" stroke-width="3.2" stroke-linejoin="round"></polyline>
+<g class="m" font-size="12" style="fill: var(--muted)"><text x="36" y="152">−30 d</text><text x="316" y="152" text-anchor="middle">evento</text><text x="470" y="152" text-anchor="end">+30 d</text></g>
+</svg>
+</section>
+
+<section aria-labelledby="h-ev" style="flex: 1 1 300px; box-sizing: border-box; background: var(--surface); border-radius: 8px; padding: 16px; display: flex; flex-direction: column">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
+<h2 id="h-ev" style="margin: 0; font-size: 14px; font-weight: 600">Eventos históricos</h2>
+<a href="#" style="color: var(--muted); font-size: 13px; padding: 8px 0">Ver todos</a>
+</div>
+<a href="#" aria-current="true" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 10px; margin: 0 -10px; border-radius: 8px; background: var(--raised)"><span>Aluvión</span><span class="m" style="font-size: 13px">0000-00-00</span></a>
+<a href="#" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 10px; margin: 0 -10px"><span>Crecida</span><span class="m" style="font-size: 13px; color: var(--muted)">0000-00-00</span></a>
+<a href="#" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 10px; margin: 0 -10px"><span>Lluvia extrema</span><span class="m" style="font-size: 13px; color: var(--muted)">0000-00-00</span></a>
+<a href="#" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 10px; margin: 0 -10px"><span>Río atmosférico</span><span class="m" style="font-size: 13px; color: var(--muted)">0000-00-00</span></a>
+</section>
+
+</div>
+
+<section aria-label="Línea de tiempo y reproducción" style="background: var(--surface); border-radius: 8px; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px">
+<div style="display: flex; align-items: center; gap: 4px">
+<button type="button" aria-label="Evento anterior" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 3 V13 L5 8 Z M3 3 V13" fill="currentColor" stroke="currentColor" stroke-width="1.6"></path></svg></button>
+<button type="button" aria-label="Reproducir el evento hora por hora" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--ctrl); color: var(--onctrl); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5 V13.5 L13 8 Z" fill="currentColor"></path></svg></button>
+<button type="button" aria-label="Evento siguiente" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3 V13 L11 8 Z M13 3 V13" fill="currentColor" stroke="currentColor" stroke-width="1.6"></path></svg></button>
+<button type="button" class="m" style="min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--raised); color: var(--text); font-size: 13px; cursor: pointer">1 h / s</button>
+</div>
+<div style="flex: 1 1 420px; min-width: 0">
+<svg viewBox="0 0 900 56" preserveAspectRatio="none" width="100%" height="56" role="img" aria-label="Línea de tiempo 1950 a hoy con fases ENSO y eventos históricos" style="display: block">
+<rect x="0" y="0" width="900" height="14" style="fill: var(--bg)"></rect>
+<g style="fill: var(--ctrl)"><rect x="34" y="0" width="26" height="14"></rect><rect x="118" y="0" width="22" height="14"></rect><rect x="226" y="0" width="30" height="14"></rect><rect x="338" y="0" width="34" height="14"></rect><rect x="450" y="0" width="30" height="14"></rect><rect x="548" y="0" width="26" height="14"></rect><rect x="690" y="0" width="34" height="14"></rect><rect x="786" y="0" width="24" height="14"></rect></g>
+<g style="fill: var(--border)"><rect x="12" y="0" width="22" height="14"></rect><rect x="72" y="0" width="30" height="14"></rect><rect x="164" y="0" width="34" height="14"></rect><rect x="268" y="0" width="30" height="14"></rect><rect x="396" y="0" width="26" height="14"></rect><rect x="500" y="0" width="34" height="14"></rect><rect x="620" y="0" width="28" height="14"></rect><rect x="744" y="0" width="30" height="14"></rect><rect x="830" y="0" width="28" height="14"></rect></g>
+<rect x="0" y="32" width="900" height="2" style="fill: var(--border)"></rect>
+<g style="fill: var(--accent)" opacity="0.65"><rect x="150" y="22" width="3" height="22"></rect><rect x="330" y="22" width="3" height="22"></rect><rect x="520" y="22" width="3" height="22"></rect><rect x="610" y="22" width="3" height="22"></rect></g>
+<rect x="768" y="16" width="4" height="40" style="fill: var(--accent)"></rect>
+</svg>
+<div class="m" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--muted)"><span>1950</span><span>1975</span><span>2000</span><span>hoy</span></div>
+</div>
+<div style="display: flex; gap: 12px; font-size: 12px; color: var(--muted); align-items: center">
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: var(--ctrl)"></span>Niño</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: var(--border)"></span>Niña</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: var(--bg)"></span>Neutro</span>
+</div>
+</section>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"accent":{"editor":"color","options":["#8EB8E5","#FDDA0D"],"default":"#8EB8E5"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.state && this.state.dark !== undefined) ? this.state.dark : this.props.theme === 'dark';
+    const t = dark
+      ? { bg: '#16212A', surface: '#1F2D37', raised: '#2A3A46', border: '#3E505B', text: '#ECE7DC', muted: '#A3AEB4', ctrl: '#4D6372', onctrl: '#ECE7DC', dot: '#B7C1C7' }
+      : { bg: '#F5F2EA', surface: '#ECE8DE', raised: '#E2DDD1', border: '#D3CDBF', text: '#2A343B', muted: '#5F6468', ctrl: '#3E505B', onctrl: '#F5F2EA', dot: '#4A5A64' };
+    return { ...t, accent: this.props.accent ?? '#8EB8E5', toggleTheme: () => this.setState({ dark: !dark }) };
+  }
+}
+</script>
+</body>
+</html>
