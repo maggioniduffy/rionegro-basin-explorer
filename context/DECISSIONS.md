@@ -4,6 +4,58 @@ Dated decisions made while working through [PLAN.md](PLAN.md), with the figures 
 behind them. When a choice revises an earlier one, the entry that changes it says so.
 The standing architecture decisions stay in PLAN.md; data licenses are in `pipeline/SOURCES.md`.
 
+## Phase E1: effluent impact (2026-10-29)
+
+Plan approved by the owner on 2026-10-29 ([e1-effluents.md](phases/e1-effluents.md)), for the Hack to the Future
+hackathon (12–13 Nov 2026).
+
+- **User = the regulator; two demo reaches** (owner): Suquía through Bajo Grande (BOD/DO, coliforms) and the
+  Cosquín/San Antonio into San Roque (TP, OECD model). Region `cba` only; nothing changes in `nqn`.
+- **Forecast = GloFAS via the Open‑Meteo Flood API** (owner), scaled to each reach by the ratio to GloFAS's own
+  1997–2022 reanalysis mean at the gauge cell (the API documents 1984, but these cells are null before 1997), so HydroRIVERS and GloFAS means are never mixed. Cells are hand-checked: the API
+  picks "the largest river in 5 km" (a test point at -31.383, -64.12 returned 0.06 m³/s, a tributary; Centro Cívico
+  snapped to -31.425, -64.175 and returned 4.5–7 m³/s, 2026-10-29). **Two gauges** (2026-10-29 probes, 2015–2020
+  means): `centro-civico` cell -31.425, -64.175 (13.75 m³/s 1997–2022; HydroRIVERS 10.97) for the Suquía below the
+  dam, and `san-roque-inflow` cell -31.375, -64.475 (5.01 m³/s 2015–2020, 6.40 m³/s 1997–2022; ILEC total inflow 5.25) for everything upstream of
+  the dam. Per-tributary cells were rejected: GloFAS's San Antonio cells give 0.03–0.56 m³/s against 1.63 m³/s
+  (ILEC), and the Cosquín cell -31.325, -64.475 gives 2.28 m³/s against 2.87.
+- **No live gauge levels:** Omixom offers no public API and APRHI's portal publishes station metadata only
+  (`Punto_de_medición_de_niveles` feature service). The colleague's H‑Q curves (UNC report, Aug 2026) enter as an
+  optional manual "gauge level" input once they share parameters and permission.
+- **Screening model, literature coefficients as ranges** (Chapra 1997; Bowie et al. 1985): kd 0.05–0.5 /d,
+  coliform decay 0.5–2 /d, ka by the Covar rule, v = a·Q^m. Bajo Grande's effluent concentrations are not public, so
+  the default is the permit limit (DBO₅ 40 mg/L, Decreto 847/16 + Res. APRHI 31/2022); its flow default is the
+  ~2.8 m³/s design capacity (press, 2022). The DO threshold (5 mg/L) is an assumption: Córdoba sets no DO objective.
+- **ML is post-hackathon (E2)**: without monitoring data it would only learn the screening model back. "When to
+  discharge" is answered first by historical runs (E1.H): the response is linear in load.
+- **Charts on a separate page, not on the map (owner, 2026-10-30).** The map already has floating panels on both
+  sides, and time series and percentiles are not spatial. The map keeps the plume, the outfall, the legend and a
+  compact panel with three numbers; `/[region]/effluents` holds the downstream profile, scenario comparison,
+  historical runs, "when to discharge", San Roque and the full assumptions. URL state (`?ef=`, reach, scenario) is
+  shared between the two, and the chart code is not loaded on the map. "When to discharge" (E1.W) is computed from
+  the screening model over the forecast, not ML.
+- **Discharge simulator: basic inputs on the map, model settings on the analysis page (owner, 2026-10-30).** Any
+  reach of the effluent net can be the outfall. The compact panel takes flow, BOD₅, coliforms, effluent DO, removal %
+  and scenario; thresholds, temperature and coefficient levels go in a closed "Model settings" section of the
+  analysis page, so the map panel stays small. Coefficients move only between their sourced low / central / high
+  levels (Rule 2); thresholds and effluent values are labelled assumptions. All inputs are URL state.
+
+- **Effluent mode on the map (E1.4, owner, 2026-11-04).** In the mode a click on a reach of the effluent net moves
+  the outfall there and keeps the inputs; a click outside the net does nothing. The plume has two classes: "exceeds"
+  (DO below its threshold, or coliforms/BOD above a threshold that has a value) and "within". `?ef=` holds the reach
+  and only the overrides (`<reach>_q…_b…_c…_o…_x…_s…_td…_tc…_w…_lk/ln/lw…`; `sd<N><l|m|h>`, N = 1 is tomorrow), so
+  defaults always come from the config. A reach without a configured outfall takes the first outfall's permit-limit
+  values (`defaultsFrom: "permitLimitAssumption"`, to label in E1.5). A forecast scenario that can't be built is
+  "unavailable", never the mean.
+
+- **Plume drawn only where tile lines carry the reach id (owner, 2026-11-04).** In cba's `reaches` tiles 85 of the
+  223 effluent-net reaches (581 of 1284 km) have no piece with their id: `pipeline:lines` matches APRHI/IGN parts to
+  the nearest reach within 250/1000 m, and 75 of the 85 have no drawn line within 1 km (below Córdoba the HydroRIVERS
+  path runs 3–5 km off the mapped Suquía channel). Tagging pieces with a `netReach` attribute would not help, so the
+  map paints the 138 covered reaches and the panel says so; the analysis page carries the full downstream profile.
+  Rejected: drawing HydroRIVERS lines (off the channel on the plains) and painting along the course by chainage
+  (a spike, after the MVP if needed).
+
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
 - **Flow controls live in the flow panel on desktop (owner).** The 480 px floating bar ran under both side panels

@@ -4,7 +4,7 @@ import type { Bbox } from "./data/schemas";
 import type { Picked } from "./map/picked";
 import type { FlowClass, Theme } from "./map/style";
 import type { UnitSystem } from "./units";
-import type { Selection } from "./url-state";
+import type { EffluentOverrides, EffluentUrl, Selection } from "./url-state";
 
 /** localStorage key for the km/mi choice; read on mount by UnitsToggle. */
 export const UNITS_STORAGE_KEY = "units";
@@ -125,6 +125,28 @@ interface MapState {
    */
   lastClick: [lng: number, lat: number] | null;
   setLastClick: (lngLat: [number, number] | null) => void;
+  /**
+   * Effluent mode (phase E1): the reach that receives the discharge and what the user changed
+   * from the config's defaults, or null. Mirrored in the URL (?ef=) by UrlSync; entering exits
+   * flow mode and the other way round.
+   */
+  effluent: EffluentUrl | null;
+  /**
+   * The reach under the last map click (not in the URL), so "Simulate a discharge here" works
+   * from a river or stream panel. Any selection clears it; the click sets it afterwards.
+   */
+  clickedReachId: number | null;
+  setClickedReachId: (id: number | null) => void;
+  /** Overrides are kept when `keepOverrides`, or set from `overrides` (the URL's). */
+  enterEffluent: (
+    reach: number,
+    opts?: { keepOverrides?: boolean; overrides?: EffluentOverrides },
+  ) => void;
+  /** Moves the outfall to another reach, keeping the overrides. */
+  moveOutfall: (reach: number) => void;
+  /** Merges into the overrides; an undefined value resets that one to its default. */
+  setEffluentOverrides: (patch: Partial<EffluentOverrides>) => void;
+  exitEffluent: () => void;
 }
 
 export const useMapStore = create<MapState>()((set) => ({
@@ -158,6 +180,7 @@ export const useMapStore = create<MapState>()((set) => ({
       selection,
       picked: null,
       lastClick: null,
+      clickedReachId: null,
       isolatedIds: opts?.keepIsolated && selection ? s.isolatedIds : null,
       fitPending: Boolean(selection && opts?.fit),
       viewMode: selection?.kind === "subbasin" ? "subbasins" : s.viewMode,
@@ -189,7 +212,11 @@ export const useMapStore = create<MapState>()((set) => ({
   flowPlaying: false,
   flowFitPending: false,
   enterFlow: (id, opts) =>
-    set({ flowSection: id, flowFitPending: Boolean(opts?.fit) }),
+    set({
+      flowSection: id,
+      flowFitPending: Boolean(opts?.fit),
+      effluent: null,
+    }),
   exitFlow: () => set({ flowSection: null, flowFitPending: false }),
   setFlowSpeed: (flowSpeed) => set({ flowSpeed }),
   setFlowPlaying: (flowPlaying) => set({ flowPlaying }),
@@ -197,4 +224,34 @@ export const useMapStore = create<MapState>()((set) => ({
   setFlowZoomedOut: (flowZoomedOut) => set({ flowZoomedOut }),
   lastClick: null,
   setLastClick: (lastClick) => set({ lastClick }),
+  effluent: null,
+  clickedReachId: null,
+  setClickedReachId: (clickedReachId) => set({ clickedReachId }),
+  enterEffluent: (reach, opts) =>
+    set((s) => ({
+      effluent: {
+        reach,
+        overrides: opts?.keepOverrides
+          ? (s.effluent?.overrides ?? {})
+          : (opts?.overrides ?? {}),
+      },
+      flowSection: null,
+      flowFitPending: false,
+    })),
+  moveOutfall: (reach) =>
+    set((s) =>
+      s.effluent ? { effluent: { ...s.effluent, reach } } : { effluent: null },
+    ),
+  setEffluentOverrides: (patch) =>
+    set((s) => {
+      if (!s.effluent) return {};
+      const overrides: EffluentOverrides = {
+        ...s.effluent.overrides,
+        ...patch,
+      };
+      for (const key of Object.keys(overrides) as (keyof EffluentOverrides)[])
+        if (overrides[key] === undefined) delete overrides[key];
+      return { effluent: { ...s.effluent, overrides } };
+    }),
+  exitEffluent: () => set({ effluent: null }),
 }));

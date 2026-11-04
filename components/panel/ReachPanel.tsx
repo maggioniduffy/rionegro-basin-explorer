@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { ReachResponse } from "@/lib/data/queries";
+import { SimulateButton } from "@/components/effluent/SimulateButton";
 import { FlowButton } from "@/components/flow/FlowButton";
 import { NoFlowNote } from "@/components/flow/FlowPanel";
 import { useFlowIndex } from "@/lib/flow/data";
@@ -53,6 +54,7 @@ export function ReachPanel({ reach }: { reach: ReachResponse }) {
         )}
         {river && flowIndex && <FlowButton index={flowIndex} slug={river} />}
         {flowIndex && river && <NoFlowNote index={flowIndex} slug={river} />}
+        <SimulateButton reachId={reach._id} />
         {stream && reach.streamName && (
           <button
             type="button"

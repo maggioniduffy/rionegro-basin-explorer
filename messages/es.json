@@ -475,6 +475,23 @@
     "regions": "Regiones",
     "open": "Abrir el explorador"
   },
+  "effluent": {
+    "title": "Simulación de vertido",
+    "simulate": "Simular un vertido aquí",
+    "coverage": "El simulador cubre solo la cuenca del Suquía.",
+    "outfall": "Punto de vertido",
+    "customReach": "Tramo {id}",
+    "loading": "Ejecutando la simulación\u2026",
+    "unavailable": "La simulación no está disponible: no se pudo cargar el pronóstico de caudal, o los datos de entrada no se pueden ejecutar.",
+    "entersLake": "La pluma llega a {lake}; el modelo se detiene allí.",
+    "legend": {
+      "title": "Efluente",
+      "outfall": "Punto de vertido",
+      "exceeds": "Supera un umbral",
+      "within": "Pluma dentro de los umbrales",
+      "note": "Modelo de screening, sin calibrar."
+    }
+  },
   "menu": {
     "open": "Abrir menú",
     "close": "Cerrar menú"

@@ -949,6 +949,21 @@ never before it. The only exception is a reach shorter than one tile unit at tha
 a pixel), which tippecanoe drops because it collapses to a point. It also checks that every mask
 level and every sub-basin is present at each checked zoom, and records file sizes and the tippecanoe version.
 
+### `npm run pipeline:effluent-net -- --region <id>`
+
+Phase E1 (`cba` only; exits with an error when `regions/<id>/effluent.config.json` is missing). Writes the
+compact river subgraph the effluent screening model walks, `regions/<id>/effluent-net.json` (committed): the
+config's `mouthReach` plus everything upstream of it on `reaches.ndjson` (its `nextDown` is already the
+effective link, after the cuts and `network-overrides.json`), each reach with a gauge index (`gaugeSplit`), plus the
+lake node and outfall reaches from the config. For each gauge cell it fetches GloFAS v4's 1984-01-01 to
+2022-07-31 daily discharge from the Open-Meteo Flood API (CC BY 4.0, non-commercial free tier) and caches the
+raw response in `data/work/<region>/effluent-net/glofas/<gauge>_<lat>_<lon>.json` (the API returns nulls before 1997-01-01, so the
+climatology is the non-null days, 1997-01-01 to 2022-07-31); reruns reuse the cache, are offline and
+byte-identical. A per-minute rate limit waits 65 s and retries up to 3 times; any other API error fails the
+step. `report.json`: `ok`, the checks (`walksEndAtMouth`, `lakeReachesPresent`, `outfallReachesPresent`,
+`gaugesHaveClimatology`, `bothGaugesUsed`, `fileBytes`), reaches per gauge, and per gauge the snapped cell,
+non-null days, mean and first/last date.
+
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `ign` →
 `ign-match` → `named` → `lakes` → `ign-streams` → `ign-layers` → `localities` → `export` → `mask` →
 `subbasins` → `tiles`. For `cba` (R3.4): `lines` → `line-names` → `named` → `ign-streams` → `export`, and the

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  effluentSearch,
   flowSearch,
   legacyMapPath,
+  parseEffluent,
   parseFlow,
   parseSelection,
+  sameEffluent,
   sameSelection,
   selectionSearch,
 } from "@/lib/url-state";
@@ -144,5 +147,49 @@ describe("flow state", () => {
     expect(
       flowSearch(params("flow=x&fs=2&r=limay"), { section: null, speed: 2 }),
     ).toBe("?r=limay");
+  });
+});
+
+describe("effluent state", () => {
+  it("round-trips every token and keeps the other parameters", () => {
+    const ef = {
+      reach: 61477479,
+      overrides: {
+        flowM3s: 2.8,
+        bodMgL: 30,
+        coliformsPer100mL: 100000,
+        doMgL: 2,
+        removalPct: 50,
+        scenario: { day: 2, stat: "median" as const },
+        doMinMgL: 5,
+        coliformsThreshold: 1000,
+        tempC: 24.5,
+        levels: { kd: "high" as const, manningN: "low" as const },
+      },
+    };
+    const qs = effluentSearch(params("r=suquia&foo=1"), ef);
+    expect(qs).toBe(
+      "?r=suquia&foo=1&ef=61477479_q2.8_b30_c100000_o2_x50_sd3m_td5_tc1000_w24.5_lkh_lnl",
+    );
+    expect(parseEffluent(params(qs))).toEqual(ef);
+    expect(sameEffluent(parseEffluent(params(qs)), ef)).toBe(true);
+    expect(parseEffluent(params("ef=61477479_st"))?.overrides.scenario).toBe(
+      "today",
+    );
+    expect(effluentSearch(params(qs), null)).toBe("?r=suquia&foo=1");
+  });
+  it("writes no defaults and drops invalid tokens, or the whole param for a bad reach", () => {
+    expect(effluentSearch(params(""), { reach: 61477479, overrides: {} })).toBe(
+      "?ef=61477479",
+    );
+    expect(
+      parseEffluent(params("ef=61477479_x50_q-1_zz_sd0m_lkx_b1e3_lnc")),
+    ).toEqual({
+      reach: 61477479,
+      overrides: { removalPct: 50 },
+    });
+    expect(parseEffluent(params("ef=abc_x50"))).toBeNull();
+    expect(parseEffluent(params("ef=0"))).toBeNull();
+    expect(parseEffluent(params("r=suquia"))).toBeNull();
   });
 });

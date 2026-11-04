@@ -8,6 +8,7 @@ import type {
   StreamResponse,
   SubbasinResponse,
 } from "@/lib/data/queries";
+import { EffluentPanel } from "@/components/effluent/EffluentPanel";
 import { FlowPanel } from "@/components/flow/FlowPanel";
 import { useMapStore } from "@/lib/store";
 import { useApi } from "@/lib/use-api";
@@ -44,7 +45,9 @@ export function InfoPanel() {
   const selection = useMapStore((s) => s.selection);
   const picked = useMapStore((s) => s.picked);
   const flowSection = useMapStore((s) => s.flowSection);
-  // Flow mode replaces the details; leaving it brings the selection's panel back.
+  const effluent = useMapStore((s) => s.effluent !== null);
+  // Flow and effluent mode replace the details; leaving them brings the selection's panel back.
+  if (effluent) return <EffluentPanel />;
   if (flowSection) return <FlowPanel key={flowSection} id={flowSection} />;
   if (!selection) return picked ? <FeaturePanel picked={picked} /> : null;
   // Remount per selection so scroll position and state start fresh.

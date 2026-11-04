@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { SimulateButton } from "@/components/effluent/SimulateButton";
 import type { StreamResponse } from "@/lib/data/queries";
 import { useMapStore } from "@/lib/store";
 import {
@@ -23,6 +24,7 @@ export function StreamPanel({ stream }: { stream: StreamResponse }) {
   const seaDistance = useSeaDistance();
   const label = useSubbasinLabel();
   const select = useMapStore((s) => s.select);
+  const clickedReachId = useMapStore((s) => s.clickedReachId);
   const modeled = (path: string) => stream.modeled.includes(path);
   const caveats = CAVEAT_BY_PATH.filter(([path]) => modeled(path)).map(
     ([, c]) => c,
@@ -37,6 +39,7 @@ export function StreamPanel({ stream }: { stream: StreamResponse }) {
           {stream.name}
         </h2>
         <p className="text-muted text-sm">{t("stream.title")}</p>
+        <SimulateButton reachId={clickedReachId} />
         {stream.receivingRiverRef && (
           <p className="text-muted text-sm">
             {t("river.flowsInto")}{" "}

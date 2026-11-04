@@ -38,6 +38,7 @@
     "pipeline:lakes": "tsx pipeline/steps/lakes.ts",
     "preview:map": "tsx scripts/preview-map.ts",
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "pipeline:effluent-net": "tsx pipeline/steps/effluent-net.ts",
     "pipeline:subbasins": "tsx pipeline/steps/subbasins.ts",
     "pipeline:ign-gate": "tsx pipeline/steps/ign-gate.ts",
     "pipeline:basin-gate": "tsx pipeline/steps/basin-gate.ts",
