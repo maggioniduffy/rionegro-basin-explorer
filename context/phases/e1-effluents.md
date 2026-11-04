@@ -148,5 +148,5 @@ screening model and no monitoring data, ML would only learn the model back.
   - _Hover / tap card (owner: yes):_ on a plume reach, DO, BOD and coliforms there and the km from the outfall.
   - _Coverage note:_ the panel says the map paints the plume only where drawn lines match model reaches (138 of 223
     net reaches; DECISSIONS 2026-11-04); the full profile is on the analysis page.
-  - _Entry with nothing selected (to decide):_ recommended a "Discharge simulation" section in the left panel's Map
-    tab (cba only) with "Simulate at EDAR Bajo Grande"; alternative: an icon in the top-right map toolbar.
+  - _Entry with nothing selected (owner, 2026-11-04):_ a "Discharge simulation" section in the left panel's Map tab
+    (cba only), under "View", with "Simulate at EDAR Bajo Grande"
