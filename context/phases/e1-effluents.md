@@ -134,3 +134,5 @@ screening model and no monitoring data, ML would only learn the model back.
   non-mean scenario fetches `/api/discharge` twice); clamp/round inputs where entered (exponent-form numbers are not
   written to `?ef=`); tell a forecast failure apart from an input the model rejects; decide on an entry point with
   nothing selected (no natural spot in `Controls`; today: the panel button or a `?ef=` link).
+- E1.5: say in the panel that the map paints the plume only where drawn lines match model reaches (138 of 223 net
+  reaches; DECISSIONS 2026-11-04); the full profile is on the analysis page.

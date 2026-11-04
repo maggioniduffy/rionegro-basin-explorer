@@ -48,6 +48,14 @@ hackathon (12–13 Nov 2026).
   values (`defaultsFrom: "permitLimitAssumption"`, to label in E1.5). A forecast scenario that can't be built is
   "unavailable", never the mean.
 
+- **Plume drawn only where tile lines carry the reach id (owner, 2026-11-04).** In cba's `reaches` tiles 85 of the
+  223 effluent-net reaches (581 of 1284 km) have no piece with their id: `pipeline:lines` matches APRHI/IGN parts to
+  the nearest reach within 250/1000 m, and 75 of the 85 have no drawn line within 1 km (below Córdoba the HydroRIVERS
+  path runs 3–5 km off the mapped Suquía channel). Tagging pieces with a `netReach` attribute would not help, so the
+  map paints the 138 covered reaches and the panel says so; the analysis page carries the full downstream profile.
+  Rejected: drawing HydroRIVERS lines (off the channel on the plains) and painting along the course by chainage
+  (a spike, after the MVP if needed).
+
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
 - **Flow controls live in the flow panel on desktop (owner).** The 480 px floating bar ran under both side panels
