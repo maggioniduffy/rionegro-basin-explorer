@@ -130,9 +130,23 @@ screening model and no monitoring data, ML would only learn the model back.
 - Effluent BOD/coliform values for Bajo Grande are not public: the panel defaults to the permit limit
   ("compliance scenario") and leaves them editable.
 - No dissolved-oxygen objective in Córdoba's rules: 5 mg/L is an explicit, editable assumption.
-- E1.5 (from the E1.4 review): compute the run once (map controller and panel each call `useEffluentRun`, so a
-  non-mean scenario fetches `/api/discharge` twice); clamp/round inputs where entered (exponent-form numbers are not
-  written to `?ef=`); tell a forecast failure apart from an input the model rejects; decide on an entry point with
-  nothing selected (no natural spot in `Controls`; today: the panel button or a `?ef=` link).
-- E1.5: say in the panel that the map paints the plume only where drawn lines match model reaches (138 of 223 net
-  reaches; DECISSIONS 2026-11-04); the full profile is on the analysis page.
+- **E1.5 scope added (owner, 2026-11-04, after the E1.4 browser check; not started):**
+  - _Run once:_ an `EffluentRunProvider` (React context) mounted once on the map page computes the run and fetches
+    `/api/discharge` once; the plume layer, the panel and the hover card read it (today the controller and the panel
+    each call `useEffluentRun`, so a non-mean scenario fetches twice). The analysis page reuses the provider.
+  - _Inputs bounded and rounded:_ each field has min / max / step (e.g. flow 0.01–50 m³/s step 0.01, BOD 0–1000 mg/L
+    step 1, coliforms 2 significant digits, removal 0–100 % step 1), rounded on commit so the store never holds a
+    value `?ef=` cannot write (exponent-form numbers). The bounds are UI limits and the panel labels them as such.
+  - _Two failure messages:_ the run carries a reason. Forecast failure → "GloFAS forecast unavailable" with a
+    "Use the long-term mean" button (the user picks it; no silent fallback). Inputs the model rejects → "These inputs
+    can't be simulated", naming the field.
+  - _Tributary stubs (owner: fix):_ the plume paints the lower pieces of tributaries that `pipeline:lines` matched to
+    the main reach (250 m buffer), so red/grey branches stick out of the river. Verify first; likely fix: add each net
+    reach's river/stream to `effluent-net.json` and paint only pieces whose river/stream matches it (no tile rebuild).
+  - _Look (owner):_ "within" plume in grey, "exceeds" in red at 80 % opacity (today too faint); a larger outfall marker
+    with a light border and halo.
+  - _Hover / tap card (owner: yes):_ on a plume reach, DO, BOD and coliforms there and the km from the outfall.
+  - _Coverage note:_ the panel says the map paints the plume only where drawn lines match model reaches (138 of 223
+    net reaches; DECISSIONS 2026-11-04); the full profile is on the analysis page.
+  - _Entry with nothing selected (to decide):_ recommended a "Discharge simulation" section in the left panel's Map
+    tab (cba only) with "Simulate at EDAR Bajo Grande"; alternative: an icon in the top-right map toolbar.
