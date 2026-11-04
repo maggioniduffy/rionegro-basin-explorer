@@ -464,7 +464,7 @@ export function reachOrder(properties: Record<string, unknown>): number {
 }
 
 /** Line width in px, by order (1–7, REACH_ORDER) and zoom, plus `extra` px. */
-function reachWidth(scale: number, extra = 0): ExpressionSpecification {
+export function reachWidth(scale: number, extra = 0): ExpressionSpecification {
   const s = REACH_ORDER;
   return [
     "interpolate",

@@ -65,9 +65,11 @@ import {
   reachFeatureSelection,
   reachOrder,
 } from "@/lib/map/style";
+import { EffluentController } from "@/components/effluent/EffluentController";
 import { FlowController } from "@/components/flow/FlowController";
 import { useRegion } from "@/components/RegionProvider";
 import { peekFlowIndex } from "@/lib/flow/data";
+import { netReachIds } from "@/lib/effluent/overlay";
 import { nearestSection, riverHasFlow } from "@/lib/flow/pick";
 import { useAdoptSavedBaseLayer } from "@/lib/use-saved-base-layer";
 import { initMaplibre } from "@/lib/map/init";
@@ -123,7 +125,7 @@ function selectionPadding() {
   return { top: 80, bottom: sheet + 16, right: 32, left: 32 };
 }
 
-/** Reach lines dim to this opacity in flow mode, so the particles read against the channel. */
+/** Reach lines dim to this opacity in flow and effluent mode, so the particles read against the channel. */
 const FLOW_DIMMED_REACH_OPACITY = 0.2;
 /** Their opacity otherwise (the style leaves it at the default 1, except the unmatched pieces). */
 const REACH_OPACITY: [string, number][] = [
@@ -137,7 +139,7 @@ const HIT_TOLERANCE_PX = 6;
 
 /** What a click at a point finds: a river, stream, reach or sub-basin, or a map feature. */
 type Hit =
-  | { type: "selection"; selection: Selection }
+  | { type: "selection"; selection: Selection; reachId?: number }
   | { type: "picked"; picked: Picked };
 
 /**
@@ -234,6 +236,31 @@ function hitFeature(
   return null;
 }
 
+/** The reach of the effluent net under a point (the largest where lines cross), or null. */
+function netReachAt(
+  map: MapLibreMap,
+  x: number,
+  y: number,
+  net: Set<number>,
+): number | null {
+  const r = HIT_TOLERANCE_PX;
+  const features = map
+    .queryRenderedFeatures(
+      [
+        [x - r, y - r],
+        [x + r, y + r],
+      ],
+      { layers: REACH_LAYER_IDS },
+    )
+    .filter((f) => net.has(Number(f.id)));
+  const best = features.reduce<(typeof features)[number] | undefined>(
+    (a, f) =>
+      !a || reachOrder(f.properties) > reachOrder(a.properties) ? f : a,
+    undefined,
+  );
+  return best ? Number(best.id) : null;
+}
+
 function hitSubbasin(map: MapLibreMap, x: number, y: number): Selection | null {
   if (useMapStore.getState().viewMode !== "subbasins") return null;
   const [feature] = map.queryRenderedFeatures([x, y], {
@@ -263,7 +290,13 @@ function hitReach(map: MapLibreMap, x: number, y: number): Hit | null {
   );
   if (!best) return null;
   const selection = reachFeatureSelection(best.properties, best.id);
-  if (selection) return { type: "selection", selection };
+  const reachId = Number(best.id);
+  if (selection)
+    return {
+      type: "selection",
+      selection,
+      ...(Number.isSafeInteger(reachId) ? { reachId } : {}),
+    };
   const line = toPickedLine(best.properties);
   return line ? { type: "picked", picked: line } : null;
 }
@@ -365,17 +398,22 @@ function applyState(map: MapLibreMap, s: State, prev?: State) {
     );
   }
   const flowOn = s.flowSection !== null;
-  if (!prev || flowOn !== (prev.flowSection !== null)) {
+  // Effluent mode dims the reach lines the same way, so the plume reads against them.
+  const dimOn = flowOn || s.effluent !== null;
+  if (
+    !prev ||
+    dimOn !== (prev.flowSection !== null || prev.effluent !== null)
+  ) {
     for (const [id, opacity] of REACH_OPACITY)
       map.setPaintProperty(
         id,
         "line-opacity",
-        flowOn ? FLOW_DIMMED_REACH_OPACITY : opacity,
+        dimOn ? FLOW_DIMMED_REACH_OPACITY : opacity,
       );
     map.setLayoutProperty(
       SELECTED_LAYER_ID,
       "visibility",
-      flowOn ? "none" : "visible",
+      dimOn ? "none" : "visible",
     );
   }
   if (!prev || s.theme !== prev.theme) {
@@ -529,8 +567,16 @@ export default function MapView() {
     // or a feature clicked while sub-basins are isolated is inside them: keep the rest hidden.
     map.on("click", (e) => {
       if (!loaded) return;
-      const hit = hitAt(map, e.point.x, e.point.y);
       const store = useMapStore.getState();
+      // In effluent mode a click on a reach of the net moves the outfall there, keeping the
+      // inputs; a click anywhere else does nothing.
+      if (store.effluent) {
+        const net = netReachIds(region);
+        const id = net ? netReachAt(map, e.point.x, e.point.y, net) : null;
+        if (id !== null) store.moveOutfall(id);
+        return;
+      }
+      const hit = hitAt(map, e.point.x, e.point.y);
       const click: [number, number] = [e.lngLat.lng, e.lngLat.lat];
       // In flow mode a river with flow sections replaces the section, nearest the click.
       // Switch before selecting: select() keeps flow for the section's own river, so flow
@@ -549,6 +595,9 @@ export default function MapView() {
       else store.select(hit?.selection ?? null, { keepIsolated: true });
       // After the selection, which clears it: the panel's "View flow" opens the section here.
       store.setLastClick(click);
+      store.setClickedReachId(
+        hit?.type === "selection" ? (hit.reachId ?? null) : null,
+      );
     });
     // Hovering a locality also names it; the click opens its panel.
     const nameTip = new Popup({
@@ -604,7 +653,8 @@ export default function MapView() {
         s.isolatedIds === prev.isolatedIds &&
         s.layers === prev.layers &&
         s.baseLayer === prev.baseLayer &&
-        (s.flowSection === null) === (prev.flowSection === null)
+        (s.flowSection === null) === (prev.flowSection === null) &&
+        (s.effluent === null) === (prev.effluent === null)
       )
         return;
       setIdle(false);
@@ -645,6 +695,7 @@ export default function MapView() {
         />
       </div>
       <FlowController map={flowMap} padding={selectionPadding} />
+      <EffluentController map={flowMap} />
       <MapToolbar
         onZoomIn={() => mapRef.current?.zoomIn()}
         onZoomOut={() => mapRef.current?.zoomOut()}

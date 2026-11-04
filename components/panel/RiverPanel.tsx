@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { isMouthKind } from "@/lib/data/mouth";
 import type { RiverResponse } from "@/lib/data/queries";
 import { useRegion } from "@/components/RegionProvider";
+import { SimulateButton } from "@/components/effluent/SimulateButton";
 import { FlowButton } from "@/components/flow/FlowButton";
 import { NoFlowNote } from "@/components/flow/FlowPanel";
 import { useFlowIndex } from "@/lib/flow/data";
@@ -24,6 +25,7 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
   const seaDistance = useSeaDistance();
   const select = useMapStore((s) => s.select);
   const flowIndex = useFlowIndex();
+  const clickedReachId = useMapStore((s) => s.clickedReachId);
   const courseFill = hasCourseFill(useRegion());
   const modeled = (path: string) => river.modeled.includes(path);
   const caveats = CAVEAT_BY_PATH.filter(([path]) => modeled(path)).map(
@@ -38,6 +40,7 @@ export function RiverPanel({ river }: { river: RiverResponse }) {
         </h2>
         {flowIndex && <FlowButton index={flowIndex} slug={river._id} />}
         {flowIndex && <NoFlowNote index={flowIndex} slug={river._id} />}
+        <SimulateButton reachId={clickedReachId} />
         <p className="text-muted text-sm">
           {t("river.flowsInto")}{" "}
           {river.flowsInto === "sea" ? (

@@ -475,6 +475,23 @@
     "regions": "Regions",
     "open": "Open the explorer"
   },
+  "effluent": {
+    "title": "Discharge simulation",
+    "simulate": "Simulate a discharge here",
+    "coverage": "The simulator covers the Suquía basin only.",
+    "outfall": "Outfall",
+    "customReach": "Reach {id}",
+    "loading": "Running the simulation\u2026",
+    "unavailable": "The simulation is not available: the discharge forecast could not be loaded, or the inputs cannot be run.",
+    "entersLake": "The plume enters {lake}; the model stops there.",
+    "legend": {
+      "title": "Effluent",
+      "outfall": "Outfall",
+      "exceeds": "Exceeds a threshold",
+      "within": "Plume within thresholds",
+      "note": "Screening model, not calibrated."
+    }
+  },
   "menu": {
     "open": "Open menu",
     "close": "Close menu"

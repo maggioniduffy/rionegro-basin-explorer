@@ -83,7 +83,7 @@ These two values are still unverified, so the config keeps them as null or label
 - [x] E1.2 `lib/effluent/` pure model + `tests/effluent-model.test.ts`
 - [x] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config);
       `lib/effluent/{registry,glofas,forecast}.ts`, `scenarioFor` (day 0 = tomorrow, UTC; null on missing or misaligned dates)
-- [ ] E1.4 Effluent mode: store slice, `?ef=` URL param (all simulator inputs), overlay controller, legend, "Simulate a discharge here" in `ReachPanel` for any reach of the effluent net, configured outfall picker
+- [x] E1.4 Effluent mode: store slice, `?ef=` URL param (all simulator inputs), overlay controller, legend, "Simulate a discharge here" in `ReachPanel` for any reach of the effluent net, configured outfall picker
 - [ ] E1.5 Compact `EffluentPanel` on the map: basic simulator inputs (flow, BOD₅, coliforms, DO, removal %, scenario, reset), plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
 - [ ] E1.7 Analysis page `/[region]/effluents` (layout guide: [e1/design/](e1/design/README.md)): DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
 - [ ] E1.6 _(stretch)_ San Roque section on the analysis page: TP inflow, predicted TP range, trophic class
@@ -119,6 +119,10 @@ screening model and no monitoring data, ML would only learn the model back.
 - [x] Live check of E1.3 (2026-11-03): 2 gauges, 29 days, `/rionegro` 404. Needed `instrumentation.ts`: Node 24's
       250 ms happy-eyeballs attempt timeout is shorter than the ~350 ms connect to Open‑Meteo on the owner's network.
 - [ ] Confirm Open‑Meteo's terms allow caching responses ~3 h (`pipeline/SOURCES.md`, "Not verified").
+- [ ] Browser check E1.4 on `/cordoba`: `?ef=61477479` colours the reaches below Bajo Grande, shows the outfall
+      marker and the legend block, survives a reload; "Simulate a discharge here" on a Suquía reach; in the mode a
+      click on another net reach moves the plume; `_st` with the route down says "unavailable"; an outfall above San
+      Roque shows the lake note; `/rionegro?ef=61477479` drops the param.
 - [ ] Browser check `/cordoba` on the phase preview; decide whether to ship to production before the event.
 
 ## Follow-ups
@@ -126,3 +130,7 @@ screening model and no monitoring data, ML would only learn the model back.
 - Effluent BOD/coliform values for Bajo Grande are not public: the panel defaults to the permit limit
   ("compliance scenario") and leaves them editable.
 - No dissolved-oxygen objective in Córdoba's rules: 5 mg/L is an explicit, editable assumption.
+- E1.5 (from the E1.4 review): compute the run once (map controller and panel each call `useEffluentRun`, so a
+  non-mean scenario fetches `/api/discharge` twice); clamp/round inputs where entered (exponent-form numbers are not
+  written to `?ef=`); tell a forecast failure apart from an input the model rejects; decide on an entry point with
+  nothing selected (no natural spot in `Controls`; today: the panel button or a `?ef=` link).

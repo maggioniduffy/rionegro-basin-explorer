@@ -25,3 +25,15 @@ export const THEME_TOKENS: Record<
   dark: { bg: "#0b1320", text: "#eef0e8", textRgb: "238, 240, 232" },
   light: { bg: "#f5f7f4", text: "#13233d", textRgb: "19, 35, 61" },
 };
+
+/**
+ * Effluent mode's map colours per theme (MapLibre cannot read CSS variables): the plume where
+ * a threshold is exceeded, the rest of the simulated path, and the outfall marker.
+ */
+export const EFFLUENT_COLORS: Record<
+  Theme,
+  { exceeds: string; within: string; outfall: string }
+> = {
+  dark: { exceeds: "#ff5a4d", within: "#c4b5fd", outfall: "#ffffff" },
+  light: { exceeds: "#d6291c", within: "#7c3aed", outfall: "#13233d" },
+};

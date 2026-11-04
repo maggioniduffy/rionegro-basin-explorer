@@ -84,7 +84,7 @@ export function MobileSheet() {
   const drag = useRef<{ y: number; h: number; moved: boolean } | null>(null);
   const heights = useHeights();
   const hasDetails = useMapStore((s) =>
-    Boolean(s.selection ?? s.picked ?? s.flowSection),
+    Boolean(s.selection ?? s.picked ?? s.flowSection ?? s.effluent),
   );
   const height = dragHeight ?? heights[snap];
 
@@ -95,7 +95,8 @@ export function MobileSheet() {
         const opened =
           (s.selection && s.selection !== prev.selection) ||
           (s.picked && s.picked !== prev.picked) ||
-          (s.flowSection && !prev.flowSection);
+          (s.flowSection && !prev.flowSection) ||
+          (s.effluent && !prev.effluent);
         if (!opened) return;
         setTab("info");
         setSnap(atLeastHalf);

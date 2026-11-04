@@ -40,6 +40,14 @@ hackathon (12–13 Nov 2026).
   analysis page, so the map panel stays small. Coefficients move only between their sourced low / central / high
   levels (Rule 2); thresholds and effluent values are labelled assumptions. All inputs are URL state.
 
+- **Effluent mode on the map (E1.4, owner, 2026-11-04).** In the mode a click on a reach of the effluent net moves
+  the outfall there and keeps the inputs; a click outside the net does nothing. The plume has two classes: "exceeds"
+  (DO below its threshold, or coliforms/BOD above a threshold that has a value) and "within". `?ef=` holds the reach
+  and only the overrides (`<reach>_q…_b…_c…_o…_x…_s…_td…_tc…_w…_lk/ln/lw…`; `sd<N><l|m|h>`, N = 1 is tomorrow), so
+  defaults always come from the config. A reach without a configured outfall takes the first outfall's permit-limit
+  values (`defaultsFrom: "permitLimitAssumption"`, to label in E1.5). A forecast scenario that can't be built is
+  "unavailable", never the mean.
+
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
 - **Flow controls live in the flow panel on desktop (owner).** The 480 px floating bar ran under both side panels
