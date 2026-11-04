@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useRegion } from "@/components/RegionProvider";
 import { hasEffluent, reachStatus } from "@/lib/effluent/overlay";
 import { getEffluentRegion } from "@/lib/effluent/registry";
+import type { EffluentNet } from "@/lib/effluent/schema";
 import { useEffluentRun } from "@/lib/effluent/use-run";
 import { DAM_WALL_LAYER_ID, reachWidth } from "@/lib/map/style";
 import { useMapStore } from "@/lib/store";
@@ -48,24 +49,41 @@ const near = (a: Position, b: Position) =>
   Math.abs(a[0] - b[0]) < EPS_DEG && Math.abs(a[1] - b[1]) < EPS_DEG;
 
 /**
- * Where the outfall reach starts: its end farthest from the reach it flows into. The line
- * direction in the tiles is not assumed. Ends that meet another piece of the same reach are tile
- * edges, not ends. null until the tiles of both reaches are loaded (or at the river mouth).
+ * Where the outfall reach starts. Not every net reach has line features in the tiles (cba draws
+ * APRHI/IGN pieces, and only matched ones carry the reach id), so the reference is the endpoints
+ * of the nearest reach down the net that has some: the outfall reach's end farthest from them is
+ * its upstream end. Failing that, the end nearest the endpoints of a reach flowing into it. The
+ * line direction in the tiles is not assumed. Ends that meet another piece of the same reach are
+ * tile edges, not ends. null until the tiles are loaded (or when the reach has no features).
  */
 function outfallPoint(
   map: MapLibreMap,
+  net: EffluentNet,
   reach: number,
-  nextDown: number,
 ): Position | null {
-  if (nextDown === 0) return null;
-  const down = endpoints(map, nextDown);
+  const byId = new Map(net.reaches.map((r) => [r.id, r]));
   const ends = endpoints(map, reach).filter(
     (p, i, all) => !all.some((q, j) => j !== i && near(p, q)),
   );
-  if (down.length === 0 || ends.length === 0) return null;
-  const gap = (p: Position) =>
-    Math.min(...down.map((q) => Math.hypot(p[0] - q[0], p[1] - q[1])));
-  return ends.reduce((a, b) => (gap(b) > gap(a) ? b : a));
+  if (ends.length === 0) return null;
+  const gap = (p: Position, refs: Position[]) =>
+    Math.min(...refs.map((q) => Math.hypot(p[0] - q[0], p[1] - q[1])));
+  const seen = new Set<number>();
+  for (
+    let id = byId.get(reach)?.nextDown ?? 0;
+    id !== 0 && !seen.has(id);
+    id = byId.get(id)?.nextDown ?? 0
+  ) {
+    seen.add(id);
+    const down = endpoints(map, id);
+    if (down.length > 0)
+      return ends.reduce((a, b) => (gap(b, down) > gap(a, down) ? b : a));
+  }
+  const up = net.reaches
+    .filter((r) => r.nextDown === reach)
+    .flatMap((r) => endpoints(map, r.id));
+  if (up.length === 0) return null;
+  return ends.reduce((a, b) => (gap(b, up) < gap(a, up) ? b : a));
 }
 
 /**
@@ -177,15 +195,12 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
           : [],
       });
     set(null);
-    const nextDown = reach
-      ? getEffluentRegion(region)?.net.reaches.find((r) => r.id === reach)
-          ?.nextDown
-      : undefined;
-    if (reach === null || nextDown === undefined) return;
+    const net = getEffluentRegion(region)?.net;
+    if (reach === null || !net) return;
     let placed = false;
     const place = () => {
       if (placed) return;
-      const point = outfallPoint(map, reach, nextDown);
+      const point = outfallPoint(map, net, reach);
       if (!point) return;
       placed = true;
       set(point);
