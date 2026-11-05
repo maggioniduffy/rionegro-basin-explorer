@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import { useApi } from "@/lib/use-api";
 import type { RegionId } from "@/regions";
 import { scenarioFor, type DischargeForecast } from "./forecast";
 import { netReachIds } from "./overlay";
@@ -120,6 +121,29 @@ export const EffluentForecastContext = createContext<DischargeForecast | null>(
 /** The fetched forecast the run used, for its "fetched at" stamp; null when there is none. */
 export function useForecast(): DischargeForecast | null {
   return useContext(EffluentForecastContext);
+}
+
+/** The forecast the analysis page compares scenarios against. */
+export type ComparisonForecast =
+  | { status: "loading" | "unavailable"; forecast: null }
+  | { status: "ok"; forecast: DischargeForecast };
+
+/**
+ * The forecast for the scenario comparison and the flow chart: the run's own when it fetched one,
+ * else fetched here (a run on the long-term mean fetches none). A failure is "unavailable";
+ * nothing is substituted. Fetches nothing when `enabled` is false.
+ */
+export function useComparisonForecast(enabled: boolean): ComparisonForecast {
+  const provided = useForecast();
+  const own = useApi<DischargeForecast>(
+    enabled && !provided ? "/api/discharge" : null,
+  );
+  if (provided) return { status: "ok", forecast: provided };
+  if (!enabled || own.status === "loading")
+    return { status: "loading", forecast: null };
+  return own.status === "ok"
+    ? { status: "ok", forecast: own.data }
+    : { status: "unavailable", forecast: null };
 }
 
 /** One run of the model for an effluent state; pure, so it runs without React. */

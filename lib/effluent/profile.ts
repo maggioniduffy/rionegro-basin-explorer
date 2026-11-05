@@ -4,6 +4,7 @@ import {
   paramsFromConfig,
   simulate,
   type ModelParams,
+  type ParamLevels,
   type SimulationInput,
   type SimulationResult,
 } from "./river";
@@ -94,6 +95,25 @@ export function envelopeOf(profiles: Profile[]): ProfileEnvelope | null {
 const LEVELS: Level[] = ["low", "central", "high"];
 
 /**
+ * The run's parameters with only the kd (and coliform decay) and Manning n levels swapped for the
+ * config's: the width level and the temperature override stay the run's. `uncertaintyBand` and
+ * `profileEnvelope` both vary the coefficients this way, so their bands agree.
+ */
+export function paramsWithLevels(
+  config: EffluentConfig,
+  base: ModelParams,
+  levels: Pick<ParamLevels, "kd" | "manningN">,
+): ModelParams {
+  const g = paramsFromConfig(config, { ...CENTRAL_LEVELS, ...levels });
+  return {
+    ...base,
+    kdPerDay20: g.kdPerDay20,
+    kbPerDay20: g.kbPerDay20,
+    hydraulics: { ...base.hydraulics, manningN: g.hydraulics.manningN },
+  };
+}
+
+/**
  * The profiles of the kd (and coliform decay) × Manning n 3×3 grid, as `uncertaintyBand` runs it:
  * the run's own parameters (width level, temperature override) with only those coefficients
  * swapped, then their envelope. Null if the grids differ.
@@ -106,16 +126,7 @@ export function profileEnvelope(
   const profiles: Profile[] = [];
   for (const kd of LEVELS)
     for (const manningN of LEVELS) {
-      const g = paramsFromConfig(config, { ...CENTRAL_LEVELS, kd, manningN });
-      const params: ModelParams = {
-        ...input.params,
-        kdPerDay20: g.kdPerDay20,
-        kbPerDay20: g.kbPerDay20,
-        hydraulics: {
-          ...input.params.hydraulics,
-          manningN: g.hydraulics.manningN,
-        },
-      };
+      const params = paramsWithLevels(config, input.params, { kd, manningN });
       profiles.push(profileOf(simulate({ ...input, net, params })));
     }
   return envelopeOf(profiles);

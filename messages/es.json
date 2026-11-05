@@ -511,6 +511,56 @@
       "coliThreshold": "Umbral de coliformes",
       "coliAxis": "Coliformes (cada 100 mL)",
       "coliOff": "Coliformes no simulados: cargá un valor de coliformes del efluente."
+    },
+    "facts": {
+      "title": "Resultados principales",
+      "plume": "Longitud de la pluma, {pollutant}",
+      "minDoWhere": "A {km} del vertido, tramo {id}",
+      "kgPerDay": "{kgD} kg/d con el caudal del efluente de {flow}",
+      "removal": "Remoción requerida: {value}",
+      "range": "Rango: {lo} a {hi}",
+      "noLimit": "sin límite superior",
+      "noRemovalEnough": "ninguna remoción alcanza",
+      "sourceFlow": "Caudal del río: media natural HydroRIVERS 1971–2000 (ignora represas), escalada con GloFAS según el escenario",
+      "sourceKd": "kd: {source}",
+      "sourceColiformDecay": "Decaimiento de coliformes: {source}",
+      "bandNote": "Los rangos corren el modelo sobre la grilla de 3 × 3 niveles de kd (y del decaimiento de coliformes), kd {kd} por día a 20 °C, y n de Manning {n} ({runs} corridas). n de Manning: {source}",
+      "bandOff": "No se pudieron calcular los rangos de coeficientes para estos datos."
+    },
+    "scenarios": {
+      "title": "Comparación de escenarios",
+      "hint": "El mismo efluente y los mismos ajustes con tres caudales del río. Se resalta la columna de tu selección.",
+      "columns": {
+        "mean": "Media de largo plazo",
+        "today": "Hoy",
+        "forecast": "Pronóstico, día {day}"
+      },
+      "forecastStat": "mediana (p25 a p75)",
+      "spread": "{lo} a {hi}",
+      "unavailable": "no disponible",
+      "rows": {
+        "flow": "Caudal del río en el tramo del vertido",
+        "plume": "Longitud de la pluma (oxígeno disuelto)",
+        "minDo": "Oxígeno disuelto mínimo",
+        "bod": "DBO₅ admisible",
+        "removal": "Remoción requerida"
+      },
+      "values": {
+        "none": "ninguna posible",
+        "noLimit": "sin límite"
+      }
+    },
+    "flow": {
+      "title": "Pronóstico del caudal del río",
+      "gauge": "Estación que determina el tramo del vertido: {name}",
+      "desc": "Caudal pronosticado en {gauge} del {from} al {to}: mediana con la banda p25 a p75, hoy como un punto y la media climatológica de {mean} como línea punteada.",
+      "yAxis": "Caudal (m³/s)",
+      "mean": "Media climatológica {value}",
+      "band": "p25 a p75",
+      "legend": "Línea: mediana. Punto: hoy. Línea punteada: media climatológica.",
+      "caption": "GloFAS v4 vía Open‑Meteo, caudal modelado en la celda de la estación; climatología = media del reanálisis GloFAS 1997–2022.",
+      "loading": "Cargando el pronóstico…",
+      "unavailable": "El pronóstico no está disponible ahora, por eso no hay gráfico de caudal."
     }
   },
   "effluent": {

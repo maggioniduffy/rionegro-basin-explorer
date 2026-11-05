@@ -511,6 +511,56 @@
       "coliThreshold": "Coliform threshold",
       "coliAxis": "Coliforms (per 100 mL)",
       "coliOff": "Coliforms not simulated — set an effluent coliform value."
+    },
+    "facts": {
+      "title": "Key results",
+      "plume": "Plume length, {pollutant}",
+      "minDoWhere": "At {km} from the outfall, reach {id}",
+      "kgPerDay": "{kgD} kg/d at the effluent flow of {flow}",
+      "removal": "Required removal: {value}",
+      "range": "Range: {lo} to {hi}",
+      "noLimit": "no upper limit",
+      "noRemovalEnough": "no removal is enough",
+      "sourceFlow": "River flow: HydroRIVERS 1971–2000 natural mean (ignores dams), scaled by GloFAS for the scenario",
+      "sourceKd": "kd: {source}",
+      "sourceColiformDecay": "Coliform decay: {source}",
+      "bandNote": "Ranges run the model over the 3 × 3 grid of kd (and coliform decay) levels, kd {kd} per day at 20 °C, and Manning n {n} ({runs} runs). Manning n: {source}",
+      "bandOff": "The coefficient ranges could not be computed for these inputs."
+    },
+    "scenarios": {
+      "title": "Scenario comparison",
+      "hint": "The same effluent and settings under three river flows. The column matching your selection is highlighted.",
+      "columns": {
+        "mean": "Long-term mean",
+        "today": "Today",
+        "forecast": "Forecast day {day}"
+      },
+      "forecastStat": "median (p25 to p75)",
+      "spread": "{lo} to {hi}",
+      "unavailable": "unavailable",
+      "rows": {
+        "flow": "River flow at the outfall reach",
+        "plume": "Plume length (dissolved oxygen)",
+        "minDo": "Minimum dissolved oxygen",
+        "bod": "Admissible BOD₅",
+        "removal": "Required removal"
+      },
+      "values": {
+        "none": "none possible",
+        "noLimit": "no limit"
+      }
+    },
+    "flow": {
+      "title": "River flow forecast",
+      "gauge": "Gauge driving the outfall reach: {name}",
+      "desc": "Forecast discharge at {gauge} from {from} to {to}: median with the p25 to p75 band, today as a dot and the climatology mean of {mean} as a dashed line.",
+      "yAxis": "Discharge (m³/s)",
+      "mean": "Climatology mean {value}",
+      "band": "p25 to p75",
+      "legend": "Line: median. Dot: today. Dashed line: climatology mean.",
+      "caption": "GloFAS v4 via Open‑Meteo, modelled discharge at the gauge cell; climatology = GloFAS reanalysis mean 1997–2022.",
+      "loading": "Loading the forecast…",
+      "unavailable": "The forecast is not available right now, so there is no flow chart."
     }
   },
   "effluent": {

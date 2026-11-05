@@ -5,7 +5,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { EffluentFailure } from "@/components/effluent/EffluentFailure";
 import { EffluentProfiles } from "@/components/effluent/EffluentProfiles";
 import { EffluentInputs } from "@/components/effluent/EffluentInputs";
-import { EffluentResults } from "@/components/effluent/EffluentResults";
+import { EffluentFacts } from "@/components/effluent/EffluentFacts";
+import { EffluentFlowChart } from "@/components/effluent/EffluentFlowChart";
+import { EffluentScenarios } from "@/components/effluent/EffluentScenarios";
 import { EffluentRunProvider } from "@/components/effluent/EffluentRunProvider";
 import { EffluentUrlSync } from "@/components/effluent/EffluentUrlSync";
 import { Icon } from "@/components/Icon";
@@ -49,9 +51,11 @@ function Body() {
                 <p className="text-muted">{t("loading")}</p>
               )}
               {run.status === "unavailable" && <EffluentFailure />}
-              {run.status === "ok" && <EffluentResults />}
+              {run.status === "ok" && <EffluentFacts />}
             </section>
             <EffluentProfiles />
+            <EffluentScenarios />
+            <EffluentFlowChart />
             {/* The assumptions go here. */}
           </div>
         </div>

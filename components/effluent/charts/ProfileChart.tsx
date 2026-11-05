@@ -52,7 +52,7 @@ const KM_PER_MI = 1.609344; // as lib/units.ts
 const BAND_FILL = "color-mix(in srgb, var(--accent) 18%, transparent)";
 
 /** About `count` round tick values covering [lo, hi]. */
-function niceTicks(lo: number, hi: number, count = 5): number[] {
+export function niceTicks(lo: number, hi: number, count = 5): number[] {
   const raw = (hi - lo) / count;
   const pow = 10 ** Math.floor(Math.log10(raw));
   const step = ([1, 2, 5, 10].find((m) => m * pow >= raw) ?? 10) * pow;

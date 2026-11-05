@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useRegionPath } from "@/components/RegionProvider";
+import { useRegion, useRegionPath } from "@/components/RegionProvider";
 import { PanelFrame } from "@/components/panel/parts";
 import { EffluentFailure } from "@/components/effluent/EffluentFailure";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/components/effluent/EffluentInputs";
 import { EffluentResults } from "@/components/effluent/EffluentResults";
 import { effluentSources } from "@/lib/attributions";
+import { getEffluentRegion } from "@/lib/effluent/registry";
 import { useEffluentRun, useForecastDates } from "@/lib/effluent/use-run";
 import { useMapStore } from "@/lib/store";
 import { effluentSearch } from "@/lib/url-state";
@@ -21,10 +22,11 @@ import { effluentSearch } from "@/lib/url-state";
  */
 export function EffluentPanel() {
   const t = useTranslations("effluent");
+  const region = useRegion();
   const reach = useMapStore((s) => s.effluent?.reach ?? null);
   const exitEffluent = useMapStore((s) => s.exitEffluent);
   const run = useEffluentRun();
-  if (reach === null) return null;
+  if (reach === null || !getEffluentRegion(region)) return null;
 
   return (
     <PanelFrame
