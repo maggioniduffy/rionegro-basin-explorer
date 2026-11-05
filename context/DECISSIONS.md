@@ -74,6 +74,15 @@ hackathon (12–13 Nov 2026).
   case shows up). cba: 445 pieces, 343 kept (101 dropped by name, 1 by line); the 138 drawn reaches keep at least one
   piece each. `effluent-net.json` must be regenerated after `pipeline:lines`, `river-lines` or `export` reruns.
 
+- **Analysis page (E1.7, 2026-11-05).** `/[region]/effluents` 404s without an effluent config. Charts are hand-written
+  SVG (no chart dependency, nothing loaded on the map). The page has its own `?ef=`-only sync (`EffluentUrlSync`,
+  active only on that path) because `UrlSync` also writes the map's selection and flow params; its language links keep
+  the query (`keepSearch`). It always fetches the forecast once (`alwaysFetchForecast`) for the scenario table and
+  flow chart; the run still uses the mean when the scenario is the mean. Ranges on the page are the 3×3 kd × Manning n
+  grid (`paramsWithLevels`, shared by the profile band and the fact cards). A profile reach opens the map with
+  `?reach=` + `?ef=`; in effluent mode the map now fits to a selected reach (`EffluentFit`). The page's model text
+  follows the code (`hydraulics.ts`), not the phase file's shorthand.
+
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
 - **Flow controls live in the flow panel on desktop (owner).** The 480 px floating bar ran under both side panels

@@ -85,7 +85,7 @@ These two values are still unverified, so the config keeps them as null or label
       `lib/effluent/{registry,glofas,forecast}.ts`, `scenarioFor` (day 0 = tomorrow, UTC; null on missing or misaligned dates)
 - [x] E1.4 Effluent mode: store slice, `?ef=` URL param (all simulator inputs), overlay controller, legend, "Simulate a discharge here" in `ReachPanel` for any reach of the effluent net, configured outfall picker
 - [x] E1.5 Compact `EffluentPanel` on the map: basic simulator inputs (flow, BOD₅, coliforms, DO, removal %, scenario, reset), plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
-- [ ] E1.7 Analysis page `/[region]/effluents` (layout guide: [e1/design/](e1/design/README.md)): DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
+- [x] E1.7 Analysis page `/[region]/effluents` (layout guide: [e1/design/](e1/design/README.md)): DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
 - [ ] E1.6 _(stretch)_ San Roque section on the analysis page: TP inflow, predicted TP range, trophic class
 - [ ] E1.H _(stretch)_ Historical runs over the GloFAS reanalysis on the analysis page: per month, % of days below the DO threshold and admissible-load percentiles
 - [ ] E1.W _(stretch)_ "When to discharge" on the analysis page: admissible load per forecast day (p25/median/p75), from the screening model, not ML
@@ -129,6 +129,11 @@ screening model and no monitoring data, ML would only learn the model back.
       Saldán), the outfall halo, the hover card (and the tap card on a phone, where a tap on the plume must not move
       the outfall), "GloFAS forecast unavailable" + "Use the long-term mean" with the route down, slider drag speed
       (each change runs ~3–5 simulations).
+- [ ] Browser check E1.7 with tiles (checked locally 2026-11-05: `/cordoba/effluents` opens on Bajo Grande and
+      writes `?ef=`; profile, fact ranges, scenario table and flow chart render; kd High writes `lkh`; a profile reach
+      opens `/cordoba/map?reach=…&ef=…` fitted at that reach; ES switch keeps `?ef=`; `/rionegro/effluents` 404; no
+      page scroll at 375 px): the selected-reach highlight over the plume on the map, light theme, a screen reader
+      on the profile's reach buttons, coliform chart once a coliform value is set.
 - [ ] Browser check `/cordoba` on the phase preview; decide whether to ship to production before the event.
 
 ## Follow-ups
