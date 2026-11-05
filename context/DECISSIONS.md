@@ -56,6 +56,24 @@ hackathon (12–13 Nov 2026).
   Rejected: drawing HydroRIVERS lines (off the channel on the plains) and painting along the course by chainage
   (a spike, after the MVP if needed).
 
+- **Map panel run (E1.5, 2026-11-05).** One `EffluentRunProvider` per page computes the run and fetches
+  `/api/discharge` once. An unavailable run names its reason (`forecast`, `inputs` with the field, `outsideNet`,
+  `config`); a forecast failure offers "Use the long-term mean" and never switches by itself. The admissible load is
+  computed on the untreated effluent (before the removal %), so "required removal" is against the raw values; the
+  admissible concentration doesn't depend on the effluent's own concentration (linear response). Basic inputs have
+  UI limits (`lib/effluent/inputs.ts`: flow 0.01–50 m³/s, BOD₅ 0–1000 mg/L, coliforms 0–1e9 /100 mL at 2 significant
+  digits, DO 0–15 mg/L, removal 0–100 %), rounded on commit so `?ef=` can always write them; the panel labels them as
+  UI limits, not physical or regulatory ones. Copernicus notice year = the forecast's year.
+
+- **Plume pieces by name and line (owner, 2026-11-05).** Filtering the plume by `river`/`stream` drops nothing:
+  `pipeline:lines` matches by distance and `export` copies the reach's river/stream onto each piece, so a tributary's
+  lower piece carries the main stem's identity. `pipeline:effluent-net` now writes the kept tile `piece` ids per net
+  reach: a piece named as a different watercourse than its reach is dropped; on a reach with no river or stream, a
+  piece is dropped when most of its line lies on one other net reach; unnamed pieces stay. Names compare without
+  case, accents or one leading "Río"/"Arroyo" ("Río Saldán" = "Arroyo Saldán"; an interpretation, to revisit if a
+  case shows up). cba: 445 pieces, 343 kept (101 dropped by name, 1 by line); the 138 drawn reaches keep at least one
+  piece each. `effluent-net.json` must be regenerated after `pipeline:lines`, `river-lines` or `export` reruns.
+
 ## Map UI compact (2026-10-24, branch `map-ui-compact`)
 
 - **Flow controls live in the flow panel on desktop (owner).** The 480 px floating bar ran under both side panels

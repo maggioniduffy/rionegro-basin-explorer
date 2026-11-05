@@ -84,7 +84,7 @@ These two values are still unverified, so the config keeps them as null or label
 - [x] E1.3 `app/[region]/api/discharge/route.ts` (Open‑Meteo, validated, timeout, cached, 404 without config);
       `lib/effluent/{registry,glofas,forecast}.ts`, `scenarioFor` (day 0 = tomorrow, UTC; null on missing or misaligned dates)
 - [x] E1.4 Effluent mode: store slice, `?ef=` URL param (all simulator inputs), overlay controller, legend, "Simulate a discharge here" in `ReachPanel` for any reach of the effluent net, configured outfall picker
-- [ ] E1.5 Compact `EffluentPanel` on the map: basic simulator inputs (flow, BOD₅, coliforms, DO, removal %, scenario, reset), plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
+- [x] E1.5 Compact `EffluentPanel` on the map: basic simulator inputs (flow, BOD₅, coliforms, DO, removal %, scenario, reset), plume length, minimum DO and where, admissible load, short caveat with periods, "Full analysis →" link, attribution (`lib/attributions.ts`), EN + ES
 - [ ] E1.7 Analysis page `/[region]/effluents` (layout guide: [e1/design/](e1/design/README.md)): DO and coliform profile along the km downstream, scenario comparison (mean / today / forecast), full assumptions, periods and sources, closed "Model settings" section (thresholds, temperature, coefficient levels), URL state shared with the map, EN + ES
 - [ ] E1.6 _(stretch)_ San Roque section on the analysis page: TP inflow, predicted TP range, trophic class
 - [ ] E1.H _(stretch)_ Historical runs over the GloFAS reanalysis on the analysis page: per month, % of days below the DO threshold and admissible-load percentiles
@@ -123,6 +123,12 @@ screening model and no monitoring data, ML would only learn the model back.
       marker and the legend block, survives a reload; "Simulate a discharge here" on a Suquía reach; in the mode a
       click on another net reach moves the plume; `_st` with the route down says "unavailable"; an outfall above San
       Roque shows the lake note; `/rionegro?ef=61477479` drops the param.
+- [ ] Browser check E1.5 on `/cordoba` with tiles (checked locally 2026-11-05 without tiles: panel inputs and
+      results, flow rounded to `q7.12` in `?ef=`, reload keeps it, "today" fetches `/api/discharge` once,
+      `/rionegro?ef=` dropped): the plume in grey/red at 80 %, no tributary stubs (Icho Cruz, Primero at La Cañada /
+      Saldán), the outfall halo, the hover card (and the tap card on a phone, where a tap on the plume must not move
+      the outfall), "GloFAS forecast unavailable" + "Use the long-term mean" with the route down, slider drag speed
+      (each change runs ~3–5 simulations).
 - [ ] Browser check `/cordoba` on the phase preview; decide whether to ship to production before the event.
 
 ## Follow-ups
@@ -130,7 +136,7 @@ screening model and no monitoring data, ML would only learn the model back.
 - Effluent BOD/coliform values for Bajo Grande are not public: the panel defaults to the permit limit
   ("compliance scenario") and leaves them editable.
 - No dissolved-oxygen objective in Córdoba's rules: 5 mg/L is an explicit, editable assumption.
-- **E1.5 scope added (owner, 2026-11-04, after the E1.4 browser check; not started):**
+- **E1.5 scope added (owner, 2026-11-04, after the E1.4 browser check; done 2026-11-05):**
   - _Run once:_ an `EffluentRunProvider` (React context) mounted once on the map page computes the run and fetches
     `/api/discharge` once; the plume layer, the panel and the hover card read it (today the controller and the panel
     each call `useEffluentRun`, so a non-mean scenario fetches twice). The analysis page reuses the provider.
