@@ -21,9 +21,9 @@ export default async function EffluentsPage({
 
   return (
     <div className="bg-bg text-text flex min-h-full w-full flex-col">
-      <SiteHeader region={region} path="/effluents" />
+      <SiteHeader region={region} path="/effluents" keepSearch />
       <EffluentAnalysis />
-      <SiteFooter region={region} path="/effluents" />
+      <SiteFooter region={region} path="/effluents" keepSearch />
     </div>
   );
 }

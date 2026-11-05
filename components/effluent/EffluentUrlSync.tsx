@@ -5,6 +5,7 @@ import { useRegion } from "@/components/RegionProvider";
 import { hasEffluent, netReachIds } from "@/lib/effluent/overlay";
 import { getEffluentRegion } from "@/lib/effluent/registry";
 import { useMapStore } from "@/lib/store";
+import { regionPath } from "@/regions";
 import { effluentSearch, parseEffluent, sameEffluent } from "@/lib/url-state";
 
 /**
@@ -17,12 +18,18 @@ export function EffluentUrlSync() {
   const region = useRegion();
   useEffect(() => {
     const net = netReachIds(region);
+    // Back can fire popstate (and store updates) before Next unmounts this page.
+    const onPage = () =>
+      window.location.pathname.replace(/\/$/, "") ===
+      regionPath(region, "/effluents");
     const write = (next: string) => {
+      if (!onPage()) return;
       const { pathname, search, hash } = window.location;
       if (next !== search)
         window.history.replaceState(null, "", `${pathname}${next}${hash}`);
     };
     const fromUrl = () => {
+      if (!onPage()) return;
       const params = new URLSearchParams(window.location.search);
       const parsed = hasEffluent(region) ? parseEffluent(params) : null;
       let effluent = parsed && net?.has(parsed.reach) ? parsed : null;
@@ -42,7 +49,7 @@ export function EffluentUrlSync() {
     window.addEventListener("popstate", fromUrl);
 
     const unsubscribe = useMapStore.subscribe((s, prev) => {
-      if (sameEffluent(s.effluent, prev.effluent)) return;
+      if (!onPage() || sameEffluent(s.effluent, prev.effluent)) return;
       write(
         effluentSearch(new URLSearchParams(window.location.search), s.effluent),
       );
