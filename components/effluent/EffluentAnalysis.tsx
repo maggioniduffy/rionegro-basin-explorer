@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { EffluentFailure } from "@/components/effluent/EffluentFailure";
 import { EffluentProfiles } from "@/components/effluent/EffluentProfiles";
+import { EffluentAssumptions } from "@/components/effluent/EffluentAssumptions";
+import { EffluentModelSettings } from "@/components/effluent/EffluentModelSettings";
 import { EffluentInputs } from "@/components/effluent/EffluentInputs";
 import { EffluentFacts } from "@/components/effluent/EffluentFacts";
 import { EffluentFlowChart } from "@/components/effluent/EffluentFlowChart";
@@ -43,7 +45,7 @@ function Body() {
             <div className={CARD}>
               <EffluentInputs />
             </div>
-            {/* Model settings (a closed section) go here. */}
+            <EffluentModelSettings />
           </aside>
           <div className="flex min-w-0 flex-col gap-4">
             <section className={CARD} aria-busy={run.status === "loading"}>
@@ -56,7 +58,7 @@ function Body() {
             <EffluentProfiles />
             <EffluentScenarios />
             <EffluentFlowChart />
-            {/* The assumptions go here. */}
+            <EffluentAssumptions />
           </div>
         </div>
       )}

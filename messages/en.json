@@ -561,6 +561,90 @@
       "caption": "GloFAS v4 via Open‑Meteo, modelled discharge at the gauge cell; climatology = GloFAS reanalysis mean 1997–2022.",
       "loading": "Loading the forecast…",
       "unavailable": "The forecast is not available right now, so there is no flow chart."
+    },
+    "settings": {
+      "title": "Model settings",
+      "assumption": "assumption",
+      "source": "Source: {source}",
+      "reset": "Reset settings",
+      "doThreshold": "DO threshold",
+      "coliThreshold": "Coliform threshold",
+      "temp": "Water temperature",
+      "kd": "BOD decay rate (kd)",
+      "kdNote": "This choice also sets the coliform decay rate.",
+      "manningN": "Manning roughness (n)",
+      "widthCoef": "Channel width coefficient (a)",
+      "level": { "low": "Low", "central": "Central", "high": "High" },
+      "kdValue": "kd {kd} 1/d at 20 °C, coliforms {kb} 1/d",
+      "nValue": "n {n} (dimensionless)",
+      "widthValue": "W = {a}·Q^{m}",
+      "kbSource": "Coliform decay: {source}"
+    },
+    "assumptions": {
+      "title": "Assumptions, periods and sources",
+      "source": "Source: {source}",
+      "notSet": "not set",
+      "entries": "Model inputs and their sources",
+      "model": {
+        "title": "The model in words",
+        "mixing": "Complete mixing at the outfall and at each confluence: flows add and concentrations are the flow-weighted mean (dilution).",
+        "travel": "Travel time along a reach is its length divided by the velocity v = a·Q^m, from Manning's equation and the width relation W = a·Q^exponent.",
+        "decay": "BOD and coliforms decay with first-order kinetics over the travel time.",
+        "deficit": "The dissolved-oxygen deficit follows Streeter–Phelps, with the reaeration rate ka chosen by the Covar rule among O'Connor–Dobbins, Churchill and Owens–Gibbs.",
+        "temperature": "Rates are corrected for water temperature with the temperature coefficient θ of each process.",
+        "stop": "The profile stops where the river enters Embalse San Roque.",
+        "screening": "This is a screening model, not calibrated against measurements."
+      },
+      "periods": {
+        "title": "Periods of the data",
+        "hydrorivers": "River flow: HydroRIVERS discharge, 1971–2000 natural mean (ignores dams); modeled, not observed.",
+        "glofas": "GloFAS v4 reanalysis climatology 1997–2022 at the hand-checked gauge cells; used to scale the flow for each scenario.",
+        "forecast": "Forecast fetched {date} UTC (GloFAS via Open‑Meteo).",
+        "noForecast": "No forecast was fetched for this run.",
+        "effluent": "Effluent values are a permit-limit scenario or labelled assumptions, not measured data."
+      },
+      "groups": {
+        "coefficients": "Coefficients",
+        "thresholds": "Thresholds (assumptions)",
+        "background": "River background upstream of the outfall"
+      },
+      "items": {
+        "kd": "BOD decay rate kd (low / central / high)",
+        "coliformDecay": "Coliform decay rate (low / central / high)",
+        "kaRule": "Reaeration rate ka",
+        "manningN": "Manning n (low / central / high)",
+        "widthCoef": "Width coefficient a (low / central / high)",
+        "minSlope": "Minimum slope",
+        "bottleRate": "BOD bottle rate",
+        "waterTemp": "Water temperature",
+        "elevation": "Elevation (for DO saturation)",
+        "doMin": "Dissolved oxygen threshold",
+        "coliThreshold": "Coliform threshold",
+        "bodThreshold": "BOD threshold",
+        "bgBod": "Background BOD",
+        "bgColi": "Background coliforms",
+        "doSat": "Background DO saturation",
+        "effFlow": "Effluent flow",
+        "effBod": "Effluent BOD₅",
+        "effDo": "Effluent dissolved oxygen",
+        "effColi": "Effluent coliforms",
+        "effTp": "Effluent total phosphorus",
+        "lakeArea": "Area",
+        "lakeVolume": "Volume",
+        "lakeDepth": "Mean depth",
+        "lakeTp": "Total phosphorus load",
+        "lakeResidence": "Residence time"
+      },
+      "values": {
+        "rangeDay": "{low} / {central} / {high} per day at 20 °C, θ = {theta}",
+        "range": "{low} / {central} / {high}",
+        "widthRange": "{low} / {central} / {high}, W = a·Q^{exponent}",
+        "kaRule": "Covar rule, θ = {theta}",
+        "fraction": "of saturation",
+        "residence": "{low} to {high} yr"
+      },
+      "coverage": "The map paints the plume on 138 of the 223 reaches of the model network, where the drawn lines match model reaches; this profile covers all of them.",
+      "pending": "Still pending: the regulatory limits (coliforms in Decreto 847/16) and the exact location of the Bajo Grande outfall are unverified, so the model assumes the outfall at the upstream end of its reach."
     }
   },
   "effluent": {

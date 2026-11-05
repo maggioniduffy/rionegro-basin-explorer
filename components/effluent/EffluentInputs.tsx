@@ -23,7 +23,6 @@ const FIELDS = [
   "coliformsPer100mL",
   "doMgL",
 ] as const satisfies readonly EffluentInputField[];
-type Field = (typeof FIELDS)[number];
 
 /** Forecast days offered before a forecast is fetched (the API is asked for more). */
 const FALLBACK_DAYS = 7;
@@ -243,7 +242,7 @@ function Limit({ field, unit }: { field: InputField; unit: string }) {
 }
 
 /** A number field that commits on blur or Enter; `onCommit` returns the stored value, null to revert. */
-function NumberField({
+export function NumberField({
   field,
   label,
   unit,
@@ -251,7 +250,7 @@ function NumberField({
   placeholder,
   onCommit,
 }: {
-  field: Field;
+  field: InputField;
   label: string;
   unit: string;
   value: number | null;

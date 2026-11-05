@@ -3,7 +3,14 @@
  * accepts and `?ef=` can write), not physical or regulatory limits.
  */
 export type InputField =
-  "flowM3s" | "bodMgL" | "coliformsPer100mL" | "doMgL" | "removalPct";
+  | "flowM3s"
+  | "bodMgL"
+  | "coliformsPer100mL"
+  | "doMgL"
+  | "removalPct"
+  | "doMinMgL"
+  | "coliformsThreshold"
+  | "tempC";
 
 export interface InputBounds {
   min: number;
@@ -19,6 +26,9 @@ export const INPUT_BOUNDS: Record<InputField, InputBounds> = {
   coliformsPer100mL: { min: 0, max: 1e9, step: null, sigDigits: 2 },
   doMgL: { min: 0, max: 15, step: 0.1 },
   removalPct: { min: 0, max: 100, step: 1 },
+  doMinMgL: { min: 0, max: 15, step: 0.1 },
+  coliformsThreshold: { min: 0, max: 1e6, step: null, sigDigits: 2 },
+  tempC: { min: 0, max: 35, step: 0.5 },
 };
 
 /**

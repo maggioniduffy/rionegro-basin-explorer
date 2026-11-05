@@ -561,6 +561,90 @@
       "caption": "GloFAS v4 vía Open‑Meteo, caudal modelado en la celda de la estación; climatología = media del reanálisis GloFAS 1997–2022.",
       "loading": "Cargando el pronóstico…",
       "unavailable": "El pronóstico no está disponible ahora, por eso no hay gráfico de caudal."
+    },
+    "settings": {
+      "title": "Ajustes del modelo",
+      "assumption": "supuesto",
+      "source": "Fuente: {source}",
+      "reset": "Restablecer ajustes",
+      "doThreshold": "Umbral de OD",
+      "coliThreshold": "Umbral de coliformes",
+      "temp": "Temperatura del agua",
+      "kd": "Tasa de decaimiento de DBO (kd)",
+      "kdNote": "Esta elección también define la tasa de decaimiento de coliformes.",
+      "manningN": "Rugosidad de Manning (n)",
+      "widthCoef": "Coeficiente de ancho del cauce (a)",
+      "level": { "low": "Baja", "central": "Central", "high": "Alta" },
+      "kdValue": "kd {kd} 1/d a 20 °C, coliformes {kb} 1/d",
+      "nValue": "n {n} (adimensional)",
+      "widthValue": "W = {a}·Q^{m}",
+      "kbSource": "Decaimiento de coliformes: {source}"
+    },
+    "assumptions": {
+      "title": "Supuestos, períodos y fuentes",
+      "source": "Fuente: {source}",
+      "notSet": "sin dato",
+      "entries": "Datos de entrada del modelo y sus fuentes",
+      "model": {
+        "title": "El modelo en palabras",
+        "mixing": "Mezcla completa en el vertido y en cada confluencia: los caudales se suman y las concentraciones son el promedio ponderado por caudal (dilución).",
+        "travel": "El tiempo de viaje en un tramo es su longitud dividida por la velocidad v = a·Q^m, a partir de la ecuación de Manning y la relación de ancho W = a·Q^exponente.",
+        "decay": "La DBO y los coliformes decaen con cinética de primer orden durante el tiempo de viaje.",
+        "deficit": "El déficit de oxígeno disuelto sigue Streeter–Phelps, con la tasa de reaireación ka elegida por la regla de Covar entre O'Connor–Dobbins, Churchill y Owens–Gibbs.",
+        "temperature": "Las tasas se corrigen por la temperatura del agua con el coeficiente θ de cada proceso.",
+        "stop": "El perfil termina donde el río entra al embalse San Roque.",
+        "screening": "Es un modelo de screening, sin calibrar con mediciones."
+      },
+      "periods": {
+        "title": "Períodos de los datos",
+        "hydrorivers": "Caudal del río: descarga de HydroRIVERS, media natural 1971–2000 (ignora las represas); modelado, no observado.",
+        "glofas": "Climatología de reanálisis GloFAS v4 1997–2022 en las celdas de estación verificadas a mano; se usa para escalar el caudal de cada escenario.",
+        "forecast": "Pronóstico obtenido el {date} UTC (GloFAS vía Open‑Meteo).",
+        "noForecast": "No se obtuvo un pronóstico para esta corrida.",
+        "effluent": "Los valores del efluente son un escenario con los límites del permiso o supuestos señalados, no datos medidos."
+      },
+      "groups": {
+        "coefficients": "Coeficientes",
+        "thresholds": "Umbrales (supuestos)",
+        "background": "Valores del río aguas arriba del vertido"
+      },
+      "items": {
+        "kd": "Tasa de decaimiento de DBO kd (baja / central / alta)",
+        "coliformDecay": "Tasa de decaimiento de coliformes (baja / central / alta)",
+        "kaRule": "Tasa de reaireación ka",
+        "manningN": "n de Manning (baja / central / alta)",
+        "widthCoef": "Coeficiente de ancho a (baja / central / alta)",
+        "minSlope": "Pendiente mínima",
+        "bottleRate": "Tasa de botella de DBO",
+        "waterTemp": "Temperatura del agua",
+        "elevation": "Elevación (para la saturación de OD)",
+        "doMin": "Umbral de oxígeno disuelto",
+        "coliThreshold": "Umbral de coliformes",
+        "bodThreshold": "Umbral de DBO",
+        "bgBod": "DBO de fondo",
+        "bgColi": "Coliformes de fondo",
+        "doSat": "Saturación de OD de fondo",
+        "effFlow": "Caudal del efluente",
+        "effBod": "DBO₅ del efluente",
+        "effDo": "Oxígeno disuelto del efluente",
+        "effColi": "Coliformes del efluente",
+        "effTp": "Fósforo total del efluente",
+        "lakeArea": "Superficie",
+        "lakeVolume": "Volumen",
+        "lakeDepth": "Profundidad media",
+        "lakeTp": "Carga de fósforo total",
+        "lakeResidence": "Tiempo de residencia"
+      },
+      "values": {
+        "rangeDay": "{low} / {central} / {high} por día a 20 °C, θ = {theta}",
+        "range": "{low} / {central} / {high}",
+        "widthRange": "{low} / {central} / {high}, W = a·Q^{exponent}",
+        "kaRule": "Regla de Covar, θ = {theta}",
+        "fraction": "de la saturación",
+        "residence": "{low} a {high} años"
+      },
+      "coverage": "El mapa dibuja la pluma en 138 de los 223 tramos de la red del modelo, donde las líneas dibujadas coinciden con tramos del modelo; este perfil los cubre todos.",
+      "pending": "Pendiente: los límites normativos (coliformes en el Decreto 847/16) y la ubicación exacta del vertido de Bajo Grande no están verificados, por eso el modelo supone el vertido en el extremo aguas arriba de su tramo."
     }
   },
   "effluent": {

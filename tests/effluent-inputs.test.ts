@@ -13,6 +13,9 @@ const AWKWARD: [InputField, number][] = [
   ["flowM3s", 1e-7],
   ["bodMgL", 2000],
   ["removalPct", -5],
+  ["doMinMgL", 0.1 + 0.2],
+  ["coliformsThreshold", 123456],
+  ["tempC", 20.26],
 ];
 
 describe("roundInput", () => {
