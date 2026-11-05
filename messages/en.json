@@ -421,6 +421,12 @@
       "copdem": {
         "usedFor": "Flow close-up: orientation of channel branches, derived offline. Only the derived vectors are published."
       },
+      "openmeteo": {
+        "usedFor": "Discharge simulator: river flow forecast (today and the coming days, ensemble statistics) served by Open-Meteo. The values are modeled and were modified here."
+      },
+      "glofas": {
+        "usedFor": "Discharge simulator: GloFAS v4 simulated river discharge, the dataset behind the Open-Meteo forecast. Modeled values, scaled here."
+      },
       "eox": {
         "usedFor": "Satellite imagery.",
         "terms": "Non-commercial use only, under this license."
@@ -484,6 +490,77 @@
     "loading": "Running the simulation\u2026",
     "unavailable": "The simulation is not available: the discharge forecast could not be loaded, or the inputs cannot be run.",
     "entersLake": "The plume enters {lake}; the model stops there.",
+    "mapCoverage": "The map paints the plume only where the drawn lines match model reaches (138 of 223 reaches of the model network); the full profile is on the analysis page.",
+    "inputs": "Effluent and flow",
+    "reset": "Reset",
+    "notSet": "Not simulated",
+    "limit": "UI limit: {min}\u2013{max} {unit}",
+    "defaultsOutfall": "Defaults are the permit-limit scenario of the configured outfall ({name}), not measured values.",
+    "defaultsAssumption": "Defaults are the permit-limit assumption of the configured outfall ({name}) applied to this reach, not measured values.",
+    "fields": {
+      "flowM3s": "Effluent flow",
+      "bodMgL": "BOD\u2085",
+      "coliformsPer100mL": "Coliforms",
+      "doMgL": "Effluent dissolved oxygen",
+      "removalPct": "Treatment removal of BOD\u2085 and coliforms"
+    },
+    "units": {
+      "flowM3s": "m\u00b3/s",
+      "bodMgL": "mg/L",
+      "coliformsPer100mL": "per 100 mL",
+      "doMgL": "mg/L"
+    },
+    "scenario": {
+      "label": "River flow scenario",
+      "mean": "Long-term mean",
+      "today": "Today (GloFAS)",
+      "day": "Forecast day {day}",
+      "dayDated": "Forecast day {day} ({date})",
+      "stat": "Forecast statistic",
+      "stats": {
+        "p25": "Low (p25)",
+        "median": "Median",
+        "p75": "High (p75)"
+      }
+    },
+    "pollutants": {
+      "do": "Dissolved oxygen",
+      "bod": "BOD\u2085",
+      "coliforms": "Coliforms"
+    },
+    "results": {
+      "title": "Results",
+      "plumeHint": "Length of river where each threshold is exceeded.",
+      "plumeNone": "Not exceeded",
+      "plumeKm": "{km}",
+      "plumeKmLast": "{km}, up to {last}",
+      "minDo": "Minimum dissolved oxygen",
+      "minDoValue": "{mgL} mg/L at {km}",
+      "admissibleBod": "Admissible BOD\u2085",
+      "bodValue": "{mgL} mg/L \u00b7 {kgD} kg/d",
+      "admissibleColiforms": "Admissible coliforms",
+      "coliformsValue": "{n} per 100 mL",
+      "admissibleValue": "{value} \u00b7 needs {removal} % removal",
+      "neverBinds": "The threshold is never reached",
+      "violates": {
+        "effluentDo": "None: the effluent's own oxygen is too low",
+        "background": "None: the river already misses the threshold"
+      }
+    },
+    "failure": {
+      "forecast": "GloFAS forecast unavailable",
+      "useMean": "Use the long-term mean",
+      "inputs": "These inputs can't be simulated",
+      "inputsField": "These inputs can't be simulated: check \u201c{field}\u201d",
+      "outsideNet": "This reach is outside the model network.",
+      "config": "The simulation could not be set up for this outfall."
+    },
+    "fullAnalysis": "Full analysis \u2192",
+    "caveat": "Screening model, not calibrated. River flow is the HydroRIVERS 1971\u20132000 natural mean discharge (ignores dams), scaled by GloFAS for the scenario's date.",
+    "attribution": {
+      "prefix": "Forecast data:",
+      "modified": "Values were modified (scaled and routed by this app)."
+    },
     "legend": {
       "title": "Effluent",
       "outfall": "Outfall",

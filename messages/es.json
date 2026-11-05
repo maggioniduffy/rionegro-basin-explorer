@@ -421,6 +421,12 @@
       "copdem": {
         "usedFor": "Vista de cerca del flujo: orientación de los brazos del cauce, derivada sin conexión. Solo se publican los vectores derivados. Los textos de atribución y de responsabilidad se citan tal como los exige la licencia, en inglés."
       },
+      "openmeteo": {
+        "usedFor": "Simulador de vertidos: pronóstico de caudal del río (hoy y los próximos días, estadísticos del ensamble) servido por Open-Meteo. Los valores son modelados y fueron modificados aquí."
+      },
+      "glofas": {
+        "usedFor": "Simulador de vertidos: caudal simulado de GloFAS v4, el conjunto de datos detrás del pronóstico de Open-Meteo. Valores modelados, escalados aquí."
+      },
       "eox": {
         "usedFor": "Imágenes satelitales.",
         "terms": "Solo uso no comercial, bajo esta licencia."
@@ -484,6 +490,77 @@
     "loading": "Ejecutando la simulación\u2026",
     "unavailable": "La simulación no está disponible: no se pudo cargar el pronóstico de caudal, o los datos de entrada no se pueden ejecutar.",
     "entersLake": "La pluma llega a {lake}; el modelo se detiene allí.",
+    "mapCoverage": "El mapa dibuja la pluma solo donde las líneas dibujadas coinciden con tramos del modelo (138 de 223 tramos de la red del modelo); el perfil completo está en la página de análisis.",
+    "inputs": "Efluente y caudal",
+    "reset": "Restablecer",
+    "notSet": "No simulado",
+    "limit": "Límite de la interfaz: {min}\u2013{max} {unit}",
+    "defaultsOutfall": "Los valores por defecto son el escenario de límites del permiso del vertido configurado ({name}), no valores medidos.",
+    "defaultsAssumption": "Los valores por defecto son el supuesto de límites del permiso del vertido configurado ({name}) aplicado a este tramo, no valores medidos.",
+    "fields": {
+      "flowM3s": "Caudal del efluente",
+      "bodMgL": "DBO\u2085",
+      "coliformsPer100mL": "Coliformes",
+      "doMgL": "Oxígeno disuelto del efluente",
+      "removalPct": "Remoción de DBO\u2085 y coliformes por tratamiento"
+    },
+    "units": {
+      "flowM3s": "m\u00b3/s",
+      "bodMgL": "mg/L",
+      "coliformsPer100mL": "por 100 mL",
+      "doMgL": "mg/L"
+    },
+    "scenario": {
+      "label": "Escenario de caudal del río",
+      "mean": "Media de largo plazo",
+      "today": "Hoy (GloFAS)",
+      "day": "Pronóstico, día {day}",
+      "dayDated": "Pronóstico, día {day} ({date})",
+      "stat": "Estadístico del pronóstico",
+      "stats": {
+        "p25": "Bajo (p25)",
+        "median": "Mediana",
+        "p75": "Alto (p75)"
+      }
+    },
+    "pollutants": {
+      "do": "Oxígeno disuelto",
+      "bod": "DBO\u2085",
+      "coliforms": "Coliformes"
+    },
+    "results": {
+      "title": "Resultados",
+      "plumeHint": "Longitud del río donde se supera cada umbral.",
+      "plumeNone": "No se supera",
+      "plumeKm": "{km}",
+      "plumeKmLast": "{km}, hasta {last}",
+      "minDo": "Oxígeno disuelto mínimo",
+      "minDoValue": "{mgL} mg/L a {km}",
+      "admissibleBod": "DBO\u2085 admisible",
+      "bodValue": "{mgL} mg/L \u00b7 {kgD} kg/d",
+      "admissibleColiforms": "Coliformes admisibles",
+      "coliformsValue": "{n} por 100 mL",
+      "admissibleValue": "{value} \u00b7 requiere {removal} % de remoción",
+      "neverBinds": "El umbral nunca se alcanza",
+      "violates": {
+        "effluentDo": "Ninguno: el oxígeno del propio efluente es demasiado bajo",
+        "background": "Ninguno: el río ya no cumple el umbral"
+      }
+    },
+    "failure": {
+      "forecast": "Pronóstico de GloFAS no disponible",
+      "useMean": "Usar la media de largo plazo",
+      "inputs": "Estos datos no se pueden simular",
+      "inputsField": "Estos datos no se pueden simular: revisa \u00ab{field}\u00bb",
+      "outsideNet": "Este tramo está fuera de la red del modelo.",
+      "config": "No se pudo preparar la simulación para este vertido."
+    },
+    "fullAnalysis": "Análisis completo \u2192",
+    "caveat": "Modelo de screening, sin calibrar. El caudal del río es el caudal natural medio 1971\u20132000 de HydroRIVERS (ignora las represas), escalado con GloFAS para la fecha del escenario.",
+    "attribution": {
+      "prefix": "Datos de pronóstico:",
+      "modified": "Los valores fueron modificados (escalados y propagados por esta aplicación)."
+    },
     "legend": {
       "title": "Efluente",
       "outfall": "Punto de vertido",

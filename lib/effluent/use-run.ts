@@ -102,6 +102,16 @@ export function useEffluentRun(): EffluentRun {
   return run;
 }
 
+/** Dates (UTC, after today) the fetched forecast covers at every gauge; null until one is fetched. */
+export const EffluentForecastDatesContext = createContext<string[] | null>(
+  null,
+);
+
+/** Forecast days the scenario select can offer: the fetched forecast's, else null. */
+export function useForecastDates(): string[] | null {
+  return useContext(EffluentForecastDatesContext);
+}
+
 /** One run of the model for an effluent state; pure, so it runs without React. */
 export function runEffluent(
   region: RegionId,

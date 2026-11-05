@@ -5,6 +5,7 @@ import { useRegion } from "@/components/RegionProvider";
 import type { DischargeForecast } from "@/lib/effluent/forecast";
 import { getEffluentRegion } from "@/lib/effluent/registry";
 import {
+  EffluentForecastDatesContext,
   EffluentRunContext,
   LOADING,
   OFF,
@@ -39,5 +40,19 @@ export function EffluentRunProvider({ children }: { children: ReactNode }) {
       forecast.status === "ok" ? forecast.data : null,
     );
   }, [region, effluent, configured, scenario, forecast]);
-  return <EffluentRunContext value={run}>{children}</EffluentRunContext>;
+  // Day N of a scenario is index N-1 of the gauges' days; the first gauge's dates label them.
+  const dates = useMemo(
+    () =>
+      forecast.status === "ok"
+        ? (forecast.data.gauges[0]?.days.map((d) => d.date) ?? null)
+        : null,
+    [forecast],
+  );
+  return (
+    <EffluentRunContext value={run}>
+      <EffluentForecastDatesContext value={dates}>
+        {children}
+      </EffluentForecastDatesContext>
+    </EffluentRunContext>
+  );
 }

@@ -18,7 +18,9 @@ export type SourceId =
   | "terrain"
   | "eox"
   | "sentinel2"
-  | "copdem";
+  | "copdem"
+  | "openmeteo"
+  | "glofas";
 
 export type Source = {
   id: SourceId;
@@ -70,10 +72,16 @@ export function sourcesFor(region: KnownRegionId, product: string): Source[] {
   );
   if (region !== "cba") return all;
   // Córdoba: APRHI comes first among the agencies (precedence APRHI > IGN > HydroRIVERS),
-  // and IGN is used outside the province.
-  return all.flatMap((s) =>
-    s.id === "ign" ? [APRHI, { ...s, usedForKey: "ign.usedForCba" }] : [s],
-  );
+  // and IGN is used outside the province. The discharge simulator (the only region with an
+  // effluent config) adds the GloFAS forecast.
+  return [
+    ...all.flatMap((s): Source[] =>
+      s.id === "ign"
+        ? [APRHI, { ...s, usedForKey: "ign.usedForCba" as const }]
+        : [s],
+    ),
+    ...EFFLUENT_SOURCES,
+  ];
 }
 
 const SOURCES: Source[] = [
@@ -227,6 +235,33 @@ const FLOW_SOURCES: Source[] = [
         url: "https://registry.opendata.aws/copernicus-dem",
       },
     ],
+  },
+];
+
+/**
+ * Forecast inputs of the discharge simulator (SOURCES.md, "Open-Meteo Flood API"). Notices as
+ * the licences give them: ours are scaled values, so the "modified" notice applies.
+ */
+const EFFLUENT_SOURCES: Source[] = [
+  {
+    id: "openmeteo",
+    name: "Open-Meteo Flood API",
+    url: "https://open-meteo.com/en/docs/flood-api",
+    license: { name: "CC BY 4.0", url: "https://open-meteo.com/en/licence" },
+    credit: "Weather data by Open-Meteo.com",
+    citations: [],
+  },
+  {
+    id: "glofas",
+    name: "GloFAS v4 (Copernicus Emergency Management Service)",
+    url: "https://open-meteo.com/en/docs/flood-api",
+    license: {
+      name: "CEMS-FLOODS datasets licence",
+      url: "https://ewds.climate.copernicus.eu/licences/cems-floods",
+    },
+    credit:
+      "Contains modified Copernicus Emergency Management Service information 2026",
+    citations: [],
   },
 ];
 
