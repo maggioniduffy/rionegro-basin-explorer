@@ -481,6 +481,14 @@
     "regions": "Regiones",
     "open": "Abrir el explorador"
   },
+  "effluents": {
+    "metaTitle": "Análisis de vertidos",
+    "title": "Análisis del vertido",
+    "intro": "Qué hace un vertido al río aguas abajo: hasta dónde llega la pluma, cuánto baja el oxígeno disuelto y cuánta carga puede recibir el río.",
+    "back": "Volver al mapa",
+    "loading": "Corriendo la simulación\u2026",
+    "forecastStamp": "Pronóstico obtenido el {date} UTC \u00b7 GloFAS vía Open\u2011Meteo"
+  },
   "effluent": {
     "title": "Simulación de vertido",
     "simulate": "Simular un vertido aquí",

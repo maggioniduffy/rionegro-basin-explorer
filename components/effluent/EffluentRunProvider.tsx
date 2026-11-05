@@ -5,6 +5,7 @@ import { useRegion } from "@/components/RegionProvider";
 import type { DischargeForecast } from "@/lib/effluent/forecast";
 import { getEffluentRegion } from "@/lib/effluent/registry";
 import {
+  EffluentForecastContext,
   EffluentForecastDatesContext,
   EffluentRunContext,
   LOADING,
@@ -48,11 +49,14 @@ export function EffluentRunProvider({ children }: { children: ReactNode }) {
         : null,
     [forecast],
   );
+  const fetched = forecast.status === "ok" ? forecast.data : null;
   return (
     <EffluentRunContext value={run}>
-      <EffluentForecastDatesContext value={dates}>
-        {children}
-      </EffluentForecastDatesContext>
+      <EffluentForecastContext value={fetched}>
+        <EffluentForecastDatesContext value={dates}>
+          {children}
+        </EffluentForecastDatesContext>
+      </EffluentForecastContext>
     </EffluentRunContext>
   );
 }

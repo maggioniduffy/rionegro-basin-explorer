@@ -112,6 +112,16 @@ export function useForecastDates(): string[] | null {
   return useContext(EffluentForecastDatesContext);
 }
 
+/** The fetched discharge forecast; null until one is fetched (no scenario, loading or failed). */
+export const EffluentForecastContext = createContext<DischargeForecast | null>(
+  null,
+);
+
+/** The fetched forecast the run used, for its "fetched at" stamp; null when there is none. */
+export function useForecast(): DischargeForecast | null {
+  return useContext(EffluentForecastContext);
+}
+
 /** One run of the model for an effluent state; pure, so it runs without React. */
 export function runEffluent(
   region: RegionId,

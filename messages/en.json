@@ -481,6 +481,14 @@
     "regions": "Regions",
     "open": "Open the explorer"
   },
+  "effluents": {
+    "metaTitle": "Discharge analysis",
+    "title": "Discharge analysis",
+    "intro": "What a discharge into the river does downstream: how far the plume reaches, how low the dissolved oxygen falls and how much load the river can take.",
+    "back": "Back to the map",
+    "loading": "Running the simulation\u2026",
+    "forecastStamp": "Forecast fetched {date} UTC \u00b7 GloFAS via Open\u2011Meteo"
+  },
   "effluent": {
     "title": "Discharge simulation",
     "simulate": "Simulate a discharge here",
