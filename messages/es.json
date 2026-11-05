@@ -588,11 +588,11 @@
       "model": {
         "title": "El modelo en palabras",
         "mixing": "Mezcla completa en el vertido y en cada confluencia: los caudales se suman y las concentraciones son el promedio ponderado por caudal (dilución).",
-        "travel": "El tiempo de viaje en un tramo es su longitud dividida por la velocidad v = a·Q^m, a partir de la ecuación de Manning y la relación de ancho W = a·Q^exponente.",
+        "travel": "El tiempo de viaje en un tramo es su longitud dividida por la velocidad v = Q/(W·H). El cauce es un rectángulo ancho: ancho W = a·Q^b y profundidad H = (n·Q/(W·√S))^(3/5) según la ecuación de Manning, con la pendiente S nunca menor que la pendiente mínima.",
         "decay": "La DBO y los coliformes decaen con cinética de primer orden durante el tiempo de viaje.",
         "deficit": "El déficit de oxígeno disuelto sigue Streeter–Phelps, con la tasa de reaireación ka elegida por la regla de Covar entre O'Connor–Dobbins, Churchill y Owens–Gibbs.",
         "temperature": "Las tasas se corrigen por la temperatura del agua con el coeficiente θ de cada proceso.",
-        "stop": "El perfil termina donde el río entra al embalse San Roque.",
+        "stop": "Para un vertido aguas arriba de {lake}, el perfil termina donde el río entra al embalse; aguas abajo, sigue el río hasta su final.",
         "screening": "Es un modelo de screening, sin calibrar con mediciones."
       },
       "periods": {
@@ -644,7 +644,7 @@
         "residence": "{low} a {high} años"
       },
       "coverage": "El mapa dibuja la pluma en 138 de los 223 tramos de la red del modelo, donde las líneas dibujadas coinciden con tramos del modelo; este perfil los cubre todos.",
-      "pending": "Pendiente: los límites normativos (coliformes en el Decreto 847/16) y la ubicación exacta del vertido de Bajo Grande no están verificados, por eso el modelo supone el vertido en el extremo aguas arriba de su tramo."
+      "pending": "Pendiente: los límites normativos (coliformes en el Decreto 847/16; fósforo total y nitrógeno amoniacal en la Res. General APRHI 3/2025) y la ubicación exacta del vertido de Bajo Grande no están verificados, por eso el modelo supone el vertido en el extremo aguas arriba de su tramo."
     }
   },
   "effluent": {

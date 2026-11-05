@@ -24,7 +24,7 @@ const CARD = "bg-surface border-line-card rounded-[14px] border p-4";
 /** The analysis page's body: one run shared by the inputs and the results, ?ef= kept in the URL. */
 export function EffluentAnalysis() {
   return (
-    <EffluentRunProvider>
+    <EffluentRunProvider alwaysFetchForecast>
       <EffluentUrlSync />
       <Body />
     </EffluentRunProvider>

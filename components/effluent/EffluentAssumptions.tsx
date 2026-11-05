@@ -243,7 +243,7 @@ export function EffluentAssumptions() {
         </h3>
         <ul className="text-body flex list-disc flex-col gap-1 pl-5 text-sm">
           {MODEL_STEPS.map((k) => (
-            <li key={k}>{t(`model.${k}`)}</li>
+            <li key={k}>{t(`model.${k}`, { lake: config.lake.name })}</li>
           ))}
         </ul>
       </div>

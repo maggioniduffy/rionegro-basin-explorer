@@ -588,11 +588,11 @@
       "model": {
         "title": "The model in words",
         "mixing": "Complete mixing at the outfall and at each confluence: flows add and concentrations are the flow-weighted mean (dilution).",
-        "travel": "Travel time along a reach is its length divided by the velocity v = a·Q^m, from Manning's equation and the width relation W = a·Q^exponent.",
+        "travel": "Travel time along a reach is its length divided by the velocity v = Q/(W·H). The channel is a wide rectangle: width W = a·Q^b, and depth H = (n·Q/(W·√S))^(3/5) from Manning's equation, with the slope S never below the minimum slope.",
         "decay": "BOD and coliforms decay with first-order kinetics over the travel time.",
         "deficit": "The dissolved-oxygen deficit follows Streeter–Phelps, with the reaeration rate ka chosen by the Covar rule among O'Connor–Dobbins, Churchill and Owens–Gibbs.",
         "temperature": "Rates are corrected for water temperature with the temperature coefficient θ of each process.",
-        "stop": "The profile stops where the river enters Embalse San Roque.",
+        "stop": "For an outfall upstream of {lake}, the profile stops where the river enters the lake; downstream of it, it follows the river to its end.",
         "screening": "This is a screening model, not calibrated against measurements."
       },
       "periods": {
@@ -644,7 +644,7 @@
         "residence": "{low} to {high} yr"
       },
       "coverage": "The map paints the plume on 138 of the 223 reaches of the model network, where the drawn lines match model reaches; this profile covers all of them.",
-      "pending": "Still pending: the regulatory limits (coliforms in Decreto 847/16) and the exact location of the Bajo Grande outfall are unverified, so the model assumes the outfall at the upstream end of its reach."
+      "pending": "Still pending: the regulatory limits (coliforms in Decreto 847/16; total P and ammonia N in Res. General APRHI 3/2025) and the exact location of the Bajo Grande outfall are unverified, so the model assumes the outfall at the upstream end of its reach."
     }
   },
   "effluent": {

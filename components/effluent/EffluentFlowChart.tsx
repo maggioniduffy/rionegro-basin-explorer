@@ -5,7 +5,7 @@ import { FlowChart } from "@/components/effluent/charts/FlowChart";
 import { useRegion } from "@/components/RegionProvider";
 import { useFormat } from "@/components/panel/parts";
 import { getEffluentRegion } from "@/lib/effluent/registry";
-import { useComparisonForecast } from "@/lib/effluent/use-run";
+import { useForecast, useForecastStatus } from "@/lib/effluent/use-run";
 import { useMapStore } from "@/lib/store";
 
 const CARD = "bg-surface border-line-card rounded-[14px] border p-4";
@@ -17,19 +17,19 @@ export function EffluentFlowChart() {
   const region = useRegion();
   const f = useFormat();
   const reach = useMapStore((s) => s.effluent?.reach ?? null);
-  const cmp = useComparisonForecast(reach !== null);
+  const fc = useForecast();
+  const loading = useForecastStatus() === "loading";
   const net = getEffluentRegion(region)?.net;
   const gaugeId = net?.reaches.find((r) => r.id === reach)?.gaugeId;
   const gauge = net?.gauges.find((g) => g.id === gaugeId);
-  const forecast = cmp.forecast?.gauges.find((g) => g.id === gaugeId);
+  const forecast = fc?.gauges.find((g) => g.id === gaugeId);
   if (!net || !gauge) return null;
 
-  const note =
-    cmp.status === "loading"
-      ? t("loading")
-      : !forecast || forecast.days.length === 0
-        ? t("unavailable")
-        : null;
+  const note = loading
+    ? t("loading")
+    : !forecast || forecast.days.length === 0
+      ? t("unavailable")
+      : null;
   const date = (iso: string) =>
     new Intl.DateTimeFormat(locale, {
       month: "short",
@@ -46,7 +46,7 @@ export function EffluentFlowChart() {
         {t("gauge", { name: gauge.name })}
       </p>
       {note || !forecast ? (
-        <p className="text-muted mt-3" aria-busy={cmp.status === "loading"}>
+        <p className="text-muted mt-3" aria-busy={loading}>
           {note}
         </p>
       ) : (

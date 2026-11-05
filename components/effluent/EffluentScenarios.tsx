@@ -6,8 +6,9 @@ import { useRegion } from "@/components/RegionProvider";
 import { useFormat } from "@/components/panel/parts";
 import {
   runEffluent,
-  useComparisonForecast,
   useEffluentRun,
+  useForecast,
+  useForecastStatus,
   type EffluentRun,
 } from "@/lib/effluent/use-run";
 import { useMapStore } from "@/lib/store";
@@ -39,8 +40,8 @@ export function EffluentScenarios() {
   const f = useFormat();
   const effluent = useMapStore((s) => s.effluent);
   const run = useEffluentRun();
-  const cmp = useComparisonForecast(effluent !== null);
-  const forecast = cmp.forecast;
+  const forecast = useForecast();
+  const forecastStatus = useForecastStatus();
 
   const selected = effluent?.overrides.scenario;
   const active: Column =
@@ -57,7 +58,7 @@ export function EffluentScenarios() {
     const go = (scenario: EffluentUrl["overrides"]["scenario"]): Cell =>
       runEffluent(region, withScenario(effluent, scenario), forecast);
     const needsForecast = (build: () => Cell): Cell =>
-      cmp.status === "loading" ? "pending" : build();
+      forecastStatus === "loading" ? "pending" : build();
     return {
       mean: go(undefined),
       today: needsForecast(() => go("today")),
@@ -65,7 +66,7 @@ export function EffluentScenarios() {
       p25: needsForecast(() => go({ day, stat: "p25" })),
       p75: needsForecast(() => go({ day, stat: "p75" })),
     };
-  }, [region, effluent, forecast, cmp.status, day]);
+  }, [region, effluent, forecast, forecastStatus, day]);
 
   if (run.status !== "ok" || !cells) return null;
 
