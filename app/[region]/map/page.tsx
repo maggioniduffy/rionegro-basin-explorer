@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icon";
 import { Wordmark } from "@/components/landing/Wordmark";
 import { MobileMenu } from "@/components/MobileMenu";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { EffluentRunProvider } from "@/components/effluent/EffluentRunProvider";
 import { BasinMap } from "@/components/map/BasinMap";
 import { Panels } from "@/components/Panels";
 import { SearchBox } from "@/components/SearchBox";
@@ -20,40 +21,43 @@ export default async function MapPage({ params }: PageProps<"/[region]/map">) {
 
   return (
     <main className="relative h-dvh overflow-hidden">
-      <BasinMap />
-      {/* The landing header, compact, floating over the map. */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-wrap items-start justify-between gap-2 p-3">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <h1 className="bg-panel-glass border-line shadow-card pointer-events-auto flex min-h-11 shrink-0 items-center rounded-[10px] border px-3 backdrop-blur-[6px]">
-            <Link
-              href={regionPath(region)}
-              aria-label={landing("home")}
-              className="text-text"
-            >
-              {/* Its text is home.title, a proper noun. */}
-              <Wordmark compact />
-            </Link>
-          </h1>
-          <div className="pointer-events-auto min-w-40 flex-1 sm:w-full sm:max-w-96 sm:flex-none">
-            <SearchBox />
+      {/* One effluent run (and one forecast fetch) for the map's plume and the panels. */}
+      <EffluentRunProvider>
+        <BasinMap />
+        {/* The landing header, compact, floating over the map. */}
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-wrap items-start justify-between gap-2 p-3">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+            <h1 className="bg-panel-glass border-line shadow-card pointer-events-auto flex min-h-11 shrink-0 items-center rounded-[10px] border px-3 backdrop-blur-[6px]">
+              <Link
+                href={regionPath(region)}
+                aria-label={landing("home")}
+                className="text-text"
+              >
+                {/* Its text is home.title, a proper noun. */}
+                <Wordmark compact />
+              </Link>
+            </h1>
+            <div className="pointer-events-auto min-w-40 flex-1 sm:w-full sm:max-w-96 sm:flex-none">
+              <SearchBox />
+            </div>
           </div>
-        </div>
-        {/* Below 640px, the same controls in a menu; the wordmark and search stay. */}
-        <div className="bg-panel-glass border-line shadow-card pointer-events-auto rounded-[10px] border backdrop-blur-[6px] sm:hidden">
-          <MobileMenu className="rounded-[10px]">
-            <Link
-              href={regionPath(region, "/attributions")}
-              className="text-secondary hover:text-text inline-flex min-h-11 w-full items-center gap-2"
-            >
-              <Icon name="info" />
-              {t("sources")}
-            </Link>
-            <ThemeToggle className="min-h-11! w-full justify-start" />
-            <LocaleSwitcher />
-          </MobileMenu>
-        </div>
-      </header>
-      <Panels />
+          {/* Below 640px, the same controls in a menu; the wordmark and search stay. */}
+          <div className="bg-panel-glass border-line shadow-card pointer-events-auto rounded-[10px] border backdrop-blur-[6px] sm:hidden">
+            <MobileMenu className="rounded-[10px]">
+              <Link
+                href={regionPath(region, "/attributions")}
+                className="text-secondary hover:text-text inline-flex min-h-11 w-full items-center gap-2"
+              >
+                <Icon name="info" />
+                {t("sources")}
+              </Link>
+              <ThemeToggle className="min-h-11! w-full justify-start" />
+              <LocaleSwitcher />
+            </MobileMenu>
+          </div>
+        </header>
+        <Panels />
+      </EffluentRunProvider>
       <UrlSync />
     </main>
   );

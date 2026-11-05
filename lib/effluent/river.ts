@@ -349,25 +349,44 @@ function peakOf(
   return best;
 }
 
+/** The effluent fields the user can set, as `simulate` names them in a rejected input. */
+export type EffluentInputField =
+  "flowM3s" | "bodMgL" | "coliformsPer100mL" | "doMgL";
+
+/** A RangeError that says which effluent field was rejected; null for non-effluent inputs (gauge flows, parameters). */
+export class InputRangeError extends RangeError {
+  constructor(
+    message: string,
+    readonly field: EffluentInputField | null,
+  ) {
+    super(message);
+    this.name = "InputRangeError";
+  }
+}
+
 /** Reject inputs the UI should have caught: negative effluent values, non-positive gauge flows. */
 function validateInput(input: SimulationInput): void {
   const { net, effluent: e, scenario, params: p } = input;
-  if (!(e.flowM3s >= 0)) throw new RangeError("effluent flow must be >= 0");
-  const concentrations: [string, number | null][] = [
-    ["BOD", e.bodMgL],
-    ["DO", e.doMgL],
-    ["coliforms", e.coliformsPer100mL],
-    ["TP", e.tpMgL],
+  if (!(e.flowM3s >= 0))
+    throw new InputRangeError("effluent flow must be >= 0", "flowM3s");
+  const concentrations: [string, EffluentInputField | null, number | null][] = [
+    ["BOD", "bodMgL", e.bodMgL],
+    ["DO", "doMgL", e.doMgL],
+    ["coliforms", "coliformsPer100mL", e.coliformsPer100mL],
+    ["TP", null, e.tpMgL],
   ];
-  for (const [name, v] of concentrations)
+  for (const [name, field, v] of concentrations)
     if (v !== null && !(v >= 0))
-      throw new RangeError(`effluent ${name} must be >= 0`);
+      throw new InputRangeError(`effluent ${name} must be >= 0`, field);
   if (!(p.bodBottleRatePerDay > 0))
-    throw new RangeError("BOD bottle rate must be > 0");
+    throw new InputRangeError("BOD bottle rate must be > 0", null);
   for (const g of net.gauges) {
     const q = scenario[g.id];
     if (q !== undefined && !(q > 0))
-      throw new RangeError(`gauge "${g.id}" flow must be > 0 (got ${q} m³/s)`);
+      throw new InputRangeError(
+        `gauge "${g.id}" flow must be > 0 (got ${q} m³/s)`,
+        null,
+      );
   }
 }
 
