@@ -65,7 +65,14 @@ import {
   reachFeatureSelection,
   reachOrder,
 } from "@/lib/map/style";
-import { EffluentController } from "@/components/effluent/EffluentController";
+import {
+  EffluentController,
+  plumeReachAt,
+} from "@/components/effluent/EffluentController";
+import {
+  EffluentHoverCard,
+  isTouchOnly,
+} from "@/components/effluent/EffluentHoverCard";
 import { FlowController } from "@/components/flow/FlowController";
 import { useRegion } from "@/components/RegionProvider";
 import { peekFlowIndex } from "@/lib/flow/data";
@@ -569,8 +576,11 @@ export default function MapView() {
       if (!loaded) return;
       const store = useMapStore.getState();
       // In effluent mode a click on a reach of the net moves the outfall there, keeping the
-      // inputs; a click anywhere else does nothing.
+      // inputs; a click anywhere else does nothing. A tap on the plume on a touch device shows
+      // the reach card instead (EffluentHoverCard).
       if (store.effluent) {
+        if (isTouchOnly() && plumeReachAt(map, e.point.x, e.point.y) !== null)
+          return;
         const net = netReachIds(region);
         const id = net ? netReachAt(map, e.point.x, e.point.y, net) : null;
         if (id !== null) store.moveOutfall(id);
@@ -696,6 +706,7 @@ export default function MapView() {
       </div>
       <FlowController map={flowMap} padding={selectionPadding} />
       <EffluentController map={flowMap} />
+      <EffluentHoverCard map={flowMap} />
       <MapToolbar
         onZoomIn={() => mapRef.current?.zoomIn()}
         onZoomOut={() => mapRef.current?.zoomOut()}

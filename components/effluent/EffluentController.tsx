@@ -15,6 +15,25 @@ import { EFFLUENT_COLORS } from "@/lib/theme-tokens";
 export const PLUME_LAYER_ID = "effluent-plume";
 export const OUTFALL_SOURCE_ID = "effluent-outfall";
 export const OUTFALL_LAYER_ID = "effluent-outfall";
+const OUTFALL_HALO_LAYER_ID = "effluent-outfall-halo";
+
+/** The simulated path's reach under a point (small pick tolerance), or null. */
+export function plumeReachAt(
+  map: MapLibreMap,
+  x: number,
+  y: number,
+): number | null {
+  if (!map.getLayer(PLUME_LAYER_ID)) return null;
+  const r = 5;
+  const [f] = map.queryRenderedFeatures(
+    [
+      [x - r, y - r],
+      [x + r, y + r],
+    ],
+    { layers: [PLUME_LAYER_ID] },
+  );
+  return f && f.id !== undefined ? Number(f.id) : null;
+}
 
 const NO_REACHES: FilterSpecification = ["boolean", false];
 
@@ -114,26 +133,42 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
           "line-color": EFFLUENT_COLORS.dark.within,
-          "line-opacity": 0.95,
-          "line-width": reachWidth(1, 1.5),
+          "line-opacity": 0.8,
+          "line-width": reachWidth(1, 2),
         },
       },
       map.getLayer(DAM_WALL_LAYER_ID) ? DAM_WALL_LAYER_ID : undefined,
     );
+    // A soft halo under the marker so it reads over the dimmed lines and the imagery.
+    map.addLayer({
+      id: OUTFALL_HALO_LAYER_ID,
+      type: "circle",
+      source: OUTFALL_SOURCE_ID,
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 12, 12, 20],
+        "circle-color": EFFLUENT_COLORS.dark.outfall,
+        "circle-blur": 0.8,
+        "circle-opacity": 0.35,
+      },
+    });
     map.addLayer({
       id: OUTFALL_LAYER_ID,
       type: "circle",
       source: OUTFALL_SOURCE_ID,
       paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 4, 12, 7],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 6, 12, 10],
         "circle-color": EFFLUENT_COLORS.dark.outfall,
-        "circle-stroke-color": EFFLUENT_COLORS.dark.exceeds,
+        "circle-stroke-color": EFFLUENT_COLORS.dark.outfallStroke,
         "circle-stroke-width": 2,
       },
     });
     return () => {
       try {
-        for (const id of [OUTFALL_LAYER_ID, PLUME_LAYER_ID])
+        for (const id of [
+          OUTFALL_LAYER_ID,
+          OUTFALL_HALO_LAYER_ID,
+          PLUME_LAYER_ID,
+        ])
           if (map.getLayer(id)) map.removeLayer(id);
         if (map.getSource(OUTFALL_SOURCE_ID))
           map.removeSource(OUTFALL_SOURCE_ID);
@@ -171,7 +206,13 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
 
   // The marker needs the reach's tiles; try again as sources load until it is placed.
   useEffect(() => {
-    if (!map || !hasEffluent(region) || !map.getLayer(OUTFALL_LAYER_ID)) return;
+    if (
+      !map ||
+      !hasEffluent(region) ||
+      !map.getLayer(OUTFALL_LAYER_ID) ||
+      !map.getLayer(OUTFALL_HALO_LAYER_ID)
+    )
+      return;
     const source = map.getSource<GeoJSONSource>(OUTFALL_SOURCE_ID);
     if (!source) return;
     const colors = EFFLUENT_COLORS[theme];
@@ -179,8 +220,9 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
     map.setPaintProperty(
       OUTFALL_LAYER_ID,
       "circle-stroke-color",
-      colors.exceeds,
+      colors.outfallStroke,
     );
+    map.setPaintProperty(OUTFALL_HALO_LAYER_ID, "circle-color", colors.outfall);
     const set = (point: Position | null) =>
       source.setData({
         type: "FeatureCollection",

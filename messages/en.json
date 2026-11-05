@@ -561,6 +561,15 @@
       "prefix": "Forecast data:",
       "modified": "Values were modified (scaled and routed by this app)."
     },
+    "card": {
+      "range": "{from} to {to} from the outfall",
+      "minDo": "Minimum dissolved oxygen",
+      "bodEnd": "BOD\u2085 at reach end",
+      "coliformsEnd": "Coliforms at reach end",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} per 100 mL",
+      "notSimulated": "Not simulated"
+    },
     "legend": {
       "title": "Effluent",
       "outfall": "Outfall",

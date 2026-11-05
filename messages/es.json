@@ -561,6 +561,15 @@
       "prefix": "Datos de pronóstico:",
       "modified": "Los valores fueron modificados (escalados y propagados por esta aplicación)."
     },
+    "card": {
+      "range": "De {from} a {to} desde el punto de vertido",
+      "minDo": "Ox\u00edgeno disuelto m\u00ednimo",
+      "bodEnd": "DBO\u2085 al final del tramo",
+      "coliformsEnd": "Coliformes al final del tramo",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} cada 100 mL",
+      "notSimulated": "No simulado"
+    },
     "legend": {
       "title": "Efluente",
       "outfall": "Punto de vertido",

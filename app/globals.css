@@ -216,6 +216,16 @@ body {
   display: none;
 }
 
+.maplibregl-popup.locality-tip.effluent-tip .maplibregl-popup-content {
+  padding: 0.375rem 0.625rem;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.effluent-tip-head {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 /* Film grain over the landing and the hub (the v6 design). Light: navy noise, multiplied.
    Dark: light noise, overlaid and faint, so it does not turn the navy to mud. */
 .grain {
