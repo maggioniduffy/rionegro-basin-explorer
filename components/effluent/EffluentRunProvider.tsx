@@ -40,7 +40,7 @@ export function EffluentRunProvider({ children }: { children: ReactNode }) {
       forecast.status === "ok" ? forecast.data : null,
     );
   }, [region, effluent, configured, scenario, forecast]);
-  // Day N of a scenario is index N-1 of the gauges' days; the first gauge's dates label them.
+  // A scenario's 0-based `day` indexes the gauges' days (labelled day+1); the first gauge's dates label them.
   const dates = useMemo(
     () =>
       forecast.status === "ok"

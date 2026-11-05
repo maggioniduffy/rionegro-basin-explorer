@@ -9,6 +9,7 @@ import {
   roundInput,
   type InputField,
 } from "@/lib/effluent/inputs";
+import { effluentSources } from "@/lib/attributions";
 import { getEffluentRegion } from "@/lib/effluent/registry";
 import {
   effluentFromConfig,
@@ -103,6 +104,11 @@ function Inputs({ reach, configured }: { reach: number; configured: boolean }) {
   const defaults = effluentFromConfig(data.config, base.id);
 
   const commit = (field: InputField, raw: string, dflt: number | null) => {
+    // An empty field clears the override when the default is "not simulated" (null).
+    if (raw.trim() === "" && dflt === null) {
+      set({ [field]: undefined });
+      return null;
+    }
     const n = raw.trim() === "" ? NaN : Number(raw);
     const v = roundInput(field, n);
     if (v === null) return null;
@@ -452,7 +458,16 @@ function Notes() {
   const inRegion = useRegionPath();
   const reach = useMapStore((s) => s.effluent?.reach ?? null);
   const overrides = useMapStore((s) => s.effluent?.overrides);
+  const dates = useForecastDates();
   if (reach === null || !overrides) return null;
+  // The notice year is the forecast's, else the current UTC year.
+  const year = dates?.[0]
+    ? Number(dates[0].slice(0, 4))
+    : new Date().getUTCFullYear();
+  const sources = effluentSources(year);
+  const openMeteo = sources.find((x) => x.id === "openmeteo");
+  const glofas = sources.find((x) => x.id === "glofas");
+  if (!openMeteo || !glofas) return null;
   const href =
     inRegion("/effluents") +
     effluentSearch(new URLSearchParams(), { reach, overrides });
@@ -468,15 +483,14 @@ function Notes() {
       <p>{t("mapCoverage")}</p>
       <p>
         {t("attribution.prefix")}{" "}
-        <a href="https://open-meteo.com/" className={LINK}>
-          Weather data by Open-Meteo.com
+        <a href={openMeteo.url} className={LINK}>
+          {openMeteo.credit}
         </a>{" "}
         (
-        <a href="https://open-meteo.com/en/licence" className={LINK}>
-          CC BY 4.0
+        <a href={openMeteo.license.url} className={LINK}>
+          {openMeteo.license.name}
         </a>
-        ). {t("attribution.modified")} Contains modified Copernicus Emergency
-        Management Service information 2026.
+        ). {t("attribution.modified")} {glofas.credit}.
       </p>
     </footer>
   );
