@@ -88,6 +88,7 @@ export const NET_COLUMNS = [
   "gradientMPerKm",
   "uplandKm2",
   "gauge",
+  "pieces",
 ] as const;
 
 const netRowSchema = z.tuple([
@@ -98,6 +99,8 @@ const netRowSchema = z.tuple([
   num,
   num,
   z.number().int().nonnegative(),
+  // Ids of the line pieces the plume may paint on the reach (pipeline/steps/effluent-pieces.ts).
+  z.array(z.string().min(1)),
 ]);
 
 export const effluentNetFileSchema = z.object({
@@ -110,6 +113,7 @@ export const effluentNetFileSchema = z.object({
     z.literal(NET_COLUMNS[4]),
     z.literal(NET_COLUMNS[5]),
     z.literal(NET_COLUMNS[6]),
+    z.literal(NET_COLUMNS[7]),
   ]),
   gauges: z
     .array(
@@ -146,6 +150,12 @@ export interface EffluentNet {
   lake: LakeConfig;
   reaches: NetReach[];
   outfalls: { id: string; reach: number }[];
+}
+
+/** Reach id -> ids of the line pieces the plume may paint on it (the `pieces` column of effluent-net.json). */
+export function parseNetPieces(raw: unknown): Map<number, string[]> {
+  const file = effluentNetFileSchema.parse(raw);
+  return new Map(file.reaches.map((row) => [row[0], row[7]]));
 }
 
 export function parseEffluentConfig(raw: unknown): EffluentConfig {

@@ -5,6 +5,7 @@ import cbaNet from "@/regions/cba/effluent-net.json";
 import {
   parseEffluentConfig,
   parseEffluentNet,
+  parseNetPieces,
   type EffluentConfig,
   type EffluentNet,
 } from "./schema";
@@ -22,6 +23,8 @@ const cellsSchema = z.object({
 export interface EffluentRegion {
   config: EffluentConfig;
   net: EffluentNet;
+  /** Net reach id -> line pieces of the tiles the plume paints on it. */
+  netPieces: Map<number, string[]>;
   gaugeCells: { id: string; lat: number; lon: number }[];
 }
 
@@ -29,6 +32,7 @@ function build(rawConfig: unknown, rawNet: unknown): EffluentRegion {
   return {
     config: parseEffluentConfig(rawConfig),
     net: parseEffluentNet(rawNet),
+    netPieces: parseNetPieces(rawNet),
     gaugeCells: cellsSchema
       .parse(rawConfig)
       .gauges.map((g) => ({ id: g.id, ...g.cell })),

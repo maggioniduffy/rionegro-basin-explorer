@@ -7,6 +7,7 @@ import { MAP_PATH } from "@/lib/url-state";
 import { REGION_IDS, regionPath, type RegionId } from "@/regions";
 import footerArt from "../../public/landing/footer-art.png";
 import { Logomark } from "../Icon";
+import { LocaleLink } from "./LocaleLink";
 import { Wordmark } from "./Wordmark";
 
 const HEADING =
@@ -27,11 +28,14 @@ export async function SiteFooter({
   region,
   path,
   overlap = false,
+  keepSearch = false,
 }: {
   region?: RegionId;
   path: string;
   overlap?: boolean;
+  keepSearch?: boolean;
 }) {
+  const Anchor = keepSearch ? LocaleLink : "a";
   const t = await getTranslations("landing");
   const ls = await getTranslations("localeSwitcher");
   const hub = await getTranslations("hub.metadata");
@@ -122,7 +126,7 @@ export async function SiteFooter({
             <div className={HEADING}>{t("fLang")}</div>
             {/* Plain anchors: see LocaleLinks. */}
             {LOCALES.map((l) => (
-              <a
+              <Anchor
                 key={l}
                 href={`/${l}${region ? regionPath(region, path) : ""}`}
                 lang={l}
@@ -130,7 +134,7 @@ export async function SiteFooter({
                 className={LINK}
               >
                 {ls("locale", { locale: l })}
-              </a>
+              </Anchor>
             ))}
           </div>
         </div>

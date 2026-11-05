@@ -421,6 +421,12 @@
       "copdem": {
         "usedFor": "Flow close-up: orientation of channel branches, derived offline. Only the derived vectors are published."
       },
+      "openmeteo": {
+        "usedFor": "Discharge simulator: river flow forecast (today and the coming days, ensemble statistics) served by Open-Meteo. The values are modeled and were modified here."
+      },
+      "glofas": {
+        "usedFor": "Discharge simulator: GloFAS v4 simulated river discharge, the dataset behind the Open-Meteo forecast. Modeled values, scaled here."
+      },
       "eox": {
         "usedFor": "Satellite imagery.",
         "terms": "Non-commercial use only, under this license."
@@ -475,15 +481,263 @@
     "regions": "Regions",
     "open": "Open the explorer"
   },
+  "effluents": {
+    "metaTitle": "Discharge analysis",
+    "title": "Discharge analysis",
+    "intro": "What a discharge into the river does downstream: how far the plume reaches, how low the dissolved oxygen falls and how much load the river can take.",
+    "back": "Back to the map",
+    "loading": "Running the simulation\u2026",
+    "forecastStamp": "Forecast fetched {date} UTC \u00b7 GloFAS via Open\u2011Meteo",
+    "profile": {
+      "xAxis": "Distance from the outfall ({unit})",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} per 100 mL",
+      "pickHint": "Click a stretch of the river to see it on the map.",
+      "pick": "Reach {id}, {from} to {to} from the outfall: show on the map",
+      "band": "Coefficient range (kd × Manning n)",
+      "doTitle": "Dissolved oxygen along the river",
+      "doDesc": "Dissolved oxygen against distance from the outfall over {total}; the minimum is {min} at {km}.",
+      "doFinding": "Minimum DO {min} at {km} from the outfall; below the {threshold} threshold over {length}.",
+      "doFindingOk": "Minimum DO {min} at {km} from the outfall; it stays above the {threshold} threshold.",
+      "doThreshold": "DO threshold",
+      "doSaturation": "Saturation",
+      "minDo": "Minimum DO",
+      "doAxis": "DO (mg/L)",
+      "coliTitle": "Coliforms along the river",
+      "coliDesc": "Coliforms per 100 mL against distance from the outfall over {total}, on a logarithmic scale.",
+      "coliFinding": "Peak {peak} at {km} from the outfall; above the {threshold} threshold over {length}.",
+      "coliFindingOk": "Peak {peak} at {km} from the outfall; it stays below the {threshold} threshold.",
+      "coliFindingPeak": "Peak {peak} at {km} from the outfall; no coliform threshold is set.",
+      "coliThreshold": "Coliform threshold",
+      "coliAxis": "Coliforms (per 100 mL)",
+      "coliOff": "Coliforms not simulated — set an effluent coliform value."
+    },
+    "facts": {
+      "title": "Key results",
+      "plume": "Plume length, {pollutant}",
+      "minDoWhere": "At {km} from the outfall, reach {id}",
+      "kgPerDay": "{kgD} kg/d at the effluent flow of {flow}",
+      "removal": "Required removal: {value}",
+      "range": "Range: {lo} to {hi}",
+      "noLimit": "no upper limit",
+      "noRemovalEnough": "no removal is enough",
+      "sourceFlow": "River flow: HydroRIVERS 1971–2000 natural mean (ignores dams), scaled by GloFAS for the scenario",
+      "sourceKd": "kd: {source}",
+      "sourceColiformDecay": "Coliform decay: {source}",
+      "bandNote": "Ranges run the model over the 3 × 3 grid of kd (and coliform decay) levels, kd {kd} per day at 20 °C, and Manning n {n} ({runs} runs). Manning n: {source}",
+      "bandOff": "The coefficient ranges could not be computed for these inputs."
+    },
+    "scenarios": {
+      "title": "Scenario comparison",
+      "hint": "The same effluent and settings under three river flows. The column matching your selection is highlighted.",
+      "columns": {
+        "mean": "Long-term mean",
+        "today": "Today",
+        "forecast": "Forecast day {day}"
+      },
+      "forecastStat": "median (p25 to p75)",
+      "spread": "{lo} to {hi}",
+      "unavailable": "unavailable",
+      "rows": {
+        "flow": "River flow at the outfall reach",
+        "plume": "Plume length (dissolved oxygen)",
+        "minDo": "Minimum dissolved oxygen",
+        "bod": "Admissible BOD₅",
+        "removal": "Required removal"
+      },
+      "values": {
+        "none": "none possible",
+        "noLimit": "no limit"
+      }
+    },
+    "flow": {
+      "title": "River flow forecast",
+      "gauge": "Gauge driving the outfall reach: {name}",
+      "desc": "Forecast discharge at {gauge} from {from} to {to}: median with the p25 to p75 band, today as a dot and the climatology mean of {mean} as a dashed line.",
+      "yAxis": "Discharge (m³/s)",
+      "mean": "Climatology mean {value}",
+      "band": "p25 to p75",
+      "legend": "Line: median. Dot: today. Dashed line: climatology mean.",
+      "caption": "GloFAS v4 via Open‑Meteo, modelled discharge at the gauge cell; climatology = GloFAS reanalysis mean 1997–2022.",
+      "loading": "Loading the forecast…",
+      "unavailable": "The forecast is not available right now, so there is no flow chart."
+    },
+    "settings": {
+      "title": "Model settings",
+      "assumption": "assumption",
+      "source": "Source: {source}",
+      "reset": "Reset settings",
+      "doThreshold": "DO threshold",
+      "coliThreshold": "Coliform threshold",
+      "temp": "Water temperature",
+      "kd": "BOD decay rate (kd)",
+      "kdNote": "This choice also sets the coliform decay rate.",
+      "manningN": "Manning roughness (n)",
+      "widthCoef": "Channel width coefficient (a)",
+      "level": { "low": "Low", "central": "Central", "high": "High" },
+      "kdValue": "kd {kd} 1/d at 20 °C, coliforms {kb} 1/d",
+      "nValue": "n {n} (dimensionless)",
+      "widthValue": "W = {a}·Q^{m}",
+      "kbSource": "Coliform decay: {source}"
+    },
+    "assumptions": {
+      "title": "Assumptions, periods and sources",
+      "source": "Source: {source}",
+      "notSet": "not set",
+      "entries": "Model inputs and their sources",
+      "model": {
+        "title": "The model in words",
+        "mixing": "Complete mixing at the outfall and at each confluence: flows add and concentrations are the flow-weighted mean (dilution).",
+        "travel": "Travel time along a reach is its length divided by the velocity v = Q/(W·H). The channel is a wide rectangle: width W = a·Q^b, and depth H = (n·Q/(W·√S))^(3/5) from Manning's equation, with the slope S never below the minimum slope.",
+        "decay": "BOD and coliforms decay with first-order kinetics over the travel time.",
+        "deficit": "The dissolved-oxygen deficit follows Streeter–Phelps, with the reaeration rate ka chosen by the Covar rule among O'Connor–Dobbins, Churchill and Owens–Gibbs.",
+        "temperature": "Rates are corrected for water temperature with the temperature coefficient θ of each process.",
+        "stop": "For an outfall upstream of {lake}, the profile stops where the river enters the lake; downstream of it, it follows the river to its end.",
+        "screening": "This is a screening model, not calibrated against measurements."
+      },
+      "periods": {
+        "title": "Periods of the data",
+        "hydrorivers": "River flow: HydroRIVERS discharge, 1971–2000 natural mean (ignores dams); modeled, not observed.",
+        "glofas": "GloFAS v4 reanalysis climatology 1997–2022 at the hand-checked gauge cells; used to scale the flow for each scenario.",
+        "forecast": "Forecast fetched {date} UTC (GloFAS via Open‑Meteo).",
+        "noForecast": "No forecast was fetched for this run.",
+        "effluent": "Effluent values are a permit-limit scenario or labelled assumptions, not measured data."
+      },
+      "groups": {
+        "coefficients": "Coefficients",
+        "thresholds": "Thresholds (assumptions)",
+        "background": "River background upstream of the outfall"
+      },
+      "items": {
+        "kd": "BOD decay rate kd (low / central / high)",
+        "coliformDecay": "Coliform decay rate (low / central / high)",
+        "kaRule": "Reaeration rate ka",
+        "manningN": "Manning n (low / central / high)",
+        "widthCoef": "Width coefficient a (low / central / high)",
+        "minSlope": "Minimum slope",
+        "bottleRate": "BOD bottle rate",
+        "waterTemp": "Water temperature",
+        "elevation": "Elevation (for DO saturation)",
+        "doMin": "Dissolved oxygen threshold",
+        "coliThreshold": "Coliform threshold",
+        "bodThreshold": "BOD threshold",
+        "bgBod": "Background BOD",
+        "bgColi": "Background coliforms",
+        "doSat": "Background DO saturation",
+        "effFlow": "Effluent flow",
+        "effBod": "Effluent BOD₅",
+        "effDo": "Effluent dissolved oxygen",
+        "effColi": "Effluent coliforms",
+        "effTp": "Effluent total phosphorus",
+        "lakeArea": "Area",
+        "lakeVolume": "Volume",
+        "lakeDepth": "Mean depth",
+        "lakeTp": "Total phosphorus load",
+        "lakeResidence": "Residence time"
+      },
+      "values": {
+        "rangeDay": "{low} / {central} / {high} per day at 20 °C, θ = {theta}",
+        "range": "{low} / {central} / {high}",
+        "widthRange": "{low} / {central} / {high}, W = a·Q^{exponent}",
+        "kaRule": "Covar rule, θ = {theta}",
+        "fraction": "of saturation",
+        "residence": "{low} to {high} yr"
+      },
+      "coverage": "The map paints the plume on 138 of the 223 reaches of the model network, where the drawn lines match model reaches; this profile covers all of them.",
+      "pending": "Still pending: the regulatory limits (coliforms in Decreto 847/16; total P and ammonia N in Res. General APRHI 3/2025) and the exact location of the Bajo Grande outfall are unverified, so the model assumes the outfall at the upstream end of its reach."
+    }
+  },
   "effluent": {
     "title": "Discharge simulation",
     "simulate": "Simulate a discharge here",
     "coverage": "The simulator covers the Suquía basin only.",
+    "simulateAt": "Simulate at {name}",
+    "entryHint": "Or click any reach of the Suquía basin on the map and choose \"Simulate a discharge here\".",
     "outfall": "Outfall",
     "customReach": "Reach {id}",
     "loading": "Running the simulation\u2026",
     "unavailable": "The simulation is not available: the discharge forecast could not be loaded, or the inputs cannot be run.",
     "entersLake": "The plume enters {lake}; the model stops there.",
+    "mapCoverage": "The map paints the plume only where the drawn lines match model reaches (138 of 223 reaches of the model network); the full profile is on the analysis page.",
+    "inputs": "Effluent and flow",
+    "reset": "Reset",
+    "notSet": "Not simulated",
+    "limit": "UI limit: {min}\u2013{max} {unit}",
+    "defaultsOutfall": "Defaults are the permit-limit scenario of the configured outfall ({name}), not measured values.",
+    "defaultsAssumption": "Defaults are the permit-limit assumption of the configured outfall ({name}) applied to this reach, not measured values.",
+    "fields": {
+      "flowM3s": "Effluent flow",
+      "bodMgL": "BOD\u2085",
+      "coliformsPer100mL": "Coliforms",
+      "doMgL": "Effluent dissolved oxygen",
+      "removalPct": "Treatment removal of BOD\u2085 and coliforms"
+    },
+    "units": {
+      "flowM3s": "m\u00b3/s",
+      "bodMgL": "mg/L",
+      "coliformsPer100mL": "per 100 mL",
+      "doMgL": "mg/L"
+    },
+    "scenario": {
+      "label": "River flow scenario",
+      "mean": "Long-term mean",
+      "today": "Today (GloFAS)",
+      "day": "Forecast day {day}",
+      "dayDated": "Forecast day {day} ({date})",
+      "stat": "Forecast statistic",
+      "stats": {
+        "p25": "Low (p25)",
+        "median": "Median",
+        "p75": "High (p75)"
+      }
+    },
+    "pollutants": {
+      "do": "Dissolved oxygen",
+      "bod": "BOD\u2085",
+      "coliforms": "Coliforms"
+    },
+    "results": {
+      "title": "Results",
+      "plumeHint": "Length of river where each threshold is exceeded.",
+      "plumeNone": "Not exceeded",
+      "plumeKm": "{km}",
+      "plumeKmLast": "{km}, up to {last}",
+      "minDo": "Minimum dissolved oxygen",
+      "minDoValue": "{mgL} mg/L at {km}",
+      "admissibleBod": "Admissible BOD\u2085",
+      "bodValue": "{mgL} mg/L \u00b7 {kgD} kg/d",
+      "admissibleColiforms": "Admissible coliforms",
+      "coliformsValue": "{n} per 100 mL",
+      "admissibleValue": "{value} \u00b7 needs {removal} % removal",
+      "neverBinds": "The threshold is never reached",
+      "violates": {
+        "effluentDo": "None: the effluent's own oxygen is too low",
+        "background": "None: the river already misses the threshold"
+      }
+    },
+    "failure": {
+      "forecast": "GloFAS forecast unavailable",
+      "useMean": "Use the long-term mean",
+      "inputs": "These inputs can't be simulated",
+      "inputsField": "These inputs can't be simulated: check \u201c{field}\u201d",
+      "outsideNet": "This reach is outside the model network.",
+      "config": "The simulation could not be set up for this outfall."
+    },
+    "fullAnalysis": "Full analysis \u2192",
+    "caveat": "Screening model, not calibrated. River flow is the HydroRIVERS 1971\u20132000 natural mean discharge (ignores dams), scaled by GloFAS for the scenario's date.",
+    "attribution": {
+      "prefix": "Forecast data:",
+      "modified": "Values were modified (scaled and routed by this app)."
+    },
+    "card": {
+      "range": "{from} to {to} from the outfall",
+      "minDo": "Minimum dissolved oxygen",
+      "bodEnd": "BOD\u2085 at reach end",
+      "coliformsEnd": "Coliforms at reach end",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} per 100 mL",
+      "notSimulated": "Not simulated"
+    },
     "legend": {
       "title": "Effluent",
       "outfall": "Outfall",

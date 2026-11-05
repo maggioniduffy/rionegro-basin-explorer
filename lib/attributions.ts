@@ -4,7 +4,8 @@
  * providers publish them, so they are not translated; the prose around them lives in
  * messages (attributions.*), keyed by `id`.
  */
-import type { KnownRegionId } from "@/regions";
+import { isRegionId, type KnownRegionId } from "@/regions";
+import { getEffluentRegion } from "./effluent/registry";
 import { BASEMAP_CREDIT, FLOW_VERSIONS } from "./map/config";
 
 export type SourceId =
@@ -18,7 +19,9 @@ export type SourceId =
   | "terrain"
   | "eox"
   | "sentinel2"
-  | "copdem";
+  | "copdem"
+  | "openmeteo"
+  | "glofas";
 
 export type Source = {
   id: SourceId;
@@ -68,12 +71,22 @@ export function sourcesFor(region: KnownRegionId, product: string): Source[] {
     (s) =>
       s.id === "hydrosheds" ? { ...s, notice: hydroshedsNotice(product) } : s,
   );
-  if (region !== "cba") return all;
+  // Regions with an effluent config (the discharge simulator) add the forecast inputs.
+  const effluent =
+    isRegionId(region) && getEffluentRegion(region) !== null
+      ? effluentSources(new Date().getUTCFullYear())
+      : [];
+  if (region !== "cba") return [...all, ...effluent];
   // Córdoba: APRHI comes first among the agencies (precedence APRHI > IGN > HydroRIVERS),
   // and IGN is used outside the province.
-  return all.flatMap((s) =>
-    s.id === "ign" ? [APRHI, { ...s, usedForKey: "ign.usedForCba" }] : [s],
-  );
+  return [
+    ...all.flatMap((s): Source[] =>
+      s.id === "ign"
+        ? [APRHI, { ...s, usedForKey: "ign.usedForCba" as const }]
+        : [s],
+    ),
+    ...effluent,
+  ];
 }
 
 const SOURCES: Source[] = [
@@ -227,6 +240,36 @@ const FLOW_SOURCES: Source[] = [
         url: "https://registry.opendata.aws/copernicus-dem",
       },
     ],
+  },
+];
+
+/**
+ * Forecast inputs of the discharge simulator (SOURCES.md, "Open-Meteo Flood API"). Notices as
+ * the licences give them: ours are scaled values, so the "modified" notice applies.
+ */
+export const copernicusNotice = (year: number) =>
+  `Contains modified Copernicus Emergency Management Service information ${year}`;
+
+export const effluentSources = (year: number): Source[] => [
+  {
+    id: "openmeteo",
+    name: "Open-Meteo Flood API",
+    // The credit links to the home page, as the licence's example does (SOURCES.md).
+    url: "https://open-meteo.com/",
+    license: { name: "CC BY 4.0", url: "https://open-meteo.com/en/licence" },
+    credit: "Weather data by Open-Meteo.com",
+    citations: [],
+  },
+  {
+    id: "glofas",
+    name: "GloFAS v4 (Copernicus Emergency Management Service)",
+    url: "https://open-meteo.com/en/docs/flood-api",
+    license: {
+      name: "CEMS-FLOODS datasets licence",
+      url: "https://ewds.climate.copernicus.eu/licences/cems-floods",
+    },
+    credit: copernicusNotice(year),
+    citations: [],
   },
 ];
 

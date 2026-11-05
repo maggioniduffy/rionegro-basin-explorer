@@ -32,8 +32,18 @@ export const THEME_TOKENS: Record<
  */
 export const EFFLUENT_COLORS: Record<
   Theme,
-  { exceeds: string; within: string; outfall: string }
+  { exceeds: string; within: string; outfall: string; outfallStroke: string }
 > = {
-  dark: { exceeds: "#ff5a4d", within: "#c4b5fd", outfall: "#ffffff" },
-  light: { exceeds: "#d6291c", within: "#7c3aed", outfall: "#13233d" },
+  dark: {
+    exceeds: "#ff3b30",
+    within: "#b4bac4",
+    outfall: "#ff3b30",
+    outfallStroke: "#f8fafc",
+  },
+  light: {
+    exceeds: "#d6291c",
+    within: "#6b7280",
+    outfall: "#d6291c",
+    outfallStroke: "#f8fafc",
+  },
 };

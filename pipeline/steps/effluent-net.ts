@@ -15,6 +15,12 @@
  * cell refetches) and reused when present, so reruns are offline and the output is byte-identical
  * (no timestamp in it; the report has one).
  *
+ * Each row also lists the line pieces the plume may paint on the reach (effluent-pieces.ts: a
+ * piece that carries a tributary's name, or most of whose line runs on another reach, is a stub
+ * pipeline:lines matched to the wrong reach). Inputs: data/work/<id>/lines/lines.parquet,
+ * export/piece_name.json (the display name the tiles show), and the river/stream names of
+ * rivers.ndjson / streams.ndjson. A missing input fails the step.
+ *
  * Outputs: regions/<id>/effluent-net.json (committed), data/work/<id>/effluent-net/report.json.
  */
 import { existsSync } from "node:fs";
@@ -22,9 +28,11 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import readline from "node:readline";
 import * as prettier from "prettier";
+import { limitResources, lit, openDb } from "../lib/duckdb";
 import { upstreamIndex, upstreamSet } from "../lib/graph";
 import { OUT_DIR, REGION_ID, regionFile, rel, workPath } from "../lib/paths";
 import { writeReport } from "../lib/report";
+import { selectPieces, type PieceRow } from "./effluent-pieces";
 
 const STEP = "effluent-net";
 const CLIMATOLOGY_FROM = "1984-01-01";
@@ -62,6 +70,8 @@ interface Reach {
   dischargeM3s: number | null;
   gradientMPerKm: number | null;
   uplandKm2: number | null;
+  river: string | null;
+  stream: string | null;
 }
 interface FloodResponse {
   latitude: number;
@@ -98,9 +108,67 @@ async function readReaches(): Promise<Map<number, Reach>> {
       dischargeM3s: num("dischargeM3s"),
       gradientMPerKm: num("gradientMPerKm"),
       uplandKm2: num("uplandKm2"),
+      river: r.river == null ? null : String(r.river),
+      stream: r.stream == null ? null : String(r.stream),
     });
   }
   return byId;
+}
+
+/** id -> [name, ...aliases] of rivers.ndjson / streams.ndjson. */
+async function readNames(file: string): Promise<Map<string, string[]>> {
+  if (!existsSync(file))
+    throw new Error(`${rel(file)} missing; run pipeline:export first`);
+  const byId = new Map<string, string[]>();
+  const lines = readline.createInterface({ input: createReadStream(file) });
+  for await (const line of lines) {
+    if (line.trim() === "") continue;
+    const r = JSON.parse(line) as {
+      _id: string;
+      name?: string | null;
+      aliases?: string[];
+    };
+    byId.set(
+      r._id,
+      [r.name, ...(r.aliases ?? [])].filter(
+        (n): n is string => typeof n === "string" && n.trim() !== "",
+      ),
+    );
+  }
+  return byId;
+}
+
+/** Every line piece with its display name (the one the tiles show), from pipeline:lines and :export. */
+async function readPieces(): Promise<PieceRow[]> {
+  const linesFile = workPath("lines/lines.parquet");
+  const namesFile = workPath("export/piece_name.json");
+  for (const [file, step] of [
+    [linesFile, "lines"],
+    [namesFile, "export"],
+  ] as const)
+    if (!existsSync(file))
+      throw new Error(`${rel(file)} missing; run pipeline:${step} first`);
+  const db = await openDb();
+  try {
+    await mkdir(workPath(STEP, "tmp"), { recursive: true });
+    await limitResources(db, workPath(STEP, "tmp"));
+    const rows = await db.all(`
+      SELECT l.pieceId, l.lineId, l.reach, pn.name, l.length_m
+      FROM read_parquet(${lit(linesFile)}) l
+      LEFT JOIN read_json(${lit(namesFile)},
+                          columns = {pieceId: 'VARCHAR', name: 'VARCHAR'}) pn
+             ON pn.pieceId = l.pieceId
+      ORDER BY l.pieceId`);
+    return rows.map((r) => ({
+      pieceId: String(r.pieceId),
+      lineId: String(r.lineId),
+      reach: r.reach == null ? null : Number(r.reach),
+      name: r.name == null ? null : String(r.name),
+      lengthM: Number(r.length_m),
+    }));
+  } finally {
+    db.close();
+  }
 }
 
 /** GET the climatology, waiting out Open-Meteo's per-minute limit; any other error fails the step. */
@@ -248,6 +316,23 @@ async function main() {
   const sorted = [...ids].sort((a, b) => a - b);
   const next = new Map<number, number>();
   let linksStayInSet = mouthLeavesSet;
+  const riverNames = await readNames(`${OUT_DIR}/rivers.ndjson`);
+  const streamNames = await readNames(`${OUT_DIR}/streams.ndjson`);
+  const reachNames = new Map<number, string[]>();
+  for (const id of sorted) {
+    const r = reaches.get(id)!;
+    reachNames.set(id, [
+      ...(r.river === null ? [] : (riverNames.get(r.river) ?? [])),
+      ...(r.stream === null ? [] : (streamNames.get(r.stream) ?? [])),
+    ]);
+  }
+  const pieceRows = await readPieces();
+  const { pieces, counts: pieceCounts } = selectPieces(
+    pieceRows,
+    ids,
+    reachNames,
+  );
+  const existingPieces = new Set(pieceRows.map((p) => p.pieceId));
   const rows = sorted.map((id) => {
     const r = reaches.get(id)!;
     // The mouth reach flows on outside the subgraph; the model's walk ends there.
@@ -263,6 +348,7 @@ async function main() {
       r.gradientMPerKm,
       r.uplandKm2,
       gauge,
+      pieces.get(id) ?? [],
     ];
   });
   const perGauge = config.gauges.map(
@@ -310,6 +396,7 @@ async function main() {
       "gradientMPerKm",
       "uplandKm2",
       "gauge",
+      "pieces",
     ],
     reaches: rows,
     gauges,
@@ -344,6 +431,9 @@ async function main() {
     snappedMatchesConfig: gaugeReport.every((g) => g.snappedMatchesConfig),
     bothGaugesUsed: perGauge.every((n) => n > 0),
     fileBytes: fileBytes < MAX_FILE_BYTES,
+    pieceIdsExistInLines: [...pieces.values()].every((l) =>
+      l.every((p) => existingPieces.has(p)),
+    ),
   };
   const ok = Object.values(checks).every(Boolean);
   await writeReport(STEP, {
@@ -357,6 +447,7 @@ async function main() {
     ),
     gauges: gaugeReport,
     climatologyRange: { from: CLIMATOLOGY_FROM, to: CLIMATOLOGY_TO },
+    pieces: pieceCounts,
     output: rel(outFile),
     fileBytes,
   });

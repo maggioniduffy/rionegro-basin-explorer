@@ -421,6 +421,12 @@
       "copdem": {
         "usedFor": "Vista de cerca del flujo: orientación de los brazos del cauce, derivada sin conexión. Solo se publican los vectores derivados. Los textos de atribución y de responsabilidad se citan tal como los exige la licencia, en inglés."
       },
+      "openmeteo": {
+        "usedFor": "Simulador de vertidos: pronóstico de caudal del río (hoy y los próximos días, estadísticos del ensamble) servido por Open-Meteo. Los valores son modelados y fueron modificados aquí."
+      },
+      "glofas": {
+        "usedFor": "Simulador de vertidos: caudal simulado de GloFAS v4, el conjunto de datos detrás del pronóstico de Open-Meteo. Valores modelados, escalados aquí."
+      },
       "eox": {
         "usedFor": "Imágenes satelitales.",
         "terms": "Solo uso no comercial, bajo esta licencia."
@@ -475,15 +481,263 @@
     "regions": "Regiones",
     "open": "Abrir el explorador"
   },
+  "effluents": {
+    "metaTitle": "Análisis de vertidos",
+    "title": "Análisis del vertido",
+    "intro": "Qué hace un vertido al río aguas abajo: hasta dónde llega la pluma, cuánto baja el oxígeno disuelto y cuánta carga puede recibir el río.",
+    "back": "Volver al mapa",
+    "loading": "Corriendo la simulación\u2026",
+    "forecastStamp": "Pronóstico obtenido el {date} UTC \u00b7 GloFAS vía Open\u2011Meteo",
+    "profile": {
+      "xAxis": "Distancia desde el vertido ({unit})",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} cada 100 mL",
+      "pickHint": "Hacé clic en un tramo del río para verlo en el mapa.",
+      "pick": "Tramo {id}, de {from} a {to} desde el vertido: ver en el mapa",
+      "band": "Rango de coeficientes (kd × n de Manning)",
+      "doTitle": "Oxígeno disuelto a lo largo del río",
+      "doDesc": "Oxígeno disuelto según la distancia desde el vertido a lo largo de {total}; el mínimo es {min} a {km}.",
+      "doFinding": "OD mínimo {min} a {km} del vertido; por debajo del umbral de {threshold} a lo largo de {length}.",
+      "doFindingOk": "OD mínimo {min} a {km} del vertido; se mantiene por encima del umbral de {threshold}.",
+      "doThreshold": "Umbral de OD",
+      "doSaturation": "Saturación",
+      "minDo": "OD mínimo",
+      "doAxis": "OD (mg/L)",
+      "coliTitle": "Coliformes a lo largo del río",
+      "coliDesc": "Coliformes cada 100 mL según la distancia desde el vertido a lo largo de {total}, en escala logarítmica.",
+      "coliFinding": "Pico de {peak} a {km} del vertido; por encima del umbral de {threshold} a lo largo de {length}.",
+      "coliFindingOk": "Pico de {peak} a {km} del vertido; se mantiene por debajo del umbral de {threshold}.",
+      "coliFindingPeak": "Pico de {peak} a {km} del vertido; no hay umbral de coliformes definido.",
+      "coliThreshold": "Umbral de coliformes",
+      "coliAxis": "Coliformes (cada 100 mL)",
+      "coliOff": "Coliformes no simulados: cargá un valor de coliformes del efluente."
+    },
+    "facts": {
+      "title": "Resultados principales",
+      "plume": "Longitud de la pluma, {pollutant}",
+      "minDoWhere": "A {km} del vertido, tramo {id}",
+      "kgPerDay": "{kgD} kg/d con el caudal del efluente de {flow}",
+      "removal": "Remoción requerida: {value}",
+      "range": "Rango: {lo} a {hi}",
+      "noLimit": "sin límite superior",
+      "noRemovalEnough": "ninguna remoción alcanza",
+      "sourceFlow": "Caudal del río: media natural HydroRIVERS 1971–2000 (ignora represas), escalada con GloFAS según el escenario",
+      "sourceKd": "kd: {source}",
+      "sourceColiformDecay": "Decaimiento de coliformes: {source}",
+      "bandNote": "Los rangos corren el modelo sobre la grilla de 3 × 3 niveles de kd (y del decaimiento de coliformes), kd {kd} por día a 20 °C, y n de Manning {n} ({runs} corridas). n de Manning: {source}",
+      "bandOff": "No se pudieron calcular los rangos de coeficientes para estos datos."
+    },
+    "scenarios": {
+      "title": "Comparación de escenarios",
+      "hint": "El mismo efluente y los mismos ajustes con tres caudales del río. Se resalta la columna de tu selección.",
+      "columns": {
+        "mean": "Media de largo plazo",
+        "today": "Hoy",
+        "forecast": "Pronóstico, día {day}"
+      },
+      "forecastStat": "mediana (p25 a p75)",
+      "spread": "{lo} a {hi}",
+      "unavailable": "no disponible",
+      "rows": {
+        "flow": "Caudal del río en el tramo del vertido",
+        "plume": "Longitud de la pluma (oxígeno disuelto)",
+        "minDo": "Oxígeno disuelto mínimo",
+        "bod": "DBO₅ admisible",
+        "removal": "Remoción requerida"
+      },
+      "values": {
+        "none": "ninguna posible",
+        "noLimit": "sin límite"
+      }
+    },
+    "flow": {
+      "title": "Pronóstico del caudal del río",
+      "gauge": "Estación que determina el tramo del vertido: {name}",
+      "desc": "Caudal pronosticado en {gauge} del {from} al {to}: mediana con la banda p25 a p75, hoy como un punto y la media climatológica de {mean} como línea punteada.",
+      "yAxis": "Caudal (m³/s)",
+      "mean": "Media climatológica {value}",
+      "band": "p25 a p75",
+      "legend": "Línea: mediana. Punto: hoy. Línea punteada: media climatológica.",
+      "caption": "GloFAS v4 vía Open‑Meteo, caudal modelado en la celda de la estación; climatología = media del reanálisis GloFAS 1997–2022.",
+      "loading": "Cargando el pronóstico…",
+      "unavailable": "El pronóstico no está disponible ahora, por eso no hay gráfico de caudal."
+    },
+    "settings": {
+      "title": "Ajustes del modelo",
+      "assumption": "supuesto",
+      "source": "Fuente: {source}",
+      "reset": "Restablecer ajustes",
+      "doThreshold": "Umbral de OD",
+      "coliThreshold": "Umbral de coliformes",
+      "temp": "Temperatura del agua",
+      "kd": "Tasa de decaimiento de DBO (kd)",
+      "kdNote": "Esta elección también define la tasa de decaimiento de coliformes.",
+      "manningN": "Rugosidad de Manning (n)",
+      "widthCoef": "Coeficiente de ancho del cauce (a)",
+      "level": { "low": "Baja", "central": "Central", "high": "Alta" },
+      "kdValue": "kd {kd} 1/d a 20 °C, coliformes {kb} 1/d",
+      "nValue": "n {n} (adimensional)",
+      "widthValue": "W = {a}·Q^{m}",
+      "kbSource": "Decaimiento de coliformes: {source}"
+    },
+    "assumptions": {
+      "title": "Supuestos, períodos y fuentes",
+      "source": "Fuente: {source}",
+      "notSet": "sin dato",
+      "entries": "Datos de entrada del modelo y sus fuentes",
+      "model": {
+        "title": "El modelo en palabras",
+        "mixing": "Mezcla completa en el vertido y en cada confluencia: los caudales se suman y las concentraciones son el promedio ponderado por caudal (dilución).",
+        "travel": "El tiempo de viaje en un tramo es su longitud dividida por la velocidad v = Q/(W·H). El cauce es un rectángulo ancho: ancho W = a·Q^b y profundidad H = (n·Q/(W·√S))^(3/5) según la ecuación de Manning, con la pendiente S nunca menor que la pendiente mínima.",
+        "decay": "La DBO y los coliformes decaen con cinética de primer orden durante el tiempo de viaje.",
+        "deficit": "El déficit de oxígeno disuelto sigue Streeter–Phelps, con la tasa de reaireación ka elegida por la regla de Covar entre O'Connor–Dobbins, Churchill y Owens–Gibbs.",
+        "temperature": "Las tasas se corrigen por la temperatura del agua con el coeficiente θ de cada proceso.",
+        "stop": "Para un vertido aguas arriba de {lake}, el perfil termina donde el río entra al embalse; aguas abajo, sigue el río hasta su final.",
+        "screening": "Es un modelo de screening, sin calibrar con mediciones."
+      },
+      "periods": {
+        "title": "Períodos de los datos",
+        "hydrorivers": "Caudal del río: descarga de HydroRIVERS, media natural 1971–2000 (ignora las represas); modelado, no observado.",
+        "glofas": "Climatología de reanálisis GloFAS v4 1997–2022 en las celdas de estación verificadas a mano; se usa para escalar el caudal de cada escenario.",
+        "forecast": "Pronóstico obtenido el {date} UTC (GloFAS vía Open‑Meteo).",
+        "noForecast": "No se obtuvo un pronóstico para esta corrida.",
+        "effluent": "Los valores del efluente son un escenario con los límites del permiso o supuestos señalados, no datos medidos."
+      },
+      "groups": {
+        "coefficients": "Coeficientes",
+        "thresholds": "Umbrales (supuestos)",
+        "background": "Valores del río aguas arriba del vertido"
+      },
+      "items": {
+        "kd": "Tasa de decaimiento de DBO kd (baja / central / alta)",
+        "coliformDecay": "Tasa de decaimiento de coliformes (baja / central / alta)",
+        "kaRule": "Tasa de reaireación ka",
+        "manningN": "n de Manning (baja / central / alta)",
+        "widthCoef": "Coeficiente de ancho a (baja / central / alta)",
+        "minSlope": "Pendiente mínima",
+        "bottleRate": "Tasa de botella de DBO",
+        "waterTemp": "Temperatura del agua",
+        "elevation": "Elevación (para la saturación de OD)",
+        "doMin": "Umbral de oxígeno disuelto",
+        "coliThreshold": "Umbral de coliformes",
+        "bodThreshold": "Umbral de DBO",
+        "bgBod": "DBO de fondo",
+        "bgColi": "Coliformes de fondo",
+        "doSat": "Saturación de OD de fondo",
+        "effFlow": "Caudal del efluente",
+        "effBod": "DBO₅ del efluente",
+        "effDo": "Oxígeno disuelto del efluente",
+        "effColi": "Coliformes del efluente",
+        "effTp": "Fósforo total del efluente",
+        "lakeArea": "Superficie",
+        "lakeVolume": "Volumen",
+        "lakeDepth": "Profundidad media",
+        "lakeTp": "Carga de fósforo total",
+        "lakeResidence": "Tiempo de residencia"
+      },
+      "values": {
+        "rangeDay": "{low} / {central} / {high} por día a 20 °C, θ = {theta}",
+        "range": "{low} / {central} / {high}",
+        "widthRange": "{low} / {central} / {high}, W = a·Q^{exponent}",
+        "kaRule": "Regla de Covar, θ = {theta}",
+        "fraction": "de la saturación",
+        "residence": "{low} a {high} años"
+      },
+      "coverage": "El mapa dibuja la pluma en 138 de los 223 tramos de la red del modelo, donde las líneas dibujadas coinciden con tramos del modelo; este perfil los cubre todos.",
+      "pending": "Pendiente: los límites normativos (coliformes en el Decreto 847/16; fósforo total y nitrógeno amoniacal en la Res. General APRHI 3/2025) y la ubicación exacta del vertido de Bajo Grande no están verificados, por eso el modelo supone el vertido en el extremo aguas arriba de su tramo."
+    }
+  },
   "effluent": {
     "title": "Simulación de vertido",
     "simulate": "Simular un vertido aquí",
     "coverage": "El simulador cubre solo la cuenca del Suquía.",
+    "simulateAt": "Simular en {name}",
+    "entryHint": "O hacé clic en cualquier tramo de la cuenca del Suquía en el mapa y elegí \"Simular un vertido aquí\".",
     "outfall": "Punto de vertido",
     "customReach": "Tramo {id}",
     "loading": "Ejecutando la simulación\u2026",
     "unavailable": "La simulación no está disponible: no se pudo cargar el pronóstico de caudal, o los datos de entrada no se pueden ejecutar.",
     "entersLake": "La pluma llega a {lake}; el modelo se detiene allí.",
+    "mapCoverage": "El mapa dibuja la pluma solo donde las líneas dibujadas coinciden con tramos del modelo (138 de 223 tramos de la red del modelo); el perfil completo está en la página de análisis.",
+    "inputs": "Efluente y caudal",
+    "reset": "Restablecer",
+    "notSet": "No simulado",
+    "limit": "Límite de la interfaz: {min}\u2013{max} {unit}",
+    "defaultsOutfall": "Los valores por defecto son el escenario de límites del permiso del vertido configurado ({name}), no valores medidos.",
+    "defaultsAssumption": "Los valores por defecto son el supuesto de límites del permiso del vertido configurado ({name}) aplicado a este tramo, no valores medidos.",
+    "fields": {
+      "flowM3s": "Caudal del efluente",
+      "bodMgL": "DBO\u2085",
+      "coliformsPer100mL": "Coliformes",
+      "doMgL": "Oxígeno disuelto del efluente",
+      "removalPct": "Remoción de DBO\u2085 y coliformes por tratamiento"
+    },
+    "units": {
+      "flowM3s": "m\u00b3/s",
+      "bodMgL": "mg/L",
+      "coliformsPer100mL": "por 100 mL",
+      "doMgL": "mg/L"
+    },
+    "scenario": {
+      "label": "Escenario de caudal del río",
+      "mean": "Media de largo plazo",
+      "today": "Hoy (GloFAS)",
+      "day": "Pronóstico, día {day}",
+      "dayDated": "Pronóstico, día {day} ({date})",
+      "stat": "Estadístico del pronóstico",
+      "stats": {
+        "p25": "Bajo (p25)",
+        "median": "Mediana",
+        "p75": "Alto (p75)"
+      }
+    },
+    "pollutants": {
+      "do": "Oxígeno disuelto",
+      "bod": "DBO\u2085",
+      "coliforms": "Coliformes"
+    },
+    "results": {
+      "title": "Resultados",
+      "plumeHint": "Longitud del río donde se supera cada umbral.",
+      "plumeNone": "No se supera",
+      "plumeKm": "{km}",
+      "plumeKmLast": "{km}, hasta {last}",
+      "minDo": "Oxígeno disuelto mínimo",
+      "minDoValue": "{mgL} mg/L a {km}",
+      "admissibleBod": "DBO\u2085 admisible",
+      "bodValue": "{mgL} mg/L \u00b7 {kgD} kg/d",
+      "admissibleColiforms": "Coliformes admisibles",
+      "coliformsValue": "{n} por 100 mL",
+      "admissibleValue": "{value} \u00b7 requiere {removal} % de remoción",
+      "neverBinds": "El umbral nunca se alcanza",
+      "violates": {
+        "effluentDo": "Ninguno: el oxígeno del propio efluente es demasiado bajo",
+        "background": "Ninguno: el río ya no cumple el umbral"
+      }
+    },
+    "failure": {
+      "forecast": "Pronóstico de GloFAS no disponible",
+      "useMean": "Usar la media de largo plazo",
+      "inputs": "Estos datos no se pueden simular",
+      "inputsField": "Estos datos no se pueden simular: revisa \u00ab{field}\u00bb",
+      "outsideNet": "Este tramo está fuera de la red del modelo.",
+      "config": "No se pudo preparar la simulación para este vertido."
+    },
+    "fullAnalysis": "Análisis completo \u2192",
+    "caveat": "Modelo de screening, sin calibrar. El caudal del río es el caudal natural medio 1971\u20132000 de HydroRIVERS (ignora las represas), escalado con GloFAS para la fecha del escenario.",
+    "attribution": {
+      "prefix": "Datos de pronóstico:",
+      "modified": "Los valores fueron modificados (escalados y propagados por esta aplicación)."
+    },
+    "card": {
+      "range": "De {from} a {to} desde el punto de vertido",
+      "minDo": "Ox\u00edgeno disuelto m\u00ednimo",
+      "bodEnd": "DBO\u2085 al final del tramo",
+      "coliformsEnd": "Coliformes al final del tramo",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} cada 100 mL",
+      "notSimulated": "No simulado"
+    },
     "legend": {
       "title": "Efluente",
       "outfall": "Punto de vertido",

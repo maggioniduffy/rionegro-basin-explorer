@@ -1,21 +1,22 @@
 "use client";
 
-import { useMemo } from "react";
+import { createContext, useContext } from "react";
 import type { RegionId } from "@/regions";
-import { useRegion } from "@/components/RegionProvider";
-import { useMapStore } from "@/lib/store";
-import { useApi } from "@/lib/use-api";
 import { scenarioFor, type DischargeForecast } from "./forecast";
 import { netReachIds } from "./overlay";
 import { getEffluentRegion } from "./registry";
 import {
   CENTRAL_LEVELS,
+  InputRangeError,
+  admissibleLoad,
   effluentFromConfig,
   longTermMeanScenario,
   paramsFromConfig,
   simulate,
   thresholdsFromConfig,
+  type AdmissibleLoad,
   type Effluent,
+  type EffluentInputField,
   type ModelParams,
   type Scenario,
   type SimulationResult,
@@ -34,77 +35,133 @@ export interface EffluentRunInputs {
   /** The configured outfall whose values were the defaults. */
   outfallId: string;
   defaultsFrom: EffluentDefaultsFrom;
+  /** The effluent as simulated: `removalPct` already applied to the BOD and coliforms. */
   effluent: Effluent;
-  /** Treatment removal already applied to the BOD and coliforms in `effluent`. */
+  /** The effluent before treatment (defaults and overrides, no removal). */
+  rawEffluent: Effluent;
   removalPct: number;
   params: ModelParams;
   thresholds: Thresholds;
   scenario: Scenario;
 }
 
+/** Why a run is unavailable; the panel words each one differently. */
+export type UnavailableReason =
+  /** A scenario other than the mean, and the forecast failed or can't give it. Never the mean instead. */
+  | { reason: "forecast" }
+  /** The model rejected the inputs; `field` is the effluent field at fault, null if not one. */
+  | { reason: "inputs"; field: EffluentInputField | null }
+  /** The reach is not in the region's net. */
+  | { reason: "outsideNet" }
+  /** No configured outfall, or an unexpected error. */
+  | { reason: "config" };
+
 export type EffluentRun =
-  | { status: "off" | "loading" | "unavailable"; inputs: null; result: null }
+  | { status: "off" | "loading"; inputs: null; result: null; admissible: null }
+  | ({
+      status: "unavailable";
+      inputs: null;
+      result: null;
+      admissible: null;
+    } & UnavailableReason)
   | {
       status: "ok";
       inputs: EffluentRunInputs;
+      /** The simulation with the treated effluent. */
       result: SimulationResult;
+      /** Admissible load of the untreated effluent: `requiredRemovalPct` is relative to the raw values. */
+      admissible: AdmissibleLoad;
     };
 
-const OFF: EffluentRun = { status: "off", inputs: null, result: null };
-const LOADING: EffluentRun = { status: "loading", inputs: null, result: null };
-const UNAVAILABLE: EffluentRun = {
+export const OFF: EffluentRun = {
+  status: "off",
+  inputs: null,
+  result: null,
+  admissible: null,
+};
+export const LOADING: EffluentRun = {
+  status: "loading",
+  inputs: null,
+  result: null,
+  admissible: null,
+};
+export const unavailable = (r: UnavailableReason): EffluentRun => ({
   status: "unavailable",
   inputs: null,
   result: null,
-};
+  admissible: null,
+  ...r,
+});
 
-/**
- * One run of the model for the store's effluent state. The forecast is fetched only for a
- * scenario other than the long-term mean; a scenario the forecast can't give is "unavailable",
- * never the mean.
- */
+export const EffluentRunContext = createContext<EffluentRun | null>(null);
+
+/** The shared run; must be under an EffluentRunProvider. */
 export function useEffluentRun(): EffluentRun {
-  const region = useRegion();
-  const effluent = useMapStore((s) => s.effluent);
-  const scenario = effluent?.overrides.scenario;
-  const forecast = useApi<DischargeForecast>(
-    scenario && getEffluentRegion(region) ? "/api/discharge" : null,
-  );
-  return useMemo(() => {
-    if (!effluent) return OFF;
-    if (scenario && forecast.status === "loading") return LOADING;
-    if (scenario && forecast.status !== "ok") return UNAVAILABLE;
-    return runEffluent(
-      region,
-      effluent,
-      forecast.status === "ok" ? forecast.data : null,
-    );
-  }, [region, effluent, scenario, forecast]);
+  const run = useContext(EffluentRunContext);
+  if (!run) throw new Error("useEffluentRun needs an EffluentRunProvider");
+  return run;
 }
 
-function runEffluent(
+/** Dates (UTC, after today) the fetched forecast covers at every gauge; null until one is fetched. */
+export const EffluentForecastDatesContext = createContext<string[] | null>(
+  null,
+);
+
+/** Forecast days the scenario select can offer: the fetched forecast's, else null. */
+export function useForecastDates(): string[] | null {
+  return useContext(EffluentForecastDatesContext);
+}
+
+/** The fetched discharge forecast; null until one is fetched (no scenario, loading or failed). */
+export const EffluentForecastContext = createContext<DischargeForecast | null>(
+  null,
+);
+
+/** The fetched forecast the run used, for its "fetched at" stamp; null when there is none. */
+export function useForecast(): DischargeForecast | null {
+  return useContext(EffluentForecastContext);
+}
+
+/** Whether the forecast is still loading, fetched, or not available (failed, or none was requested). */
+export type ForecastStatus = "loading" | "ok" | "unavailable";
+
+export const EffluentForecastStatusContext =
+  createContext<ForecastStatus>("unavailable");
+
+export function useForecastStatus(): ForecastStatus {
+  return useContext(EffluentForecastStatusContext);
+}
+
+/** One run of the model for an effluent state; pure, so it runs without React. */
+export function runEffluent(
   region: RegionId,
   { reach, overrides }: EffluentUrl,
   forecast: DischargeForecast | null,
 ): EffluentRun {
   const data = getEffluentRegion(region);
-  if (!data || !netReachIds(region)?.has(reach)) return UNAVAILABLE;
+  if (!data || !netReachIds(region)?.has(reach))
+    return unavailable({ reason: "outsideNet" });
   try {
     const { config, net } = data;
     const outfall = config.outfalls.find((o) => o.reach === reach);
     const base = outfall ?? config.outfalls[0];
-    if (!base) return UNAVAILABLE;
+    if (!base) return unavailable({ reason: "config" });
     const defaults = effluentFromConfig(config, base.id);
     const o: EffluentOverrides = overrides;
     const removal = o.removalPct ?? 0;
     const keep = 1 - removal / 100;
     const coliforms = o.coliformsPer100mL ?? defaults.coliformsPer100mL;
-    const effluent: Effluent = {
+    const rawEffluent: Effluent = {
       ...defaults,
       reachId: reach,
       flowM3s: o.flowM3s ?? defaults.flowM3s,
-      bodMgL: (o.bodMgL ?? defaults.bodMgL) * keep,
+      bodMgL: o.bodMgL ?? defaults.bodMgL,
       doMgL: o.doMgL ?? defaults.doMgL,
+      coliformsPer100mL: coliforms,
+    };
+    const effluent: Effluent = {
+      ...rawEffluent,
+      bodMgL: rawEffluent.bodMgL * keep,
       coliformsPer100mL: coliforms === null ? null : coliforms * keep,
     };
     const configured = thresholdsFromConfig(config);
@@ -116,26 +173,40 @@ function runEffluent(
     const params = paramsFromConfig(config, { ...CENTRAL_LEVELS, ...o.levels });
     if (o.tempC !== undefined) params.tempC = o.tempC;
     const scenario = o.scenario
-      ? scenarioFor(forecast as DischargeForecast, net, o.scenario)
+      ? forecast && scenarioFor(forecast, net, o.scenario)
       : longTermMeanScenario(net);
-    if (!scenario) return UNAVAILABLE;
+    if (!scenario) return unavailable({ reason: "forecast" });
     const result = simulate({ net, params, effluent, scenario, thresholds });
+    const admissible = admissibleLoad({
+      net,
+      params,
+      effluent: rawEffluent,
+      scenario,
+      thresholds,
+    });
     return {
       status: "ok",
       inputs: {
         outfallId: base.id,
         defaultsFrom: outfall ? "outfall" : "permitLimitAssumption",
         effluent,
+        rawEffluent,
         removalPct: removal,
         params,
         thresholds,
         scenario,
       },
       result,
+      admissible,
     };
   } catch (error) {
     // simulate rejects inputs it can't run (RangeError); anything else is a config problem.
-    if (!(error instanceof RangeError)) console.error(error);
-    return UNAVAILABLE;
+    if (error instanceof RangeError)
+      return unavailable({
+        reason: "inputs",
+        field: error instanceof InputRangeError ? error.field : null,
+      });
+    console.error(error);
+    return unavailable({ reason: "config" });
   }
 }

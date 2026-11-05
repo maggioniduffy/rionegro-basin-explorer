@@ -15,17 +15,45 @@ import { EFFLUENT_COLORS } from "@/lib/theme-tokens";
 export const PLUME_LAYER_ID = "effluent-plume";
 export const OUTFALL_SOURCE_ID = "effluent-outfall";
 export const OUTFALL_LAYER_ID = "effluent-outfall";
+const OUTFALL_HALO_LAYER_ID = "effluent-outfall-halo";
+
+/** The simulated path's reach under a point (small pick tolerance), or null. */
+export function plumeReachAt(
+  map: MapLibreMap,
+  x: number,
+  y: number,
+): number | null {
+  if (!map.getLayer(PLUME_LAYER_ID)) return null;
+  const r = 5;
+  const [f] = map.queryRenderedFeatures(
+    [
+      [x - r, y - r],
+      [x + r, y + r],
+    ],
+    { layers: [PLUME_LAYER_ID] },
+  );
+  return f && f.id !== undefined ? Number(f.id) : null;
+}
 
 const NO_REACHES: FilterSpecification = ["boolean", false];
 
 type Position = [number, number];
 
-/** Both ends of every line piece the tiles hold for a reach (a reach may be split by tile edges). */
-function endpoints(map: MapLibreMap, id: number): Position[] {
+/**
+ * Both ends of every kept line piece the tiles hold for a reach (a reach may be split by tile
+ * edges). Only kept pieces: a tributary stub matched to the reach must not give the outfall point.
+ */
+function endpoints(
+  map: MapLibreMap,
+  pieces: ReadonlyMap<number, string[]>,
+  id: number,
+): Position[] {
   const out: Position[] = [];
+  const kept = pieces.get(id) ?? [];
+  if (kept.length === 0) return out;
   const features = map.querySourceFeatures("rivers", {
     sourceLayer: "reaches",
-    filter: ["==", ["id"], id],
+    filter: ["in", ["get", "piece"], ["literal", kept]],
   });
   for (const f of features) {
     const g = f.geometry;
@@ -50,7 +78,7 @@ const near = (a: Position, b: Position) =>
 
 /**
  * Where the outfall reach starts. Not every net reach has line features in the tiles (cba draws
- * APRHI/IGN pieces, and only matched ones carry the reach id), so the reference is the endpoints
+ * APRHI/IGN pieces, and only matched, kept ones count), so the reference is the endpoints
  * of the nearest reach down the net that has some: the outfall reach's end farthest from them is
  * its upstream end. Failing that, the end nearest the endpoints of a reach flowing into it. The
  * line direction in the tiles is not assumed. Ends that meet another piece of the same reach are
@@ -59,10 +87,11 @@ const near = (a: Position, b: Position) =>
 function outfallPoint(
   map: MapLibreMap,
   net: EffluentNet,
+  pieces: ReadonlyMap<number, string[]>,
   reach: number,
 ): Position | null {
   const byId = new Map(net.reaches.map((r) => [r.id, r]));
-  const ends = endpoints(map, reach).filter(
+  const ends = endpoints(map, pieces, reach).filter(
     (p, i, all) => !all.some((q, j) => j !== i && near(p, q)),
   );
   if (ends.length === 0) return null;
@@ -75,13 +104,13 @@ function outfallPoint(
     id = byId.get(id)?.nextDown ?? 0
   ) {
     seen.add(id);
-    const down = endpoints(map, id);
+    const down = endpoints(map, pieces, id);
     if (down.length > 0)
       return ends.reduce((a, b) => (gap(b, down) > gap(a, down) ? b : a));
   }
   const up = net.reaches
     .filter((r) => r.nextDown === reach)
-    .flatMap((r) => endpoints(map, r.id));
+    .flatMap((r) => endpoints(map, pieces, r.id));
   if (up.length === 0) return null;
   return ends.reduce((a, b) => (gap(b, up) < gap(a, up) ? b : a));
 }
@@ -114,26 +143,42 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
           "line-color": EFFLUENT_COLORS.dark.within,
-          "line-opacity": 0.95,
-          "line-width": reachWidth(1, 1.5),
+          "line-opacity": 0.8,
+          "line-width": reachWidth(1, 2),
         },
       },
       map.getLayer(DAM_WALL_LAYER_ID) ? DAM_WALL_LAYER_ID : undefined,
     );
+    // A soft halo under the marker so it reads over the dimmed lines and the imagery.
+    map.addLayer({
+      id: OUTFALL_HALO_LAYER_ID,
+      type: "circle",
+      source: OUTFALL_SOURCE_ID,
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 12, 12, 20],
+        "circle-color": EFFLUENT_COLORS.dark.outfall,
+        "circle-blur": 0.8,
+        "circle-opacity": 0.35,
+      },
+    });
     map.addLayer({
       id: OUTFALL_LAYER_ID,
       type: "circle",
       source: OUTFALL_SOURCE_ID,
       paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 4, 12, 7],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 6, 12, 10],
         "circle-color": EFFLUENT_COLORS.dark.outfall,
-        "circle-stroke-color": EFFLUENT_COLORS.dark.exceeds,
+        "circle-stroke-color": EFFLUENT_COLORS.dark.outfallStroke,
         "circle-stroke-width": 2,
       },
     });
     return () => {
       try {
-        for (const id of [OUTFALL_LAYER_ID, PLUME_LAYER_ID])
+        for (const id of [
+          OUTFALL_LAYER_ID,
+          OUTFALL_HALO_LAYER_ID,
+          PLUME_LAYER_ID,
+        ])
           if (map.getLayer(id)) map.removeLayer(id);
         if (map.getSource(OUTFALL_SOURCE_ID))
           map.removeSource(OUTFALL_SOURCE_ID);
@@ -155,11 +200,11 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
     const exceeds = [...status]
       .filter(([, s]) => s === "exceeds")
       .map(([id]) => id);
-    map.setFilter(PLUME_LAYER_ID, [
-      "in",
-      ["id"],
-      ["literal", [...status.keys()]],
-    ]);
+    // Only the kept pieces of the path's reaches: pipeline:lines also gave a main-stem reach's id
+    // to the lower pieces of tributaries (pipeline/steps/effluent-pieces.ts).
+    const pieces = getEffluentRegion(region)?.netPieces;
+    const kept = [...status.keys()].flatMap((id) => pieces?.get(id) ?? []);
+    map.setFilter(PLUME_LAYER_ID, ["in", ["get", "piece"], ["literal", kept]]);
     map.setPaintProperty(
       PLUME_LAYER_ID,
       "line-color",
@@ -171,7 +216,13 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
 
   // The marker needs the reach's tiles; try again as sources load until it is placed.
   useEffect(() => {
-    if (!map || !hasEffluent(region) || !map.getLayer(OUTFALL_LAYER_ID)) return;
+    if (
+      !map ||
+      !hasEffluent(region) ||
+      !map.getLayer(OUTFALL_LAYER_ID) ||
+      !map.getLayer(OUTFALL_HALO_LAYER_ID)
+    )
+      return;
     const source = map.getSource<GeoJSONSource>(OUTFALL_SOURCE_ID);
     if (!source) return;
     const colors = EFFLUENT_COLORS[theme];
@@ -179,8 +230,9 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
     map.setPaintProperty(
       OUTFALL_LAYER_ID,
       "circle-stroke-color",
-      colors.exceeds,
+      colors.outfallStroke,
     );
+    map.setPaintProperty(OUTFALL_HALO_LAYER_ID, "circle-color", colors.outfall);
     const set = (point: Position | null) =>
       source.setData({
         type: "FeatureCollection",
@@ -195,12 +247,13 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
           : [],
       });
     set(null);
-    const net = getEffluentRegion(region)?.net;
-    if (reach === null || !net) return;
+    const effluent = getEffluentRegion(region);
+    const net = effluent?.net;
+    if (reach === null || !net || !effluent) return;
     let placed = false;
     const place = () => {
       if (placed) return;
-      const point = outfallPoint(map, net, reach);
+      const point = outfallPoint(map, net, effluent.netPieces, reach);
       if (!point) return;
       placed = true;
       set(point);

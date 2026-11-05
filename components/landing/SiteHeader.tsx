@@ -5,6 +5,7 @@ import { MAP_PATH } from "@/lib/url-state";
 import { regionPath, type RegionId } from "@/regions";
 import { MobileMenu } from "../MobileMenu";
 import { ThemeToggle } from "../ThemeToggle";
+import { LocaleLink } from "./LocaleLink";
 import { Wordmark } from "./Wordmark";
 
 /**
@@ -12,7 +13,14 @@ import { Wordmark } from "./Wordmark";
  * to `path` (proxy.ts), the full path (the region's included).
  * Plain anchors, not <Link>: a prefetch would set the cookie without a click.
  */
-export async function LocaleLinks({ path }: { path: string }) {
+export async function LocaleLinks({
+  path,
+  keepSearch = false,
+}: {
+  path: string;
+  keepSearch?: boolean;
+}) {
+  const Anchor = keepSearch ? LocaleLink : "a";
   const locale = await getLocale();
   const t = await getTranslations("localeSwitcher");
   return (
@@ -24,7 +32,7 @@ export async function LocaleLinks({ path }: { path: string }) {
       {LOCALES.map((l) => {
         const active = l === locale;
         return (
-          <a
+          <Anchor
             key={l}
             href={`/${l}${path === "/" ? "" : path}`}
             lang={l}
@@ -36,7 +44,7 @@ export async function LocaleLinks({ path }: { path: string }) {
           >
             {t("short", { locale: l })}
             <span className="sr-only"> ({t("locale", { locale: l })})</span>
-          </a>
+          </Anchor>
         );
       })}
     </div>
@@ -45,14 +53,17 @@ export async function LocaleLinks({ path }: { path: string }) {
 
 /**
  * Landing and attributions header: home link, all regions (the hub at /), Attributions,
- * theme, language and the map. `path` is the page's path inside the region.
+ * theme, language and the map. `path` is the page's path inside the region. `keepSearch`: the
+ * language links carry the page's current query string.
  */
 export async function SiteHeader({
   region,
   path,
+  keepSearch = false,
 }: {
   region: RegionId;
   path: string;
+  keepSearch?: boolean;
 }) {
   const t = await getTranslations("landing");
   const link =
@@ -80,7 +91,7 @@ export async function SiteHeader({
           {t("attr")}
         </Link>
         <ThemeToggle />
-        <LocaleLinks path={regionPath(region, path)} />
+        <LocaleLinks path={regionPath(region, path)} keepSearch={keepSearch} />
         <Link href={map} className={cta}>
           {t("open")}
         </Link>
@@ -101,7 +112,10 @@ export async function SiteHeader({
             {t("attr")}
           </Link>
           <ThemeToggle className="min-h-11! w-full justify-start" />
-          <LocaleLinks path={regionPath(region, path)} />
+          <LocaleLinks
+            path={regionPath(region, path)}
+            keepSearch={keepSearch}
+          />
         </MobileMenu>
       </div>
     </header>

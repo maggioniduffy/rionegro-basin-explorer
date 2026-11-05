@@ -51,7 +51,7 @@ function EffluentLegend() {
               cy="7"
               r="5"
               fill={colors.outfall}
-              stroke={colors.exceeds}
+              stroke={colors.outfallStroke}
               strokeWidth="2"
             />
           </svg>
