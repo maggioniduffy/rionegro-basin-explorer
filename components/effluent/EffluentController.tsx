@@ -39,12 +39,21 @@ const NO_REACHES: FilterSpecification = ["boolean", false];
 
 type Position = [number, number];
 
-/** Both ends of every line piece the tiles hold for a reach (a reach may be split by tile edges). */
-function endpoints(map: MapLibreMap, id: number): Position[] {
+/**
+ * Both ends of every kept line piece the tiles hold for a reach (a reach may be split by tile
+ * edges). Only kept pieces: a tributary stub matched to the reach must not give the outfall point.
+ */
+function endpoints(
+  map: MapLibreMap,
+  pieces: ReadonlyMap<number, string[]>,
+  id: number,
+): Position[] {
   const out: Position[] = [];
+  const kept = pieces.get(id) ?? [];
+  if (kept.length === 0) return out;
   const features = map.querySourceFeatures("rivers", {
     sourceLayer: "reaches",
-    filter: ["==", ["id"], id],
+    filter: ["in", ["get", "piece"], ["literal", kept]],
   });
   for (const f of features) {
     const g = f.geometry;
@@ -69,7 +78,7 @@ const near = (a: Position, b: Position) =>
 
 /**
  * Where the outfall reach starts. Not every net reach has line features in the tiles (cba draws
- * APRHI/IGN pieces, and only matched ones carry the reach id), so the reference is the endpoints
+ * APRHI/IGN pieces, and only matched, kept ones count), so the reference is the endpoints
  * of the nearest reach down the net that has some: the outfall reach's end farthest from them is
  * its upstream end. Failing that, the end nearest the endpoints of a reach flowing into it. The
  * line direction in the tiles is not assumed. Ends that meet another piece of the same reach are
@@ -78,10 +87,11 @@ const near = (a: Position, b: Position) =>
 function outfallPoint(
   map: MapLibreMap,
   net: EffluentNet,
+  pieces: ReadonlyMap<number, string[]>,
   reach: number,
 ): Position | null {
   const byId = new Map(net.reaches.map((r) => [r.id, r]));
-  const ends = endpoints(map, reach).filter(
+  const ends = endpoints(map, pieces, reach).filter(
     (p, i, all) => !all.some((q, j) => j !== i && near(p, q)),
   );
   if (ends.length === 0) return null;
@@ -94,13 +104,13 @@ function outfallPoint(
     id = byId.get(id)?.nextDown ?? 0
   ) {
     seen.add(id);
-    const down = endpoints(map, id);
+    const down = endpoints(map, pieces, id);
     if (down.length > 0)
       return ends.reduce((a, b) => (gap(b, down) > gap(a, down) ? b : a));
   }
   const up = net.reaches
     .filter((r) => r.nextDown === reach)
-    .flatMap((r) => endpoints(map, r.id));
+    .flatMap((r) => endpoints(map, pieces, r.id));
   if (up.length === 0) return null;
   return ends.reduce((a, b) => (gap(b, up) < gap(a, up) ? b : a));
 }
@@ -190,11 +200,11 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
     const exceeds = [...status]
       .filter(([, s]) => s === "exceeds")
       .map(([id]) => id);
-    map.setFilter(PLUME_LAYER_ID, [
-      "in",
-      ["id"],
-      ["literal", [...status.keys()]],
-    ]);
+    // Only the kept pieces of the path's reaches: pipeline:lines also gave a main-stem reach's id
+    // to the lower pieces of tributaries (pipeline/steps/effluent-pieces.ts).
+    const pieces = getEffluentRegion(region)?.netPieces;
+    const kept = [...status.keys()].flatMap((id) => pieces?.get(id) ?? []);
+    map.setFilter(PLUME_LAYER_ID, ["in", ["get", "piece"], ["literal", kept]]);
     map.setPaintProperty(
       PLUME_LAYER_ID,
       "line-color",
@@ -237,12 +247,13 @@ export function EffluentController({ map }: { map: MapLibreMap | null }) {
           : [],
       });
     set(null);
-    const net = getEffluentRegion(region)?.net;
-    if (reach === null || !net) return;
+    const effluent = getEffluentRegion(region);
+    const net = effluent?.net;
+    if (reach === null || !net || !effluent) return;
     let placed = false;
     const place = () => {
       if (placed) return;
-      const point = outfallPoint(map, net, reach);
+      const point = outfallPoint(map, net, effluent.netPieces, reach);
       if (!point) return;
       placed = true;
       set(point);

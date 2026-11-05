@@ -964,6 +964,16 @@ step. `report.json`: `ok`, the checks (`walksEndAtMouth`, `lakeReachesPresent`, 
 `gaugesHaveClimatology`, `bothGaugesUsed`, `fileBytes`), reaches per gauge, and per gauge the snapped cell,
 non-null days, mean and first/last date.
 
+Each row also has a `pieces` column: the ids of the line pieces (`lines.parquet` `pieceId`, the tiles' `piece`)
+the plume may paint on the reach (`pipeline/steps/effluent-pieces.ts`, owner rule "Nombre + línea", 2026-11-05).
+`pipeline:lines` matches a part to the nearest reach by distance only, so a main-stem reach also carries the
+lower pieces of tributaries. A piece is dropped when its display name (`export/piece_name.json`, what the
+tiles show) differs from the reach's river/stream name or aliases (case, accents, whitespace and one leading
+Río/Arroyo ignored), or, for a reach with no river/stream, when most of its line's length lies on one other net
+reach; unnamed pieces and same-name pieces are kept. Needs `lines/lines.parquet` and `export/piece_name.json`
+(fails if missing). `report.json` adds `pieces` (total, kept, droppedByName, droppedByLine,
+reachesWithPieces) and the check `pieceIdsExistInLines`.
+
 Full run order: `download` → `inspect` → `basin` → `rivers` → `candidates` → `osm-names` → `ign` →
 `ign-match` → `named` → `lakes` → `ign-streams` → `ign-layers` → `localities` → `export` → `mask` →
 `subbasins` → `tiles`. For `cba` (R3.4): `lines` → `line-names` → `named` → `ign-streams` → `export`, and the
