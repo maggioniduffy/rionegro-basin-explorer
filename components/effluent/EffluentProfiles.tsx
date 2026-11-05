@@ -64,6 +64,8 @@ export function EffluentProfiles() {
     new Intl.NumberFormat(locale, { notation: "compact" }).format(n);
 
   const pick = (reachId: number) => {
+    // Clear a reach already held from an earlier map visit, so UrlSync sees a change and fits.
+    useMapStore.getState().select(null);
     const params = new URLSearchParams({ [REACH_PARAM]: String(reachId) });
     router.push(inRegion(MAP_PATH) + effluentSearch(params, effluent));
   };

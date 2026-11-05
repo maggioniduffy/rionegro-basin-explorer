@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useFormat } from "@/components/panel/parts";
 import { useMapStore } from "@/lib/store";
+import { KM_PER_MI } from "@/lib/units";
 
 export interface ChartPoint {
   /** Distance from the outfall, km (metric; converted for the axis). */
@@ -48,7 +49,9 @@ interface Props {
 
 const HEIGHT = 260;
 const M = { left: 56, right: 10, top: 14, bottom: 44 };
-const KM_PER_MI = 1.609344; // as lib/units.ts
+/** Lowest decade of the log axis: coliforms can decay to ~1e-8 /100 mL, which would add 15+ empty decades. */
+const LOG_FLOOR_DECADE = -2;
+const MAX_LOG_TICKS = 6;
 const BAND_FILL = "color-mix(in srgb, var(--accent) 18%, transparent)";
 
 /** About `count` round tick values covering [lo, hi]. */
@@ -80,6 +83,8 @@ export function ProfileChart({
 }: Props) {
   const t = useTranslations("effluents.profile");
   const f = useFormat();
+  const locale = useLocale();
+  const nf = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const imperial = useMapStore((s) => s.units) === "imperial";
   const uid = useId();
   const ref = useRef<HTMLDivElement>(null);
@@ -117,14 +122,23 @@ export function ProfileChart({
     let ticks: number[];
     if (log) {
       const pos = values.filter((v) => v > 0);
-      const dLo = Math.floor(Math.log10(Math.min(...pos, 1)));
+      // Values below the floor are drawn at it (yOf clamps); the readout still shows the real value.
+      const dLo = Math.max(
+        Math.floor(Math.log10(Math.min(...pos, 1))),
+        LOG_FLOOR_DECADE,
+      );
       const dHi = Math.max(
         Math.ceil(Math.log10(Math.max(...pos, 10))),
         dLo + 1,
       );
       lo = 10 ** dLo;
       hi = 10 ** dHi;
-      ticks = Array.from({ length: dHi - dLo + 1 }, (_, i) => 10 ** (dLo + i));
+      // Every other decade when there would be too many labels.
+      const stride = dHi - dLo + 1 > MAX_LOG_TICKS ? 2 : 1;
+      ticks = Array.from(
+        { length: Math.floor((dHi - dLo) / stride) + 1 },
+        (_, i) => 10 ** (dLo + i * stride),
+      );
     } else {
       lo = Math.min(0, ...values);
       const top = Math.max(...values, lo + 1e-9);
@@ -188,12 +202,12 @@ export function ProfileChart({
   };
 
   const shown = active === null ? null : (points[active] ?? null);
-  const tick = formatTick ?? ((v: number) => String(v));
+  const tick = formatTick ?? ((v: number) => nf.format(v));
 
   return (
     <div ref={ref} className="w-full min-w-0">
       <svg
-        role="img"
+        role="group"
         aria-labelledby={`${uid}t ${uid}d`}
         viewBox={`0 0 ${width} ${HEIGHT}`}
         width="100%"
@@ -204,124 +218,127 @@ export function ProfileChart({
       >
         <title id={`${uid}t`}>{title}</title>
         <desc id={`${uid}d`}>{desc}</desc>
-        {geo.ticks.map((v) => (
-          <g key={v}>
-            <line
-              x1={M.left}
-              x2={M.left + plot.w}
-              y1={yOf(v)}
-              y2={yOf(v)}
-              stroke="var(--border)"
-            />
+        {/* The drawing is one image; the focusable pickers stay outside it (img hides its children from AT). */}
+        <g role="img" aria-labelledby={`${uid}t ${uid}d`}>
+          {geo.ticks.map((v) => (
+            <g key={v}>
+              <line
+                x1={M.left}
+                x2={M.left + plot.w}
+                y1={yOf(v)}
+                y2={yOf(v)}
+                stroke="var(--border)"
+              />
+              <text
+                x={M.left - 6}
+                y={yOf(v)}
+                dy="0.32em"
+                textAnchor="end"
+                fontSize="11"
+                fill="var(--text-secondary)"
+                className="tabular-nums"
+              >
+                {tick(v)}
+              </text>
+            </g>
+          ))}
+          {geo.xTicks.map((v) => (
             <text
-              x={M.left - 6}
-              y={yOf(v)}
-              dy="0.32em"
-              textAnchor="end"
+              key={v}
+              x={xOf(v / kmUnit)}
+              y={M.top + plot.h + 16}
+              textAnchor="middle"
               fontSize="11"
               fill="var(--text-secondary)"
               className="tabular-nums"
             >
-              {tick(v)}
+              {nf.format(v)}
             </text>
-          </g>
-        ))}
-        {geo.xTicks.map((v) => (
+          ))}
           <text
-            key={v}
-            x={xOf(v / kmUnit)}
-            y={M.top + plot.h + 16}
+            x={M.left + plot.w / 2}
+            y={HEIGHT - 6}
             textAnchor="middle"
             fontSize="11"
             fill="var(--text-secondary)"
-            className="tabular-nums"
           >
-            {v}
+            {t("xAxis", { unit: imperial ? "mi" : "km" })}
           </text>
-        ))}
-        <text
-          x={M.left + plot.w / 2}
-          y={HEIGHT - 6}
-          textAnchor="middle"
-          fontSize="11"
-          fill="var(--text-secondary)"
-        >
-          {t("xAxis", { unit: imperial ? "mi" : "km" })}
-        </text>
-        <text
-          transform={`translate(12 ${M.top + plot.h / 2}) rotate(-90)`}
-          textAnchor="middle"
-          fontSize="11"
-          fill="var(--text-secondary)"
-        >
-          {yLabel}
-        </text>
-        {area && <path d={area} fill={BAND_FILL} stroke="none" />}
-        {refs.map((r) => (
-          <g key={r.label}>
-            <line
-              x1={M.left}
-              x2={M.left + plot.w}
-              y1={yOf(r.value)}
-              y2={yOf(r.value)}
-              stroke="var(--warning)"
-              strokeDasharray="5 4"
-            />
-            <text
-              x={M.left + plot.w}
-              y={yOf(r.value) - 4}
-              textAnchor="end"
-              fontSize="11"
-              fill="var(--text-secondary)"
-            >
-              {r.label}
-            </text>
-          </g>
-        ))}
-        <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2" />
-        {mark && (
-          <g>
-            <circle
-              cx={xOf(mark.km)}
-              cy={yOf(mark.value)}
-              r="5"
-              fill="var(--warning)"
-              stroke="var(--background)"
-              strokeWidth="1.5"
-            />
-            <text
-              x={Math.min(xOf(mark.km) + 8, M.left + plot.w)}
-              y={yOf(mark.value) + 16}
-              textAnchor={
-                xOf(mark.km) + 8 > M.left + plot.w - 90 ? "end" : "start"
-              }
-              fontSize="11"
-              fill="var(--foreground)"
-            >
-              {mark.label}
-            </text>
-          </g>
-        )}
-        {shown && (
-          <g pointerEvents="none">
-            <line
-              x1={xOf(shown.km)}
-              x2={xOf(shown.km)}
-              y1={M.top}
-              y2={M.top + plot.h}
-              stroke="var(--text-secondary)"
-              strokeDasharray="2 3"
-            />
-            <circle
-              cx={xOf(shown.km)}
-              cy={yOf(shown.value)}
-              r="4"
-              fill="var(--accent)"
-              stroke="var(--background)"
-              strokeWidth="1.5"
-            />
-          </g>
-        )}
+          <text
+            transform={`translate(12 ${M.top + plot.h / 2}) rotate(-90)`}
+            textAnchor="middle"
+            fontSize="11"
+            fill="var(--text-secondary)"
+          >
+            {yLabel}
+          </text>
+          {area && <path d={area} fill={BAND_FILL} stroke="none" />}
+          {refs.map((r) => (
+            <g key={r.label}>
+              <line
+                x1={M.left}
+                x2={M.left + plot.w}
+                y1={yOf(r.value)}
+                y2={yOf(r.value)}
+                stroke="var(--warning)"
+                strokeDasharray="5 4"
+              />
+              <text
+                x={M.left + plot.w}
+                y={yOf(r.value) - 4}
+                textAnchor="end"
+                fontSize="11"
+                fill="var(--text-secondary)"
+              >
+                {r.label}
+              </text>
+            </g>
+          ))}
+          <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2" />
+          {mark && (
+            <g>
+              <circle
+                cx={xOf(mark.km)}
+                cy={yOf(mark.value)}
+                r="5"
+                fill="var(--warning)"
+                stroke="var(--background)"
+                strokeWidth="1.5"
+              />
+              <text
+                x={Math.min(xOf(mark.km) + 8, M.left + plot.w)}
+                y={yOf(mark.value) + 16}
+                textAnchor={
+                  xOf(mark.km) + 8 > M.left + plot.w - 90 ? "end" : "start"
+                }
+                fontSize="11"
+                fill="var(--foreground)"
+              >
+                {mark.label}
+              </text>
+            </g>
+          )}
+          {shown && (
+            <g pointerEvents="none">
+              <line
+                x1={xOf(shown.km)}
+                x2={xOf(shown.km)}
+                y1={M.top}
+                y2={M.top + plot.h}
+                stroke="var(--text-secondary)"
+                strokeDasharray="2 3"
+              />
+              <circle
+                cx={xOf(shown.km)}
+                cy={yOf(shown.value)}
+                r="4"
+                fill="var(--accent)"
+                stroke="var(--background)"
+                strokeWidth="1.5"
+              />
+            </g>
+          )}
+        </g>
         {onPick &&
           reaches.map((r) => (
             <rect

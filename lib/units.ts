@@ -9,7 +9,7 @@ export const UNIT_SYSTEMS = ["metric", "imperial"] as const;
 export type UnitSystem = (typeof UNIT_SYSTEMS)[number];
 
 /** Exact by definition: 1 mi = 1.609344 km, 1 ft = 0.3048 m. */
-const KM_PER_MI = 1.609344;
+export const KM_PER_MI = 1.609344;
 const M_PER_FT = 0.3048;
 
 /** Factor from the stored metric value to the imperial unit shown. */
