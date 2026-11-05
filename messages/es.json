@@ -487,7 +487,31 @@
     "intro": "Qué hace un vertido al río aguas abajo: hasta dónde llega la pluma, cuánto baja el oxígeno disuelto y cuánta carga puede recibir el río.",
     "back": "Volver al mapa",
     "loading": "Corriendo la simulación\u2026",
-    "forecastStamp": "Pronóstico obtenido el {date} UTC \u00b7 GloFAS vía Open\u2011Meteo"
+    "forecastStamp": "Pronóstico obtenido el {date} UTC \u00b7 GloFAS vía Open\u2011Meteo",
+    "profile": {
+      "xAxis": "Distancia desde el vertido ({unit})",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} cada 100 mL",
+      "pickHint": "Hacé clic en un tramo del río para verlo en el mapa.",
+      "pick": "Tramo {id}, de {from} a {to} desde el vertido: ver en el mapa",
+      "band": "Rango de coeficientes (kd × n de Manning)",
+      "doTitle": "Oxígeno disuelto a lo largo del río",
+      "doDesc": "Oxígeno disuelto según la distancia desde el vertido a lo largo de {total}; el mínimo es {min} a {km}.",
+      "doFinding": "OD mínimo {min} a {km} del vertido; por debajo del umbral de {threshold} a lo largo de {length}.",
+      "doFindingOk": "OD mínimo {min} a {km} del vertido; se mantiene por encima del umbral de {threshold}.",
+      "doThreshold": "Umbral de OD",
+      "doSaturation": "Saturación",
+      "minDo": "OD mínimo",
+      "doAxis": "OD (mg/L)",
+      "coliTitle": "Coliformes a lo largo del río",
+      "coliDesc": "Coliformes cada 100 mL según la distancia desde el vertido a lo largo de {total}, en escala logarítmica.",
+      "coliFinding": "Pico de {peak} a {km} del vertido; por encima del umbral de {threshold} a lo largo de {length}.",
+      "coliFindingOk": "Pico de {peak} a {km} del vertido; se mantiene por debajo del umbral de {threshold}.",
+      "coliFindingPeak": "Pico de {peak} a {km} del vertido; no hay umbral de coliformes definido.",
+      "coliThreshold": "Umbral de coliformes",
+      "coliAxis": "Coliformes (cada 100 mL)",
+      "coliOff": "Coliformes no simulados: cargá un valor de coliformes del efluente."
+    }
   },
   "effluent": {
     "title": "Simulación de vertido",

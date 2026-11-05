@@ -47,13 +47,36 @@ export function InfoPanel() {
   const flowSection = useMapStore((s) => s.flowSection);
   const effluent = useMapStore((s) => s.effluent !== null);
   // Flow and effluent mode replace the details; leaving them brings the selection's panel back.
-  if (effluent) return <EffluentPanel />;
+  if (effluent)
+    return (
+      <>
+        <EffluentFit />
+        <EffluentPanel />
+      </>
+    );
   if (flowSection) return <FlowPanel key={flowSection} id={flowSection} />;
   if (!selection) return picked ? <FeaturePanel picked={picked} /> : null;
   // Remount per selection so scroll position and state start fresh.
   return (
     <Panel key={`${selection.kind}:${selection.id}`} selection={selection} />
   );
+}
+
+/**
+ * In effluent mode the details panel is replaced, so the fit to a selected reach (the analysis
+ * page's "show on the map") lives here: same endpoint and bbox as the details panel's fit.
+ */
+function EffluentFit() {
+  const selection = useMapStore((s) => s.selection);
+  const fitPending = useMapStore((s) => s.fitPending);
+  const focusOn = useMapStore((s) => s.focusOn);
+  const state = useApi<ReachResponse>(
+    selection?.kind === "reach" && fitPending ? apiPath(selection) : null,
+  );
+  useEffect(() => {
+    if (fitPending && state.status === "ok") focusOn(state.data.bbox);
+  }, [fitPending, state, focusOn]);
+  return null;
 }
 
 function Panel({ selection }: { selection: Selection }) {

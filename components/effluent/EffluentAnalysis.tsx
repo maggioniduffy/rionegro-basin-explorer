@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { EffluentFailure } from "@/components/effluent/EffluentFailure";
+import { EffluentProfiles } from "@/components/effluent/EffluentProfiles";
 import { EffluentInputs } from "@/components/effluent/EffluentInputs";
 import { EffluentResults } from "@/components/effluent/EffluentResults";
 import { EffluentRunProvider } from "@/components/effluent/EffluentRunProvider";
@@ -50,7 +51,8 @@ function Body() {
               {run.status === "unavailable" && <EffluentFailure />}
               {run.status === "ok" && <EffluentResults />}
             </section>
-            {/* Profiles along the river and the assumptions go here. */}
+            <EffluentProfiles />
+            {/* The assumptions go here. */}
           </div>
         </div>
       )}

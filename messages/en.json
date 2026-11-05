@@ -487,7 +487,31 @@
     "intro": "What a discharge into the river does downstream: how far the plume reaches, how low the dissolved oxygen falls and how much load the river can take.",
     "back": "Back to the map",
     "loading": "Running the simulation\u2026",
-    "forecastStamp": "Forecast fetched {date} UTC \u00b7 GloFAS via Open\u2011Meteo"
+    "forecastStamp": "Forecast fetched {date} UTC \u00b7 GloFAS via Open\u2011Meteo",
+    "profile": {
+      "xAxis": "Distance from the outfall ({unit})",
+      "mgL": "{n} mg/L",
+      "per100mL": "{n} per 100 mL",
+      "pickHint": "Click a stretch of the river to see it on the map.",
+      "pick": "Reach {id}, {from} to {to} from the outfall: show on the map",
+      "band": "Coefficient range (kd × Manning n)",
+      "doTitle": "Dissolved oxygen along the river",
+      "doDesc": "Dissolved oxygen against distance from the outfall over {total}; the minimum is {min} at {km}.",
+      "doFinding": "Minimum DO {min} at {km} from the outfall; below the {threshold} threshold over {length}.",
+      "doFindingOk": "Minimum DO {min} at {km} from the outfall; it stays above the {threshold} threshold.",
+      "doThreshold": "DO threshold",
+      "doSaturation": "Saturation",
+      "minDo": "Minimum DO",
+      "doAxis": "DO (mg/L)",
+      "coliTitle": "Coliforms along the river",
+      "coliDesc": "Coliforms per 100 mL against distance from the outfall over {total}, on a logarithmic scale.",
+      "coliFinding": "Peak {peak} at {km} from the outfall; above the {threshold} threshold over {length}.",
+      "coliFindingOk": "Peak {peak} at {km} from the outfall; it stays below the {threshold} threshold.",
+      "coliFindingPeak": "Peak {peak} at {km} from the outfall; no coliform threshold is set.",
+      "coliThreshold": "Coliform threshold",
+      "coliAxis": "Coliforms (per 100 mL)",
+      "coliOff": "Coliforms not simulated — set an effluent coliform value."
+    }
   },
   "effluent": {
     "title": "Discharge simulation",
