@@ -485,6 +485,8 @@
     "title": "Simulación de vertido",
     "simulate": "Simular un vertido aquí",
     "coverage": "El simulador cubre solo la cuenca del Suquía.",
+    "simulateAt": "Simular en {name}",
+    "entryHint": "O hacé clic en cualquier tramo de la cuenca del Suquía en el mapa y elegí \"Simular un vertido aquí\".",
     "outfall": "Punto de vertido",
     "customReach": "Tramo {id}",
     "loading": "Ejecutando la simulación\u2026",

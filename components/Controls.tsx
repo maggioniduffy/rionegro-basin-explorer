@@ -5,6 +5,7 @@ import { type CSSProperties, type KeyboardEvent, useState } from "react";
 import { MASK_LEVEL_COUNT } from "@/lib/map/config";
 import { levelToPosition, positionToLevel } from "@/lib/map/mask";
 import { useMapStore } from "@/lib/store";
+import { EffluentEntry } from "./effluent/EffluentEntry";
 import { Icon, type IconName } from "./Icon";
 import { Legend } from "./Legend";
 import { DisplayOptionsContent } from "./OptionsPanel";
@@ -138,6 +139,7 @@ export function MapControlsContent() {
   return (
     <>
       <ViewModeToggle />
+      <EffluentEntry />
 
       <div className="flex flex-col gap-1.5">
         <label

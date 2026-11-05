@@ -485,6 +485,8 @@
     "title": "Discharge simulation",
     "simulate": "Simulate a discharge here",
     "coverage": "The simulator covers the Suquía basin only.",
+    "simulateAt": "Simulate at {name}",
+    "entryHint": "Or click any reach of the Suquía basin on the map and choose \"Simulate a discharge here\".",
     "outfall": "Outfall",
     "customReach": "Reach {id}",
     "loading": "Running the simulation\u2026",
